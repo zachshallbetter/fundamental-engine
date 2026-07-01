@@ -100,6 +100,10 @@ public struct FieldOptions {
     /// Runs at scan time; the resolved identity is cached on the body for its life. Mirrors JS
     /// `FieldOptions.identify`.
     public var identify: ((AnyObject) -> FieldBodyIdentity?)?
+    /// Initial runtime ``FieldPolicy`` — what this host/session/user/app PERMITS (runtime rules). Change
+    /// it live with `FieldHandle.setPolicy`. `nil` = no policy (unbounded, byte-identical to a pre-policy
+    /// field). Mirrors JS `FieldOptions.policy`.
+    public var policy: FieldPolicy?
 
     public init(
         accent: String? = nil,
@@ -122,7 +126,8 @@ public struct FieldOptions {
         dprCap: Float? = nil,
         qualityTier: Int = 0,
         feedbackSink: FeedbackSink? = nil,
-        identify: ((AnyObject) -> FieldBodyIdentity?)? = nil
+        identify: ((AnyObject) -> FieldBodyIdentity?)? = nil,
+        policy: FieldPolicy? = nil
     ) {
         self.accent = accent
         self.density = density
@@ -145,6 +150,7 @@ public struct FieldOptions {
         self.qualityTier = qualityTier
         self.feedbackSink = feedbackSink
         self.identify = identify
+        self.policy = policy
     }
 }
 
@@ -473,6 +479,15 @@ public protocol FieldHandle: AnyObject {
     /// at the agent's `position()` and delivers it via `onInfluence`. Mirrors JS `addAgent`.
     @discardableResult
     func addAgent(_ spec: AgentSpec) -> AgentHandle
+
+    // ── policy  (substrate — JS #892) ──────────────────────────────────────
+    /// The field's current runtime ``FieldPolicy`` (a value copy). An empty policy when none was set.
+    /// Mirrors JS `FieldHandle.policy`.
+    var policy: FieldPolicy { get }
+    /// Replace the runtime ``FieldPolicy`` live — what this host/session/user/app PERMITS. REPLACE (not
+    /// merge): the field runs exactly the policy handed in. Reduced-motion still wins over it (a policy
+    /// can lower motion but never raise it above what reduced-motion allows). Mirrors JS `setPolicy`.
+    func setPolicy(_ policy: FieldPolicy)
 
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)

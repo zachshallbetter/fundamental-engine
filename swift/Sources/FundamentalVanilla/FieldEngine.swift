@@ -19,6 +19,36 @@ final class FieldEngine: FieldHandle {
     private let host: any FieldHost
     private var options: FieldOptions
     private let registry: Registry
+
+    // Runtime FIELD POLICY (substrate — JS #892): what THIS host/session/user/app PERMITS (runtime),
+    // distinct from governance (static lint). Replaced live via `setPolicy`. Default: no policy →
+    // unbounded, byte-identical to the pre-policy engine.
+    private var fieldPolicy = FieldPolicy()
+
+    /// Snapshot privacy threshold — a privacy budget below this withholds body `data` (mirrors JS's
+    /// `PRIVACY_DATA_THRESHOLD`). Read by ``policyPermitsBodyData`` once the snapshot surface lands.
+    private static let privacyDataThreshold: Float = 0.5
+
+    /// The effective MOTION budget (0..1) — the single value the render/easing/integrator path reads.
+    /// Unifies reduced-motion + host policy (folded via `min`). Reduced-motion ALWAYS wins (accessibility
+    /// can only lower motion, never raise it): when it's on, this is 0. Mirrors the JS `effectiveMotion`.
+    private func effectiveMotion() -> Float {
+        if host.prefersReducedMotion { return 0 } // accessibility clamp — beats any policy
+        if fieldPolicy.allowMotionProjection == false { return 0 } // policy pins motion off
+        var m: Float = 1
+        if let mb = fieldPolicy.maxMotionBudget { m = min(m, mb) }
+        if let bm = fieldPolicy.budgets?.motion { m = min(m, bm) }
+        return max(0, min(1, m))
+    }
+
+    /// Whether the policy permits body `data` in a snapshot. Mirrors the JS privacy gate. DECLARED here:
+    /// the Swift snapshot surface isn't ported yet, so this is exposed for when it lands rather than
+    /// wired to a live reading.
+    private func policyPermitsBodyData() -> Bool {
+        if fieldPolicy.allowBodyDataInSnapshots == false { return false } // explicit deny wins
+        if let pv = fieldPolicy.budgets?.privacy, pv < Self.privacyDataThreshold { return false }
+        return true
+    }
     private let store: FieldStore
     private let env: Env
     private var loopToken: AnyObject?
@@ -144,8 +174,10 @@ final class FieldEngine: FieldHandle {
         let density = max(options.density ?? 1, 0)
         self.spawnCeiling = Int((130 * density).rounded()) * 4
 
+        self.fieldPolicy = options.policy ?? FieldPolicy()
+
         env.form = formTarget
-        env.dt = host.prefersReducedMotion ? 0 : 1
+        env.dt = effectiveMotion() <= 0 ? 0 : 1
         wireEnvServices()
         build()
         start()
@@ -203,7 +235,7 @@ final class FieldEngine: FieldHandle {
 
     /// Spark pool (§23) — capped, skipped under reduced motion.
     private func spawnSpark(at: Vec3, power: Float, color: String?) {
-        if host.prefersReducedMotion || sparks.count > 260 { return }
+        if effectiveMotion() <= 0 || sparks.count > 260 { return }
         let c: RGB = color.map(hexToRgb) ?? WARM
         let n = sparkCount(power: power)
         for _ in 0..<n {
@@ -303,7 +335,11 @@ final class FieldEngine: FieldHandle {
         // forces and friction stay per-frame by design (see applyForce / the integrator).
         let dtRaw = lastTimestamp.map { Float((timestamp - $0) * 60.0) } ?? 1
         lastTimestamp = timestamp
-        env.dt = host.prefersReducedMotion ? 0 : clamp(dtRaw, 0.2, 2)
+        // Effective motion budget (0..1) folds reduced-motion + policy. At 0 the field is frozen exactly
+        // as reduced-motion; a partial budget scales displacement-per-second proportionally (a
+        // maxMotionBudget: 0.5 field drifts at half speed). Reduced-motion always forces this to 0.
+        let motion = effectiveMotion()
+        env.dt = motion <= 0 ? 0 : clamp(dtRaw, 0.2, 2) * motion
         scrollVel = scrollVel * 0.7 + abs(host.scrollY - lastScrollY) * 0.3
         lastScrollY = host.scrollY
         env.scrollV = scrollVel
@@ -817,6 +853,15 @@ final class FieldEngine: FieldHandle {
     func setQualityTier(_ tier: Int) { options.qualityTier = tier }
 
     func setVisible(_ on: Bool) { visible = on }
+
+    // ── policy (substrate — JS #892) ────────────────────────────────────────
+    var policy: FieldPolicy { fieldPolicy }
+
+    func setPolicy(_ policy: FieldPolicy) {
+        // REPLACE (not merge): the field runs exactly the policy handed in. Reduced-motion still wins in
+        // effectiveMotion(), so this can never raise motion above the accessibility clamp.
+        fieldPolicy = policy
+    }
 
     func destroy() {
         if let token = loopToken { host.cancelFrame(token) }
