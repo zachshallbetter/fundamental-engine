@@ -40,6 +40,7 @@ export const OPTIONS: OptionRow[] = [
   { name: 'overlayBackend', type: 'RenderBackend', def: 'Canvas 2D', desc: 'Drawing backend for the overlay surface (#373) — the structural seam a WebGL/WebGPU surface implements. Defaults to the Canvas 2D implementation over overlayCanvas. See render-backend.ts.' },
   { name: 'rng', type: '() => number', def: 'Math.random', desc: 'Random source for ALL engine randomness — particle seeding, spawn scatter, jitter, release angles (#371). Supply a seeded generator to make a run reproducible (the record/replay seam).' },
   { name: 'now', type: '() => number', def: 'performance.now', desc: 'Wall-clock source for input-idle tracking (#371) — one of the three engine clocks (wall / frame / simulation). Defaults to performance.now; override in tests or replay harnesses.' },
+  { name: 'identify', type: '(el: HTMLElement) => FieldBodyIdentity | undefined', def: 'undefined', desc: 'First-class body identity resolver: derive a stable, structured FieldBodyIdentity ({ id, namespace?, kind?, host? }) from a DOM-scanned body\'s element, called once per body. The identity is surfaced on query()/snapshot() body readings and used as the stable key for diff/replay/relationships. Return undefined to fall back to the default derivation (the element DOM id, else a monotonic body-N). Purely additive — a field without identify behaves exactly as before.' },
 ];
 
 export interface MethodRow {

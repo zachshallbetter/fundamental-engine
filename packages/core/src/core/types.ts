@@ -150,11 +150,42 @@ export interface AtomPayload {
 export type BodyAuthority = 'anchored' | 'kinematic' | 'dynamic';
 
 /**
+ * A body's FIRST-CLASS IDENTITY (substrate critical path). A stable, structured handle for referring to
+ * a body across frames, snapshots, diffs, and relationships — decoupled from object reference and from
+ * display text. `id` is the stable primary key: it MUST be unique within a field and MUST NOT change for
+ * the life of the body. The rest is optional metadata that lets a consumer group / route bodies (e.g. a
+ * bridge keying host meshes off `host`, or an agent filtering by `kind`).
+ *
+ * DOCTRINE — identity is NOT:
+ *   · display text (a heading's words are not its identity — they can change while identity holds);
+ *   · necessarily a DOM `id` (a DOM id is one *source* of a stable id, not the concept);
+ *   · an object reference (references don't survive a rescan or a serialize/replay round-trip).
+ * Snapshots, diffs, and relationships key on `identity.id`. When a body carries no supplied identity, the
+ * engine DERIVES a stable one deterministically (the element's DOM id, else a monotonic `body-N` counter —
+ * never `Math.random`, which is banned on the reproducible paths) so identity is always present and stable.
+ */
+export interface FieldBodyIdentity {
+  /** the stable primary key — unique within the field, constant for the body's life. Equals the reading's
+   *  top-level `id` (back-compat). Snapshot/diff/replay/relationships key on this. */
+  id: string;
+  /** optional grouping namespace (e.g. an app/module the body belongs to). Free-form; opaque to the engine. */
+  namespace?: string;
+  /** optional kind/type tag (e.g. `'card'`, `'heading'`, `'agent'`). Free-form; opaque to the engine. */
+  kind?: string;
+  /** optional host/owner tag (e.g. a renderer or view that owns the body's rendered object). Free-form. */
+  host?: string;
+}
+
+/**
  * A registered DOM element acting as a force source (§3.1). Parsed from
  * `data-*` attributes; the runtime fields are refreshed each scan/frame.
  */
 export interface Body {
   el: HTMLElement;
+  /** FIRST-CLASS IDENTITY (see {@link FieldBodyIdentity}). Supplied via `addBody({ identity })` or the
+   *  `identify` field option, else lazily DERIVED and cached the first time the body is keyed. Once
+   *  resolved it is stable for the body's life; snapshots/diff/replay/relationships key on `identity.id`. */
+  identity?: FieldBodyIdentity;
   /** space-joined force ids from `data-body` (they compose, §4). */
   tokens: Token[];
   /** who owns this body's position (`data-authority`); default `'anchored'`. See {@link BodyAuthority}. */
@@ -667,6 +698,16 @@ export interface FieldOptions {
    * you; inject a custom host for a headless renderer / different document / tests.
    */
   host?: FieldHost;
+  /**
+   * FIRST-CLASS IDENTITY resolver (substrate critical path): derive a {@link FieldBodyIdentity} for a
+   * DOM-scanned body from its element. Called once per body, the first time the body is keyed; the
+   * returned identity is cached and used for query/snapshot/diff/replay/relationship keying. Return
+   * `undefined` (or omit the option) to fall back to the default derivation (the element's DOM `id`,
+   * else a monotonic `body-N`). The `id` a resolver returns MUST be unique within the field and stable
+   * for the body's life. Programmatic `addBody({ identity })` overrides this. Purely additive — a field
+   * with no `identify` behaves exactly as before.
+   */
+  identify?: (el: HTMLElement) => FieldBodyIdentity | undefined;
 }
 
 /** Per-element feedback values the engine produces each frame (Phase D3 seam). */
@@ -722,6 +763,11 @@ export interface AgentHandle {
 export interface BodySpec {
   /** the force ids this body emits (space-joined string or array), e.g. `'attract swirl'`. */
   tokens: string | readonly string[];
+  /** FIRST-CLASS IDENTITY for this programmatic body (see {@link FieldBodyIdentity}). Supply a stable
+   *  `id` (unique in the field) plus optional `namespace`/`kind`/`host`, so snapshots/diff/replay and a
+   *  bridge can reference this body by identity rather than the returned handle. A bare string is shorthand
+   *  for `{ id }`. Omitted ⇒ the engine derives a stable synthetic `body-N`. */
+  identity?: FieldBodyIdentity | string;
   /** who owns this body's position; default `'anchored'`. See {@link BodyAuthority}. */
   authority?: BodyAuthority;
   /** overall force magnitude (scales every token). */
@@ -826,8 +872,12 @@ export interface FieldQuery {
 
 /** A body as seen by a query — identity, box, active tokens, and its measured metrics/dimensions. */
 export interface FieldBodyReading {
-  /** stable id: the element's `id` when present, else a per-field synthetic (`body-N`). */
+  /** stable id: the element's `id` when present, else a per-field synthetic (`body-N`). Equals
+   *  `identity.id`. Kept as the top-level field for back-compat; new consumers may read `identity`. */
   id: string;
+  /** the body's resolved FIRST-CLASS IDENTITY (see {@link FieldBodyIdentity}). `identity.id === id`;
+   *  `namespace`/`kind`/`host` carry any supplied structured metadata. Always present. */
+  identity: FieldBodyIdentity;
   /** the body's box in field coordinates, when measured. */
   rect?: FieldRect;
   /** the composed force ids (the `data-body` tokens). */
@@ -917,7 +967,10 @@ export interface FieldSnapshotOptions {
 
 /** A body captured in a {@link FieldSnapshot}. */
 export interface FieldBodySnapshot {
+  /** stable id — equals `identity.id`; snapshot/diff/replay key on it. */
   id: string;
+  /** the body's resolved FIRST-CLASS IDENTITY (see {@link FieldBodyIdentity}). Always present. */
+  identity: FieldBodyIdentity;
   /** who owns this body's position (see {@link BodyAuthority}); `'anchored'` by default. */
   authority?: BodyAuthority;
   /** the body's box in field coordinates (anchored bodies). */
