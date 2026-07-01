@@ -43,10 +43,23 @@
       </p>
       <p>Display DPR: <strong id="dpr">?</strong> · lower <code>dprCap</code> rows show the DPR lever.</p>
       <button id="run">Run sweep</button>
+      <button id="run-comp">Run compositing sweep</button>
       <button id="copy" hidden>Copy results (markdown)</button>
       <div id="status"></div>
       <table hidden id="results">
         <thead><tr><th>render</th><th>dprCap</th><th>density</th><th>particles</th><th>fps (med)</th><th>fps p5</th><th>frame ms (med)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h2 style="margin-top:2.5rem">Compositing sweep — the mix-blend / dual-canvas layer</h2>
+      <p>
+        Drives the <strong>real <code>&lt;field-root&gt;</code></strong> (the homepage path): a dots field
+        plus the optional full-viewport <code>mix-blend-mode: screen</code> <code>grid</code> overlay. If
+        <code>overlay=grid</code> at <code>dprCap 2</code> tanks fps and <code>dprCap 1</code> recovers it,
+        the homepage's frame budget is compositing — and the DPR lever is real (validates the default drop).
+      </p>
+      <table hidden id="results-comp">
+        <thead><tr><th>overlay</th><th>dprCap</th><th>particles</th><th>fps (med)</th><th>fps p5</th><th>frame ms (med)</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -56,13 +69,14 @@
 <!-- top-level so Astro bundles it (resolves the bare @fundamental-engine import) rather than inlining it -->
 <script>
   import { createField } from '@fundamental-engine/vanilla';
+  import '@fundamental-engine/elements'; // registers <field-root> for the compositing sweep
 
       // Default grid spans light → heavy so one sweep shows both the vsync-capped regime and the wall.
       // Finding on an M1 Pro (DPR 2, dots): flat 120fps to ~4k particles, then a cliff — 42fps at 8k,
-      // 24fps at 16k. AND dprCap 1 vs 2 gave identical fps at the wall → the particle bottleneck is
-      // draw-call / CPU overhead (per-particle arc+fill), NOT pixel fill. So a batched draw (color-bucketed
-      // canvas or an instanced GPU backend) is the lever for particle-heavy scenes; DPR is the lever only
-      // for genuinely fill-bound layers (full-viewport heatmap / mix-blend compositing).
+      // 24fps at 16k. Then measured: dprCap 1 vs 2, color-bucketed batching, and arc→fillRect ALL gave
+      // identical fps at the wall — so the render is NOT the bottleneck at high count; the O(N) physics
+      // step() is (sim-bound). The one place DPR/compositing matters is the mix-blend/dual-canvas layer —
+      // that's the separate "compositing sweep" below (the real homepage path).
       const RENDER = ['dots', 'trails', 'streamlines'];
       const DPRCAP = [1, 2];
       const DENSITY = [4, 16, 64];
@@ -130,12 +144,59 @@
         runBtn.disabled = false; copyBtn.hidden = false;
       }
 
+      // ── Compositing sweep — the real <field-root> path (dots + optional mix-blend:screen grid overlay).
+      const compBtn = document.getElementById('run-comp');
+      const compTable = document.getElementById('results-comp');
+      const compBody = compTable.querySelector('tbody');
+      const compRows = [];
+      async function runCompositing() {
+        compBtn.disabled = true; runBtn.disabled = true; compBody.innerHTML = ''; compRows.length = 0;
+        compTable.hidden = false;
+        // one persistent field-root reconfigured per config (its overlay + dpr-cap are live attributes).
+        const root = document.createElement('field-root');
+        root.setAttribute('render', 'dots');
+        root.setAttribute('density', '2.4'); // the homepage density
+        root.setAttribute('waves', 'false');
+        root.setAttribute('grid-warp', '3');
+        root.setAttribute('grid-intensity', '0.5');
+        document.body.appendChild(root);
+        await sleep(700); // custom-element boot + first spawn ramp
+        const grid = [];
+        for (const ov of ['off', 'grid']) for (const d of [1, 2]) grid.push([ov, d]);
+        let i = 0;
+        for (const [ov, d] of grid) {
+          statusEl.textContent = `Compositing ${++i}/${grid.length}: overlay=${ov} dprCap=${d}…`;
+          root.setAttribute('overlay', ov);
+          root.setAttribute('dpr-cap', String(d));
+          await sleep(600);
+          const particles = root.particleCount?.() ?? 0;
+          const dts = await sampleFrames(SAMPLE_FRAMES);
+          const msMed = median(dts), fpsMed = 1000 / msMed, fpsP5 = 1000 / pctile(dts, 0.95);
+          compRows.push({ ov, d, particles, fpsMed, fpsP5, msMed });
+          const cls = fpsMed >= 55 ? 'good' : fpsMed >= 30 ? 'warn' : 'bad';
+          const tr = document.createElement('tr');
+          tr.className = cls;
+          tr.innerHTML = `<td>${ov}</td><td>${d}</td><td>${particles}</td>` +
+            `<td>${fpsMed.toFixed(0)}</td><td>${fpsP5.toFixed(0)}</td><td>${msMed.toFixed(2)}</td>`;
+          compBody.appendChild(tr);
+          await sleep(80);
+        }
+        root.remove();
+        statusEl.textContent = `Compositing done — ${grid.length} configs. DPR ${window.devicePixelRatio}, ${window.innerWidth}×${window.innerHeight}.`;
+        compBtn.disabled = false; runBtn.disabled = false; copyBtn.hidden = false;
+      }
+
       function toMarkdown() {
-        const head = `Fill-rate benchmark · DPR ${window.devicePixelRatio} · ${window.innerWidth}×${window.innerHeight} · ${navigator.userAgent}\n\n` +
-          '| render | dprCap | density | particles | fps med | fps p5 | ms med |\n|---|---|---|---|---|---|---|\n';
-        return head + rows.map((r) => `| ${r.render} | ${r.dprCap} | ${r.density} | ${r.particles} | ${r.fpsMed.toFixed(0)} | ${r.fpsP5.toFixed(0)} | ${r.msMed.toFixed(2)} |`).join('\n');
+        const head = `Fill-rate benchmark · DPR ${window.devicePixelRatio} · ${window.innerWidth}×${window.innerHeight} · ${navigator.userAgent}\n\n`;
+        let out = head;
+        if (rows.length) out += '| render | dprCap | density | particles | fps med | fps p5 | ms med |\n|---|---|---|---|---|---|---|\n' +
+          rows.map((r) => `| ${r.render} | ${r.dprCap} | ${r.density} | ${r.particles} | ${r.fpsMed.toFixed(0)} | ${r.fpsP5.toFixed(0)} | ${r.msMed.toFixed(2)} |`).join('\n') + '\n\n';
+        if (compRows.length) out += 'Compositing (field-root: dots + mix-blend grid overlay)\n\n| overlay | dprCap | particles | fps med | fps p5 | ms med |\n|---|---|---|---|---|---|\n' +
+          compRows.map((r) => `| ${r.ov} | ${r.d} | ${r.particles} | ${r.fpsMed.toFixed(0)} | ${r.fpsP5.toFixed(0)} | ${r.msMed.toFixed(2)} |`).join('\n');
+        return out;
       }
 
       runBtn.addEventListener('click', run);
+      compBtn.addEventListener('click', runCompositing);
       copyBtn.addEventListener('click', () => navigator.clipboard.writeText(toMarkdown()).then(() => { copyBtn.textContent = 'Copied ✓'; }));
 </script>
