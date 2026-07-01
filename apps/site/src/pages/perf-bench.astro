@@ -1,0 +1,135 @@
+---
+// /perf-bench — an on-HARDWARE fill-rate benchmark (dev tool; noindex, not in nav).
+// The Node bench (packages/core/bench) measures the engine's ALGORITHMIC cost. This measures the half
+// that actually gates the frame: FILL RATE — canvas compositing on the real GPU. It sweeps
+// render-mode × density × DPR, samples the true per-frame time via requestAnimationFrame while the field
+// runs, and reports median/p95 fps. Run it in a real browser (headless software-rasterizes and misleads).
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Fill-rate benchmark — Fundamental</title>
+    <style>
+      :root { color-scheme: dark; font: 15px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+      body { margin: 0; background: #07090d; color: #e6edf3; }
+      #field { position: fixed; inset: 0; z-index: 0; }
+      .panel { position: relative; z-index: 1; max-width: 60rem; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+      h1 { font-size: 1.4rem; }
+      p { opacity: 0.8; }
+      button { font: inherit; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;
+        background: #1c6feb; color: #fff; border: 0; }
+      button[disabled] { opacity: 0.5; cursor: default; }
+      table { border-collapse: collapse; width: 100%; margin-top: 1.5rem; background: #0b0e14cc; }
+      th, td { text-align: right; padding: 0.35rem 0.6rem; border-bottom: 1px solid #ffffff14; font-variant-numeric: tabular-nums; }
+      th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+      tr.bad td { color: #ff9b9b; } tr.warn td { color: #ffd479; } tr.good td { color: #86efac; }
+      #status { margin-top: 1rem; opacity: 0.75; min-height: 1.4em; }
+      #copy { background: #30363d; }
+      code { background: #ffffff14; padding: 0 0.3em; border-radius: 3px; }
+    </style>
+  </head>
+  <body>
+    <canvas id="field"></canvas>
+    <div class="panel">
+      <h1>Fill-rate benchmark</h1>
+      <p>
+        Measures the real per-frame cost on <strong>this GPU</strong> across render-mode × density × DPR —
+        the fill-rate half the Node suite can't see. Each config runs the live field for ~2&nbsp;s and
+        samples <code>requestAnimationFrame</code> deltas. Green ≥55&nbsp;fps · amber 30–55 · red &lt;30.
+      </p>
+      <p>Display DPR: <strong id="dpr">?</strong> · lower <code>dprCap</code> rows show the DPR lever.</p>
+      <button id="run">Run sweep</button>
+      <button id="copy" hidden>Copy results (markdown)</button>
+      <div id="status"></div>
+      <table hidden id="results">
+        <thead><tr><th>render</th><th>dprCap</th><th>density</th><th>particles</th><th>fps (med)</th><th>fps p5</th><th>frame ms (med)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </body>
+</html>
+
+<!-- top-level so Astro bundles it (resolves the bare @fundamental-engine import) rather than inlining it -->
+<script>
+  import { createField } from '@fundamental-engine/vanilla';
+
+      const RENDER = ['none', 'dots', 'trails', 'streamlines'];
+      const DPRCAP = [1, 2];
+      const DENSITY = [1, 3];
+      const SETTLE_MS = 400, SAMPLE_FRAMES = 110;
+
+      const dprEl = document.getElementById('dpr');
+      const runBtn = document.getElementById('run');
+      const copyBtn = document.getElementById('copy');
+      const statusEl = document.getElementById('status');
+      const table = document.getElementById('results');
+      const tbody = table.querySelector('tbody');
+      const canvas = document.getElementById('field');
+      dprEl.textContent = String(window.devicePixelRatio || 1);
+
+      const median = (xs) => { const s = [...xs].sort((a, b) => a - b); return s[Math.floor(s.length / 2)]; };
+      const pctile = (xs, q) => { const s = [...xs].sort((a, b) => a - b); return s[Math.floor(s.length * q)]; };
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+      // sample real frame deltas for `frames` rAF ticks while the field is live
+      function sampleFrames(frames) {
+        return new Promise((resolve) => {
+          const dts = [];
+          let last = performance.now();
+          const tick = (t) => {
+            dts.push(t - last); last = t;
+            if (dts.length >= frames) resolve(dts.slice(1)); // drop the first (warm) delta
+            else requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      }
+
+      async function runConfig(render, dprCap, density) {
+        const field = createField(canvas, { render, density, dprCap });
+        await sleep(SETTLE_MS); // spawn ramp + first measure cadence
+        const particles = field.particleCount?.() ?? 0;
+        const dts = await sampleFrames(SAMPLE_FRAMES);
+        field.destroy?.();
+        const msMed = median(dts);
+        const fpsMed = 1000 / msMed;
+        const fpsP5 = 1000 / pctile(dts, 0.95); // slow-frame tail → low fps
+        return { render, dprCap, density, particles, fpsMed, fpsP5, msMed };
+      }
+
+      const rows = [];
+      async function run() {
+        runBtn.disabled = true; copyBtn.hidden = true; tbody.innerHTML = ''; rows.length = 0;
+        table.hidden = false;
+        const grid = [];
+        for (const r of RENDER) for (const d of DPRCAP) for (const den of DENSITY) grid.push([r, d, den]);
+        let i = 0;
+        for (const [r, d, den] of grid) {
+          statusEl.textContent = `Running ${++i}/${grid.length}: render=${r} dprCap=${d} density=${den}…`;
+          const res = await runConfig(r, d, den);
+          rows.push(res);
+          const cls = res.fpsMed >= 55 ? 'good' : res.fpsMed >= 30 ? 'warn' : 'bad';
+          const tr = document.createElement('tr');
+          tr.className = cls;
+          tr.innerHTML = `<td>${r}</td><td>${d}</td><td>${den}</td><td>${res.particles}</td>` +
+            `<td>${res.fpsMed.toFixed(0)}</td><td>${res.fpsP5.toFixed(0)}</td><td>${res.msMed.toFixed(2)}</td>`;
+          tbody.appendChild(tr);
+          await sleep(80);
+        }
+        statusEl.textContent = `Done — ${grid.length} configs. DPR ${window.devicePixelRatio}, ${window.innerWidth}×${window.innerHeight}.`;
+        runBtn.disabled = false; copyBtn.hidden = false;
+      }
+
+      function toMarkdown() {
+        const head = `Fill-rate benchmark · DPR ${window.devicePixelRatio} · ${window.innerWidth}×${window.innerHeight} · ${navigator.userAgent}\n\n` +
+          '| render | dprCap | density | particles | fps med | fps p5 | ms med |\n|---|---|---|---|---|---|---|\n';
+        return head + rows.map((r) => `| ${r.render} | ${r.dprCap} | ${r.density} | ${r.particles} | ${r.fpsMed.toFixed(0)} | ${r.fpsP5.toFixed(0)} | ${r.msMed.toFixed(2)} |`).join('\n');
+      }
+
+      runBtn.addEventListener('click', run);
+      copyBtn.addEventListener('click', () => navigator.clipboard.writeText(toMarkdown()).then(() => { copyBtn.textContent = 'Copied ✓'; }));
+</script>
