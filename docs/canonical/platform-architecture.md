@@ -217,12 +217,60 @@ A `FieldHost` is **not** a "surface" — *Field Surfaces* is the visualization-p
 | native (Swift) | `swift/` | the view's bounds | a separate language port implementing the same contract conceptually (#423) |
 | native (Android) | `android/` | the view's bounds | a separate-language Kotlin port — the pure-`kotlin("jvm")` core (full 36-force surface + integrator) runs under a Jetpack Compose host (`FieldView` + `Modifier.fieldBody`), verified on-device |
 
-**The contract** (`FieldHost`): `root` (the scanned subtree), `viewport()` → `{ width, height, dpr,
-originX?, originY? }` (the optional origin is what makes a host container-local — `measureBodies` and the
-thread/move readouts subtract it), `scrollY()`, `scrollHeight()`, `reducedMotion()`, `hidden()`,
-`raf(cb)` / `cancelRaf(id)`, `createCanvas()` (the heatmap buffer), and the subscriptions
-`onResize` / `onScroll` / `onVisibility` / `onInput` / `onBodyEvent`. Authoring a new host = implementing
-those against your environment; the engine needs nothing else.
+### The minimum contract and the capability model
+
+The host is a **ladder, not a monolith**: there is a small required core and a set of optional
+capabilities the engine degrades around. `MinimalFieldHost` is the **smallest surface a host must
+supply** — two lanes:
+
+- **geometry** — `root` (the scanned subtree) and `viewport()` → `{ width, height, dpr, originX?,
+  originY? }` (the optional origin is what makes a host container-local — `measureBodies` and the
+  thread/move readouts subtract it): *where*, and in what coordinate space, the field lives.
+- **time** — `raf(cb)` / `cancelRaf(id)`: how frames are scheduled (a real `requestAnimationFrame`, a
+  manual `tick`, a native display link).
+
+`FieldHost extends MinimalFieldHost` and adds every other member as an **optional capability**:
+`scrollY()`, `scrollHeight()`, `reducedMotion()`, `hidden()`, `createCanvas()` (the heatmap buffer),
+and the subscriptions `onResize` / `onScroll` / `onVisibility` / `onInput` / `onBodyEvent`. When a
+capability is absent the engine degrades gracefully rather than failing: **scroll → 0**, **reduced-motion
+/ hidden → `false`** (never auto-pauses), **subscriptions → no-op** (never re-reads on resize, takes no
+DOM body events — programmatic `addBody` still works), and a **drawing mode that needs `createCanvas`
+throws a clear error** (signals-first `render: 'none'` never calls it). So a host that supplies only the
+four required members runs the full simulation + feedback pipeline **headlessly** — it just never
+scrolls, never auto-pauses, and cannot draw a heatmap.
+
+`hostCapabilities(host)` reports which optional lanes a given host provides (`{ geometry, time, scroll,
+canvas, reducedMotion, visibility, events, bodyEvents }`), and `defineHost(minimal & partial)` builds a
+full `FieldHost` from a minimal host plus whatever capabilities you choose, filling no-op defaults for
+the rest — the sanctioned way to author a host without hand-writing the subscription boilerplate. This
+is a **widening** of the contract: every existing host (`browserHost`, `containerHost`, `headlessHost`,
+`threeHost`) still satisfies it unchanged; a new host only has to implement the four required members.
+
+Authoring a new host = implementing the required core against your environment, plus whatever optional
+capabilities that environment can offer; the engine needs nothing else.
+
+### Host conformance — the third parity/testing category
+
+Alongside **API-surface parity** (the frozen public surface exists on every plane) and **mathematical
+conformance** (the shared cross-plane golden at `depth: 0`), a host is checked for **host conformance**:
+*does this environment adapter supply the capabilities the field expects, and degrade cleanly where it
+does not?* The checklist:
+
+| Question | Capability | Absent ⇒ |
+|---|---|---|
+| Provides geometry? | `root` + `viewport()` | **required** — a host without it is not a host |
+| Ticks time? | `raf` / `cancelRaf` | **required** |
+| Reports scroll? | `scrollY` / `scrollHeight` | scroll readouts read 0 |
+| Accepts a heatmap canvas? | `createCanvas` | heatmap draw modes throw; `render: 'none'` unaffected |
+| Honors reduced motion? | `reducedMotion` | motion always allowed |
+| Auto-pauses when hidden? | `hidden` / `onVisibility` | the loop never auto-pauses |
+| Emits events? | `onResize` / `onScroll` / `onInput` / `onBodyEvent` | no resize/scroll/input signals |
+| Relays DOM body events? | `onBodyEvent` | programmatic bodies only (`addBody`) |
+| Preserves an a11y equivalent? | host-specific | the embedder wires ARIA/semantics on its plane |
+
+`hostCapabilities(host)` is the machine-readable form of this checklist; the graceful-degradation floor
+is pinned by `packages/core/src/core/minimal-host.test.ts` (a field runs against a host with **none** of
+the optional capabilities).
 
 **The boundary holds.** `FieldHost` is pure types in core (zero DOM); the implementations live in the
 environment packages (`@fundamental-engine/dom`, `@fundamental-engine/three`), so the `core ↛ dom ↛

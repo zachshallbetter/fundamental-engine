@@ -26,25 +26,25 @@ export function browserHost(): FieldHost {
     raf: (cb) => requestAnimationFrame(cb),
     cancelRaf: (id) => cancelAnimationFrame(id),
     createCanvas: () => document.createElement('canvas'),
-    onResize: (cb) => {
+    onResize: (cb: () => void) => {
       window.addEventListener('resize', cb, { passive: true });
       return () => window.removeEventListener('resize', cb);
     },
-    onScroll: (cb) => {
+    onScroll: (cb: () => void) => {
       window.addEventListener('scroll', cb, { passive: true });
       return () => window.removeEventListener('scroll', cb);
     },
-    onVisibility: (cb) => {
+    onVisibility: (cb: () => void) => {
       document.addEventListener('visibilitychange', cb);
       return () => document.removeEventListener('visibilitychange', cb);
     },
-    onInput: (cb) => {
+    onInput: (cb: () => void) => {
       for (const ev of INPUT_EVENTS) window.addEventListener(ev, cb, { passive: true });
       return () => {
         for (const ev of INPUT_EVENTS) window.removeEventListener(ev, cb);
       };
     },
-    onBodyEvent: (type, cb) => {
+    onBodyEvent: (type: string, cb: (e: Event) => void) => {
       document.addEventListener(type, cb);
       return () => document.removeEventListener(type, cb);
     },

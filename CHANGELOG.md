@@ -9,6 +9,18 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **`MinimalFieldHost` + a host capability model.** `MinimalFieldHost` is the
+  smallest surface a host must supply — `root` + `viewport()` (geometry) and `raf()`/`cancelRaf()` (time).
+  `FieldHost` now `extends MinimalFieldHost` with every other member (`scrollY`, `scrollHeight`,
+  `reducedMotion`, `hidden`, `createCanvas`, `onResize`/`onScroll`/`onVisibility`/`onInput`/`onBodyEvent`)
+  marked **optional**: absent capabilities degrade gracefully (scroll → 0, reduced-motion/hidden → `false`,
+  subscriptions → no-op; a drawing mode needing `createCanvas` throws a clear error, `render: 'none'` never
+  calls it), so a host with only the four required members runs the full simulation + feedback pipeline
+  headlessly. New `hostCapabilities(host)` → `HostCapabilities` inspects which optional lanes a host provides
+  (**host conformance** — the third parity category beside API-surface parity and mathematical conformance),
+  and `defineHost(minimal & partial)` builds a full `FieldHost` with no-op subscription defaults. Purely
+  additive and a **widening** of the (frozen) `FieldHost` type — every existing host (`browserHost`,
+  `containerHost`, `headlessHost`, `threeHost`) still satisfies it unchanged. Swift/Kotlin ports follow.
 - **`@fundamental-engine/core`:** first-class **body identity** — a stable, structured `FieldBodyIdentity`
   (`{ id, namespace?, kind?, host? }`) for every body, so `query`/`snapshot`/`diff`/`replay`/relationships
   reference bodies by identity instead of object reference or display text. Supply it via
