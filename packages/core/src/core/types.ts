@@ -236,6 +236,10 @@ export interface Body {
   warpHas?: boolean;
   /** source mass M for `gravity`/`charge` (§20.10/§21). */
   M: number;
+  /** INERTIAL mass (substrate momentum, #872) — how hard the body is to *move*, distinct from `M` (how
+   *  strongly it *emits*). Undefined ⇒ nominal 1 ⇒ byte-identical. Populated (∝ rendered area, clamped)
+   *  only under `mass: 'area'`; the dynamic-body recoil integrator divides by `inertia ?? M`. */
+  inertia?: number;
   cx: number;
   cy: number;
   hw: number;
@@ -572,8 +576,9 @@ export interface FieldOptions {
    *  particles drifting along the visible flow, with no separate front surface and no
    *  `mix-blend`, so it stays a single cheap layer). */
   render?: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none';
-  /** first-class mass (§21.3): when true, particle mass ∝ size and body forces
-   *  accelerate by `a = F/m` (heavier matter moves less). Default false (unit mass). */
+  /** first-class mass (§21.3): when true, particle mass ∝ size and body forces accelerate by `a = F/m`
+   *  (heavier matter moves less). Also gives DYNAMIC bodies inertial mass ∝ rendered area (#872), so a
+   *  big heading recoils slowly and a small tag snaps. Default false (unit mass, byte-identical). */
   mass?: boolean;
   /** strength of particle-to-particle separation/repulsion force (0 to 1, default 0). */
   separation?: number;

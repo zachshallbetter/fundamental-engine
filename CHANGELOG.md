@@ -22,6 +22,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **first-class body inertial mass** (substrate momentum, #872). The
+  existing `mass` option (§21.3, particle mass ∝ size) now also gives **dynamic bodies** an inertial mass
+  ∝ rendered area (`Body.inertia = clamp(sqrt(area/ref), 0.4, 4)`), and `moveDynamicBodies` recoils by
+  `a = F/(inertia ?? M)` — so a big heading settles slowly and overshoots while a small tag snaps. This
+  also fixes a latent conflation: recoil previously scaled by the source mass `M` (force *strength*),
+  which is backwards; it now uses real inertial mass when `mass` is on. `mass` off ⇒ `inertia` undefined
+  ⇒ **byte-identical** (recoil falls back to `M`). Measured: under `mass`, a light body recoils >1.5× a
+  heavy one. **Experimental.** The `sqrt`+clamp curve keeps typical masses near 1, minimizing recipe churn.
+
+
 - **`@fundamental-engine/core`:** **coupling passports + the `field/no-dimension-coupling-without-passport`
   lint** (substrate governance 05, roadmap 6). `ForcePassport` gains `couplesDimensions?: readonly
   string[]` — the dimensions a force cross-links. `lintDimensionCoupling()` reports any force that

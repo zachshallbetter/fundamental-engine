@@ -360,6 +360,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // kinematic bodies are never touched, so with no dynamic bodies this loop is a no-op.
   const BODY_FRICTION = 0.9; // heavier than particle FRICTION so dynamic bodies settle, not drift forever
   const MAX_BODY_SPEED = 8; // px/frame cap — keeps a dynamic body from flinging off under a strong well
+  const MASS_REF_AREA = 4800; // px² reference (~120×40 body) → inertia 1; sqrt+clamp keeps the range sane (#872)
   function moveDynamicBodies(): void {
     for (const b of bodies) {
       if (b.authority !== 'dynamic' || !b.vis) continue;
@@ -376,7 +377,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // doesn't recoil from its own singular centre).
       const others = bodies.filter((o) => o !== b && o.vis && o.tokens.length > 0);
       const { fx, fy } = forceAt(others, reg.forces, env, bx, by);
-      const invM = 1 / Math.max(b.M, 1e-4);
+      // INERTIAL mass (#872): under first-class `mass`, a body's resistance to motion ∝ rendered area
+      // (sqrt, clamped) — a big heading settles slowly, a small tag snaps. Otherwise inertia stays
+      // undefined and recoil falls back to the source mass M (today's behavior, byte-identical). a = F/inertia.
+      if (cfg.mass) {
+        const area = b.hw * 2 * (b.hh * 2);
+        b.inertia = Math.min(4, Math.max(0.4, Math.sqrt(area / MASS_REF_AREA)));
+      }
+      const invM = 1 / Math.max(b.inertia ?? b.M, 1e-4);
       let vx = (b.bvx ?? 0) + fx * invM * env.dt;
       let vy = (b.bvy ?? 0) + fy * invM * env.dt;
       vx *= BODY_FRICTION;
