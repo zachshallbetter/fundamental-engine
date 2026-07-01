@@ -22,7 +22,8 @@ const feedback = `<!-- 1. opt the element in -->
 <style>
   h1 {
     /* the engine eases this in ∈ [0,1]; default it yourself so it renders before
-       the first write. --field-density is primary; --d is the compact alias. */
+       the first write. --d is the canonical raw density channel; --field-density is
+       its field-namespaced form. */
     font-variation-settings: 'wght' calc(380 + var(--field-density, 0) * 420);
   }
 </style>`;
@@ -101,7 +102,8 @@ field.destroy();             // stops the loop, releases listeners, frees GPU + 
       Density write-back is opt-in. The element needs <code>data-feedback</code>, and your CSS
       should default <code>--field-density</code> (via the <code>var(--field-density, 0)</code>
       fallback) so it renders before the first write. The value is low-pass filtered (~0.2s), so it
-      eases rather than jumps. (The compact <code>--d</code> is written too, as a compatibility alias.)
+      eases rather than jumps. (<code>--field-density</code> is the field-namespaced form of the
+      canonical raw channel <code>--d</code>; both hold the same value.)
     </p>
     <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: feedback }]} />
     <div class="callout">

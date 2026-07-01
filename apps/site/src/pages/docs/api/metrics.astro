@@ -15,8 +15,8 @@ const METRIC_DOCS: Record<string, { range: string; written: string; summary: str
   '--field-density': {
     range: '0–1',
     written: 'every frame',
-    summary: 'Eased fraction of nearby matter gathered at this body. The primary field intensity signal — high density means the body is a convergence point.',
-    use: 'Drive visual weight, font size, bloom, or z-elevation. The most reliable general-purpose readback.',
+    summary: 'Eased fraction of nearby matter gathered at this body. The primary field intensity signal — high density means the body is a convergence point. The canonical raw channel is `--d`; `--field-density` is its longer, field-namespaced form (both hold the same value).',
+    use: 'Drive visual weight, font size, bloom, or z-elevation. The most reliable general-purpose readback. Read `--d` for the raw live value; use `--field-density` when readability or field-namespaced CSS is clearer.',
   },
   '--field-attention': {
     range: '0–1',
@@ -133,6 +133,12 @@ const ALL = [...PRIMARY, ...SECONDARY];
       When the field runs, each registered body receives its own set of <code>--field-*</code> properties
       on its <code>style</code> attribute. Because they are scoped to the element, you can read them in CSS
       with <code>var(--field-density)</code> — no need to query the handle or listen for events.
+    </p>
+    <p>
+      The canonical raw density channel is <code>--d</code>. The longer, field-namespaced form is
+      <code>--field-density</code> — both carry the same value. Reach for <code>--d</code> when you want the
+      raw live density value; reach for <code>--field-density</code> when readability or field-namespaced CSS
+      is clearer.
     </p>
     <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: cssWeightExample }]} />
     <p>

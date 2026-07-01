@@ -46,9 +46,8 @@ const reciprocity = `<h1 data-body="attract" data-range="320" data-feedback>Fund
 
 <style>
   h1 {
-    /* the engine eases this in, density ∈ [0,1]. --field-density is the primary
-       variable; --d is the compact compatibility alias (both are written). */
-    --d: var(--field-density, 0);
+    /* the engine eases this in, density ∈ [0,1]. --d is the canonical raw density
+       channel; --field-density is its field-namespaced form (both are written). */
     font-variation-settings: 'wght' calc(380 + var(--field-density, 0) * 420);
     text-shadow: 0 0 calc(var(--field-density, 0) * 36px) rgba(77, 163, 255, var(--field-density, 0));
   }
@@ -143,9 +142,9 @@ document.addEventListener('click', (e) => field.burst(e.clientX, e.clientY));`;
     <h2>4. Make the type react</h2>
     <p>
       This is the payoff. Add <code>data-feedback</code> and the field writes the density it
-      gathered back to your element as <code>--field-density</code> (∈ [0, 1], low-pass filtered so it
-      eases; the compact <code>--d</code> is written too as an alias). Drive weight and glow from it —
-      the word grows where matter collects.
+      gathered back to your element as <code>--d</code>, the canonical raw density channel (∈ [0, 1],
+      low-pass filtered so it eases; the field-namespaced <code>--field-density</code> holds the same
+      value). Drive weight and glow from it — the word grows where matter collects.
     </p>
     <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: reciprocity }]} />
     <div class="callout">

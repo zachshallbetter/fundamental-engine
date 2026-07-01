@@ -21,12 +21,12 @@ cx = (rect.left + rect.width / 2) * DPR
 cy = (rect.top  + rect.height / 2) * DPR
 
 // write phase — field → DOM (platform FeedbackRegistry, per data-feedback body)
-element.style.setProperty('--field-density', density)   // d ∈ [0, 1]
-// (the compact --d is written too, as an alias)`;
+element.style.setProperty('--d', density)   // d ∈ [0, 1], canonical raw channel
+// (the field-namespaced --field-density is written too, same value)`;
 
 const feedbackSnippet = `.headline {
-  /* the field writes --field-density; CSS turns density into weight + glow.
-     --d is a compact legacy alias; new code should prefer --field-density. */
+  /* the field writes the density channel; CSS turns density into weight + glow.
+     --d is the canonical raw channel; --field-density is its field-namespaced form. */
   font-variation-settings: 'wght' calc(380 + var(--field-density, 0) * 420);
   text-shadow: 0 0 calc(var(--field-density, 0) * 40px) rgba(77, 163, 255, var(--field-density, 0));
 }`;
@@ -131,8 +131,8 @@ const DEMOS = [
       <strong>Read (geometry in):</strong> any DOM change — reflow, transform, resize — is an
       instantaneous change to the force geometry, so animating the DOM animates the runtime for free.
       <strong>Write (feedback out):</strong> the field samples how much matter pooled on each
-      <code>data-feedback</code> body and writes it back as <code>--field-density</code> (with the
-      compact <code>--d</code> as an alias).
+      <code>data-feedback</code> body and writes it back as <code>--d</code> (with the field-namespaced
+      <code>--field-density</code> holding the same value).
     </p>
   </section>
 
@@ -140,9 +140,10 @@ const DEMOS = [
     <h2>Reciprocity &amp; <code>--field-density</code></h2>
     <p>
       Reciprocity is the payoff. Opt a body in with <code>data-feedback</code> and the FeedbackRegistry
-      eases the gathered density into a CSS custom property <code>--field-density</code> ∈ [0, 1] on the
-      element (the compact <code>--d</code> is written alongside it as an
-      alias). Your styles turn that number into anything — weight, glow, scale, color:
+      eases the gathered density into a CSS custom property <code>--d</code> ∈ [0, 1] on the
+      element — the canonical raw density channel (its field-namespaced form <code>--field-density</code>
+      is written alongside it, same value). Your styles turn that number into anything — weight, glow,
+      scale, color:
     </p>
     <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: feedbackSnippet }]} />
     <p>
