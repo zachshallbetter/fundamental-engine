@@ -82,14 +82,14 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
     <div class="field" aria-hidden="true" transition:persist></div>
     <field-root
       render="dots"
-      overlay={isHome ? "grid" : "off"}
+      overlay="off"
       grid-warp="3"
       grid-intensity="0.5"
       accent="#4da3ff"
       density="2.4"
       waves="false"
       data-nav-flow="off"
-      data-nav-grid={isHome ? "on" : "off"}
+      data-nav-grid="off"
       data-nav-heatmap="off"
       transition:persist
     ></field-root>
@@ -133,8 +133,8 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
         if (field) {
           const isHome = !!document.querySelector('.manual-shell');
           if (isHome) {
-            field.dataset.navGrid = 'on';
-            field.setOverlay?.('grid');
+            field.dataset.navGrid = 'off';
+            field.setOverlay?.('off');
           } else {
             field.dataset.navGrid = 'off';
             field.dataset.navFlow = 'off';
