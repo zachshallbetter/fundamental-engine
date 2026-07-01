@@ -24,7 +24,8 @@ for (const row of list.querySelectorAll('li')) {
   row.addEventListener('pointerleave', () => row.dataset.active = '0');
 }`;
 
-const css = `/* the field wrote --field-density (alias --d) onto each [data-feedback] row.
+const css = `/* the field wrote --d (the canonical raw density channel; --field-density is
+   its field-namespaced form) onto each [data-feedback] row.
    read it to turn density into presence — weight, lift, glow. No canvas involved. */
 .inbox li {
   font-weight: calc(400 + var(--d, 0) * 360);
@@ -50,8 +51,9 @@ const css = `/* the field wrote --field-density (alias --d) onto each [data-feed
 
   <p>
     Hover or tab through the rows. Each is a <code>[data-body]</code>; the contained field gathers its
-    invisible matter toward them and writes the local density back as <code>--field-density</code>
-    (<code>--d</code>). Important rows are visibly heavier; engaging one pulls the field toward it.
+    invisible matter toward them and writes the local density back as <code>--d</code>
+    (the field-namespaced <code>--field-density</code> holds the same value). Important rows are visibly
+    heavier; engaging one pulls the field toward it.
     There is no <code>&lt;canvas&gt;</code> on this page — the field is pure signal.
   </p>
 

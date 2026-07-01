@@ -26,7 +26,8 @@ const handle = `const heat = field.addField('heat', summerMap);  // FieldChannel
 heat.set(winterMap);   // swap the sampler live — a season changes the map
 heat.remove();         // unregister; sampleField('heat', …) returns 0 again`;
 
-const amplify = `/* --d (alias of --field-density) rests small by design — fractions of 1.
+const amplify = `/* --d (the canonical raw density channel; --field-density is its
+   field-namespaced form) rests small by design — fractions of 1.
    Scale it into a usable range in CSS; don't bake per-app magic numbers into
    every consumer. clamp() gives a calm floor and a hard ceiling. */
 [data-feedback] {
@@ -127,10 +128,10 @@ const amplify = `/* --d (alias of --field-density) rests small by design — fra
     <h2>Reading <code>--d</code>: the density signal and how to scale it</h2>
     <p>
       The complement to a channel you <em>read</em> is the density the field <em>writes back</em>. Every
-      <code>data-feedback</code> body receives its locally gathered density as
-      <code>--field-density</code> — and as <code>--d</code>, the compact alias for the
-      <strong>same value</strong> (both are written every frame, three decimals). It is the live
-      reciprocal signal: matter gathers on a body, the body's <code>--d</code> rises, your CSS reacts.
+      <code>data-feedback</code> body receives its locally gathered density as <code>--d</code> — the
+      canonical raw density channel — and as <code>--field-density</code>, the longer, field-namespaced
+      form of the <strong>same value</strong> (both are written every frame, three decimals). It is the
+      live reciprocal signal: matter gathers on a body, the body's <code>--d</code> rises, your CSS reacts.
     </p>
     <div class="callout">
       <b>Resting <code>--d</code> is small by design.</b> The value is an eased density in

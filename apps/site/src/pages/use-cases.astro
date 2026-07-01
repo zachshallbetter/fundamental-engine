@@ -138,8 +138,8 @@ const ctaCode = `<field-root render="dots"></field-root>
         <p>
           Since the signals-first change, the field's default render mode is <code>'none'</code>.
           No canvas. No particles. The full simulation runs and writes its results
-          as CSS variables — <code>--field-density</code>, <code>--d</code>,
-          <code>--load</code> — to every <code>[data-feedback]</code> element.
+          as CSS variables — <code>--d</code> (with <code>--field-density</code> as its
+          field-namespaced form), <code>--load</code> — to every <code>[data-feedback]</code> element.
           Your existing CSS consumes them.
         </p>
         <p class="uc-thesis" data-body="attract" data-strength="0.8" data-range="320" data-feedback style="--d:0">
