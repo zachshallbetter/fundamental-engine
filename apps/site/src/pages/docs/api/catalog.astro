@@ -7,12 +7,12 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 ---
 
 <DocsLayout
-  title="Fundamental — Conditions, formations & modes"
-  description="The orthogonal axes: conditions (when a force acts), formations (a global field bias), render modes (how the field draws), and the accent palettes."
+  title="Fundamental — Conditions, global formation modes & render modes"
+  description="The orthogonal axes: conditions (when a force acts), global formation modes (a whole-field bias), render modes (how the field draws), and the accent palettes."
 >
   <header class="docs-hero">
     <p class="kicker">API reference</p>
-    <h1>Conditions, formations &amp; <span class="accent">modes</span></h1>
+    <h1>Conditions, global formation modes &amp; <span class="accent">render modes</span></h1>
     <p class="lede">
       The dimensions that shape the field independently of the forces themselves — <em>when</em> a
       force acts, a bias on <em>every</em> particle, how the field is <em>drawn</em>, and its color.
@@ -38,10 +38,11 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   </section>
 
   <section class="docs-sec">
-    <h2>Formations</h2>
+    <h2>Global formation modes</h2>
     <p>
-      A formation is a single global bias on every particle at once. Switch it live with
-      <code>field.setFormation(name)</code>.
+      A global formation mode is a single whole-field bias applied to particles and field matter.
+      Switch it live with <code>field.setFormation(name)</code>. This is <strong>not</strong> a Field
+      Formation — a Field Formation is an authored arrangement represented by a FieldRecipe.
     </p>
     <dl class="api-table">
       {

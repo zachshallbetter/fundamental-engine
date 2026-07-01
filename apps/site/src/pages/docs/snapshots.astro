@@ -14,14 +14,19 @@ const families = ['canonical', 'natural', 'extended'] as const;
 ---
 
 <DocsLayout
-  title="Fundamental — Snapshot reference"
-  description="Deterministic snapshot fingerprints for every force scenario — particle count, mean speed, and mean heat at the final frame — the regression baseline that catches physics drift."
+  title="Fundamental — Force regression snapshots"
+  description="Deterministic force-scenario fingerprints for every force — particle count, mean speed, and mean heat at the final frame — the regression baseline that catches physics drift. Not the same as FieldSnapshot."
 >
-  <h1>Snapshot reference</h1>
+  <h1>Force regression snapshots</h1>
   <p class="lede">
     Every force scenario, run through the real engine and reduced to a deterministic fingerprint.
     These are the regression baseline: re-run them and any change in the numbers is a change in the
     physics. Captured at build time via <code>captureSnapshot()</code>.
+  </p>
+  <p class="callout-note">
+    <strong>Not the same as <code>FieldSnapshot</code>.</strong> <code>FieldSnapshot</code> captures
+    live field state for <code>query</code>/<code>diff</code>/<code>replay</code>; these regression
+    snapshots fingerprint force scenarios for test stability.
   </p>
 
   {families.map((fam) => (
@@ -52,6 +57,7 @@ const families = ['canonical', 'natural', 'extended'] as const;
 
 <style>
   .lede { color: var(--muted, #9aa); max-width: 62ch; }
+  .callout-note { max-width: 62ch; margin-top: 0.9rem; padding: 0.7rem 0.9rem; border: 1px solid var(--line, #2a2a35); border-radius: 6px; font-size: 0.9rem; color: var(--muted, #9aa); }
   section { margin-top: 1.5rem; }
   section h2 { text-transform: capitalize; font-size: 1.1rem; }
   .table-scroll { overflow-x: auto; }

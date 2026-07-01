@@ -115,7 +115,7 @@ export const DOCS_NAV: DocGroup[] = [
       { href: '/docs/showcase', label: 'Showcase', ready: true },
       { href: '/docs/diagnostics', label: 'Diagnostic overlays', ready: true },
       { href: '/docs/inspector', label: 'Inspector', ready: true },
-      { href: '/docs/snapshots', label: 'Snapshot viewer', ready: true },
+      { href: '/docs/snapshots', label: 'Force regression snapshots', ready: true },
       { href: '/docs/accessibility-preview', label: 'Accessibility preview', ready: true },
     ],
   },
