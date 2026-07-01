@@ -28,6 +28,7 @@ host, not the boundary. Canvas is one render surface, not the whole system.
 | [`platform-architecture.md`](platform-architecture.md) | The platform layer: the six registries, the six-phase scheduler, the runtime (attachHandle, QualityGovernor), linting |
 | [`agent-consumption-model.md`](agent-consumption-model.md) | How consumers (particles, DOM elements, event sinks, visual layers) read one influence differently; Body Matter Interaction → Sink/Accretion |
 | [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | The agent model: element, relationship, user, layout, and data agents |
+| [`body-lifecycle.md`](body-lifecycle.md) | The body lifecycle for non-DOM / programmatic bodies (declare → measure → participate → … → remove); DOM vs synthetic/data bodies; stable identity across the life |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Render + diagnostic methods, and **Surfaces & Placement** (underlay / overlay / typographic) |
 | [`invisible-fields.md`](invisible-fields.md) | The typographic (invisible) placement: two-field page architecture, live channels, engagement contracts, declared relationships, data provenance |
 | [`time.md`](time.md) | Time in the field: the three clocks (simulation / experiential / world), the five time senses, the temporal kernels, the `data-field-at` contract |

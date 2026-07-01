@@ -5,7 +5,7 @@ Created by Zach Shallbetter (zachshallbetter.com).
 Source: docs/canonical/, the site documentation pages (apps/site/src/pages/docs/), and the
 recipe catalog (data/recipes.json) in https://github.com/zachshallbetter/fundamental-engine
 Generated: 2026-07-01 by apps/site/scripts/gen-llms.mjs
-Canonical docs: 29 · documentation pages: 48 · recipes: 64
+Canonical docs: 30 · documentation pages: 48 · recipes: 64
 
 Three sections, in order: (1) the project's CANONICAL documents — the authority on concepts,
 terminology, and contracts; (2) the authored prose of the SITE DOCUMENTATION pages (the
@@ -46,6 +46,7 @@ host, not the boundary. Canvas is one render surface, not the whole system.
 | [`platform-architecture.md`](platform-architecture.md) | The platform layer: the six registries, the six-phase scheduler, the runtime (attachHandle, QualityGovernor), linting |
 | [`agent-consumption-model.md`](agent-consumption-model.md) | How consumers (particles, DOM elements, event sinks, visual layers) read one influence differently; Body Matter Interaction → Sink/Accretion |
 | [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | The agent model: element, relationship, user, layout, and data agents |
+| [`body-lifecycle.md`](body-lifecycle.md) | The body lifecycle for non-DOM / programmatic bodies (declare → measure → participate → … → remove); DOM vs synthetic/data bodies; stable identity across the life |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Render + diagnostic methods, and **Surfaces & Placement** (underlay / overlay / typographic) |
 | [`invisible-fields.md`](invisible-fields.md) | The typographic (invisible) placement: two-field page architecture, live channels, engagement contracts, declared relationships, data provenance |
 | [`time.md`](time.md) | Time in the field: the three clocks (simulation / experiential / world), the five time senses, the temporal kernels, the `data-field-at` contract |
@@ -1073,6 +1074,133 @@ This list records the build order, all of which has now shipped (file pointers b
 ```
 
 ========================================================================
+FILE: body-lifecycle.md
+========================================================================
+
+> **Status: canonical.**
+> The lifecycle a body passes through — from declaration to removal — stated for **programmatic /
+> non-DOM bodies** (added via `addBody`, e.g. on a headless [`MinimalFieldHost`](platform-architecture.md),
+> or over data records), so non-DOM usage is *official*, not bolted on. DOM bodies have this same
+> lifecycle *implicitly* (the scanner runs it); this doc makes it explicit for bodies with no element to
+> rescan. Follows the [status rule](documentation-standards.md): nothing here is called shipped unless
+> code confirms it (`packages/core/src/core/types.ts` — `BodySpec`/`BodyHandle`; `field.ts` — `addBody`).
+
+# Body lifecycle
+
+A **body** is any element or object that becomes a participant in the field — it bends the field, and
+the field's local density bends it back (reciprocity). The engine imports zero DOM, so a body is never
+*intrinsically* a DOM node: the DOM adapter is one way bodies enter the field, and `addBody` is another.
+Both produce the same kind of participant and pass through the same lifecycle.
+
+> **Terminology (locked, see [documentation-standards.md](documentation-standards.md)):** a *data body*
+> is a body whose host object is a semantic record (a claim / task / file); `body.data` is opaque
+> metadata attachable to *any* body — attaching `data: {…}` does not by itself make a body a data body.
+
+## The general lifecycle
+
+Every body — DOM or programmatic — moves through seven phases:
+
+| Phase | What happens |
+|---|---|
+| **declare** | The body is introduced to the field and given a stable [identity](substrate-api.md#query--queryq-fieldqueryresult). DOM: discovered by the scanner from `[data-body]`. Programmatic: `field.addBody(spec)` returns a `BodyHandle`. |
+| **measure** | The body's box is resolved in **field space**. DOM: `getBoundingClientRect()` each rescan. Programmatic: the supplied `rect()` thunk is sampled each frame. |
+| **participate** | The body's tokens emit force into the field — it bends the field (`sample(x, y)` near it reads a force toward/around it). |
+| **receive** | Reciprocity: the field's local density is written back to the body as feedback channels (`--load`, `--field-*`, `--d` on a DOM body; the `onFeedback` callback / `handle.channels` on a programmatic one). |
+| **project** | Body state is *revealed* through a registered [projection](substrate-api.md#projection-registry--fieldprojections-a-property) — CSS, a DOM attribute, agent-readable JSON. A projection reveals; it never writes back into the field. |
+| **snapshot** | The body is captured — `query()` reads it live; `snapshot()`/`diff()`/`replay()` capture and compare it across frames. All key on the body's stable `identity.id`. |
+| **remove** | The body leaves the field. DOM: the scanner drops it when the element leaves the tree on the next rescan. Programmatic: `handle.remove()` — after which it exerts no force. |
+
+`participate` → `receive` repeat every frame for the body's whole life; `project` and `snapshot` are
+read-side taps that never mutate the body. `declare` and `remove` are the endpoints.
+
+## The data / headless-host variant
+
+The same lifecycle, told over a **data record** on a headless host (no canvas, no DOM — the
+[`MinimalFieldHost`](platform-architecture.md) floor of geometry + time is enough):
+
+1. **record enters the field** — a semantic record (claim / task / file / mesh) is declared as a body via
+   `addBody`, carrying the record on `spec.data` and a stable `identity`.
+2. **rect / provider resolves** — the body has no element, so it supplies its own geometry: `spec.rect()`
+   is a thunk the host projects its record/mesh/view position through, sampled each frame.
+3. **relationships attach** — edges between bodies (`addEdge`) key on identity, so a data body wires to
+   others by `identity.id`, not by object reference.
+4. **metrics update** — the body participates and receives: its per-body feedback arrives on the
+   `onFeedback` callback (or `handle.channels`), demultiplexed from the global sink.
+5. **query reads** — a software agent reads the live body through `query()` (identity, rect, tokens,
+   metrics, authority) — read-only; reading never changes the field.
+6. **snapshot captures** — `snapshot()` freezes the body (opt into `includeData` to carry its record);
+   `diff()`/`replay()` narrate how it changed, all keyed on `identity.id`.
+7. **body leaves the field** — `handle.remove()` retires it; the record's field participation ends.
+
+```ts
+const claim = field.addBody({
+  tokens: ['attract'],
+  identity: { id: 'claim-3', namespace: 'evidence', kind: 'claim' },
+  rect: () => projectRecordBox(record),   // record → field space, sampled each frame
+  data: record,                            // the semantic host object → a *data body*
+  onFeedback: (ch) => applyDensityToRecord(record, ch),
+});
+// …live for many frames: query()/snapshot() read it by identity…
+claim.remove();                            // record leaves the field
+```
+
+## Identity is assigned at declare, and MUST be stable for the whole life
+
+Identity is a **first-class, structured key** — not display text, not an object reference:
+
+```ts
+interface FieldBodyIdentity {
+  id: string;          // stable primary key — unique in the field, constant for the body's life
+  namespace?: string;  // optional grouping (app/module); opaque to the engine
+  kind?: string;       // optional type tag ('card', 'claim', 'agent'); opaque
+  host?: string;       // optional owner tag; opaque
+}
+```
+
+It is fixed at **declare** and must not change through `measure`/`participate`/`receive`/`project`/
+`snapshot`/`remove`, because **`snapshot`/`diff`/`replay` and relationships all key on `identity.id`**.
+If the id shifted mid-life, a diff would read as *remove old + add new* and causal replay would lose the
+thread. Rules:
+
+- **Supply it at declare.** `addBody({ identity })` takes a `FieldBodyIdentity` (a bare string is
+  shorthand for `{ id }`). This is the norm for data bodies — the record already has a stable key.
+- **Or let the engine derive one — deterministically.** With no supplied identity the engine assigns a
+  stable synthetic id (a monotonic `body-N`, **never** `Math.random`), so identity is always present.
+- **Words are not identity.** A claim's text can change while its identity holds; a DOM `id` is one
+  *source* of a stable id, not the concept itself.
+
+Full contract: [substrate-api.md → identity](substrate-api.md#query--queryq-fieldqueryresult).
+
+## DOM body vs synthetic / data body
+
+The lifecycle is identical; the **measure** phase is where the two diverge:
+
+| | **DOM body** | **Synthetic / data body** |
+|---|---|---|
+| Enters via | the scanner, from `[data-body]` | `field.addBody(spec)` → `BodyHandle` |
+| Geometry source | measured from the element (`getBoundingClientRect`) each rescan | the supplied `rect()` thunk, sampled each frame — **no element to rescan** |
+| Coordinate origin | host (DOM) space, mapped to field space by the adapter | the caller supplies geometry directly; a non-DOM host projects its own space → field space (see [coordinate-spaces.md](coordinate-spaces.md)) |
+| Feedback delivery | CSS vars on the element (`--load`, `--field-*`, `--d`) | `onFeedback(channels)` callback / `handle.channels` |
+| Survives a rescan? | re-discovered if still in the tree; dropped when it leaves | **yes** — programmatic bodies are invisible to the DOM scan; only `handle.remove()` retires one |
+| Live param edits | via reactive `data-*` attributes | `handle.set({ strength, range, angle, spin, color })` — no rescan |
+
+A DOM body is *re-measured from its element* every rescan, so the element is the position authority. A
+synthetic body has **no DOM to rescan** — its `rect()` thunk is the sole position source, which is exactly
+why a headless host (mesh, native view, or a bare data record) can be a full field participant. Both are
+subject to [body-authority modes](substrate-api.md#body-authority--dynamic-recoil--data-authority--bodyauthority):
+`anchored` (rect authoritative), `kinematic` (engine writes the transform), or `dynamic` (engine owns
+position and the body recoils under the net field).
+
+## Related documents
+
+| Document | Role |
+|---|---|
+| [`platform-architecture.md`](platform-architecture.md) | `MinimalFieldHost` — the geometry+time floor a headless body runs against |
+| [`substrate-api.md`](substrate-api.md) | `FieldBodyIdentity`, `query`/`snapshot`/`diff`/`replay`, body authority — the read surface the lifecycle feeds |
+| [`coordinate-spaces.md`](coordinate-spaces.md) | Host space vs field space — where a synthetic body's supplied geometry is resolved |
+| [`documentation-standards.md`](documentation-standards.md) | The terminology locks — *data body* vs `body.data`, *Field Agent* vs *Software Agent* |
+
+========================================================================
 FILE: causality-and-truth.md
 ========================================================================
 
@@ -1266,6 +1394,32 @@ Because the system is expressive, the failure modes are mostly misuse. Don't:
 - Say **"formation"** when you mean a *global formation mode* (`wells`/`lanes`/…), or **"Configuration"** when you mean a *Field Formation*.
 - Use **"Matter"** when you mean authored behavior.
 - Create a **force token for every concept** — most concepts are metrics, dimensions, or projections, not new forces (the recipe/force canon is locked).
+
+## Field failure modes
+
+When a field misbehaves, name the shape of the failure — each has a distinct cause and fix.
+
+1. **Dead field** — no bodies, or no measurable region: nothing is `[data-body]` in bounds, so the field has nothing to measure and emits nothing.
+2. **Silent field** — the sim runs but no feedback or projection is attached; signals are written but nothing consumes them (the silent-contract gap). See [causality-and-truth.md](causality-and-truth.md).
+3. **Haunted field** — a projection *appears* to change field state because coupling/projection boundaries are unclear; projections reveal, they never write back (projection purity).
+4. **Leaky field** — a snapshot or query unexpectedly exposes opaque body data; `body.data` should stay opaque unless deliberately included. See [substrate-api.md](substrate-api.md).
+5. **Overcoupled field** — relationships produce dynamics with no declared Field Formation; associations became couplings without a formation deciding they should.
+6. **Motion-only field** — meaning disappears under reduced motion because motion was the only carrier (see #8).
+7. **Drifting field** — host geometry and field coordinates diverge; the adapter's space no longer matches the field's. See [coordinate-spaces.md](coordinate-spaces.md).
+8. **Unstable field** — forces inject energy with no damping, cap, or budget, so the sim heats up unbounded.
+9. **Ambiguous field** — a term is used in two lanes at once (e.g. "formation" for both a global formation mode and a Field Formation); pick one lane.
+
+## Field smells
+
+Lint-candidate heuristics — each points at a likely mistake, not a guaranteed one.
+
+1. **Raw force soup** — many force tokens stacked on one body with no Field Formation to organize them.
+2. **Metric without provenance** — a metric reported with no trace of where it came from. See [causality-and-truth.md](causality-and-truth.md).
+3. **Projection without a reduced-motion / semantic equivalent** — a projection that only reads under animation.
+4. **Relationship pretending to be a force** — an association wired as if it couples, with no formation behind it.
+5. **Agent overread** — a Software Agent reads more field data than its task needs. See [substrate-api.md](substrate-api.md).
+6. **Body without identity** — a body that can't be tracked across snapshots (`FieldBodyIdentity` now addresses this).
+7. **Host mismatch** — the adapter supplies a different coordinate space than the projections expect. See [coordinate-spaces.md](coordinate-spaces.md).
 
 ========================================================================
 FILE: coordinate-spaces.md
@@ -6361,12 +6515,60 @@ A `FieldHost` is **not** a "surface" — *Field Surfaces* is the visualization-p
 | native (Swift) | `swift/` | the view's bounds | a separate language port implementing the same contract conceptually (#423) |
 | native (Android) | `android/` | the view's bounds | a separate-language Kotlin port — the pure-`kotlin("jvm")` core (full 36-force surface + integrator) runs under a Jetpack Compose host (`FieldView` + `Modifier.fieldBody`), verified on-device |
 
-**The contract** (`FieldHost`): `root` (the scanned subtree), `viewport()` → `{ width, height, dpr,
-originX?, originY? }` (the optional origin is what makes a host container-local — `measureBodies` and the
-thread/move readouts subtract it), `scrollY()`, `scrollHeight()`, `reducedMotion()`, `hidden()`,
-`raf(cb)` / `cancelRaf(id)`, `createCanvas()` (the heatmap buffer), and the subscriptions
-`onResize` / `onScroll` / `onVisibility` / `onInput` / `onBodyEvent`. Authoring a new host = implementing
-those against your environment; the engine needs nothing else.
+### The minimum contract and the capability model
+
+The host is a **ladder, not a monolith**: there is a small required core and a set of optional
+capabilities the engine degrades around. `MinimalFieldHost` is the **smallest surface a host must
+supply** — two lanes:
+
+- **geometry** — `root` (the scanned subtree) and `viewport()` → `{ width, height, dpr, originX?,
+  originY? }` (the optional origin is what makes a host container-local — `measureBodies` and the
+  thread/move readouts subtract it): *where*, and in what coordinate space, the field lives.
+- **time** — `raf(cb)` / `cancelRaf(id)`: how frames are scheduled (a real `requestAnimationFrame`, a
+  manual `tick`, a native display link).
+
+`FieldHost extends MinimalFieldHost` and adds every other member as an **optional capability**:
+`scrollY()`, `scrollHeight()`, `reducedMotion()`, `hidden()`, `createCanvas()` (the heatmap buffer),
+and the subscriptions `onResize` / `onScroll` / `onVisibility` / `onInput` / `onBodyEvent`. When a
+capability is absent the engine degrades gracefully rather than failing: **scroll → 0**, **reduced-motion
+/ hidden → `false`** (never auto-pauses), **subscriptions → no-op** (never re-reads on resize, takes no
+DOM body events — programmatic `addBody` still works), and a **drawing mode that needs `createCanvas`
+throws a clear error** (signals-first `render: 'none'` never calls it). So a host that supplies only the
+four required members runs the full simulation + feedback pipeline **headlessly** — it just never
+scrolls, never auto-pauses, and cannot draw a heatmap.
+
+`hostCapabilities(host)` reports which optional lanes a given host provides (`{ geometry, time, scroll,
+canvas, reducedMotion, visibility, events, bodyEvents }`), and `defineHost(minimal & partial)` builds a
+full `FieldHost` from a minimal host plus whatever capabilities you choose, filling no-op defaults for
+the rest — the sanctioned way to author a host without hand-writing the subscription boilerplate. This
+is a **widening** of the contract: every existing host (`browserHost`, `containerHost`, `headlessHost`,
+`threeHost`) still satisfies it unchanged; a new host only has to implement the four required members.
+
+Authoring a new host = implementing the required core against your environment, plus whatever optional
+capabilities that environment can offer; the engine needs nothing else.
+
+### Host conformance — the third parity/testing category
+
+Alongside **API-surface parity** (the frozen public surface exists on every plane) and **mathematical
+conformance** (the shared cross-plane golden at `depth: 0`), a host is checked for **host conformance**:
+*does this environment adapter supply the capabilities the field expects, and degrade cleanly where it
+does not?* The checklist:
+
+| Question | Capability | Absent ⇒ |
+|---|---|---|
+| Provides geometry? | `root` + `viewport()` | **required** — a host without it is not a host |
+| Ticks time? | `raf` / `cancelRaf` | **required** |
+| Reports scroll? | `scrollY` / `scrollHeight` | scroll readouts read 0 |
+| Accepts a heatmap canvas? | `createCanvas` | heatmap draw modes throw; `render: 'none'` unaffected |
+| Honors reduced motion? | `reducedMotion` | motion always allowed |
+| Auto-pauses when hidden? | `hidden` / `onVisibility` | the loop never auto-pauses |
+| Emits events? | `onResize` / `onScroll` / `onInput` / `onBodyEvent` | no resize/scroll/input signals |
+| Relays DOM body events? | `onBodyEvent` | programmatic bodies only (`addBody`) |
+| Preserves an a11y equivalent? | host-specific | the embedder wires ARIA/semantics on its plane |
+
+`hostCapabilities(host)` is the machine-readable form of this checklist; the graceful-degradation floor
+is pinned by `packages/core/src/core/minimal-host.test.ts` (a field runs against a host with **none** of
+the optional capabilities).
 
 **The boundary holds.** `FieldHost` is pure types in core (zero DOM); the implementations live in the
 environment packages (`@fundamental-engine/dom`, `@fundamental-engine/three`), so the `core ↛ dom ↛
@@ -8296,6 +8498,65 @@ assertion on top of this base when it lands.
 > **Why three models.** Numeric conformance proves the *math* matches; the perf model proves a change
 > didn't regress *cost*; the snapshot model proves the *pixels* are right. Together they cover the parity
 > surface that green unit tests on each plane, in isolation, cannot.
+
+## Field testing levels
+
+The sections above are the tests the suite *has*. This is the **ladder it grows toward** — the levels of
+conformance a relational field substrate needs, from "does one force compute the right number" up to
+"can an agent read the field without leaking what it shouldn't." Each rung has a one-line intent and an
+honest note of where the suite **is** versus where it's **headed** — an unbuilt rung is named here so the
+shape is legible, not so it can be claimed as shipped.
+
+1. **Force conformance** — *does the force match expected math?* This is the shipped floor: the
+   cross-plane golden (§20, Model 1) pins each canonical force to a JS-emitted delta and every plane
+   reproduces it within tolerance. **Where it is:** shipped for the deterministic canonical forces; the
+   RNG / stateful / neighbor / grid / field forces are still verified behaviorally per plane.
+
+2. **Formation validation** — *does a [`FieldRecipe`](authoring-and-recipes.md) reference only known
+   primitives, metrics, diagnostics, conditions, and projections?* A recipe is a composition of named
+   lanes (§ "Concepts describe. Tokens execute…"); a formation is valid only if every name it invokes
+   resolves to a registered token / metric / diagnostic / condition / projection. **Where it is:** recipe
+   conformance (§13) declares the required forces and render modes today; a name-resolution gate across
+   *all* lanes — including projections — is **headed**, not yet a standing check.
+
+3. **Projection parity** — *does the reduced-motion / static / native projection preserve MEANING?* A
+   [projection](substrate-api.md#projection-registry--fieldprojections-a-property) reveals state to an
+   output surface and MUST declare a reduced-motion / static equivalent; parity asks that the equivalent
+   carry the *same meaning*, not the same pixels. **Where it is:** reduced-motion fallbacks are tested
+   for existence and meaning-survival (§10) and per-render-mode (§6); a projection-level parity assertion
+   that a registered projection's static form is meaning-equivalent to its animated form is **headed**.
+
+4. **Snapshot stability** — *same input → same snapshot?* A
+   [snapshot](substrate-api.md#snapshot--diff--snapshotopts-fieldsnapshot--diffa-b-fielddiff) is a
+   plain, serializable capture of what the field was doing, versioned by `FIELD_VERSION`. Stability means
+   identical inputs serialize to an identical snapshot across runs (the seeded lanes) and across a
+   serialize → deserialize round-trip. **Where it is:** the snapshot format ships and the visual model
+   already asserts run-to-run signature stability (§20, Model 3); a dedicated same-input-same-snapshot
+   regression over the serializable snapshot is **headed** and depends on the RNG seam noted in Model 3.
+
+5. **Replay explanation** — *can the system explain a state transition?* [`replay()`](substrate-api.md)
+   narrates *how* the field changed between two snapshots — an ordered sequence of causes derived purely
+   from the diff. This rung is a *diagnostic* claim, not a physical one, and rides the
+   [causality ladder](causality-and-truth.md#part-a--the-causality-ladder): a replay *explains*, it does
+   not *re-run the sim*, so what it proves is bounded by how much the diff observes versus attributes.
+   **Where it is:** the replay API ships and the ladder classifies its guarantees; a conformance test
+   that a known transition yields the expected, correctly-classified explanation is **headed**.
+
+6. **Host conformance** — *does an adapter provide the required host contract?* Every environment reaches
+   the engine through an injected `FieldHost`
+   ([platform-architecture.md](platform-architecture.md#the-host-seam--fieldhost-the-swappable-environment-spi)):
+   a new host is valid only if it implements the whole contract (`root`, `viewport()`, the lifecycle
+   hooks). This is the third parity category alongside numeric and visual — *does the seam hold*, not
+   *does the math match*. **Where it is:** the host seam and its shipped implementations are specified,
+   and the DOM-boundary test (§15) guards the core side of the seam; a reusable host-contract checklist a
+   `MinimalFieldHost` fixture can be run against to certify any adapter is **headed**.
+
+7. **Agent safety** — *do query / snapshot respect permission and redaction policy?* An agent reads the
+   field through [`query()`](substrate-api.md#query--queryq-fieldqueryresult) and `snapshot()`, which are pure reads —
+   reading can never mutate the field. Safety adds the next guarantee: that a *scoped* reader sees only
+   what policy permits, with sensitive channels redacted. **Where it is: FRONTIER.** Read-only-ness is
+   enforced today; permission and redaction scoping is **not yet built** — it is named here as the top of
+   the ladder, not as a shipped gate.
 
 ========================================================================
 FILE: time.md
