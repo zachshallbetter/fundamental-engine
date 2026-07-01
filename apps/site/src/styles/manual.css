@@ -1268,7 +1268,7 @@ html.hide-field-lines .stage-field {
   margin-top: 0.8rem;
 }
 
-/* Applied — navigation has gravity: weight from the engine-written --field-density (alias --d). */
+/* Applied — navigation has gravity: weight from the engine-written --d density channel (field-namespaced alias --field-density). */
 .navfield {
   position: absolute;
   inset: 0;
