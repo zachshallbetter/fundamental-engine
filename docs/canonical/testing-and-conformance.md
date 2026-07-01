@@ -540,3 +540,62 @@ assertion on top of this base when it lands.
 > **Why three models.** Numeric conformance proves the *math* matches; the perf model proves a change
 > didn't regress *cost*; the snapshot model proves the *pixels* are right. Together they cover the parity
 > surface that green unit tests on each plane, in isolation, cannot.
+
+## Field testing levels
+
+The sections above are the tests the suite *has*. This is the **ladder it grows toward** — the levels of
+conformance a relational field substrate needs, from "does one force compute the right number" up to
+"can an agent read the field without leaking what it shouldn't." Each rung has a one-line intent and an
+honest note of where the suite **is** versus where it's **headed** — an unbuilt rung is named here so the
+shape is legible, not so it can be claimed as shipped.
+
+1. **Force conformance** — *does the force match expected math?* This is the shipped floor: the
+   cross-plane golden (§20, Model 1) pins each canonical force to a JS-emitted delta and every plane
+   reproduces it within tolerance. **Where it is:** shipped for the deterministic canonical forces; the
+   RNG / stateful / neighbor / grid / field forces are still verified behaviorally per plane.
+
+2. **Formation validation** — *does a [`FieldRecipe`](authoring-and-recipes.md) reference only known
+   primitives, metrics, diagnostics, conditions, and projections?* A recipe is a composition of named
+   lanes (§ "Concepts describe. Tokens execute…"); a formation is valid only if every name it invokes
+   resolves to a registered token / metric / diagnostic / condition / projection. **Where it is:** recipe
+   conformance (§13) declares the required forces and render modes today; a name-resolution gate across
+   *all* lanes — including projections — is **headed**, not yet a standing check.
+
+3. **Projection parity** — *does the reduced-motion / static / native projection preserve MEANING?* A
+   [projection](substrate-api.md#projection-registry--fieldprojections-a-property) reveals state to an
+   output surface and MUST declare a reduced-motion / static equivalent; parity asks that the equivalent
+   carry the *same meaning*, not the same pixels. **Where it is:** reduced-motion fallbacks are tested
+   for existence and meaning-survival (§10) and per-render-mode (§6); a projection-level parity assertion
+   that a registered projection's static form is meaning-equivalent to its animated form is **headed**.
+
+4. **Snapshot stability** — *same input → same snapshot?* A
+   [snapshot](substrate-api.md#snapshot--diff--snapshotopts-fieldsnapshot--diffa-b-fielddiff) is a
+   plain, serializable capture of what the field was doing, versioned by `FIELD_VERSION`. Stability means
+   identical inputs serialize to an identical snapshot across runs (the seeded lanes) and across a
+   serialize → deserialize round-trip. **Where it is:** the snapshot format ships and the visual model
+   already asserts run-to-run signature stability (§20, Model 3); a dedicated same-input-same-snapshot
+   regression over the serializable snapshot is **headed** and depends on the RNG seam noted in Model 3.
+
+5. **Replay explanation** — *can the system explain a state transition?* [`replay()`](substrate-api.md)
+   narrates *how* the field changed between two snapshots — an ordered sequence of causes derived purely
+   from the diff. This rung is a *diagnostic* claim, not a physical one, and rides the
+   [causality ladder](causality-and-truth.md#part-a--the-causality-ladder): a replay *explains*, it does
+   not *re-run the sim*, so what it proves is bounded by how much the diff observes versus attributes.
+   **Where it is:** the replay API ships and the ladder classifies its guarantees; a conformance test
+   that a known transition yields the expected, correctly-classified explanation is **headed**.
+
+6. **Host conformance** — *does an adapter provide the required host contract?* Every environment reaches
+   the engine through an injected `FieldHost`
+   ([platform-architecture.md](platform-architecture.md#the-host-seam--fieldhost-the-swappable-environment-spi)):
+   a new host is valid only if it implements the whole contract (`root`, `viewport()`, the lifecycle
+   hooks). This is the third parity category alongside numeric and visual — *does the seam hold*, not
+   *does the math match*. **Where it is:** the host seam and its shipped implementations are specified,
+   and the DOM-boundary test (§15) guards the core side of the seam; a reusable host-contract checklist a
+   `MinimalFieldHost` fixture can be run against to certify any adapter is **headed**.
+
+7. **Agent safety** — *do query / snapshot respect permission and redaction policy?* An agent reads the
+   field through [`query()`](substrate-api.md#query--queryq-fieldqueryresult) and `snapshot()`, which are pure reads —
+   reading can never mutate the field. Safety adds the next guarantee: that a *scoped* reader sees only
+   what policy permits, with sensitive channels redacted. **Where it is: FRONTIER.** Read-only-ness is
+   enforced today; permission and redaction scoping is **not yet built** — it is named here as the top of
+   the ladder, not as a shipped gate.
