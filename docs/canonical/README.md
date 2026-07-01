@@ -6,9 +6,10 @@
 
 # Canonical documentation map
 
-Fundamental is a platform-native relational field runtime for the DOM. `Fundamental` (core) computes
-renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM; `elements`/`react`
-are authoring surfaces. Canvas is one render surface, not the whole system.
+Fundamental is a platform-native relational field runtime. `@fundamental-engine/core` computes
+renderer-agnostic field behavior; host adapters bind that field to concrete platforms. `@fundamental-engine/dom`
+is the web host adapter (`elements`/`react` are authoring surfaces on top of it). The DOM is the first
+host, not the boundary. Canvas is one render surface, not the whole system.
 
 > Concepts describe. Dimensions hold state. Fields structure. Relationships associate. Forces couple.
 > Tokens execute. Metrics measure. Diagnostics explain. Conditions activate. Projections reveal.

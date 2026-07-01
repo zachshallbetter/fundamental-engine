@@ -15,11 +15,12 @@
 
 ## Purpose
 
-This document defines how authors use `Fundamental`. `Fundamental` is a platform-native relational field
-runtime for the DOM: `Fundamental` computes renderer-agnostic field behavior, `@fundamental-engine/dom`
-binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays,
-scheduling, linting), and the elements/React surfaces are how authors declare bodies into that shared
-field context. Authors write the same `[data-body]` contract regardless of surface.
+This document defines how authors use `Fundamental` on the web. `Fundamental` is a platform-native
+relational field runtime: `@fundamental-engine/core` computes renderer-agnostic field behavior, and its
+web host adapter `@fundamental-engine/dom` binds the field to the DOM (measurement, state, feedback,
+relationships, visual bindings, overlays, scheduling, linting); the elements/React surfaces are how
+authors declare bodies into that shared field context. Authors write the same `[data-body]` contract
+regardless of surface.
 
 The system supports three authoring levels:
 
@@ -86,8 +87,9 @@ function Headline() {
 }
 ```
 
-All three forms emit identical `[data-body]` markup, drive the same `--field-density` feedback
-variable, and are measured, fed back, and related to one another through the same platform registries.
+All three forms emit identical `[data-body]` markup, drive the same `--d` feedback channel (its
+expressive long form is `--field-density`), and are measured, fed back, and related to one another
+through the same platform registries.
 
 ## 2. Core Attributes
 

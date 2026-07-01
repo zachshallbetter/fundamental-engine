@@ -16,7 +16,7 @@
 
 ## Purpose
 
-Fundamental is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
+Fundamental is a platform-native relational field runtime. `@fundamental-engine/core` computes renderer-agnostic field behavior; host adapters bind that field to concrete platforms. `@fundamental-engine/dom` is the web host adapter, binding the field to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces on top of it. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
 
 This document defines the hard contracts that bind the system together.
 

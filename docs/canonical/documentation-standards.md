@@ -16,25 +16,32 @@ are written or revised, they follow the framing below.
 ## Canonical architecture statement
 
 ```
-Fundamental is a platform-native relational field runtime for the DOM.
+Fundamental is a platform-native relational field runtime.
 
-Fundamental      computes renderer-agnostic field behavior.
-@fundamental-engine/dom  binds field behavior to the DOM through measurement, state, feedback,
-                    relationships, visual bindings, overlays, linting, and scheduling.
-@fundamental-engine/elements  exposes native HTML and web-component authoring.
-@fundamental-engine/react     adapts the same contracts for React.
+@fundamental-engine/core  computes renderer-agnostic field behavior.
+Host adapters       bind field behavior to concrete platforms.
+@fundamental-engine/dom   is the web host adapter: it binds the field to the DOM through
+                    measurement, state, feedback, relationships, visual bindings, overlays,
+                    linting, and scheduling.
 
 Canvas is one render surface, not the whole system.
 ```
 
-Fundamental creates **one shared field context** across DOM bodies, agents, relationships, measurements,
+`@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces **on the DOM host** —
+reserve "for the DOM" for the web host adapter and the surfaces built on it, not for the runtime as a
+whole. The DOM is the first host, not the boundary of the system: the same core can run headlessly, in
+native views (the Swift/Kotlin ports), or against any host adapter that supplies body geometry, identity,
+a tick, and a feedback sink.
+
+Fundamental creates **one shared field context** across bodies, agents, relationships, measurements,
 metrics, feedback, particles, and render surfaces. Canvas, SVG overlays, and DOM feedback are each a
-render surface; the platform layer is the DOM participation layer; the core engine stays
+render surface; a host adapter is the participation layer for its platform; the core engine stays
 renderer-agnostic.
 
 Do not describe Fundamental as only "one canvas", "one particle field", "a particle background", or a
 "DOM ⇄ canvas binding". Those phrases are fine when specifically discussing the canvas render surface,
-but they must not define the whole product. The binding is **DOM ⇄ field runtime**.
+but they must not define the whole product. The binding is **host ⇄ field runtime** (on the web,
+**DOM ⇄ field runtime**).
 
 ## Core doctrine
 
@@ -106,6 +113,6 @@ before changing a status. Labels: shipped · experimental · planned · conceptu
 
 ```
 The old story: Fundamental is a particle field behind the DOM.
-The new story: Fundamental is a platform-native relational field runtime for the DOM.
-Natural fields:  Four fields. Many expressions. One DOM runtime.
+The new story: Fundamental is a platform-native relational field runtime; the DOM is its first host.
+Natural fields:  Four fields. Many expressions. One field runtime, many hosts.
 ```
