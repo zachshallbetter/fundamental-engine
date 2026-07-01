@@ -40,7 +40,7 @@ be retried without re-tagging: `gh run rerun <run-id> --failed`.
 
 - The GitHub repo is **public** — npm refuses provenance for private repos (`E422 … visibility:
   "private"`).
-- The `NPM_TOKEN` repo secret is a **granular** npm token with read+write to `@Fundamental` and
+- The `NPM_TOKEN` repo secret is a **granular** npm token with read+write to `@fundamental-engine` and
   **"Bypass two-factor authentication" enabled**. A classic/publish token fails in CI with `EOTP`
   (the account is 2FA `auth-and-writes`, and CI can't answer an OTP prompt).
 - The workflow has `permissions: id-token: write` (for the provenance attestation).

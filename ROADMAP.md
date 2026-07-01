@@ -1,5 +1,12 @@
 # Roadmap — the refactor to world-class
 
+> **Status: historical record.** This documents the pre-1.0 refactor (Phases 0–7, all complete). The
+> engine shipped and **published to npm through `0.9.2`** (with provenance). Package/element names below
+> reflect the era they were written in (`<forces-field>` / `<forces-cell>` predate the `field-ui` →
+> Fundamental rename; today they are `<field-root>` / `<field-cell>`). **Current** planned work lives on
+> the RC1 board (user Project #24) and the substrate critical-path (`docs/planning/critical-path/`);
+> shipped work is in [`CHANGELOG.md`](CHANGELOG.md) and per-version [`docs/release-notes/`](docs/release-notes).
+
 It began as a plain global-script DOM prototype with one `rAF` loop: brilliant, but
 untyped, monolithic, and bound to one page. The goal is a clean, typed, modular,
 framework-agnostic engine that realizes the spec (`docs/engine-reference/forces-system.md`) without
@@ -278,5 +285,6 @@ separate, swappable choice and shares no code with the engine.
   it stays cheap to revisit).
 - **Package names** — `Fundamental` (core), `@fundamental-engine/elements`, `@fundamental-engine/react`.
 
-The only remaining gate is the deliberate, human-run **first publish** (npm + repo
-visibility) — see [`RELEASING.md`](RELEASING.md) and [`PUBLISHING.md`](PUBLISHING.md).
+That first publish happened — the packages have shipped to npm with provenance through **`0.9.2`**
+(2026-07-01). Releases are cut on a `vX.Y.Z` tag; see [`RELEASING.md`](RELEASING.md) and
+[`PUBLISHING.md`](PUBLISHING.md) for the mechanics, and the RC1 board (#24) for what's next.

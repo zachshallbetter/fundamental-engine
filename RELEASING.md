@@ -29,7 +29,7 @@ adapter's props. The internal integrator, render code, and the site are not part
 contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
 [API stability](docs/canonical/api-stability.md).
 
-> The packages are published to npm under the `@Fundamental` scope, **with provenance** (a signed
+> The packages are published to npm under the `@fundamental-engine` scope, **with provenance** (a signed
 > Sigstore/SLSA attestation tying each tarball to this repo and the CI build). Each release is cut as a
 > **git tag** (`vX.Y.Z`); pushing the tag is what triggers the publish. Between tags, changes accumulate
 > under `## [Unreleased]` in the [CHANGELOG](CHANGELOG.md).
@@ -63,7 +63,7 @@ contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
 - **`release.yml`** — on a `v*` tag (or manual dispatch): runs the gate, then publishes all
   `@fundamental-engine/*` packages **with provenance**. Requirements (all in place): the GitHub repo is **public**
   (npm rejects provenance for private repos) and an `NPM_TOKEN` secret holds a granular npm token with
-  write to `@Fundamental` and **2FA-bypass** enabled (CI cannot answer an interactive OTP).
+  write to `@fundamental-engine` and **2FA-bypass** enabled (CI cannot answer an interactive OTP).
 - **`pr-checks.yml`** — PR hygiene: a PR that changes `packages/` must add a CHANGELOG entry
   (the diff is checked, not the PR body), and every relative doc link must resolve
   (`pnpm check:links`). Its `conclusion-pr` job is a required check on `main`.
@@ -102,7 +102,7 @@ the gates above.
   still fails after the retries, `gh run rerun <run-id> --failed`. The publish is idempotent per-package
   (already-published versions are skipped), so retries only re-attempt the packages that didn't land. Do
   **not** delete or re-push the tag, and do not re-run the whole workflow from scratch.
-- **Token rotation:** create the new granular token (`@Fundamental` write, 2FA-bypass) and
+- **Token rotation:** create the new granular token (`@fundamental-engine` write, 2FA-bypass) and
   update the `NPM_TOKEN` secret **before** revoking the old one — a window with no valid
   token makes the next release fail at auth. Verify with a `dry_run` dispatch of
   `release.yml`.

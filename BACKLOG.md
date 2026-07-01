@@ -2,8 +2,11 @@
 
 > **Source of truth has moved.** Active, dispatchable work now lives on the **RC1 board**
 > ([user Project #24](https://github.com/users/zachshallbetter/projects/24), managed via the
-> `github-projects` skill). This file is a manually-maintained historical queue and may lag `main` —
-> verify any item against the board and `CHANGELOG.md` before acting on it.
+> `github-projects` skill). This file is a manually-maintained historical queue and lags `main` —
+> verify any item against the board, [`CHANGELOG.md`](CHANGELOG.md), and the per-version
+> [`docs/release-notes/`](docs/release-notes) before acting on it. Many items below marked `[ ]` have
+> since shipped (the substrate line, the Swift/Kotlin ports, and more through `0.9.2`) without being
+> ticked here — the CHANGELOG and release notes are authoritative for what landed.
 
 The running, granular queue. Strategic context lives in
 [`docs/planning-archive/roadmap-frontiers.md`](docs/planning-archive/roadmap-frontiers.md); shipped work moves to
@@ -91,7 +94,7 @@ fuzzing, the CPU/GPU parity path, advanced overlays.
 
 ## Adapters / data
 
-- [ ] **`bindData()`** — map records → bodies with id-diffed add/remove/reorder (matter
+- [x] **`bindData()`** — map records → bodies with id-diffed add/remove/reorder (matter
       flows via the conserved lifecycle); a `useForcesData` React hook.
 - [x] **SwiftUI `onFeedback`** — wire up `.fieldBody()` modifier to pass `onFeedback` callbacks to the engine.
 
@@ -99,11 +102,11 @@ fuzzing, the CPU/GPU parity path, advanced overlays.
 
 The invisible-fields family hand-rolled these; the usage is the spec (filed + on the RC1 board):
 
-- [ ] **Platform FLIP helper** — twelve runtimes implement the same reflow; extract
+- [x] **Platform FLIP helper** — twelve runtimes implement the same reflow; extract
       `withFlip()` (1D/2D, reduced-motion, settle cleanup). (#295)
-- [ ] **`allocateAttention()`** — the inbox's exact conserved water-filling allocation
+- [x] **`allocateAttention()`** — the inbox's exact conserved water-filling allocation
       belongs to the engine's attention concept, not site JS. (#296)
-- [ ] **Signals-only field mode** — name what `setVisible(false)` does: sim + feedback
+- [x] **Signals-only field mode** — name what `setVisible(false)` does: sim + feedback
       with no render state allocated at all. (#297)
 - [ ] **Canon docs: `data-active` engagement + data-provenance chips** — two proven
       patterns living only in how-built sections. (#298)
@@ -148,7 +151,7 @@ the field's measurements come back as type and ink — no particle swarm. The ro
 
 ## Platform integration
 
-- [ ] **Typed `--d`** via `CSS.registerProperty` (compositor-interpolable).
+- [x] **Typed `--d`** via `CSS.registerProperty` (compositor-interpolable).
 - [ ] **Scroll-driven formations** via `animation-timeline`.
 - [ ] **Cross-document continuity** — serialize/restore the pool across hard navigations.
 - [ ] **Anchored UI** — popovers tethered to moving bodies (CSS Anchor Positioning).
@@ -164,6 +167,6 @@ the field's measurements come back as type and ink — no particle swarm. The ro
 
 - [ ] **Conformance as a public primitive** — document/package the `Scenario` /
       `Expectation` DSL + headless runner.
-- [ ] **Property-based fuzzing** — random scenarios → assert no NaN / no energy blow-up.
-- [ ] **Record / replay** — `(seed, attrs, input timeline)` → reproducible field; visual
+- [x] **Property-based fuzzing** — random scenarios → assert no NaN / no energy blow-up.
+- [x] **Record / replay** — `(seed, attrs, input timeline)` → reproducible field; visual
       snapshot tests.
