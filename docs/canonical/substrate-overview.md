@@ -63,6 +63,9 @@ concepts, tokens, metrics, and projections from bleeding into each other; coupli
 forces may couple which dimensions. An agent gets only what policy grants it, and only in the shape the
 projection allows.
 
+The full safety story — the three load-bearing invariants and the mechanisms that uphold them — is
+[agent-safety-model.md](agent-safety-model.md).
+
 See [substrate-api.md](substrate-api.md) (governance lint, policy surface), [system-contracts.md](system-contracts.md)
 (the capability and feedback contracts), and [api-stability.md](api-stability.md) (what is frozen vs
 experimental across the surface).
