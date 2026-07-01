@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldPolicy, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldBodyIdentity, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, ProjectionSource, FieldProjectionTarget, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
+import type { AgentCapability, AgentFieldView, AgentViewOptions, AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldPolicy, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldBodyIdentity, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, ProjectionSource, FieldProjectionTarget, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, SnapshotProfile, Vec2, Vec3 } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -91,6 +91,83 @@ function clonePolicy(p: FieldPolicy | undefined): FieldPolicy {
   if (p.maxMotionBudget != null) out.maxMotionBudget = p.maxMotionBudget;
   if (p.budgets) out.budgets = { ...p.budgets };
   return out;
+}
+
+/** Concrete inclusion flags a snapshot resolves to. */
+interface ResolvedSnapshotInclusion {
+  includeParticles: boolean;
+  includeRelationships: boolean;
+  includeData: boolean;
+  includeInfluences: boolean;
+}
+
+/**
+ * Resolve {@link FieldSnapshotOptions} — an optional {@link SnapshotProfile} composed with the explicit
+ * `include*` flags — to concrete inclusion, TIGHTEST-wins. A profile establishes a baseline; an explicit
+ * flag may tighten it further but never widen it (an explicit `true` cannot re-enable what the profile
+ * turned off). `includeData` additionally passes through the policy gate at the call site (this only
+ * governs whether the CALLER asked for it). Relationships default true when nothing narrows them.
+ */
+function resolveSnapshotInclusion(opts: FieldSnapshotOptions): ResolvedSnapshotInclusion {
+  // Per-profile baselines. `debug` = everything; `agent` = structure + attribution, no opaque data;
+  // `bug-report` = structural + versions, no data; `public` = ids + shape only.
+  const base: Record<SnapshotProfile, ResolvedSnapshotInclusion> = {
+    debug: { includeParticles: true, includeRelationships: true, includeData: true, includeInfluences: true },
+    agent: { includeParticles: false, includeRelationships: true, includeData: false, includeInfluences: true },
+    'bug-report': { includeParticles: false, includeRelationships: true, includeData: false, includeInfluences: true },
+    public: { includeParticles: false, includeRelationships: false, includeData: false, includeInfluences: false },
+  };
+  const p = opts.profile;
+  if (!p) {
+    // No profile: today's defaults — relationships default true, the rest default false.
+    return {
+      includeParticles: opts.includeParticles === true,
+      includeRelationships: opts.includeRelationships !== false,
+      includeData: opts.includeData === true,
+      includeInfluences: opts.includeInfluences === true,
+    };
+  }
+  const b = base[p];
+  // TIGHTEST wins: a flag is on only if the profile allows it AND the caller didn't explicitly turn it
+  // off. An explicit `true` can never widen past the profile's baseline.
+  return {
+    includeParticles: b.includeParticles && opts.includeParticles !== false,
+    includeRelationships: b.includeRelationships && opts.includeRelationships !== false,
+    includeData: b.includeData && opts.includeData !== false,
+    includeInfluences: b.includeInfluences && opts.includeInfluences !== false,
+  };
+}
+
+/**
+ * Strip a set of dotted `redactions` paths from a plain reading (query result or snapshot). A top-level
+ * key (`'metrics'`, `'relationships'`) deletes that key from the object. A `<prefix>.<key>` path where
+ * prefix ∈ {body, relationship, influence, projection} strips `<key>` from each entry of the matching
+ * list; `body.data` strips per-body `data`. Mutates the passed object (it's always a fresh result/copy).
+ */
+function applyRedactions<T extends Record<string, unknown>>(reading: T, redactions: readonly string[]): T {
+  const listKeyFor: Record<string, string> = { body: 'bodies', relationship: 'relationships', influence: 'influences', projection: 'projections' };
+  for (const path of redactions) {
+    const dot = path.indexOf('.');
+    if (dot < 0) {
+      delete (reading as Record<string, unknown>)[path];
+      continue;
+    }
+    const prefix = path.slice(0, dot);
+    const key = path.slice(dot + 1);
+    const listKey = listKeyFor[prefix];
+    if (listKey && Array.isArray((reading as Record<string, unknown>)[listKey])) {
+      for (const entry of (reading as Record<string, unknown>)[listKey] as Record<string, unknown>[]) {
+        if (entry && typeof entry === 'object') delete entry[key];
+      }
+    } else if (prefix === 'metrics' && reading['metrics'] && typeof reading['metrics'] === 'object') {
+      delete (reading['metrics'] as Record<string, unknown>)[key];
+    } else {
+      // an unrecognized prefix addresses a nested top-level object key.
+      const target = (reading as Record<string, unknown>)[prefix];
+      if (target && typeof target === 'object') delete (target as Record<string, unknown>)[key];
+    }
+  }
+  return reading;
 }
 
 export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}): FieldHandle {
@@ -2640,6 +2717,75 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // (privacy). Reduced-motion still wins in `effectiveMotion`, so this can't raise motion above it.
       policy = clonePolicy(next);
     },
+    forAgent: (viewOpts: AgentViewOptions): AgentFieldView => {
+      const caps = new Set<AgentCapability>(viewOpts.capabilities ?? []);
+      const redactions = (viewOpts.redactions ?? []).slice();
+      const has = (c: AgentCapability): boolean => caps.has(c);
+
+      // If a future `budgets.agentRead` budget is 0, the agent surface is closed entirely: the most
+      // restricted view (empty caps → ids + shape only). SEAM: only the 0 boundary is wired today; the
+      // fractional 0<b<1 gradient (partial agent read) is DECLARED-not-yet-enforced (see FieldBudgets).
+      const agentReadOpen = (): boolean => {
+        const b = policy.budgets?.agentRead;
+        return b == null || b > 0;
+      };
+
+      const scopeQuery = (q: FieldQuery = {}): FieldQueryResult => {
+        if (!agentReadOpen()) {
+          // closed budget → most-restricted reading: shape only, no metrics/relationships/influences.
+          const empty = handle.query({ ...q, include: ['bodies'] });
+          empty.metrics = {};
+          empty.relationships = [];
+          empty.influences = [];
+          if (!has('read:projections')) empty.projections = [];
+          return applyRedactions(empty as unknown as Record<string, unknown>, redactions) as unknown as FieldQueryResult;
+        }
+        // Capability scoping: intersect any requested `include` with what the caps grant, so a reading
+        // can only ever narrow. Bodies (ids + shape) are always readable — identity is the base grant.
+        const grantable = new Set<FieldQueryInclude>(['bodies']);
+        if (has('read:metrics')) grantable.add('metrics');
+        if (has('read:relationships')) grantable.add('relationships');
+        if (has('read:influences')) grantable.add('influences');
+        const requested = q.include ? new Set(q.include) : null;
+        const include = [...grantable].filter((i) => !requested || requested.has(i));
+        const res = handle.query({ ...q, include });
+        // Belt-and-braces: strip any dimension the caps don't grant even if query populated it.
+        if (!has('read:metrics')) res.metrics = {};
+        if (!has('read:relationships')) res.relationships = [];
+        if (!has('read:influences')) res.influences = [];
+        if (!has('read:projections')) res.projections = [];
+        return applyRedactions(res as unknown as Record<string, unknown>, redactions) as unknown as FieldQueryResult;
+      };
+
+      const scopeSnapshot = (snapOpts: FieldSnapshotOptions = {}): FieldSnapshot => {
+        if (!agentReadOpen()) {
+          const snap = handle.snapshot({ profile: 'public' });
+          return applyRedactions(snap as unknown as Record<string, unknown>, redactions) as unknown as FieldSnapshot;
+        }
+        // read:body-data is the gate for opaque `data`: without it, force `includeData` off (tightens,
+        // never widens — even if a profile or explicit flag asked for it). Everything else composes with
+        // resolveSnapshotInclusion's TIGHTEST-wins rule + the field's own privacy policy downstream.
+        const scoped: FieldSnapshotOptions = { ...snapOpts };
+        if (!has('read:body-data')) scoped.includeData = false;
+        if (!has('read:relationships')) scoped.includeRelationships = false;
+        if (!has('read:influences')) scoped.includeInfluences = false;
+        const snap = handle.snapshot(scoped);
+        if (!has('read:projections')) snap.projections = [];
+        return applyRedactions(snap as unknown as Record<string, unknown>, redactions) as unknown as FieldSnapshot;
+      };
+
+      const view: AgentFieldView = {
+        get capabilities() { return Object.freeze([...caps]); },
+        get redactions() { return Object.freeze([...redactions]); },
+        query: scopeQuery,
+        snapshot: scopeSnapshot,
+      };
+      // `replay` is present ONLY when granted — the facade's shape reflects the capability.
+      if (has('read:replay')) {
+        view.replay = (a, b, replayOpts) => handle.replay(a, b, replayOpts);
+      }
+      return Object.freeze(view);
+    },
     threads: setThreads,
     burst: (x, y, hex) => {
       // discrete one-shot: shove + heat nearby matter, optionally tint it (§11).
@@ -2996,7 +3142,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       return q.lens ? applyLens(result, q.lens) : result;
     },
     snapshot: (opts: FieldSnapshotOptions = {}): FieldSnapshot => {
-      const includeRelationships = opts.includeRelationships !== false;
+      const inc = resolveSnapshotInclusion(opts);
+      const includeRelationships = inc.includeRelationships;
       const visible = bodies.filter((b) => b.vis);
       const snapBodies: FieldBodySnapshot[] = visible.map((b): FieldBodySnapshot => {
         const { metrics, dimensions } = readBodyMetrics(b);
@@ -3014,7 +3161,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         // Privacy gate: the caller must ask for data AND the policy must permit it. Policy tightens —
         // `allowBodyDataInSnapshots === false` (or a privacy budget below threshold) withholds body
         // `data` even when the call opts in. A policy can restrict, never widen, the call-site default.
-        if (opts.includeData && policyPermitsBodyData()) reading.data = cloneData(b.data);
+        if (inc.includeData && policyPermitsBodyData()) reading.data = cloneData(b.data);
         return reading;
       });
       const relationships: FieldRelationshipReading[] = includeRelationships
@@ -3045,7 +3192,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         metrics: fieldMetrics,
         projections: projectionList(),
       };
-      if (opts.includeParticles) {
+      if (inc.includeParticles) {
         const out: FieldParticleSnapshot[] = [];
         for (const p of store.particles) {
           if (p.cap) continue; // captured matter is held, not free — skip
@@ -3053,7 +3200,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
         snap.particles = out;
       }
-      if (opts.includeInfluences) {
+      if (inc.includeInfluences) {
         // per-body force attribution: each body's own forces at its centre, by channel (linear Δv,
         // thermal heat, …). A later replay() derives `cause: 'force'` steps from how these shift.
         const inf: FieldInfluenceReading[] = [];
