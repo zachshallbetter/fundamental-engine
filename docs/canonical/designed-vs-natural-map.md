@@ -36,7 +36,7 @@ Not every concept is a shortcut. Each cell below is tagged with one of:
 | Friction = ×0.95 post-step | Dissipative forces (Coulomb/viscous/quadratic) → heat (2nd law) | **Departure** | An interface that always settles; no static-threshold bookkeeping |
 | Velocity cap `|v|≤c` (12) | Relativistic limit; or terminal velocity from drag balance | **Departure** | A hard anti-blow-up rail; a non-physical clip |
 | Mass = nominal 1 (opt-in `a=F/m`) | Inertia always: `a=F/m`, `m ∝ matter` | **Departure** (default) / **Faithful** (opt-in) | Authors tune `strength` directly without reasoning about mass |
-| Recoil absent (immovable sources) | Newton's 3rd law; momentum conserved | **Idealization** (= infinite mass; `−Δp/m → 0`) | A body is a stable reference frame for layout |
+| Recoil: absent by default, opt-in for dynamic bodies | Newton's 3rd law; momentum conserved | **Idealization** (default = infinite mass) / **partial** (opt-in) | Default: a body is a stable layout reference. A `data-authority="dynamic"` body recoils under the net field (shipped); own-emission reaction + inertial-mass ∝ area are the momentum frontier (#871) |
 | dt tied to rAF; compute every 6th frame | Continuous time | **Departure** | Large perf win; couples physics to render cadence |
 
 ## B. The force laws
@@ -68,10 +68,10 @@ Not every concept is a shortcut. Each cell below is tagged with one of:
 | Engine concept | What nature does | Relationship | What it buys |
 |---|---|---|---|
 | Particle = point (optional z) | Matter has extent, shape | **Idealization** | Cheap; the classic point-mass abstraction |
-| No rotation / angular momentum / torque | Rigid bodies spin; angular momentum conserved | **Departure** | One fewer state axis — particles can't tumble (a *collapsed dimension*) |
+| No rotation / angular momentum / torque (angular *lane* exists, no producer) | Rigid bodies spin; angular momentum conserved | **Departure** | Particles have an opt-in `orient`/`spin` lane the accumulator captures (#855), but no shipped force writes spin (a public `torque` is deferred) — so nothing tumbles in practice yet (the *collapsed dimension* is restorable) |
 | Count = the one strong invariant | Conservation of mass / number | **Faithful-ish** | A guarantee the engine *can* keep, unlike energy/momentum |
 | Body position = DOM rect, re-measured | Position is evolved state | **Departure** | The body stays locked to its element — keeps layout coherent (and what recoil collides with) |
-| Body ≠ Particle (source vs consumer) | A body is just heavy matter | **Departure** | Lets an immovable emitter exist; dissolves under recoil |
+| Body ≠ Particle (source vs consumer) | A body is just heavy matter | **Departure** (softening) | Lets an immovable emitter exist by default; a `data-authority="dynamic"` body already dissolves this (it moves under the field), and own-emission recoil (#871) closes the rest |
 
 ## D. Fields & representation
 

@@ -210,6 +210,11 @@ This is what makes the answer to *"why did this rotate?"* not "because the field
 This body rotated because torque coupled translational force into angular velocity.
 ```
 
+**Shipped (experimental):** `couplesDimensions?: readonly string[]` on the force passport, plus the
+`lintDimensionCoupling()` governance lint (`field/no-dimension-coupling-without-passport`) that enforces
+this declaration — a force that conserves speed (so it necessarily redirects velocity) must declare its
+coupling, or the lint errors. See [substrate-api.md](substrate-api.md).
+
 ## Dimensions need projections (separate from coupling)
 
 The DOM is mostly 2D and present-tense, so every added dimension needs an explicit **projection rule** —

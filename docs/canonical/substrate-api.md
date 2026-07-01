@@ -57,7 +57,8 @@ interface FieldQueryResult {
 ```
 
 `el.getBoundingClientRect()` drops straight into `at` (it's `DOMRect`-shaped). `influences` come from
-the impulse accumulator — each carries a `channel` (`'linear'` Δv or `'thermal'` heat).
+the impulse accumulator — each carries a `channel`: `'linear'` (Δv), `'thermal'` (heat), `'angular'`
+(spin), `'temporal'` (mortal age), or `'semantic'` (the body's attention multiplier). Default `'linear'`.
 
 **Lenses (query phase 2).** A `FieldLens` is a **user-defined** declarative scope — not a preset
 catalog: the caller supplies it. Each clause is an allow-list (an omitted clause keeps everything in
@@ -194,6 +195,22 @@ field.projections.lint();   // → GovernanceWarning[] for any motion projection
 `lint()` flags accessibility gaps as `GovernanceWarning`s (`field/reduced-motion-equivalent-required`
 = error, `field/accessibility-equivalent-required` = warning); the standalone `lintProjections()` is
 also exported. `query()` and `snapshot()` report the registered projections as metadata.
+
+### Governance lints — keeping the naming lanes and coupling honest
+
+Two more pure lints ship alongside the projection one, enforcing the naming/coupling doctrine mechanically
+(both return `GovernanceWarning[]`, both run with no live field):
+
+- **`lintWordLanes()`** (`field/no-word-in-two-lanes`) — the naming canon's *"no word lives in two lanes"*
+  rule made mechanical. `LANE_WORDS` indexes the shipped vocabulary by lane from the source-of-truth
+  catalogs (`force` tokens, `formation` ids, `condition` keywords, `visualization` modes); `laneOf(word)`
+  resolves a word. Returns `[]` today — the catalogs are disjoint — so it guards future drift. (Design
+  notes: `render`+`diagnostic` are one `visualization` lane; a `metric` lane is deferred.)
+- **`lintDimensionCoupling()`** (`field/no-dimension-coupling-without-passport`) — a force that *couples*
+  dimensions must declare it in its passport's `couplesDimensions` (the coupling passport,
+  [dimensional-coupling.md](dimensional-coupling.md)). Keys off `conservesSpeed` (a speed-conserving mover
+  necessarily redirects velocity): `wall`/`magnetism`/`warp` declare `['linear']`, so the lint returns `[]`
+  and guards drift (an undeclared coupler, or a typo'd/invalid lane, errors).
 
 ---
 
