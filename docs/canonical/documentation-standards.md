@@ -100,14 +100,86 @@ Every markdown doc carries a status banner, and the folders mirror it:
 
 New code and docs use `--field-*` CSS variables and `field:*` events. The `--forces-*` CSS-variable
 mirroring has been **removed** — `--d` and the `--field-*` family are the live vars. The `forces:*`
-**event** aliases still fire from the engine for compatibility. Prefer `--field-density` in examples;
-mention `--d` only as the compact alias. Use `Fundamental` for the project, packages, and docs.
+**event** aliases still fire from the engine for compatibility. The density channel has a canonical
+raw form and an expressive long form — do not invert them:
+
+```txt
+--d              canonical raw live density channel (engine writes it; prefer it in examples)
+--field-density  the field-namespaced expressive long-form alias of --d
+--load           canonical sink fill
+--mass           legacy alias of --load
+```
+
+Write `--d, with --field-density as the field-namespaced alias` — never `--field-density, alias --d`.
+Use `Fundamental` for the project, packages, and docs.
 
 ## Status rule
 
 Do not label anything "shipped" unless the code verifies it. Check the force registry, the manual
 config, the render-mode catalog, tests, package exports, the Lab labels, and the docs navigation
-before changing a status. Labels: shipped · experimental · planned · conceptual · legacy.
+before changing a status.
+
+**The four words mean different things — never let one imply another:**
+
+```txt
+Shipped        callable and code-confirmed
+Shipped-unfrozen / experimental   callable and code-confirmed, but NOT part of the frozen surface — shape may change
+Canonical      conceptually authoritative (a concept/term/doctrine), which says nothing about API stability
+Stable         part of the frozen public API (check:api gates it)
+```
+
+"Canonical" never implies "stable"; "shipped" never implies "frozen." The substrate read API
+(`query`/`snapshot`/`diff`/`replay`, the projection registry, body authority, dynamic recoil,
+integrator modes, accumulator channels) is **shipped and documented, but experimental and unfrozen** —
+repeat that phrasing everywhere it appears.
+
+**Section-level labels.** Prefer a status label at the *section* level, not only the document level, so
+a mostly-canonical doc can carry a `Status: frontier` subsection without misleading the reader. Label
+vocabulary: `shipped` · `shipped-unfrozen` · `experimental` · `canonical concept` · `planned` ·
+`frontier` · `speculative`.
+
+## Source-of-truth hierarchy
+
+When two descriptions disagree, this is the authority order (higher wins):
+
+```txt
+1. Code + tests            determine shipped behavior
+2. api-stability.md        determines the frozen surface
+3. Canonical docs          determine concepts, terminology, contracts
+4. Generated site docs     mirror canonical docs + code (not a source)
+5. llms.txt / llms-full    generated reference, never a source
+6. Planning / archive      non-authoritative (history and forward-looking)
+```
+
+Generated artifacts (`llms.txt`, site pages) must be regenerated from source, never hand-edited to
+diverge from the canon they mirror.
+
+## Terminology locks
+
+Words that sit close enough to collide. Keep them apart:
+
+```txt
+Lens        how the field is READ      (scopes/filters a reading; pure, over any FieldQueryResult)
+Projection  how the field is REVEALED  (writes to a declared host output surface; never to a force)
+Formation   how the field is AUTHORED  (a Field Formation — the conceptual arrangement)
+Contract    how the formation EXECUTES (a Field Contract — the compiled plan from a FieldRecipe)
+```
+
+- **Field Formation** vs **global formation mode.** `ambient`/`wells`/`lanes`/`scatter`/`accretion` are
+  *global formation modes* (a.k.a. field-shape modes) set via `setFormation(...)`. Never call them
+  "formations" without the qualifier — the bare word is reserved for the authored **Field Formation**
+  concept.
+- **Field Agent** vs **Software Agent.** A *Field Agent* is a runtime participant that consumes
+  influence (particles are the lightest). A *Software Agent* is an external actor/tool that reads or
+  operates on field state. A software agent may read Field Agents through `query()`/`snapshot()`; it is
+  not itself a Field Agent unless registered as a body/consumer. Agent-readable does **not** imply
+  agent-writable.
+- **data body** vs **`body.data`.** `body.data` is opaque metadata attachable to *any* body. A *data
+  body* is a body whose primary host object is a semantic record (claim/task/file/…). Attaching
+  `data: {…}` does not by itself make a body a data body.
+- **Field Contract** vs **system contract.** A *Field Contract* is the compiled executable plan from a
+  `FieldRecipe`. A *system contract* is a broader platform invariant/guarantee. "Contracts execute"
+  refers to Field Contracts only.
 
 ## The frame
 

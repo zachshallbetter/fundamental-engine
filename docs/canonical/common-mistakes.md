@@ -69,3 +69,16 @@ do not invent it.
 **No — reduced motion loses motion, not meaning.** The simulation and the `--field-*` signals still
 track under `prefers-reduced-motion`; only the CSS easing and the drawn surface drop. Style your reactive
 states so they read without animation. See [accessibility](https://fundamental-engine.com/docs/accessibility).
+
+## What not to build
+
+Because the system is expressive, the failure modes are mostly misuse. Don't:
+
+- Use Fundamental as a **decorative particle background** only (it's a behavior/signals layer; particles are optional).
+- Make **motion the only carrier of meaning** — it must survive reduced motion (see #8).
+- Turn **every relationship into a coupling** — association is not coupling; forces couple, a Field Formation decides which associations become couplings.
+- Let a **projection mutate field state** — projections reveal, they never write back (projection purity).
+- **Expose body data to agents by default** — `body.data` stays opaque unless deliberately included.
+- Say **"formation"** when you mean a *global formation mode* (`wells`/`lanes`/…), or **"Configuration"** when you mean a *Field Formation*.
+- Use **"Matter"** when you mean authored behavior.
+- Create a **force token for every concept** — most concepts are metrics, dimensions, or projections, not new forces (the recipe/force canon is locked).

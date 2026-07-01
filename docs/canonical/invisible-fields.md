@@ -23,7 +23,8 @@
 
 The definition document says the field is a **substrate, not wallpaper**. An invisible field is
 that claim taken literally: the engine runs, bodies participate, matter flows — and **nothing is
-drawn**. The only output is the feedback the platform writes back to the DOM (CSS variables,
+drawn**. Stated plainly: **a field can render nothing, contain no particles, and still be complete —
+if it has bodies, relationships, metrics, queryable state, and projections or feedback, it is a field.** The only output is the feedback the platform writes back to the DOM (CSS variables,
 thresholded events), and the only render surface is the page's own type and ink, styled by CSS
 that reads those variables.
 

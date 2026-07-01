@@ -30,8 +30,9 @@ is the web host adapter (`elements`/`react` are authoring surfaces on top of it)
 host, not the boundary. Canvas is one render surface, not the whole system.
 
 > Concepts describe. Dimensions hold state. Fields structure. Relationships associate. Forces couple.
-> Tokens execute. Metrics measure. Diagnostics explain. Conditions activate. Projections reveal.
-> Formations compose. FieldRecipe represents. Contracts execute. No word lives in two lanes.
+> Tokens execute. Metrics measure. Diagnostics explain. Conditions activate. Lenses read.
+> Projections reveal. Field Formations compose. FieldRecipe represents. Field Contracts execute.
+> No word lives in two lanes.
 
 | Document | Role |
 |---|---|
@@ -80,11 +81,20 @@ FILE: agent-consumption-model.md
 > [forces-system §22](../engine-reference/forces-system.md),
 > [substrate-api](substrate-api.md).
 
-> **Agent-readable surface (shipped).** A software/AI agent no longer has to scrape the DOM or read
-> per-body `--field-*` channels to understand the field: `field.query()` and `field.snapshot()` return
-> the live model — bodies, metrics, relationships, and per-force influence — as plain structured data,
-> and the projection registry's `agent-json` surface lets a Field Formation expose a tailored reading.
-> `query()` is *the* substrate's agent-/tool-readable surface; see [substrate-api.md](substrate-api.md).
+> **Agent-readable surface (shipped, experimental — unfrozen).** A software/AI agent no longer has to
+> scrape the DOM or read per-body `--field-*` channels to understand the field: `field.query()` and
+> `field.snapshot()` return the live model — bodies, metrics, relationships, and per-force influence —
+> as plain structured data, and the projection registry's `agent-json` surface lets a Field Formation
+> expose a tailored reading. `query()` is *the* substrate's agent-/tool-readable surface; see
+> [substrate-api.md](substrate-api.md). (Shipped and callable, but not part of the frozen surface — its
+> shape may change.)
+>
+> **Field Agent vs Software Agent — don't conflate them.** A **Field Agent** is a *runtime participant
+> that consumes influence* (particle, DOM element, event sink — the subject of this document). A
+> **Software Agent** is an *external actor/tool* that reads or operates on field state via
+> `query()`/`snapshot()`. A software agent may *read* Field Agents; it is not itself a Field Agent
+> unless registered as a body/consumer. **Agent-readable does not imply agent-writable** — reads never
+> mutate the field, and any future write path is an explicit, permissioned host action (frontier).
 
 # Field Agent Consumption Model
 
@@ -1136,6 +1146,19 @@ do not invent it.
 track under `prefers-reduced-motion`; only the CSS easing and the drawn surface drop. Style your reactive
 states so they read without animation. See [accessibility](https://fundamental-engine.com/docs/accessibility).
 
+## What not to build
+
+Because the system is expressive, the failure modes are mostly misuse. Don't:
+
+- Use Fundamental as a **decorative particle background** only (it's a behavior/signals layer; particles are optional).
+- Make **motion the only carrier of meaning** — it must survive reduced motion (see #8).
+- Turn **every relationship into a coupling** — association is not coupling; forces couple, a Field Formation decides which associations become couplings.
+- Let a **projection mutate field state** — projections reveal, they never write back (projection purity).
+- **Expose body data to agents by default** — `body.data` stays opaque unless deliberately included.
+- Say **"formation"** when you mean a *global formation mode* (`wells`/`lanes`/…), or **"Configuration"** when you mean a *Field Formation*.
+- Use **"Matter"** when you mean authored behavior.
+- Create a **force token for every concept** — most concepts are metrics, dimensions, or projections, not new forces (the recipe/force canon is locked).
+
 ========================================================================
 FILE: definition-document.md
 ========================================================================
@@ -1175,6 +1198,30 @@ The field bends them back.
 `Fundamental` is not a particle background.
 
 It is a relational behavior layer for the web.
+
+**A field can render nothing, contain no particles, and still be complete:** if it has bodies,
+relationships, metrics, queryable state, and projections or feedback, it is a field. The runtime
+hierarchy makes this precise:
+
+```txt
+Bodies         REQUIRED participants
+Metrics        REQUIRED readings
+Relationships  OPTIONAL associations
+Particles      OPTIONAL matter (one agent type, not the substrate)
+Projections    OPTIONAL host surfaces
+```
+
+**The default field is calm.** No render surface, no surprise motion, no coupling, no body movement, no
+body-data exposure, and no projection mutation of field state — every one of those is opt-in. Calm is
+the baseline; expressiveness is chosen.
+
+**"Field" resolves at three levels — don't collapse them:**
+
+```txt
+Computational Field  the live runtime model: bodies, forces, metrics, relationships, particles, influences, state — it EXECUTES.
+Semantic Field       the meaning layer: claims, sources, priorities, confidence, attention, risk, provenance — it EXPLAINS what the execution means.
+Projection Field     the host-visible expression: CSS, native state, SVG, Canvas, haptics, sound, annotations, agent JSON — it REVEALS it.
+```
 
 ## 2. Interface Physics
 
@@ -2232,14 +2279,86 @@ Every markdown doc carries a status banner, and the folders mirror it:
 
 New code and docs use `--field-*` CSS variables and `field:*` events. The `--forces-*` CSS-variable
 mirroring has been **removed** — `--d` and the `--field-*` family are the live vars. The `forces:*`
-**event** aliases still fire from the engine for compatibility. Prefer `--field-density` in examples;
-mention `--d` only as the compact alias. Use `Fundamental` for the project, packages, and docs.
+**event** aliases still fire from the engine for compatibility. The density channel has a canonical
+raw form and an expressive long form — do not invert them:
+
+```txt
+--d              canonical raw live density channel (engine writes it; prefer it in examples)
+--field-density  the field-namespaced expressive long-form alias of --d
+--load           canonical sink fill
+--mass           legacy alias of --load
+```
+
+Write `--d, with --field-density as the field-namespaced alias` — never `--field-density, alias --d`.
+Use `Fundamental` for the project, packages, and docs.
 
 ## Status rule
 
 Do not label anything "shipped" unless the code verifies it. Check the force registry, the manual
 config, the render-mode catalog, tests, package exports, the Lab labels, and the docs navigation
-before changing a status. Labels: shipped · experimental · planned · conceptual · legacy.
+before changing a status.
+
+**The four words mean different things — never let one imply another:**
+
+```txt
+Shipped        callable and code-confirmed
+Shipped-unfrozen / experimental   callable and code-confirmed, but NOT part of the frozen surface — shape may change
+Canonical      conceptually authoritative (a concept/term/doctrine), which says nothing about API stability
+Stable         part of the frozen public API (check:api gates it)
+```
+
+"Canonical" never implies "stable"; "shipped" never implies "frozen." The substrate read API
+(`query`/`snapshot`/`diff`/`replay`, the projection registry, body authority, dynamic recoil,
+integrator modes, accumulator channels) is **shipped and documented, but experimental and unfrozen** —
+repeat that phrasing everywhere it appears.
+
+**Section-level labels.** Prefer a status label at the *section* level, not only the document level, so
+a mostly-canonical doc can carry a `Status: frontier` subsection without misleading the reader. Label
+vocabulary: `shipped` · `shipped-unfrozen` · `experimental` · `canonical concept` · `planned` ·
+`frontier` · `speculative`.
+
+## Source-of-truth hierarchy
+
+When two descriptions disagree, this is the authority order (higher wins):
+
+```txt
+1. Code + tests            determine shipped behavior
+2. api-stability.md        determines the frozen surface
+3. Canonical docs          determine concepts, terminology, contracts
+4. Generated site docs     mirror canonical docs + code (not a source)
+5. llms.txt / llms-full    generated reference, never a source
+6. Planning / archive      non-authoritative (history and forward-looking)
+```
+
+Generated artifacts (`llms.txt`, site pages) must be regenerated from source, never hand-edited to
+diverge from the canon they mirror.
+
+## Terminology locks
+
+Words that sit close enough to collide. Keep them apart:
+
+```txt
+Lens        how the field is READ      (scopes/filters a reading; pure, over any FieldQueryResult)
+Projection  how the field is REVEALED  (writes to a declared host output surface; never to a force)
+Formation   how the field is AUTHORED  (a Field Formation — the conceptual arrangement)
+Contract    how the formation EXECUTES (a Field Contract — the compiled plan from a FieldRecipe)
+```
+
+- **Field Formation** vs **global formation mode.** `ambient`/`wells`/`lanes`/`scatter`/`accretion` are
+  *global formation modes* (a.k.a. field-shape modes) set via `setFormation(...)`. Never call them
+  "formations" without the qualifier — the bare word is reserved for the authored **Field Formation**
+  concept.
+- **Field Agent** vs **Software Agent.** A *Field Agent* is a runtime participant that consumes
+  influence (particles are the lightest). A *Software Agent* is an external actor/tool that reads or
+  operates on field state. A software agent may read Field Agents through `query()`/`snapshot()`; it is
+  not itself a Field Agent unless registered as a body/consumer. Agent-readable does **not** imply
+  agent-writable.
+- **data body** vs **`body.data`.** `body.data` is opaque metadata attachable to *any* body. A *data
+  body* is a body whose primary host object is a semantic record (claim/task/file/…). Attaching
+  `data: {…}` does not by itself make a body a data body.
+- **Field Contract** vs **system contract.** A *Field Contract* is the compiled executable plan from a
+  `FieldRecipe`. A *system contract* is a broader platform invariant/guarantee. "Contracts execute"
+  refers to Field Contracts only.
 
 ## The frame
 
@@ -2801,15 +2920,21 @@ Consensus Well
 
 Conditions should not spam DOM events. Continuous state belongs in CSS variables and platform state. Discrete transitions belong in thresholded events.
 
-## 7. Formations
+## 7. Global formation modes
 
-→ *Shipped use cases: [use-cases.md §I](use-cases.md#i-universal-ui-patterns) (reading weight — `reading` formation; completion momentum — `coherence` formation), §IV (article topography — `reading` formation), §VII (kanban physics — `pressure` formation), §X (evidence field — `evidence` formation; conflict field — `conflict` formation), §XI (presence field — `presence` formation).*
+> Two senses of "formation" live nearby — keep them apart. A **global formation mode** (a.k.a.
+> *field-shape mode*) is a whole-field bias set via `setFormation(...)`: `ambient`, `wells`, `lanes`,
+> `scatter`, `accretion`. A **Field Formation** is the authored, recipe-backed conceptual arrangement
+> named by *meaning* (`reading`, `evidence`, `conflict`, …). This section is about the *modes*; the
+> named `reading`/`evidence`/… Field Formations below map to `FieldRecipe` records.
 
-A formation is a global or scoped field arrangement.
+→ *Shipped use cases: [use-cases.md §I](use-cases.md#i-universal-ui-patterns) (reading weight — `reading` Field Formation; completion momentum — `coherence` Field Formation), §IV (article topography — `reading` Field Formation), §VII (kanban physics — `pressure` Field Formation), §X (evidence field — `evidence` Field Formation; conflict field — `conflict` Field Formation), §XI (presence field — `presence` Field Formation).*
 
-Formations do not replace force tokens. They bias the whole field.
+A global formation mode is a whole-field arrangement.
 
-Current and future formations can include:
+Global formation modes do not replace force tokens. They bias the whole field.
+
+Current and future global formation modes can include:
 
 ```txt
 ambient
@@ -4703,6 +4828,11 @@ This document expands `Fundamental` beyond particles.
 
 Particles are only one class of field participant. Users, elements, relationships, events, layouts, and data can also be agents.
 
+> **Association is not coupling.** Relationships associate by default. Forces couple. A Field Formation
+> decides which associations become couplings. A relationship edge does **not** cause a force on its
+> own — this matters most for evidence, research, and knowledge-graph use, where readers otherwise
+> assume every edge exerts a pull.
+
 Core expansion:
 
 ```txt
@@ -5299,7 +5429,8 @@ FILE: invisible-fields.md
 
 The definition document says the field is a **substrate, not wallpaper**. An invisible field is
 that claim taken literally: the engine runs, bodies participate, matter flows — and **nothing is
-drawn**. The only output is the feedback the platform writes back to the DOM (CSS variables,
+drawn**. Stated plainly: **a field can render nothing, contain no particles, and still be complete —
+if it has bodies, relationships, metrics, queryable state, and projections or feedback, it is a field.** The only output is the feedback the platform writes back to the DOM (CSS variables,
 thresholded events), and the only render surface is the page's own type and ink, styled by CSS
 that reads those variables.
 
@@ -5740,7 +5871,7 @@ and the live [/docs/diagnostics](https://fundamental-engine.com/docs/diagnostics
 These are Field Formations conceptually. In the current API and catalog they are represented as
 `FieldRecipe` records, so existing recipe names and APIs remain unchanged.
 
-Interface-native formations name the *meaning*, then map to a field:
+Interface-native Field Formations name the *meaning*, then map to a field:
 
 | Recipe | Field | Use | Primitives |
 |---|---|---|---|
@@ -6130,6 +6261,20 @@ Two construction-time capabilities round it out:
 Ask the live field a structured question and get back plain, serializable data. Read-only and
 render-agnostic.
 
+**`query()` contract — what it is *not*:**
+
+```txt
+query() observes the field.
+query() does NOT mutate the field.
+query() does NOT trigger a projection.
+query() does NOT imply a coupling.
+query() does NOT read private host state unless the host exposes it.
+```
+
+This is the bridge from UI effects to software agents, so the read-only guarantee is load-bearing: an
+agent reading the field can never, through reading, change it. (Permission/redaction scoping for
+agent reads is a **frontier** concern — see the planning issues, not this doc.)
+
 ```ts
 interface FieldQuery {
   at?: Vec2 | FieldRect;                 // point {x,y}, DOMRect-shaped rect, or omitted = whole field
@@ -6241,6 +6386,23 @@ The standalone `replayFieldSnapshots(a, b, opts)` is also exported.
 A projection is a named mapping from field **state** to an output surface (CSS, a DOM attribute, an
 annotation, agent-readable JSON, sound, haptic, a reduced-motion equivalent, …). It declares the
 channels it reads and the surfaces it writes, and — critically — it **never changes field state**.
+
+**Projection purity — the doctrine (a `lintProjections`-style contract):**
+
+```txt
+A projection MAY read field state.
+A projection MAY write to its declared output surface.
+A projection MAY NOT mutate bodies.
+A projection MAY NOT create couplings.
+A projection MAY NOT alter metrics.
+A projection MAY NOT change relationship strength.
+A projection MUST declare its accessibility behavior (reduced-motion / static equivalent).
+```
+
+This is the guardrail behind *"projection reveals state; coupling changes state"* — a projection that
+writes back into the field is a coupling wearing a projection's clothes, and the "haunted field"
+failure mode (state appears to change through a reveal) is exactly what it prevents. A **lens** is the
+read-side twin: a lens is *how the field is read*; a projection is *how the field is revealed*.
 
 ```ts
 interface ProjectionRegistry {
@@ -8099,7 +8261,7 @@ A long-form article where pull quotes and key terms carry mass. Particles cluste
 near editorially heavy content. As the reader moves through the page, the field
 re-orients to whatever high-mass elements are in the viewport.
 
-→ *Recipe: `Reading Field` — see [`field-possibilities.md §7`](field-possibilities.md#7-formations) (reading formation) and §24 (memory possibilities).*
+→ *Recipe: `Reading Field` — see [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes) (reading formation) and §24 (memory possibilities).*
 
 **What the field does:** `<blockquote>` and `<strong>` elements receive
 `data-body="attract"` with varying `data-strength`. As they scroll into viewport,
@@ -8119,7 +8281,7 @@ Multi-step flows — checkout, onboarding, wizard — where each completed step 
 its gravity and the next step's gravity increases. The submit button at the end of a
 long form is the strongest body on the page.
 
-→ *Recipe: `Guided Flow` — see [`field-possibilities.md §7`](field-possibilities.md#7-formations) (coherence formation) and §6 (coherent condition).*
+→ *Recipe: `Guided Flow` — see [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes) (coherence formation) and §6 (coherent condition).*
 
 **What the field does:** steps are registered bodies with strength 0 (neutral) until
 active. The active step has strength 1; the next step has latent strength 0.4.
@@ -8299,7 +8461,7 @@ concentrates at the active item. CSS maps `--d` to `opacity` or `filter: brightn
 A collection of posts where each article's body strength is its view count or
 normalized read time. On a category page, the field creates a content topography.
 
-→ *Formation: `reading` — see [`field-possibilities.md §7`](field-possibilities.md#7-formations).*
+→ *Formation: `reading` — see [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes).*
 
 **What the field does:** view count maps to `data-strength`. The field's density
 distribution over the article grid is a spatial representation of readership.
@@ -8409,7 +8571,7 @@ field creates a topography of importance.
 A kanban board where blocked or overdue cards accumulate urgency mass. The board's
 field density distribution shows where bottlenecks are without a filter or sort.
 
-→ *Formation: `pressure` — [`field-possibilities.md §7`](field-possibilities.md#7-formations). Conditions: `stale`, `thresholded` from §6. Boundary: §23 (Permission Boundary for column scope).*
+→ *Formation: `pressure` — [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes). Conditions: `stale`, `thresholded` from §6. Boundary: §23 (Permission Boundary for column scope).*
 
 ---
 
@@ -8541,7 +8703,7 @@ Claims become bodies. Sources bind to them — strong sources pull closer, weak 
 orbit at distance. Contradictory sources repel. Verified claims gain coherence and
 mass. Unverified claims remain unstable, visibly unsettled in the field.
 
-→ *Recipe: `Evidence Field` — [`field-possibilities.md §7`](field-possibilities.md#7-formations) (evidence formation) and §9 (recipe catalog).*
+→ *Recipe: `Evidence Field` — [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes) (evidence formation) and §9 (recipe catalog).*
 
 **What the field does:** each claim is a `data-body` whose strength is its confidence
 score. Each source is a related body with `data-field-relation` to the claim it
@@ -8590,7 +8752,7 @@ A document or interface with contested information — two sources that contradi
 other, two recommendations that conflict. The field holds the contradiction in visible
 tension rather than collapsing it into a resolved state.
 
-→ *Formation: `conflict` — [`field-possibilities.md §7`](field-possibilities.md#7-formations). Recipes: `Conflict Field`, `Disagreement Charge`.*
+→ *Formation: `conflict` — [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes). Recipes: `Conflict Field`, `Disagreement Charge`.*
 
 **What the field does:** conflicting bodies carry opposing charge
 (`data-body="charge"`). The field maintains charge separation between them. The

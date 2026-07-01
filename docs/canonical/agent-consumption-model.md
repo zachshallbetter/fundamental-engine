@@ -12,11 +12,20 @@
 > [forces-system §22](../engine-reference/forces-system.md),
 > [substrate-api](substrate-api.md).
 
-> **Agent-readable surface (shipped).** A software/AI agent no longer has to scrape the DOM or read
-> per-body `--field-*` channels to understand the field: `field.query()` and `field.snapshot()` return
-> the live model — bodies, metrics, relationships, and per-force influence — as plain structured data,
-> and the projection registry's `agent-json` surface lets a Field Formation expose a tailored reading.
-> `query()` is *the* substrate's agent-/tool-readable surface; see [substrate-api.md](substrate-api.md).
+> **Agent-readable surface (shipped, experimental — unfrozen).** A software/AI agent no longer has to
+> scrape the DOM or read per-body `--field-*` channels to understand the field: `field.query()` and
+> `field.snapshot()` return the live model — bodies, metrics, relationships, and per-force influence —
+> as plain structured data, and the projection registry's `agent-json` surface lets a Field Formation
+> expose a tailored reading. `query()` is *the* substrate's agent-/tool-readable surface; see
+> [substrate-api.md](substrate-api.md). (Shipped and callable, but not part of the frozen surface — its
+> shape may change.)
+>
+> **Field Agent vs Software Agent — don't conflate them.** A **Field Agent** is a *runtime participant
+> that consumes influence* (particle, DOM element, event sink — the subject of this document). A
+> **Software Agent** is an *external actor/tool* that reads or operates on field state via
+> `query()`/`snapshot()`. A software agent may *read* Field Agents; it is not itself a Field Agent
+> unless registered as a body/consumer. **Agent-readable does not imply agent-writable** — reads never
+> mutate the field, and any future write path is an explicit, permissioned host action (frontier).
 
 # Field Agent Consumption Model
 

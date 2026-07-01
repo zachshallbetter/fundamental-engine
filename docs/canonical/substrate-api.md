@@ -38,6 +38,20 @@ Two construction-time capabilities round it out:
 Ask the live field a structured question and get back plain, serializable data. Read-only and
 render-agnostic.
 
+**`query()` contract — what it is *not*:**
+
+```txt
+query() observes the field.
+query() does NOT mutate the field.
+query() does NOT trigger a projection.
+query() does NOT imply a coupling.
+query() does NOT read private host state unless the host exposes it.
+```
+
+This is the bridge from UI effects to software agents, so the read-only guarantee is load-bearing: an
+agent reading the field can never, through reading, change it. (Permission/redaction scoping for
+agent reads is a **frontier** concern — see the planning issues, not this doc.)
+
 ```ts
 interface FieldQuery {
   at?: Vec2 | FieldRect;                 // point {x,y}, DOMRect-shaped rect, or omitted = whole field
@@ -149,6 +163,23 @@ The standalone `replayFieldSnapshots(a, b, opts)` is also exported.
 A projection is a named mapping from field **state** to an output surface (CSS, a DOM attribute, an
 annotation, agent-readable JSON, sound, haptic, a reduced-motion equivalent, …). It declares the
 channels it reads and the surfaces it writes, and — critically — it **never changes field state**.
+
+**Projection purity — the doctrine (a `lintProjections`-style contract):**
+
+```txt
+A projection MAY read field state.
+A projection MAY write to its declared output surface.
+A projection MAY NOT mutate bodies.
+A projection MAY NOT create couplings.
+A projection MAY NOT alter metrics.
+A projection MAY NOT change relationship strength.
+A projection MUST declare its accessibility behavior (reduced-motion / static equivalent).
+```
+
+This is the guardrail behind *"projection reveals state; coupling changes state"* — a projection that
+writes back into the field is a coupling wearing a projection's clothes, and the "haunted field"
+failure mode (state appears to change through a reveal) is exactly what it prevents. A **lens** is the
+read-side twin: a lens is *how the field is read*; a projection is *how the field is revealed*.
 
 ```ts
 interface ProjectionRegistry {

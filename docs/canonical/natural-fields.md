@@ -155,7 +155,7 @@ and the live [/docs/diagnostics](https://fundamental-engine.com/docs/diagnostics
 These are Field Formations conceptually. In the current API and catalog they are represented as
 `FieldRecipe` records, so existing recipe names and APIs remain unchanged.
 
-Interface-native formations name the *meaning*, then map to a field:
+Interface-native Field Formations name the *meaning*, then map to a field:
 
 | Recipe | Field | Use | Primitives |
 |---|---|---|---|
