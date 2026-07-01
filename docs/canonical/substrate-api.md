@@ -47,7 +47,7 @@ interface FieldQuery {
 }
 interface FieldQueryResult {
   query: FieldQuery; frame: number; time: number; region?: FieldRect;
-  bodies: FieldBodyReading[];             // id, rect, tokens, metrics, dimensions, activeFormations, authority
+  bodies: FieldBodyReading[];             // id, identity, rect, tokens, metrics, dimensions, activeFormations, authority
   metrics: Record<string, number>;
   relationships: FieldRelationshipReading[];   // from/to ids, type, strength, memory, active, causal
   influences: FieldInfluenceReading[];    // source body, force token, channel, contribution (Δv | heat)
@@ -55,6 +55,27 @@ interface FieldQueryResult {
   lens?: string;                          // the lens id this reading was scoped through, when supplied
 }
 ```
+
+**First-class body identity.** Every `FieldBodyReading` (and every snapshot body) carries a stable,
+structured `identity` alongside the top-level `id`:
+
+```ts
+interface FieldBodyIdentity {
+  id: string;          // stable primary key — unique in the field, constant for the body's life
+  namespace?: string;  // optional grouping (app/module); opaque to the engine
+  kind?: string;       // optional type tag ('card', 'heading', 'agent'); opaque
+  host?: string;       // optional owner tag (a renderer/view that owns the rendered object); opaque
+}
+```
+
+`identity.id === id` (back-compat), and `snapshot`/`diff`/`replay`/relationships all key on `identity.id`.
+**Identity is a doctrine, not display text:** a heading's *words* are not its identity (they can change
+while identity holds), a DOM `id` is one *source* of a stable id but not the concept, and an object
+reference is not identity (references don't survive a rescan or a serialize/replay round-trip). Supply an
+identity via `addBody({ identity })` (a bare string is shorthand for `{ id }`) or a `createField({ identify })`
+resolver that derives one from a DOM element; when none is supplied the engine derives a **deterministic**
+stable id (the element's DOM `id`, else a monotonic `body-N` — never `Math.random`), so identity is always
+present and stable.
 
 `el.getBoundingClientRect()` drops straight into `at` (it's `DOMRect`-shaped). `influences` come from
 the impulse accumulator — each carries a `channel`: `'linear'` (Δv), `'thermal'` (heat), `'angular'`

@@ -7,6 +7,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`@fundamental-engine/core`:** first-class **body identity** — a stable, structured `FieldBodyIdentity`
+  (`{ id, namespace?, kind?, host? }`) for every body, so `query`/`snapshot`/`diff`/`replay`/relationships
+  reference bodies by identity instead of object reference or display text. Supply it via
+  `addBody({ identity })` (a bare string is shorthand for `{ id }`) or the new `createField({ identify })`
+  resolver (derives an identity from a DOM element); omitted ⇒ the engine derives a deterministic stable id
+  (the element DOM id, else a monotonic `body-N` — never `Math.random`). The resolved identity is surfaced on
+  `FieldBodyReading.identity` and `FieldBodySnapshot.identity`; the existing top-level `id` is unchanged
+  (`identity.id === id`) and diff/replay continue to key on it. Purely additive. Swift/Kotlin ports follow.
+
 ## [0.9.2] — 2026-07-01
 
 ### Changed

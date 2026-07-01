@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, ProjectionSource, FieldProjectionTarget, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
+import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldBodyIdentity, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, ProjectionSource, FieldProjectionTarget, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -278,20 +278,25 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let formTarget: Formation = { ...FORMATION_BY.ambient.preset };
   let formationName = 'ambient'; // the active formation's id, for FieldHandle.query()
 
-  // Stable per-body ids for FieldHandle.query(): the element's id when present, else a synthetic
-  // `body-N` kept stable across queries (same Body object → same id), so relationship endpoints and
-  // body readings agree.
-  const bodyIdMap = new WeakMap<Body, string>();
+  // First-class body identity (substrate critical path). Every body resolves to a stable, structured
+  // FieldBodyIdentity, cached on `b.identity` the first time it is keyed. Precedence: a supplied identity
+  // (addBody({ identity })) → the `identify` field-option resolver → the element's DOM id → a monotonic
+  // `body-N` synthetic. Deterministic (never Math.random); stable for the body's life, so relationship
+  // endpoints, body readings, snapshots, and diff/replay all agree on `identity.id`.
   let bodyIdSeq = 0;
-  const bodyId = (b: Body): string => {
-    if (b.el && b.el.id) return b.el.id;
-    let id = bodyIdMap.get(b);
-    if (id === undefined) {
-      id = `body-${bodyIdSeq++}`;
-      bodyIdMap.set(b, id);
+  const identify = opts.identify;
+  const bodyIdentity = (b: Body): FieldBodyIdentity => {
+    if (b.identity) return b.identity;
+    let ident: FieldBodyIdentity | undefined;
+    if (identify && b.el) ident = identify(b.el);
+    if (!ident) {
+      const domId = b.el && b.el.id ? b.el.id : undefined;
+      ident = { id: domId ?? `body-${bodyIdSeq++}` };
     }
-    return id;
+    b.identity = ident;
+    return ident;
   };
+  const bodyId = (b: Body): string => bodyIdentity(b).id;
   // Shared metric/dimension reading for query() and snapshot(), so both compute identically (diff
   // compares snapshot metrics — they must agree with what query() reports).
   const readBodyMetrics = (b: Body): { metrics: Record<string, number>; dimensions: Record<string, number> } => {
@@ -2732,6 +2737,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const body = bodyFromElement(el);
       body.rect = toRect;
       body.data = spec.data;
+      // first-class identity: a supplied identity pins the stable id (a bare string is shorthand for
+      // { id }); omitted ⇒ the engine derives a synthetic `body-N` on first keying. A programmatic body
+      // has no DOM id, so a supplied identity is the only way to reference it stably across snapshots.
+      if (spec.identity != null) {
+        body.identity = typeof spec.identity === 'string' ? { id: spec.identity } : spec.identity;
+      }
       if (spec.authority) body.authority = spec.authority; // body-authority (doc 04); default anchored
       body.feedback = true; // programmatic bodies always compute channels (the CSS write hits the
       // harmless stub element; the value flows to onFeedback + the handle's live channels).
@@ -2852,8 +2863,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const bodyReadings: FieldBodyReading[] = want.has('bodies')
         ? matched.map((b): FieldBodyReading => {
             const { metrics, dimensions } = readBodyMetrics(b);
+            const identity = bodyIdentity(b);
             return {
-              id: bodyId(b),
+              id: identity.id,
+              identity,
               rect: { x: b.cx - b.hw, y: b.cy - b.hh, width: b.hw * 2, height: b.hh * 2 },
               tokens: b.tokens.slice(),
               metrics,
@@ -2915,8 +2928,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const visible = bodies.filter((b) => b.vis);
       const snapBodies: FieldBodySnapshot[] = visible.map((b): FieldBodySnapshot => {
         const { metrics, dimensions } = readBodyMetrics(b);
+        const identity = bodyIdentity(b);
         const reading: FieldBodySnapshot = {
-          id: bodyId(b),
+          id: identity.id,
+          identity,
           authority: b.authority ?? 'anchored',
           rect: { x: b.cx - b.hw, y: b.cy - b.hh, width: b.hw * 2, height: b.hh * 2 },
           position: { x: b.cx, y: b.cy, z: 0 },
