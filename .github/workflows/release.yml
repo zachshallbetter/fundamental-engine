@@ -9,8 +9,9 @@ name: Release
 #   gate          — the full CI gate + tag↔version match across all seven packages.
 #                   A publish NEVER starts if any of this fails.
 #   publish       — pnpm publish with provenance. Idempotent per-package: pnpm skips
-#                   versions already on the registry, so re-running a failed run is safe
-#                   (`gh run rerun <id> --failed` — never re-tag).
+#                   versions already on the registry, so re-running a failed run is safe.
+#                   Retries up to 3× in-step to absorb the transient Sigstore tlog 409;
+#                   if it still fails, `gh run rerun <id> --failed` (never re-tag).
 #   post_publish  — proof the release is actually consumable: a smoke install of the
 #                   published version from the registry + provenance attestation checks.
 #   conclusion    — asserts every job above SUCCEEDED (skipped ≠ success).
@@ -144,7 +145,21 @@ jobs:
       # The retired umbrellas (@fundamental-engine/kit + fundamental-engine) are `private: true`
       # as of 0.7.0, so pnpm publish skips them — no filter exclusion needed.
       - name: Publish with provenance
-        run: pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}
+        # pnpm publish is idempotent (it skips versions already on the registry), so a retry only
+        # re-attempts the packages that didn't land. Wrap it to absorb the transient Sigstore provenance
+        # TLOG error — "(409) an equivalent entry already exists in the transparency log" — that
+        # intermittently aborts the run after some packages have published (it bit v0.9.2 after `core`).
+        # This automates the documented partial-publish recovery (`rerun --failed`) so a single flake no
+        # longer requires a manual re-run. A genuine failure still exits non-zero after the last attempt.
+        run: |
+          attempt=1; max=3
+          until pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}; do
+            if [ "$attempt" -ge "$max" ]; then
+              echo "::error::publish failed after $max attempts"; exit 1
+            fi
+            echo "::warning::publish attempt $attempt failed (often a transient Sigstore tlog 409) — pnpm skips already-published packages; retrying the rest"
+            attempt=$((attempt + 1)); sleep $((attempt * 20))
+          done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
