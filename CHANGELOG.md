@@ -7,6 +7,8 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+## [0.9.2] — 2026-07-01
+
 ### Changed
 
 - **`@fundamental-engine/core`:** the default `dprCap` stays **`2`** — an experimental drop to `1.5` was
