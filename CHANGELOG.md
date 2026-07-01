@@ -931,6 +931,292 @@ additive (the frozen surface is intact).
   (#552) and `bounds` (contained fields, #540), and the handle members `setQualityTier` (#413) and
   `version` (#547) — so the documented surface matches the shipped one.
 
+## [0.8.0] — 2026-06-22
+
+### Added
+
+- **Swift performance model — deterministic perf gate + wall-clock measurement.** `PerfRegressionTests`
+  runs a heavy 1200-particle field for 600 frames and asserts the work stays bounded — particle count
+  conserved (no leak / unbounded spawn), every value finite (no NaN/Inf), velocity and heat in range —
+  a machine-independent gate for the perf-bug class that actually ships (runaway allocation, divergent
+  integrator). Wall-clock is *measured* (`swift run FieldLabSnapshots --bench`) but deliberately not
+  CI-gated: the field is fill-rate-bound and headless rasterization exaggerates fill, so real frame-time
+  budgets need on-hardware measurement (the #324 lesson). Second model of the native verification spine.
+- **Cross-plane conformance harness — Swift parity is now machine-checked (#526).** `pnpm gen:golden`
+  fires the canonical deterministic forces through the f64 JS engine and writes their frame-0 force
+  deltas to a golden fixture; the f32 Swift `GoldenConformanceTests` must reproduce every one within
+  tolerance (120 cases: 6 forces × 4 variants × 5 probes). Two CI gates close the loop — `pnpm
+  check:golden` fails if the golden drifts from the JS math, and the Swift CI legs fail if a Swift force
+  drifts from the golden. The first autonomous, no-device verification model for the native port; the
+  same harness extends to the EM/grid/RNG/extended forces.
+- **Support matrix + accessibility record, CI-pinned (RC hardening — #322, #325).** A stated
+  browsers / DPR / reduced-motion / SSR support matrix and accessibility posture
+  (`docs/canonical/support-matrix.md`), each row backed by a test: `core/reduced-motion.test.ts`
+  (integration provably freezes — `dt = 0`, no travel — when the host reports reduced motion, and
+  provably animates otherwise), `core/ssr.test.ts` (the engine imports, constructs, runs, and tears down
+  with `document`/`window` absent — `render:'none'` is the SSR-natural mode), alongside the existing
+  DPR-cap and Accessibility-Contract tests. The field stays `aria-hidden` (decorative; AT walks past it);
+  the AT-pass log records the automated invariants and leaves the live screen-reader spot-check as a
+  maintainer sign-off.
+- **Lifecycle contract + contract-coverage guard (RC hardening — #320, #323).** A documented
+  create→register→measure→unmount contract (`docs/canonical/lifecycle-contract.md`) backed by per-surface
+  unmount tests (vanilla idempotent destroy, the `<field-root>` `disconnectedCallback` teardown, the
+  React `useEffect` cleanup), plus a meta-test that fails CI if any public `FieldOptions` key or the
+  `particleCount()` metric ships without a test. The guard surfaced and closed real gaps — the theming
+  (`theme`/`gradientCool`/`gradientWarm`/`waveBaseline`) and grid (`gridWarp`/`gridIntensity`) options
+  now have coverage.
+
+### Removed
+
+- **Deleted the retired `@fundamental-engine/kit` + `fundamental-engine` umbrella packages.** They were
+  retired (private, 0 LOC) at 0.7.0 and are now removed from the workspace entirely — the published set
+  is the 6 real packages (`core`, `dom`, `elements`, `react`, `vanilla`, `three`) plus the deprecated
+  `platform` alias. Also fixed `check:readme`'s package list (it was missing `dom` and still listed the
+  umbrellas). No published-surface change (the umbrellas never shipped). `platform` removal is deferred
+  to 1.0 (it's a published alias — see the packaging decision in #537).
+### Changed
+
+- **BREAKING (pre-1.0): `render` now defaults to `'none'` (signals-first) — #538.** A field created
+  without an explicit `render` (`createField(canvas)`, `new FieldField()`, `<field-root>`) now runs the
+  full simulation + feedback pipeline but **draws nothing** — it exists purely as signals (`--d`,
+  `--load`, `--lit`, capture events, `scrollV()`). The particle surface is opt-in: pass `render: 'dots'`
+  (or `<field-root render="dots">`). This makes the default experience the *behavior* layer the engine
+  is actually for, instead of a particle background — a field stops feeling like "particles" and starts
+  feeling like a tool. **Migration:** anywhere you relied on the implicit particle field, add
+  `render: 'dots'` / `render="dots"`. Unaffected: `<field-cell>` (its own demo pool, still draws),
+  recipes (set their own render), and any call already passing `render`. The site homepage and the
+  starter app pin `render="dots"` explicitly (they *are* the field showcase).
+
+### Performance
+
+- **Hot-path allocation sweep (#530).** Eliminated the clearest steady-state per-frame allocations in
+  the draw loop: **twelve `hexToRgb(cfg.accent)` re-parses per frame** (one per draw/overlay pass) now
+  read the already-cached live accent (`curAccent`) — zero parse, zero alloc, and slightly more precise
+  (no hex round-trip); and the self-laying-out repulsion no longer allocates `centers.filter(j !== i)`
+  every frame per mover (was **O(movers²) arrays/frame** on a cluster) — `repelForce` takes a `skip`
+  index instead. Behaviour is unchanged (pinned by a skip-vs-filter equivalence test). The GC-pressure
+  *budget* as a CI gate (the issue's secondary ask) needs allocation-measurement infra — a follow-up.
+
+### Added
+
+- **Compositing perf-lint — the mix-blend fill trap as a guard (`lintCompositingPerf`, dom, #532).**
+  The hardest-won fill-rate lesson is now a dev-time lint: a full-viewport `mix-blend-mode` canvas
+  re-composites the **whole screen every frame** the layer below animates, *even when empty* (#405) — so
+  it must stay `display:none` until it draws. The rule flags a mounted full-viewport mix-blend canvas
+  whose backing store is unsized (`0×0` → not drawing) yet isn't `display:none`. Pure, inline-style only,
+  wired into `lintPlatform`. (The adaptive-DPR half of #532 shipped as `setQualityTier` in #413.)
+- **Adaptive quality tiers — `setQualityTier` + automatic governor response (#413).** The
+  `QualityGovernor` already detected sustained frame-budget overruns and emitted a tier (0–3), but the
+  *engine-side* response was a documented gap — the embedder had to wire it. Now `FieldHandle.setQualityTier(0–3)`
+  maps the tier to the engine's own levers (caps the effective backing-store DPR — 1.5 / 1.25 / 1 — the
+  dominant fill lever, and skips the heaviest ambient layer, the heatmap glow, at tier 2+), reversibly.
+  The `<field-root>` platform runtime now **forwards the governor's tier automatically**, so a struggling
+  field self-simplifies and recovers without any wiring; the `field:quality-tier` event still fires for
+  custom responses. Mirrored on vanilla / `<field-root>` / three / React.
+- **Discrete proximity events — `enter` / `exit` / `met` (core, #441).** The discrete event bus
+  (`field.on(type, cb)`) gains the gameplay triggers from FieldKit gap #4: `enter` / `exit` fire as
+  another body crosses INTO / OUT OF a body's `range` (`{ body, other }`), and `met` fires once when
+  two bodies' boxes touch (`{ a, b }`) — so a bee-agent entering a bloom or a predator meeting prey is a
+  callback, not per-frame distance polling. Body-level, object-identity tracking (survives rescan), runs
+  on the measure cadence, and **lazy** (a type with no listener costs nothing). Available on
+  vanilla / `<field-root>` / three / React via the generic `on`.
+- **First-class theming — the ambient palette as `FieldOptions` (#529, supersedes #498).** The
+  free-particle heat ramp (`COOL`/`WARM`) and the background-wave baseline (`WAVE_RGB`) were hardcoded
+  module constants — theming meant forking core. Now they're a **theme contract**: `theme` picks a named
+  preset (`'warm'` (default) · `'cool'` · `'mono'`) and `gradientCool` / `gradientWarm` / `waveBaseline`
+  override individual lanes (all `FieldOptions`, mirrored as `<field-root theme|gradient-cool|gradient-warm|wave-baseline>`).
+  Exports `THEMES` + `FieldTheme`. **Additive, frozen surface intact** — `theme: 'warm'` reproduces the
+  shipped palette byte-for-byte (the hot-path `particleRGBInto` defaults to the same constants).
+- **`FIELD_VERSION` + `field.version` — the running engine version (#547).** The engine now exposes
+  its version: `import { FIELD_VERSION } from '@fundamental-engine/core'`, and every field handle has a
+  `version` property (mirrored on `FieldField`, `<field-root>`, and the React handle) — so a consumer or
+  an introspecting agent can read which build it is on, including a CDN/bundled copy at runtime. A drift
+  guard (`version.test.ts`) keeps `FIELD_VERSION` locked to `packages/core/package.json`. Additive to the
+  (unfrozen) handle. (CDN snippet pinning lands with the next npm publish.)
+- **`npm create @fundamental-engine` scaffold (#546).** A new `@fundamental-engine/create` package: one
+  command spins up a starter — `npm create @fundamental-engine my-app` (interactive) or with
+  `-- --template vanilla|react|web-component`. All three are **signals-first** and explicit about
+  `render` (so they behave the same whichever engine version resolves); the default `vanilla` template is
+  a *contained, signals-only* reactive list (`FieldField` + `bounds`, `render: 'none'`) — the field as
+  behaviour, no particle canvas. Zero-dependency CLI; the templates ship in the package.
+- **`gridIntensity` — the warped grid as a visual centerpiece (#552).** The `grid` overlay's stroke
+  opacity is now an option (`gridIntensity`, `<field-root grid-intensity>`); default `0.16` keeps the
+  faint diagnostic unchanged, raise it (≈`0.5`) and the lattice reads as a deliberate surface. Pairs with
+  `gridWarp` (how far the lattice deflects). Powers the homepage hero: `overlay="grid"` warped by the
+  "mass" headline (a gravity well co-located with its swirl — a spinning mass that dips *and* drags the
+  lattice, the spacetime-curvature image), bold across the hero and faded out below it by a scroll-zone
+  controller, with particles drifting through. The overlay surface is also marked `data-field-overlay`
+  (the single light-DOM canvas Fundamental adds) so a consumer can target it — e.g. for that scroll fade.
+- **`<field-root>` consumer-surface completeness (#541, #542).** Two CAPMPrep-driven fixes to the web
+  component's discoverability: (1) **imperative setters reflect to their attribute** — after
+  `el.setRender("links")`, `el.getAttribute("render") === "links"` (it used to show a stale value and
+  actively mislead attribute-based debugging). All live setters reflect (`render`/`overlay`/`background`/
+  `accent`/`palette`/`formation` + the boolean toggles), guarded against the re-apply loop; `formation`
+  is now a first-class round-tripping attribute. (2) **`.handle` accessor + the last forwards** — the
+  element exposes its live `FieldHandle` via `el.handle` (the escape hatch for the full surface and for
+  `bindData`/`applyRecipe` from `@fundamental-engine/dom`), and `scrollV()`/`setVisible()` join the
+  proxied methods — so introspecting the element no longer wrongly reads as "a thin API."
+- **Dev no-op diagnostics — `devWarnNoOp` (core, #543).** A method that returns a neutral value because
+  a prerequisite is missing now explains itself in dev instead of failing silently: `sampleScalar` /
+  `sampleGradient` called with the heatmap layer off (where they return `0` / `{0,0}`) emit a one-shot,
+  deduped `console.warn` naming the fix (`{ heatmap: true }` / `setHeatmap(true)`). Gated by the same
+  contract-checks flag as the guards (no-op + dead-code-eliminable under `NODE_ENV=production`), deduped
+  by message so a per-frame call warns once, and never throws — the no-op stays legal, it's just no longer
+  mysterious. The first slice of the silent-no-op diagnostic family; more call sites follow.
+- **Contained, card-scoped fields — `containerHost` + `bounds` (#540).** A field can now render scoped to
+  an element instead of the window — the structural gap that made every embed feel like a full-window
+  particle background. `new FieldField({ bounds: cardEl })` (or `createField(canvas, { host: containerHost(el) })`)
+  puts the field, its bodies (scanned within the element), and its canvas in the element's local coordinate
+  space. Mechanism: `HostViewport` gains an optional `originX/originY`; the scanner and the thread/move
+  readouts subtract it, and a contained field re-reads its origin each frame + skips the window-only scroll
+  shift (its local positions are scroll-invariant). Additive — `originX/originY` default to 0, so window
+  fields stay byte-identical (668 core tests unchanged). The first concrete `FieldSurface` toward #539.
+- **One imperative `createField` door — host resolution (#537).** `@fundamental-engine/vanilla`'s
+  `createField(canvas, opts)` is now a single entry that resolves the host from `opts.host` → `opts.bounds`
+  (contained, via `containerHost`) → `browserHost()` (default), so the contained and custom-host modes no
+  longer require reaching for `createBrowserField`/`containerHost` by hand — the three-`createField`
+  footgun that confused embedders. `FieldField` routes through the same entry. The frozen contract is
+  preserved exactly: `createField(canvas)` with no host still auto-supplies `browserHost`; `bounds` and
+  `host` are additive options. New type: `CreateFieldOptions`.
+
+### Added
+
+- **Consumer-side feedback-contract lint — `lintFeedbackReadsUnwritten` (dom, #516).** Completes the
+  silent-contract lint family: a CSS *rule* that reads a feedback var (`var(--field-*)`/`--load`/`--d`)
+  and matches a `[data-body]` element with **no** `data-feedback` — a field body styled from a channel
+  it never opted into, so the style sits at its fallback forever. The stylesheet-level mirror of the
+  inline-only `lintFeedbackVarReads` and the inverse of `lintFeedbackWritesUnread`; scoped to
+  `[data-body]` to stay high-signal. Wired into `lintPlatform` (runs on the homepage), dev-only/no-op
+  under SSR.
+
+### Performance
+
+- **Tag-tint RGB is cached on the measure cadence (core, #515).** The render-time tag-tint precompute
+  re-parsed every coloured body's hex (`hexToRgb`) and rebuilt its array *every frame*; it now caches the
+  parsed RGB + reach² on the 6th-frame measure cadence (where colour/range actually change). Body
+  positions are read live each frame, so the tint still tracks scroll (the #508 fix) — only the per-frame
+  string-parse churn is gone.
+
+### Added (earlier in 0.8.0)
+
+- **`gridWarp` — distortion multiplier for the `grid` overlay (core).** The `grid` overlay (the
+  reference lattice displaced by the field) deflects each node by a deliberately-legible amount; the new
+  `gridWarp` FieldOption scales that deflection so the deformation reads more strongly (`1` default;
+  `2`–`3` exaggerates it for demos; `0` flattens the lattice). Exposed as `<field-root grid-warp>` and
+  documented in the options reference. Additive — the frozen API surface is unchanged.
+
+- **`wall` sparks in the body's own colour (core).** A kinematic `wall` already throws a spark on a hard
+  impact (§6.4); it now sparks in the body's `data-color` tint when it carries one (falling back to the
+  canonical wall hue), so a tagged container's impact flash matches its tag-tint. One-line change to the
+  `wall` force; existing spark/bounce tests unchanged.
+
+- **Tag-tint — particles wear their nearest tag's colour (core).** Every body that carries a colour
+  (`data-color`) now stains the swarm toward its tint at render time, by proximity — a *pervasive*
+  companion to the overlap-only `pigment` force, so a particle near a tagged body reflects its hue even
+  on a sparse field (nearest-strongest wins, linear falloff to ~1.4× the force range; pigment still
+  layers on top for advected streaks). Automatic — no markup beyond `data-color`.
+- **Scroll-position heatmap fade (core).** The density heatmap now fades out as the page scrolls past
+  the hero (≈ the first viewport) — a smooth, MONOTONIC function of scroll position, so unlike the
+  earlier velocity-based suppression it never pops/flickers. Below the hero the whole layer is skipped
+  (no texel recompute, no upscale), confining the at-rest heatmap cost (#409) to where it's focused.
+
+- **`lintFeedbackWritesUnread` — the producer half of the feedback-contract lint (dom).** Closes the
+  recurring "charged but reads nothing" bug class (#411): a `data-feedback` body gets `--d`/`--load`/
+  `--field-*` written every frame, but if no style rule reads them it changes invisibly. The existing
+  `lintFeedbackVarReads` caught the inverse (reads-without-writes); this catches writes-without-reads by
+  walking the document's accessible stylesheets for var consumers and warning for any `data-feedback`
+  body matched by none. Dev-only/heuristic — no-ops under SSR/tests/cross-origin sheets, and lenient
+  (strips pseudo-selectors) so it under-reports rather than false-positives. Wired into `lintPlatform`.
+
+### Changed
+
+- **Warm default palette (core).** The free-particle heat ramp (`COOL`/`WARM` in `math.ts`) and the
+  Currents' wave baseline (`WAVE_RGB` in `field.ts`) shift from the cool blue/teal/purple baseline to a
+  warm one (`COOL [255,224,200]` / `WARM [255,110,80]`; waves `#ff8a5c`/`#f0628e`/`#ffc46b`). The
+  energized **accent** is unchanged and still overridable per field (`accent` / `palette` / `setAccent`),
+  so the look is warm ambient matter under cool-accent highlights. This is the engine's default identity
+  now; the wave baseline and ramp ends remain hardcoded (no per-field override yet — tracked separately).
+  The Swift port is brought to parity in a follow-up so the planes don't diverge.
+
+- **Overlay arrows resample on a cadence (core perf).** `drawOverlayArrows` (the in-front
+  `streamlines`/`force-vectors` Field-Surfaces reading) rebuilt its whole force-vector grid every
+  frame — the same per-frame regrid waste the underlay shed in #406. It now resamples every 3rd frame
+  (or when its cache is empty / a flow focus is live) and draws from the cache every frame, so the
+  arrows never flicker or step. Matches the underlay `slSamples` pattern; `accent` is still read every
+  frame so `setAccent` recolors immediately. (#412)
+
+### Fixed
+
+- **`<field-root dpr-cap>` rejects non-finite values (elements).** The `dprCap` getter now guards with
+  `Number.isFinite` like `density`/`depth`, so `dpr-cap="Infinity"`/`"NaN"` fall back to the engine
+  default instead of feeding a bad backing-store DPR downstream.
+- **Removed the non-functional `root` option from `FieldLayerOptions` (three).** The `FieldLayer` class
+  scans its mesh-body registry, so the DOM `[data-body]` scan root was silently discarded (`void root`).
+  It's gone from the type; the lower-level `createThreeField({ root })` builder still honours it.
+- **Corrected the `ParticlePool` staging-buffer stride comment (three)** — it read "stride-4 `[x,y,heat,size]`"
+  but the buffer is stride-5 `[x, y, z, heat, size]`, matching `readParticles`.
+
+
+- **Bodies track scroll between re-measures — no more swarm "pause" on scroll (core).** Body centres are
+  re-measured (`getBoundingClientRect`) only every 6th frame, but the page scrolls continuously under the
+  fixed field — so during a scroll each attractor's force-centre snapped in 6-frame steps and the swarm
+  read as pausing/stuttering. The cached centres are now translated by the per-frame scroll delta between
+  measures (`b.cy -= dScroll`), which carries the shaped box too (it's centred on `cy`); `measureBodies`
+  still refreshes from the real rects on its cadence, so there's no drift. Verified: sampled body force at
+  a fixed point changes every frame through a scroll (plateau fraction 0, was ~0.83).
+
+
+- **Post-0.7.0 integrity sweep.** The release workflow's post-publish smoke + provenance checks no
+  longer install the retired `kit`/`fundamental-engine` umbrellas (that mismatch is why the 0.7.0 run
+  reported failure even though all 7 packages published); the version-match gate now skips private
+  packages. Doc corrections: `api-stability.md` no longer promises a `forces-*` alias window that the
+  hard rename removed (only `forces:*` events survive); the root README + `RELEASING.md` + the retired
+  umbrella READMEs drop install instructions for unpublished packages; `elements` README `dom` links
+  point at `../dom`; stale "35 forces" counts fixed (authoritative is 36); the `addField` JSDoc no
+  longer implies the engine consumes channels internally. Test hardening: `BodyHandle.set` color +
+  range/angle/spin coverage, and a reverse option-drift guard that would have caught the original
+  `depth` drop.
+
+### Internal
+
+- **`check:dist` now smoke-tests all 7 published packages** — it had drifted to the pre-0.7.0 set and was
+  omitting `dom` and `three` (validating only the deprecated `platform` alias).
+- **`check:links` now validates cross-file `#fragment` anchors** against the target doc's headings
+  (GitHub slug rules), catching the section-rename → rotted-link class. Same-file ToC anchors stay out of
+  scope (they follow the site renderer's slug convention, not GitHub's).
+- **Site home-runtime hygiene:** the drag `pointermove`/`pointerup` listeners now bind to the page
+  AbortSignal (no orphan on navigate-mid-drag), and the gallery readout reads the engine's inline
+  `--field-density` write instead of calling `getComputedStyle` every animation frame.
+
+### Site
+
+- **A `/changelog` page — "what's new", on the site.** Recently-shipped highlights over the full,
+  versioned log, rendered at build time straight from this `CHANGELOG.md` (single source of truth). A
+  version badge in the nav links to it.
+- **Homepage content pass.** Sharpened the copy to explain the point over the spectacle (the AI-trust
+  section, the install story), de-jargoned the install language, and added the `0.x preview` maturity
+  signal to `/eli5`. Tightened the narrative by cutting three Gallery beats that re-demoed earlier
+  chapters (the live experience keeps its full length; only the redundancy is gone).
+- **Wayfinding — every concept leads to its reference.** Each manual chapter now links to its canonical
+  doc, and all 36 forces deep-link to their exact entry in the force catalog. Added a "pick your
+  package" decision path to the docs and two worked accessibility examples (reduced-motion CSS, the
+  `aria-hidden` visual-binding pattern).
+
+### Documentation
+
+- **Docs accuracy sweep.** Audited all 86 docs + package READMEs against the code. Corrected the force
+  count to **36** where docs drifted (9 canonical + 19 extended + 8 natural; `forces-engine.md`,
+  `research/01`); fixed package READMEs (`react`/`vanilla` `../platform` links → `../dom`, `three` CDN
+  example `@0.3.1` → `@0.7.0`); reconciled `RELEASING.md`/`PUBLISHING.md` to **six** published packages at
+  **0.7.0**; removed a false `compat-*` package claim; split the shipped `warp` atom from the spec-only
+  `wormhole` preset; fixed the `pheromone`→`diffuse` token name; repaired broken `docs/...` cross-paths;
+  committed the load-bearing RC/1.0 gate spec and removed stale `docs/planning/` duplicates; added a
+  table of contents to `forces-system.md`.
+- **Site API reference completeness for the 0.8 surface.** Added the four 0.8 surface entries that were
+  missing from the live API reference (`apps/site/src/lib/docs-api.ts`): the options `gridIntensity`
+  (#552) and `bounds` (contained fields, #540), and the handle members `setQualityTier` (#413) and
+  `version` (#547) — so the documented surface matches the shipped one.
+
 ## [0.7.0] — 2026-06-17
 
 ### Breaking
@@ -953,6 +1239,16 @@ additive (the frozen surface is intact).
   `registerNaturalForces`/`registerExtendedForces` in `field.ts` — all **36** forces are registered on
   every field (the natural and extended sets are *not* opt-in; activate any per-body via its
   `data-body` token). Fixed stale "34"/"35" force counts in the core guide and force-glyph styles.
+
+## [0.6.0] — 2026-06-15
+
+### Yanked
+
+- **`0.6.0` is a burned version — do not install `@fundamental-engine/*@0.6.0`.** It was published to npm on
+  2026-06-15 (`release: v0.6.0`, #483), then rolled back the **same cycle**: it was cut prematurely (a
+  thin batch with one half-finished feature), and the repository was reverted to 0.5.0 (`revert: roll the
+  repo back to 0.5.0`, #484). The npm version can never be republished, which is why the published line
+  skips from 0.5.1 to 0.7.0. Recorded here so every version that ever reached the registry is accounted for.
 
 ## [0.5.1] — 2026-06-17
 
@@ -1900,3 +2196,12 @@ self-documenting site, and adapters for any stack. Every ROADMAP item is checked
 - **162 core tests**, every merge green-and-tested.
 - **Zero runtime dependencies** in the engine; React is a peer dependency of the React
   adapter only.
+
+## [0.1.0] — 2026-06-03
+
+### Added
+
+- **Initial tagged release (`v0.1.0`).** Predates this changelog — no per-change notes were kept at the
+  time; the entry exists so every tagged/published version is accounted for. This cut established the
+  engine (`@fundamental-engine/core`), the DOM platform, and the initial authoring surfaces; all later
+  versions are detailed above.

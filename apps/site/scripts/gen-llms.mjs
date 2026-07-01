@@ -38,21 +38,66 @@ const DATE = new Date().toISOString().slice(0, 10);
 function loadRosters() {
   const navUrl = pathToFileURL(join(site, 'src/lib/docs-nav.ts')).href;
   const exUrl = pathToFileURL(join(site, 'src/lib/invisible-fields.ts')).href;
+  const apiUrl = pathToFileURL(join(site, 'src/lib/docs-api.ts')).href;
+  // The rosters + the data-driven API tables (docs-api.ts) + the engine's force catalog. The forces
+  // come from @fundamental-engine/core (which imports ZERO DOM), loaded resiliently so a build that
+  // hasn't compiled core yet still produces the rest of the corpus.
   const code = [
     `import { DOCS_NAV } from ${JSON.stringify(navUrl)};`,
     `import { INVISIBLE_FIELDS } from ${JSON.stringify(exUrl)};`,
-    `process.stdout.write(JSON.stringify({ DOCS_NAV, INVISIBLE_FIELDS }));`,
+    `import { OPTIONS, HANDLE, ATTRS, WRITEBACK, RENDER_MODES, OVERLAY_MODES, FIELD_ROOT_ATTRS } from ${JSON.stringify(apiUrl)};`,
+    `let FORCES = [];`,
+    `try { const core = await import('@fundamental-engine/core');`,
+    `  FORCES = core.MANUAL_FORCES.map((f) => ({ family: f.family, token: f.token, label: f.label, formula: f.formula, attrs: f.attrs, desc: f.desc, ...core.classifyForce(f.token) })); } catch {}`,
+    `process.stdout.write(JSON.stringify({ DOCS_NAV, INVISIBLE_FIELDS, OPTIONS, HANDLE, ATTRS, WRITEBACK, RENDER_MODES, OVERLAY_MODES, FIELD_ROOT_ATTRS, FORCES }));`,
   ].join('\n');
   const r = spawnSync(
     process.execPath,
     ['--experimental-strip-types', '--no-warnings', '--input-type=module', '-e', code],
-    { encoding: 'utf8' },
+    { encoding: 'utf8', cwd: site }, // cwd: site so the bare '@fundamental-engine/core' specifier resolves
   );
   if (r.status !== 0) throw new Error(`gen-llms: failed to load the TS rosters:\n${r.stderr}`);
   return JSON.parse(r.stdout);
 }
 
-const { DOCS_NAV, INVISIBLE_FIELDS: EXAMPLES } = loadRosters();
+const {
+  DOCS_NAV,
+  INVISIBLE_FIELDS: EXAMPLES,
+  OPTIONS,
+  HANDLE,
+  ATTRS,
+  WRITEBACK,
+  RENDER_MODES,
+  OVERLAY_MODES,
+  FIELD_ROOT_ATTRS,
+  FORCES,
+} = loadRosters();
+
+// ---------------------------------------------------------------------------
+// Generic markdown-tree reader. Returns { rel (repo-relative path), src } per
+// .md file, sorted, so section output is deterministic. Non-.md (images, .bib)
+// are skipped. `docs/planning-archive` is a SEPARATE directory from
+// `docs/planning` and is never read here — the archive is deliberately excluded.
+// ---------------------------------------------------------------------------
+function readMdTree(absDir, { recursive = false } = {}) {
+  let entries;
+  try {
+    entries = readdirSync(absDir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const e of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+    const p = join(absDir, e.name);
+    if (e.isDirectory()) {
+      if (recursive) out.push(...readMdTree(p, { recursive }));
+      continue;
+    }
+    if (!e.name.endsWith('.md')) continue;
+    out.push({ rel: p.slice(root.length + 1).replace(/\\/g, '/'), src: readFileSync(p, 'utf8') });
+  }
+  return out;
+}
 
 // One-line descriptions per docs route (the nav tree carries labels only). Keyed by href so
 // a nav reorganization cannot mispair them; an unknown route falls back to its label alone.
@@ -132,6 +177,34 @@ function canonMeta(file) {
 const canon = canonFiles.map((f) => ({ file: f, ...canonMeta(f) }));
 
 // ---------------------------------------------------------------------------
+// Additional markdown corpora (concatenated whole into llms-full.txt):
+//   engine reference — the deep as-built engine spec
+//   research         — the arXiv-style paper family (the authoritative copies)
+//   planning         — the frontier / forward-looking design docs (NOT the archive)
+//   project files    — the repo-root knowledge files
+// ---------------------------------------------------------------------------
+const engineRef = readMdTree(join(root, 'docs/engine-reference'));
+const research = readMdTree(join(root, 'docs/research'));
+const planning = readMdTree(join(root, 'docs/planning'), { recursive: true });
+
+const ROOT_FILES = ['README.md', 'CLAUDE.md', 'ROADMAP.md', 'BACKLOG.md', 'CHANGELOG.md'];
+const rootDocs = ROOT_FILES.map((f) => {
+  try {
+    return { rel: f, src: readFileSync(join(root, f), 'utf8') };
+  } catch {
+    return null;
+  }
+}).filter(Boolean);
+
+// Writings/essays — the site's long-form content. DEDUP: the numbered papers
+// (01-…, references.md) are the SAME family as docs/research/, so exclude any
+// writing whose basename also appears there; keep only the standalone essays.
+const researchBasenames = new Set(research.map((r) => r.rel.split('/').pop()));
+const writings = readMdTree(join(site, 'src/content/writings')).filter(
+  (w) => !researchBasenames.has(w.rel.split('/').pop()),
+);
+
+// ---------------------------------------------------------------------------
 // Site docs pages (.astro): extract the authored prose, snippets, and headings.
 // The generated catalog tables (forces/options/attrs) come from TS data at build
 // time and are not literal in the source, so this captures the hand-written
@@ -187,6 +260,30 @@ const docsPages = walkAstro(docsPagesDir)
   })
   .filter((d) => d.text.length > 60);
 
+// Non-/docs site pages that carry authored knowledge (index, eli5, use-cases, the
+// evidence example pages, lab, design, …). DEDUP: skip /docs (its own section),
+// /writings and /recipes (their own sections/corpora), dynamic [ ] route
+// templates (no literal content), 404, and changelog.astro (it renders CHANGELOG.md,
+// which is included as a root file).
+const pagesRoot = join(site, 'src/pages');
+const otherPages = walkAstro(pagesRoot)
+  .filter((p) => {
+    const rel = p.slice(pagesRoot.length).replace(/\\/g, '/');
+    if (rel.startsWith('/docs/') || rel.startsWith('/writings/') || rel.startsWith('/recipes/'))
+      return false;
+    if (rel.includes('[')) return false; // dynamic route templates
+    if (/\/(404|changelog)\.astro$/.test(rel)) return false;
+    return true;
+  })
+  .sort()
+  .map((p) => {
+    const src = readFileSync(p, 'utf8');
+    const rel = p.slice(pagesRoot.length).replace(/\\/g, '/');
+    const route = rel.replace(/\/index\.astro$/, '').replace(/\.astro$/, '') || '/';
+    return { route, title: astroTitle(src, route), text: astroText(src) };
+  })
+  .filter((d) => d.text.length > 80);
+
 // ---------------------------------------------------------------------------
 // Field recipes: the shipped 64-recipe catalog (data/recipes.json, regenerated
 // by `pnpm gen:recipes`). Emitted as a compact, agent-readable catalog.
@@ -215,6 +312,69 @@ const recipesText =
   `representation of a field configuration). Each composes runtime tokens, metrics, and diagnostics into\n` +
   `an interface pattern. The locked set is frozen; new recipes go in EXPERIMENTAL_RECIPES.\n\n` +
   recipeTierBlocks.join('\n\n');
+
+// ---------------------------------------------------------------------------
+// Data-driven API reference tables. The site's /docs/api/* pages render these
+// from TS data at build time (src/lib/docs-api.ts + the engine's MANUAL_FORCES
+// catalog), so the plain-text corpus never saw them. Reproduce them here as
+// markdown tables so llms-full.txt is self-contained.
+// ---------------------------------------------------------------------------
+function mdTable(headers, rows) {
+  const esc = (s) =>
+    String(s ?? '')
+      .replace(/\r?\n+/g, ' ')
+      .replace(/\|/g, '\\|')
+      .replace(/\s+/g, ' ')
+      .trim();
+  const head = `| ${headers.join(' | ')} |`;
+  const sep = `| ${headers.map(() => '---').join(' | ')} |`;
+  const body = rows.map((r) => `| ${r.map(esc).join(' | ')} |`).join('\n');
+  return `${head}\n${sep}\n${body}`;
+}
+const apiTablesText = [
+  `# API reference tables (data-driven)`,
+  ``,
+  `These are the tables the site's /docs/api pages generate at build time — from src/lib/docs-api.ts`,
+  `and the engine's force catalog — reproduced here so the corpus is self-contained. They mirror the`,
+  `frozen public surface (scripts/api-surface.data.mjs); if a symbol is not here, it does not exist.`,
+  ``,
+  `## createField(canvas, opts) — FieldOptions`,
+  ``,
+  mdTable(['Option', 'Type', 'Default', 'Description'], OPTIONS.map((o) => [o.name, o.type, o.def, o.desc])),
+  ``,
+  `## FieldHandle — runtime methods`,
+  ``,
+  mdTable(['Method', 'Description'], HANDLE.map((h) => [h.sig, h.desc])),
+  ``,
+  `## Body attributes (data-*)`,
+  ``,
+  mdTable(['Attribute', 'Type', 'Default', 'Description'], ATTRS.map((a) => [a.name, a.type, a.def ?? '', a.desc])),
+  ``,
+  `## Feedback / write-back CSS variables`,
+  ``,
+  mdTable(['Variable', 'Written on', 'Description'], WRITEBACK.map((w) => [w.name, w.on, w.desc])),
+  ``,
+  `## Render modes`,
+  ``,
+  mdTable(['Mode', 'Description'], RENDER_MODES.map((m) => [m.name, m.desc])),
+  ``,
+  `## Overlay modes`,
+  ``,
+  mdTable(['Mode', 'Description'], OVERLAY_MODES.map((m) => [m.name, m.desc])),
+  ``,
+  `## <field-root> attributes`,
+  ``,
+  mdTable(['Attribute', 'Maps to option', 'Description'], FIELD_ROOT_ATTRS.map((a) => [a.name, a.option, a.desc])),
+  ``,
+  `## Forces (${FORCES.length}) — the runtime token catalog`,
+  ``,
+  FORCES.length
+    ? mdTable(
+        ['Token', 'Family', 'Kind', 'Natural field', 'Attrs', 'Formula', 'Description'],
+        FORCES.map((f) => [f.token, f.family, f.kind ?? '', f.field ?? '', (f.attrs || []).join(' '), f.formula, f.desc]),
+      )
+    : '_(force catalog unavailable — @fundamental-engine/core was not built at generation time)_',
+].join('\n');
 
 // ---------------------------------------------------------------------------
 // llms.txt
@@ -303,32 +463,59 @@ ${exampleLines.join('\n')}
 // llms-full.txt
 // ---------------------------------------------------------------------------
 const SEP = '='.repeat(72);
+// section banner + body helpers
+const banner = (title) => `${SEP}\n## ${title}\n${SEP}\n`;
+const mdBody = (items, tag = 'FILE') =>
+  items.map((m) => `${SEP}\nFILE: ${m.rel}\n${SEP}\n\n${m.src.trimEnd()}\n`).join('\n');
+const pagesBodyOf = (items) =>
+  items.map((d) => `${SEP}\nPAGE: ${d.route} — ${d.title}\n${SEP}\n\n${d.text.trimEnd()}\n`).join('\n');
+const blockOf = (label, body) => `${SEP}\n${label}\n${SEP}\n\n${body.trimEnd()}\n`;
+
 const fullHeader = `# Fundamental — full documentation corpus
 
 Created by Zach Shallbetter (zachshallbetter.com).
 
-Source: docs/canonical/, the site documentation pages (apps/site/src/pages/docs/), and the
-recipe catalog (data/recipes.json) in https://github.com/zachshallbetter/fundamental-engine
+Repository: https://github.com/zachshallbetter/fundamental-engine
 Generated: ${DATE} by apps/site/scripts/gen-llms.mjs
-Canonical docs: ${canon.length} · documentation pages: ${docsPages.length} · recipes: ${recipesData.count}
 
-Three sections, in order: (1) the project's CANONICAL documents — the authority on concepts,
-terminology, and contracts; (2) the authored prose of the SITE DOCUMENTATION pages (the
-data-driven catalog tables are generated at build time and are not reproduced here); (3) the
-FIELD RECIPES catalog. The live site map is ${SITE_URL}/llms.txt.
+Contents (in order):
+  1. CANONICAL DOCUMENTS      docs/canonical/ — the authority on concepts, terminology, contracts (${canon.length})
+  2. ENGINE REFERENCE         docs/engine-reference/ — the deep as-built engine spec (${engineRef.length})
+  3. RESEARCH PAPERS          docs/research/ — the arXiv-style paper family (${research.length})
+  4. PLANNING & FRONTIER      docs/planning/ — forward-looking design (the archive is excluded) (${planning.length})
+  5. PROJECT FILES            README · CLAUDE · ROADMAP · BACKLOG · CHANGELOG (${rootDocs.length})
+  6. API REFERENCE TABLES     the data-driven /docs/api tables (options, methods, attrs, forces)
+  7. SITE DOCUMENTATION PAGES apps/site/src/pages/docs/ — authored prose (${docsPages.length})
+  8. OTHER SITE PAGES         non-/docs pages that carry knowledge (${otherPages.length})
+  9. WRITINGS & ESSAYS        the standalone essays (numbered papers dedup to §3) (${writings.length})
+ 10. FIELD RECIPES            the ${recipesData.count}-recipe catalog
+
+The live site map is ${SITE_URL}/llms.txt.
 `;
 
-const canonBody = canon
-  .map((c) => `${SEP}\nFILE: ${c.file}\n${SEP}\n\n${c.src.trimEnd()}\n`)
-  .join('\n');
-
-const pagesBody = docsPages
-  .map((d) => `${SEP}\nPAGE: ${d.route} — ${d.title}\n${SEP}\n\n${d.text.trimEnd()}\n`)
-  .join('\n');
-
-const recipesBody = `${SEP}\nRECIPES: field-recipes (generated from data/recipes.json)\n${SEP}\n\n${recipesText.trimEnd()}\n`;
-
-const full = `${fullHeader}\n${canonBody}\n${SEP}\n## SITE DOCUMENTATION PAGES\n${SEP}\n\n${pagesBody}\n${SEP}\n## FIELD RECIPES\n${SEP}\n\n${recipesBody}`;
+const full = [
+  fullHeader,
+  banner('CANONICAL DOCUMENTS'),
+  mdBody(canon.map((c) => ({ rel: `docs/canonical/${c.file}`, src: c.src }))),
+  banner('ENGINE REFERENCE'),
+  mdBody(engineRef),
+  banner('RESEARCH PAPERS'),
+  mdBody(research),
+  banner('PLANNING & FRONTIER'),
+  mdBody(planning),
+  banner('PROJECT FILES'),
+  mdBody(rootDocs),
+  banner('API REFERENCE TABLES'),
+  blockOf('API: reference tables (data-driven)', apiTablesText),
+  banner('SITE DOCUMENTATION PAGES'),
+  pagesBodyOf(docsPages),
+  banner('OTHER SITE PAGES'),
+  pagesBodyOf(otherPages),
+  banner('WRITINGS & ESSAYS'),
+  mdBody(writings),
+  banner('FIELD RECIPES'),
+  blockOf('RECIPES: field-recipes (generated from data/recipes.json)', recipesText),
+].join('\n');
 
 // ---------------------------------------------------------------------------
 mkdirSync(outDir, { recursive: true });
@@ -337,5 +524,7 @@ writeFileSync(join(outDir, 'llms-full.txt'), full);
 
 console.log(
   `gen-llms: wrote llms.txt (${docsLines.length} docs, ${canonLines.length} canon, ${exampleLines.length} examples) ` +
-    `and llms-full.txt (${canon.length} canon + ${docsPages.length} pages + ${recipesData.count} recipes, ${(full.length / 1024).toFixed(0)} KiB) to apps/site/public/`,
+    `and llms-full.txt (${(full.length / 1024).toFixed(0)} KiB): ${canon.length} canon + ${engineRef.length} engine-ref + ` +
+    `${research.length} research + ${planning.length} planning + ${rootDocs.length} project files + ${FORCES.length} forces + ` +
+    `${docsPages.length} docs pages + ${otherPages.length} other pages + ${writings.length} essays + ${recipesData.count} recipes`,
 );
