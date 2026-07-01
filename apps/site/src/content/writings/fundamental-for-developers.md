@@ -294,7 +294,7 @@ full simulation still runs and writes CSS variables to `[data-feedback]` element
 If a developer thinks this is a particle library, they will miss the point. The stronger framing:
 
 ```txt
-Fundamental is a semantic pressure system for the DOM.
+Fundamental is a semantic pressure system. The DOM is the first host, not the boundary.
 It can render nothing and still drive the interface.
 ```
 
