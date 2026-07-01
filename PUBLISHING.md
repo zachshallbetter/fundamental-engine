@@ -12,10 +12,12 @@ mechanics; the policy (versioning, when to cut) is in [`RELEASING.md`](RELEASING
 | npm name | role |
 |---|---|
 | `@fundamental-engine/core` | the engine (no workspace deps) |
-| `@fundamental-engine/dom` | depends on core |
-| `@fundamental-engine/vanilla` | depends on core + platform |
-| `@fundamental-engine/react` | depends on core + platform |
-| `@fundamental-engine/elements` | depends on core + platform + vanilla |
+| `@fundamental-engine/dom` | the web host adapter; depends on core |
+| `@fundamental-engine/platform` | deprecated alias of `dom` (re-exports it); depends on dom |
+| `@fundamental-engine/vanilla` | framework-free door; depends on core + dom |
+| `@fundamental-engine/react` | React adapter; depends on core + dom |
+| `@fundamental-engine/elements` | web components; depends on core + dom + vanilla |
+| `@fundamental-engine/three` | Three.js adapter; depends on core (`three` as a peer dep) |
 
 All carry `publishConfig.access: public`, so the scoped names publish publicly. `pnpm` rewrites
 `workspace:*` to the real version at pack time and publishes in dependency order automatically — never
@@ -54,7 +56,7 @@ pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --
 
 ## Versioning
 
-All six published packages are versioned together (currently `0.7.0`). Bump them as one:
+All seven published packages are versioned together (currently `0.9.2`). Bump them as one:
 
 ```sh
 pnpm --filter "@fundamental-engine/*" exec npm version <patch|minor|major> --no-git-tag-version
