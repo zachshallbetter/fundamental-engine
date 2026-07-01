@@ -1,0 +1,374 @@
+---
+// The AI Evidence field — the flagship "substrate, not particles" demo.
+//
+// One question. Claims and sources are BODIES (data-body); citations are RELATIONSHIPS
+// (data-field-relation edges). Support reads as cohesion, confidence as mass, contradiction
+// as charge/polarity, staleness as decay. The field is invisible — no particle swarm — its
+// effect shows in the type (weight, ink, anchor) exactly like the rest of the example family.
+//
+// What makes THIS page the flagship: the same field is exposed as AGENT-READABLE DATA. A live
+// JSON panel beside the evidence is driven by field.query() through an agent-json projection —
+// an agent reads the field's structured state instead of scraping the DOM. That is the whole
+// point of "substrate, not wallpaper."
+import ExampleShell from "../components/examples/ExampleShell.astro";
+import data from "../data/ai-evidence.json";
+import { fmtDate } from "../lib/fmt.ts";
+
+const currentYear = 2026;
+// staleness → decay: older sources contribute less. A simple linear age decay for the demo.
+const staleness = (year: number) => Math.min(1, Math.max(0, (currentYear - year) / 8));
+
+const stanceColor: Record<string, string> = {
+  supports: "#4ade80",
+  contradicts: "#f87171",
+  qualifies: "#fbbf24",
+};
+
+const sourceById = new Map(data.sources.map((s) => [s.id, s]));
+
+// pre-compute each claim's live support count for the static (no-JS / reduced-motion) baseline.
+const claims = data.claims.map((c) => ({
+  ...c,
+  color: stanceColor[c.stance] ?? "#60a5fa",
+  resolved: c.sources.map((id) => sourceById.get(id)).filter(Boolean),
+}));
+
+const snapshotLabel = data.snapshotAt ? fmtDate(data.snapshotAt) : "synthetic";
+---
+
+<ExampleShell
+  title="Fundamental — AI Evidence"
+  description="One question, run as an evidence field. Claims and sources are bodies; citations are relationships; support reads as cohesion, confidence as mass, contradiction as charge, staleness as decay. The same field is exposed as agent-readable JSON via field.query() — an agent reads the field instead of scraping the DOM."
+  current="ai-evidence"
+  mainClass="ex-ai-evidence"
+  mainAttrs={{ "data-field": "on" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">Fundamental · invisible fields · ai-evidence</p>
+    <h1>An agent reads the <span class="accent">field</span>, not the DOM.</h1>
+    <p class="ev-lede">
+      One question. Each <strong>claim</strong> and each <strong>source</strong> is a body in an
+      invisible field. Citations are real relationships — support pulls a claim and its sources
+      together (cohesion), a contradicting claim carries opposite polarity (charge), confidence is
+      the claim's mass, and stale sources decay. The field is invisible; its effect shows in the type.
+    </p>
+    <p class="ev-lede">
+      The panel on the right is the <strong>same field read as data</strong>. It is driven by
+      <code>field.query()</code> through an <code>agent-json</code> projection — the structured,
+      serializable view an agent or tool consumes. No DOM scraping: the evidence graph is a first-class
+      queryable substrate. Toggle the field off and both the type <em>and</em> the live JSON go quiet.
+    </p>
+  </header>
+
+  <div class="ai-question" role="group" aria-label="The question under evidence">
+    <span class="ai-q-l">Question</span>
+    <p class="ai-q-text">{data.question}</p>
+    <span class="ai-live" data-ai-snapshot>snapshot · {snapshotLabel}</span>
+  </div>
+
+  <div class="ai-split">
+    <!-- ─ the evidence, as bodies ─ -->
+    <section class="ai-evidence-col" aria-label="Claims and their sources">
+      <ol class="ai-claims" data-ai-list>
+        {
+          claims.map((c) => (
+            <li
+              class="ai-claim"
+              id={c.id}
+              data-body={c.stance === "contradicts" ? "charge" : "attract cohesion"}
+              data-feedback
+              data-hot
+              data-stance={c.stance}
+              data-confidence={c.confidence}
+              data-strength={c.confidence.toFixed(2)}
+              data-range="220"
+              data-field-color={c.color}
+              style={`--conf:${c.confidence.toFixed(3)}; --cat:${c.color};`}
+            >
+              {/* citation edges as REAL platform relationships — the registry discovers them,
+                  and they are exactly what the agent-json panel reads back as `relationships`. */}
+              {c.sources.map((sid) => (
+                <span hidden data-field-relation="cites" data-field-target={`#${sid}`} />
+              ))}
+              <div class="ai-claim-head">
+                <span class="ai-stance" data-stance={c.stance}>
+                  {c.stance}
+                </span>
+                <h3 class="ai-claim-title">{c.title}</h3>
+              </div>
+              <div class="ai-conf" aria-label={`confidence ${Math.round(c.confidence * 100)}%`}>
+                <span class="ai-conf-bar" aria-hidden="true">
+                  <i style={`width:${Math.round(c.confidence * 100)}%`} />
+                </span>
+                <span class="ai-conf-n">{Math.round(c.confidence * 100)}% confidence</span>
+              </div>
+              <ul class="ai-sources" aria-label="sources">
+                {c.resolved.map((s) => (
+                  <li
+                    class="ai-source"
+                    id={s!.id}
+                    data-body="cohesion"
+                    data-feedback
+                    data-kind={s!.kind}
+                    data-year={s!.year}
+                    data-weight={s!.weight}
+                    data-strength={s!.weight.toFixed(2)}
+                    data-decay={staleness(s!.year).toFixed(2)}
+                    data-range="140"
+                    style={`--w:${s!.weight.toFixed(3)}; --decay:${staleness(s!.year).toFixed(3)};`}
+                  >
+                    <span class="ai-src-kind">{s!.kind}</span>
+                    <span class="ai-src-title">{s!.title}</span>
+                    <span class="ai-src-year">{s!.year}</span>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <!-- ─ the SAME field, read as data ─ -->
+    <aside class="ai-agent" aria-label="The field read as structured data">
+      <div class="ai-agent-head">
+        <span class="ai-agent-dot" data-ai-status aria-hidden="true"></span>
+        <p class="ai-agent-title">
+          <code>field.query()</code> · agent-json
+        </p>
+      </div>
+      <p class="ai-agent-note">
+        Live, serializable field state — bodies, metrics, and citation relationships — read through
+        the projection registry. This is what an agent consumes instead of the rendered DOM.
+      </p>
+      <pre class="ai-json" data-ai-json aria-live="polite">{`{ "status": "booting…" }`}</pre>
+      <p class="ai-agent-foot">
+        Refreshed from <code>field.query()</code> on a calm cadence. With the field off (or under
+        reduced motion) it holds a single settled reading — the meaning survives without animation.
+      </p>
+    </aside>
+  </div>
+
+  <footer class="ev-fineprint">
+    <p>
+      This is a <strong>substrate demo</strong>, not a claim-verification tool. "Confidence" and
+      "support" are illustrative inputs — the point is that the evidence graph is a live field you can
+      <strong>query as data</strong>, not a pile of DOM you scrape. Same field, two surfaces: type on
+      the left, structured JSON on the right. Data here is synthetic.
+    </p>
+    <p class="ev-built"><a href="/evidence">See the OpenAlex evidence field →</a></p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../components/AiEvidenceRuntime.ts";
+</script>
+
+<style>
+  .ai-question {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    margin: 1.4rem 0 1.6rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid color-mix(in oklab, currentcolor 12%, transparent);
+    border-radius: 12px;
+    background: color-mix(in oklab, currentcolor 3%, transparent);
+  }
+  .ai-q-l {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .ai-q-text {
+    margin: 0;
+    font-weight: 560;
+    font-size: 1.05rem;
+    flex: 1 1 20ch;
+  }
+  .ai-live {
+    font-size: 0.72rem;
+    opacity: 0.55;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ai-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 1.6rem;
+    align-items: start;
+  }
+  @media (max-width: 880px) {
+    .ai-split {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .ai-claims {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+  .ai-claim {
+    position: relative;
+    padding: 0.95rem 1.05rem;
+    border-radius: 12px;
+    border: 1px solid color-mix(in oklab, currentcolor 12%, transparent);
+    /* confidence → mass shows in the anchor + opacity; --d is the engine's LIVE density writeback */
+    border-left: 3px solid
+      color-mix(in srgb, var(--cat) calc(24% + var(--conf, 0.5) * 76%), transparent);
+    opacity: calc(0.62 + var(--conf, 0.5) * 0.38);
+    box-shadow: 0 0 calc(var(--d, 0) * 18px) -8px
+      color-mix(in srgb, var(--cat) calc(var(--d, 0) * 60%), transparent);
+    transition: opacity 0.3s ease, box-shadow 0.2s ease;
+  }
+  .ai-claim-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .ai-claim-title {
+    margin: 0;
+    font-size: 1.02rem;
+    font-variation-settings: "wght" calc(420 + var(--conf, 0.5) * 320);
+  }
+  .ai-stance {
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.12rem 0.5rem;
+    border-radius: 999px;
+    color: #0b0b0b;
+    background: var(--cat, #60a5fa);
+    font-weight: 700;
+  }
+  .ai-conf {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0.6rem 0 0.5rem;
+  }
+  .ai-conf-bar {
+    position: relative;
+    flex: 0 0 120px;
+    height: 6px;
+    border-radius: 999px;
+    background: color-mix(in oklab, currentcolor 12%, transparent);
+    overflow: hidden;
+  }
+  .ai-conf-bar i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    display: block;
+    height: 100%;
+    background: var(--cat, #60a5fa);
+  }
+  .ai-conf-n {
+    font-size: 0.74rem;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+  }
+  .ai-sources {
+    list-style: none;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .ai-source {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: 0.55rem;
+    font-size: 0.82rem;
+    padding: 0.28rem 0.5rem;
+    border-radius: 8px;
+    background: color-mix(in oklab, currentcolor 3%, transparent);
+    /* staleness → decay: older sources read fainter */
+    opacity: calc(0.5 + (1 - var(--decay, 0)) * 0.5);
+  }
+  .ai-src-kind {
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .ai-src-year {
+    opacity: 0.55;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ai-agent {
+    position: sticky;
+    top: 1.2rem;
+    padding: 1rem 1.05rem 1.15rem;
+    border-radius: 12px;
+    border: 1px solid color-mix(in oklab, currentcolor 14%, transparent);
+    background: color-mix(in oklab, currentcolor 4%, transparent);
+  }
+  .ai-agent-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .ai-agent-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 6px 0 #4ade80;
+  }
+  .ai-agent-dot[data-on="false"] {
+    background: color-mix(in oklab, currentcolor 40%, transparent);
+    box-shadow: none;
+  }
+  .ai-agent-title {
+    margin: 0;
+    font-size: 0.86rem;
+    font-weight: 600;
+  }
+  .ai-agent-note,
+  .ai-agent-foot {
+    font-size: 0.76rem;
+    opacity: 0.7;
+    line-height: 1.45;
+  }
+  .ai-agent-foot {
+    margin-bottom: 0;
+  }
+  .ai-json {
+    margin: 0.6rem 0;
+    padding: 0.75rem 0.85rem;
+    max-height: 46vh;
+    overflow: auto;
+    border-radius: 8px;
+    background: color-mix(in oklab, currentcolor 8%, #0b0b0f 92%);
+    color: #d6e4ff;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    white-space: pre;
+    tab-size: 2;
+  }
+
+  /* field OFF → the type collapses toward flat; the JSON panel dims but still reads (settled). */
+  [data-field="off"] .ai-claim {
+    opacity: 0.85;
+    box-shadow: none;
+    border-left-color: color-mix(in oklab, currentcolor 20%, transparent);
+  }
+  [data-field="off"] .ai-source {
+    opacity: 0.85;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ai-claim {
+      transition: none;
+    }
+  }
+</style>

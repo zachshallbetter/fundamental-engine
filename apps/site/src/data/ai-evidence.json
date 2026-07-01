@@ -1,0 +1,77 @@
+{
+  "snapshotAt": "2026-06-28",
+  "question": "Does the vaccine reduce transmission in the studied population?",
+  "claims": [
+    {
+      "id": "claim-reduces",
+      "title": "The intervention reduces onward transmission",
+      "stance": "supports",
+      "confidence": 0.82,
+      "sources": ["src-rct-2025", "src-cohort-2025", "src-meta-2024"]
+    },
+    {
+      "id": "claim-nulleffect",
+      "title": "No measurable effect on transmission at population scale",
+      "stance": "contradicts",
+      "confidence": 0.41,
+      "sources": ["src-obs-2021", "src-preprint-2022"]
+    },
+    {
+      "id": "claim-durability",
+      "title": "Any transmission benefit wanes within six months",
+      "stance": "qualifies",
+      "confidence": 0.58,
+      "sources": ["src-cohort-2025", "src-followup-2024"]
+    }
+  ],
+  "sources": [
+    {
+      "id": "src-rct-2025",
+      "title": "Randomized controlled trial, 41k participants",
+      "kind": "rct",
+      "year": 2025,
+      "weight": 0.95,
+      "supports": ["claim-reduces"]
+    },
+    {
+      "id": "src-cohort-2025",
+      "title": "Prospective cohort, national registry linkage",
+      "kind": "cohort",
+      "year": 2025,
+      "weight": 0.78,
+      "supports": ["claim-reduces", "claim-durability"]
+    },
+    {
+      "id": "src-meta-2024",
+      "title": "Meta-analysis of 22 trials",
+      "kind": "meta",
+      "year": 2024,
+      "weight": 0.88,
+      "supports": ["claim-reduces"]
+    },
+    {
+      "id": "src-followup-2024",
+      "title": "Six-month serological follow-up",
+      "kind": "cohort",
+      "year": 2024,
+      "weight": 0.64,
+      "supports": ["claim-durability"]
+    },
+    {
+      "id": "src-obs-2021",
+      "title": "Retrospective observational, single site",
+      "kind": "observational",
+      "year": 2021,
+      "weight": 0.32,
+      "supports": ["claim-nulleffect"]
+    },
+    {
+      "id": "src-preprint-2022",
+      "title": "Preprint, not peer-reviewed",
+      "kind": "preprint",
+      "year": 2022,
+      "weight": 0.21,
+      "supports": ["claim-nulleffect"]
+    }
+  ]
+}

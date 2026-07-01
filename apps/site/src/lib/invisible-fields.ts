@@ -153,4 +153,15 @@ export const INVISIBLE_FIELDS: InvisibleField[] = [
     see: "the lead earns its slot; risers run warm, fallers cool, new entries gray",
     instead: "an editor reordering the page every morning",
   },
+  {
+    slug: "ai-evidence",
+    name: "AI Evidence",
+    hook: "claims and sources are bodies; citations bind; an agent reads the field, not the DOM",
+    href: "/ai-evidence",
+    reads: "claims, sources, and citation edges over one question",
+    becomes: "support → cohesion; confidence → mass; contradiction → charge; staleness → decay",
+    writes: ["--d", "--field-attention", "agent-json"],
+    see: "well-sourced claims anchor and brighten; a live JSON panel shows the SAME field read as structured data",
+    instead: "an agent scraping the rendered DOM to recover the evidence graph",
+  },
 ];
