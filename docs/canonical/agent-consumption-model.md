@@ -26,6 +26,18 @@
 > `query()`/`snapshot()`. A software agent may *read* Field Agents; it is not itself a Field Agent
 > unless registered as a body/consumer. **Agent-readable does not imply agent-writable** — reads never
 > mutate the field, and any future write path is an explicit, permissioned host action (frontier).
+>
+> **The scoped read surface — `field.forAgent({ capabilities, redactions? })`.** A Software Agent should
+> read the field through a **capability-scoped, read-only facade**, not the raw handle. `forAgent` returns
+> an `AgentFieldView` that exposes *only* scoped `query()` / `snapshot()` (and `replay()` when
+> `read:replay` is granted) and carries **no** mutation methods at all — the "agent-readable is not
+> agent-writable" rule made structural. Capabilities (`read:metrics`, `read:relationships`,
+> `read:influences`, `read:body-data`, `read:projections`, `read:replay`, …) are an allow-list that
+> *tightens* every reading; `redactions` strip dotted paths (`body.data`, `host.user`); and snapshot
+> **profiles** (`'debug' | 'agent' | 'bug-report' | 'public'`) pick a privacy-appropriate shape. All of it
+> composes with the runtime `FieldPolicy` privacy + `agentRead` budget, always resolving to the *tightest*
+> result — an agent view can never widen past what policy already permits. See
+> [`substrate-api.md` § Agent permissions](substrate-api.md#agent-permissions--snapshot-profiles).
 
 # Field Agent Consumption Model
 

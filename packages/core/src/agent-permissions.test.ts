@@ -1,0 +1,176 @@
+/**
+ * Agent permissions + redactions + snapshot profiles (feat/agent-permissions).
+ *
+ * The scoped, READ-ONLY surface a Software Agent uses to read the field safely — the safety layer over
+ * the query/snapshot substrate (`agent-readable is NOT agent-writable`). Covers:
+ *  - capability scoping: a reading omits the dimensions the caps don't grant (tightens, never widens);
+ *  - redactions: dotted paths are stripped from every reading, after capability scoping;
+ *  - snapshot profiles: compose with include* flags + privacy policy, resolving to the TIGHTEST result;
+ *  - the facade shape: no mutation methods; `replay` present only when `read:replay` is granted;
+ *  - policy respect: an agent view can never widen past what FieldPolicy already permits, and
+ *    `budgets.agentRead === 0` closes the surface to the most-restricted view.
+ *
+ * Lives at the top level (`src/*.test.ts`) so it sits in the corpus the RC-6 contract-coverage guard scans.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { createField } from './core/field.ts';
+import type { FieldHost } from './core/host.ts';
+
+function stubHost(): FieldHost {
+  const off = (): void => {};
+  return {
+    root: { querySelectorAll: () => [], querySelector: () => null } as unknown as ParentNode,
+    viewport: () => ({ width: 1000, height: 800, dpr: 1 }),
+    scrollY: () => 0,
+    scrollHeight: () => 1000,
+    reducedMotion: () => false,
+    hidden: () => false,
+    raf: () => 1,
+    cancelRaf: off,
+    createCanvas: () => ({}) as unknown as HTMLCanvasElement,
+    onResize: () => off,
+    onScroll: () => off,
+    onVisibility: () => off,
+    onInput: () => off,
+    onBodyEvent: () => off,
+  };
+}
+
+function fieldWithBodies(policy?: Parameters<typeof createField>[1] extends infer O ? O extends { policy?: infer P } ? P : never : never): ReturnType<typeof createField> {
+  const field = createField({} as HTMLCanvasElement, { host: stubHost(), render: 'none', policy });
+  const a = field.addBody({ tokens: ['gravity'], identity: 'a', data: { secret: 42 }, rect: () => ({ left: 100, top: 100, width: 40, height: 40 }) });
+  const b = field.addBody({ tokens: ['attract'], identity: 'b', data: { secret: 7 }, rect: () => ({ left: 300, top: 300, width: 40, height: 40 }) });
+  field.addEdge(a, b, { type: 'link', strength: 0.5 });
+  return field;
+}
+
+test('forAgent: query scopes out ungranted dimensions (metrics/relationships/influences)', () => {
+  const field = fieldWithBodies();
+  try {
+    const view = field.forAgent({ capabilities: ['read:metrics'] });
+    const r = view.query();
+    assert.ok(r.bodies.length >= 2, 'bodies always readable (base identity grant)');
+    assert.notDeepEqual(r.metrics, {}, 'read:metrics granted → metrics present');
+    assert.deepEqual(r.relationships, [], 'no read:relationships → relationships stripped');
+    assert.deepEqual(r.influences, [], 'no read:influences → influences stripped');
+    assert.deepEqual(r.projections, [], 'no read:projections → projections stripped');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('forAgent: read:relationships surfaces relationships; without it they are stripped', () => {
+  const field = fieldWithBodies();
+  try {
+    const withRel = field.forAgent({ capabilities: ['read:relationships'] });
+    const without = field.forAgent({ capabilities: ['read:metrics'] });
+    assert.deepEqual(without.query().relationships, []);
+    // whatever the field reports, the granted view must not empty it out on our behalf.
+    const full = field.query();
+    assert.equal(withRel.query().relationships.length, full.relationships.length);
+  } finally {
+    field.destroy();
+  }
+});
+
+test('forAgent: snapshot withholds body.data unless read:body-data is granted', () => {
+  const field = fieldWithBodies();
+  try {
+    const noData = field.forAgent({ capabilities: ['read:snapshots'] });
+    // even when the agent explicitly asks for data, the missing cap withholds it (tightens, never widens).
+    const s1 = noData.snapshot({ includeData: true });
+    assert.ok(s1.bodies.every((b) => b.data === undefined), 'no read:body-data → data withheld even with includeData');
+
+    const withData = field.forAgent({ capabilities: ['read:body-data'] });
+    const s2 = withData.snapshot({ includeData: true });
+    assert.ok(s2.bodies.some((b) => b.data !== undefined), 'read:body-data → data present when asked + policy permits');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('forAgent: redactions strip dotted paths after capability scoping', () => {
+  const field = fieldWithBodies();
+  try {
+    const view = field.forAgent({ capabilities: ['read:body-data', 'read:metrics'], redactions: ['body.data', 'metrics.bodies'] });
+    const s = view.snapshot({ includeData: true });
+    assert.ok(s.bodies.every((b) => b.data === undefined), 'body.data redacted from every snapshot body');
+    const q = view.query();
+    assert.ok(!('bodies' in q.metrics), 'metrics.bodies redacted from the metrics record');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('forAgent: the facade exposes NO mutation methods (agent-readable is not agent-writable)', () => {
+  const field = fieldWithBodies();
+  try {
+    const view = field.forAgent({ capabilities: ['read:metrics'] }) as unknown as Record<string, unknown>;
+    for (const mutator of ['applyForce', 'addBody', 'setPolicy', 'setRender', 'burst', 'destroy']) {
+      assert.equal(view[mutator], undefined, `facade must not expose ${mutator}`);
+    }
+  } finally {
+    field.destroy();
+  }
+});
+
+test('forAgent: replay is present ONLY when read:replay is granted', () => {
+  const field = fieldWithBodies();
+  try {
+    assert.equal(field.forAgent({ capabilities: ['read:snapshots'] }).replay, undefined, 'no read:replay → no replay method');
+    assert.equal(typeof field.forAgent({ capabilities: ['read:replay'] }).replay, 'function', 'read:replay → replay present');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('snapshot profiles: resolve to the tightest inclusion; agent/public withhold data', () => {
+  const field = fieldWithBodies();
+  try {
+    // debug = everything (data still gated by policy, which permits by default here).
+    const dbg = field.snapshot({ profile: 'debug', includeData: true });
+    assert.ok(dbg.bodies.some((b) => b.data !== undefined), 'debug profile includes body data');
+    assert.ok(dbg.influences !== undefined, 'debug profile includes influences');
+
+    // agent profile: influences yes, opaque data NO — even when includeData asks for it (tightest wins).
+    const ag = field.snapshot({ profile: 'agent', includeData: true });
+    assert.ok(ag.bodies.every((b) => b.data === undefined), 'agent profile withholds opaque body data');
+    assert.ok(ag.influences !== undefined, 'agent profile keeps influence attribution');
+
+    // public profile: minimal — no relationships, no influences, no data.
+    const pub = field.snapshot({ profile: 'public', includeData: true, includeInfluences: true });
+    assert.deepEqual(pub.relationships, [], 'public profile drops relationships');
+    assert.equal(pub.influences, undefined, 'public profile drops influences even when asked');
+    assert.ok(pub.bodies.every((b) => b.data === undefined), 'public profile withholds data');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('forAgent: an agent view can never widen past what policy already forbids', () => {
+  // policy forbids body data outright; even read:body-data + includeData cannot surface it.
+  const field = fieldWithBodies({ allowBodyDataInSnapshots: false });
+  try {
+    const view = field.forAgent({ capabilities: ['read:body-data'] });
+    const s = view.snapshot({ includeData: true });
+    assert.ok(s.bodies.every((b) => b.data === undefined), 'policy deny wins over the agent view grant');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('forAgent: budgets.agentRead === 0 closes the surface to the most-restricted view', () => {
+  const field = fieldWithBodies({ budgets: { agentRead: 0 } });
+  try {
+    const view = field.forAgent({ capabilities: ['read:metrics', 'read:relationships', 'read:influences', 'read:projections'] });
+    const q = view.query();
+    assert.deepEqual(q.metrics, {}, 'closed agentRead budget → no metrics');
+    assert.deepEqual(q.relationships, [], 'closed agentRead budget → no relationships');
+    assert.deepEqual(q.influences, [], 'closed agentRead budget → no influences');
+    const s = view.snapshot({ profile: 'debug', includeData: true });
+    assert.ok(s.bodies.every((b) => b.data === undefined), 'closed agentRead budget → snapshot falls to public (no data)');
+  } finally {
+    field.destroy();
+  }
+});

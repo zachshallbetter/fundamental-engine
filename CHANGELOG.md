@@ -9,6 +9,24 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **agent permissions + redactions + snapshot profiles** — the scoped,
+  read-only surface a **Software Agent** uses to read the field safely (the safety layer over the
+  query/snapshot substrate; *agent-readable is not agent-writable*). `field.forAgent({ capabilities,
+  redactions? })` returns an **`AgentFieldView`** facade exposing **only** scoped `query()` / `snapshot()`
+  (and `replay()` **only** when `read:replay` is granted) — it has **no** mutation methods (no
+  `applyForce` / `addBody` / `setPolicy`), enforced by the facade's shape. **`AgentCapability`**
+  (`read:metrics | read:relationships | read:influences | read:snapshots | read:body-data |
+  read:projections | read:diagnostics | read:replay`) is an allow-list: a dimension the caps don't grant
+  is stripped from every reading (tightens, never widens — no `read:influences` → influences stripped; no
+  `read:body-data` → `body.data` withheld even if a profile/`includeData` asked for it). **`redactions?:
+  string[]`** strips dotted paths (`body.data`, `host.user`, `metrics.temperature`) after capability
+  scoping. **Snapshot profiles** add **`FieldSnapshotOptions.profile`** (`'debug' | 'agent' | 'bug-report'
+  | 'public'`) — concrete inclusion presets that **compose** with the explicit `include*` flags and the
+  `FieldPolicy` privacy budget, always resolving to the **tightest (most private)** result; a profile or
+  agent view can never widen past what policy allows. Respects `FieldPolicy`: a `budgets.agentRead === 0`
+  closes the agent surface to the most-restricted view (the fractional `0 < agentRead < 1` gradient is a
+  declared seam). Purely additive to the (unfrozen) handle + snapshot options; Swift/Kotlin ports are a
+  batched follow-up.
 - **`@fundamental-engine/core`:** **runtime FIELD POLICY + a FIELD BUDGET model.** A new `FieldPolicy`
   (`{ allowBodyDataInSnapshots?, allowMotionProjection?, maxMotionBudget?, budgets?: Partial<FieldBudgets> }`)
   expresses what THIS host/session/user/app **permits** at runtime — a distinct lane from governance

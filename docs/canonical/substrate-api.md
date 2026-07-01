@@ -49,8 +49,8 @@ query() does NOT read private host state unless the host exposes it.
 ```
 
 This is the bridge from UI effects to software agents, so the read-only guarantee is load-bearing: an
-agent reading the field can never, through reading, change it. (Permission/redaction scoping for
-agent reads is a **frontier** concern — see the planning issues, not this doc.)
+agent reading the field can never, through reading, change it. Permission/redaction **scoping** for agent
+reads is the safety layer on top — see [Agent permissions + snapshot profiles](#agent-permissions--snapshot-profiles) below.
 
 ```ts
 interface FieldQuery {
@@ -149,6 +149,79 @@ const changed = field.diff(a, b).bodyChanges;   // what moved, metric by metric
 ```
 
 The standalone `diffFieldSnapshots(a, b)` is also exported.
+
+---
+
+## Agent permissions + snapshot profiles
+
+`query()` / `snapshot()` are the *structured read*; **agent permissions** are the *safety layer* on top —
+the scoped, read-only surface a **Software Agent** uses to read the field without being able to change it.
+The doctrine is in [`agent-consumption-model.md`](agent-consumption-model.md): **agent-readable is not
+agent-writable**. This surface enforces it mechanically.
+
+### `field.forAgent({ capabilities, redactions? }): AgentFieldView`
+
+`forAgent` derives a **read-only facade** over the same live field, scoped to a set of capabilities. The
+facade exposes **only** scoped `query()` / `snapshot()` (and `replay()` **only** when `read:replay` is
+granted). It has **no** mutation methods — no `applyForce`, no `addBody`, no `setPolicy` — and that is
+enforced by the facade's *shape*, not a runtime check: there is nothing on it to call.
+
+```ts
+type AgentCapability =
+  | 'read:metrics' | 'read:relationships' | 'read:influences' | 'read:snapshots'
+  | 'read:body-data' | 'read:projections' | 'read:diagnostics' | 'read:replay';
+
+interface AgentViewOptions { capabilities: AgentCapability[]; redactions?: string[]; }
+interface AgentFieldView {
+  readonly capabilities: readonly AgentCapability[];
+  readonly redactions: readonly string[];
+  query(q?: FieldQuery): FieldQueryResult;
+  snapshot(opts?: FieldSnapshotOptions): FieldSnapshot;
+  replay?(a: FieldSnapshot, b: FieldSnapshot, opts?: ReplayOptions): CausalReplay; // only when read:replay
+}
+```
+
+**Capabilities are an allow-list — they tighten, never widen.** A dimension the caps don't grant is
+stripped from every reading: no `read:influences` → `influences` empty; no `read:relationships` →
+`relationships` empty; no `read:projections` → `projections` empty; no `read:body-data` → each body's
+opaque `data` is withheld **even if** a profile or `includeData` asked for it. Base identity (ids + shape)
+is always readable — an agent must at minimum be able to name what it sees.
+
+**`redactions?: string[]`** are dotted paths stripped from every reading **after** capability scoping:
+`'body.data'` (per-body), `'metrics.temperature'` (a metric key), `'host.user'`, or a bare top-level key.
+
+```ts
+const view = field.forAgent({ capabilities: ['read:metrics', 'read:relationships'], redactions: ['metrics.temperature'] });
+view.query();            // metrics + relationships only, temperature stripped; no influences, no body.data
+view.snapshot({ profile: 'agent' });   // scoped + profiled + policy-gated, resolved to the tightest
+```
+
+### Snapshot profiles — `FieldSnapshotOptions.profile`
+
+A **profile** is a named inclusion preset for `snapshot()`, so a caller doesn't hand-assemble `include*`
+flags for a common shape:
+
+| Profile | Includes | Withholds |
+|---|---|---|
+| `'debug'` | everything (particles, relationships, influences, body `data`) | — (data still gated by policy) |
+| `'agent'` | ids + metrics + relationships + influence attribution + projections | opaque body `data`, raw particles |
+| `'bug-report'` | structural + versions (relationships + influences) | user data |
+| `'public'` | ids + shape (bodies, metrics, projections) | relationships, influences, data |
+
+Profiles **compose** with the explicit `include*` flags and the `FieldPolicy` privacy budget, and always
+resolve to the **tightest (most private)** result: a profile can only tighten a call, an explicit `true`
+can never re-enable what the profile turned off, and neither a profile nor an agent view can ever widen
+past what policy already permits. `snapshot({ profile: 'agent', includeData: true })` still withholds
+`data` — the profile's deny wins.
+
+### Respecting `FieldPolicy`
+
+The agent surface honours the runtime [`FieldPolicy`](#) privacy + budget model directly. A privacy
+budget below the threshold (or `allowBodyDataInSnapshots: false`) withholds body `data` regardless of the
+agent's caps. And `budgets.agentRead` gates the surface itself: **`agentRead === 0` closes it** — `forAgent`
+yields the most-restricted view (ids + shape only, snapshots fall to `public`). The fractional
+`0 < agentRead < 1` gradient (partial agent read) is a **declared seam** — carried on the policy, wired as
+its consumer lands.
 
 ---
 
@@ -404,6 +477,7 @@ behaves exactly as before.
 | `query(q?)` | `FieldHandle` | shipped-unfrozen · EXPERIMENTAL |
 | `snapshot(opts?)` / `diff(a,b)` | `FieldHandle` (+ `diffFieldSnapshots`) | shipped-unfrozen · EXPERIMENTAL |
 | `replay(a,b,opts?)` | `FieldHandle` (+ `replayFieldSnapshots`) | shipped-unfrozen · EXPERIMENTAL |
+| `forAgent(opts)` + snapshot `profile` | `FieldHandle` / `AgentFieldView` / `FieldSnapshotOptions` | shipped-unfrozen · EXPERIMENTAL |
 | `projections` registry + `lint` | `FieldHandle.projections` (+ `lintProjections`) | shipped-unfrozen · EXPERIMENTAL |
 | Body authority + dynamic recoil | `data-authority` / `Body.authority` | shipped-unfrozen · EXPERIMENTAL |
 | Integrator `'fixed'` | `createField({ integrator })` | shipped-unfrozen · EXPERIMENTAL |

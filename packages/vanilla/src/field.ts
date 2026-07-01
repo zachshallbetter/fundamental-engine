@@ -106,6 +106,10 @@ export class FieldField implements FieldHandle {
   setPolicy(policy: Parameters<FieldHandle['setPolicy']>[0]): void {
     this.field.setPolicy(policy);
   }
+  /** derive a scoped, read-only agent view over this field (see FieldHandle.forAgent). */
+  forAgent(opts: Parameters<FieldHandle['forAgent']>[0]): ReturnType<FieldHandle['forAgent']> {
+    return this.field.forAgent(opts);
+  }
   /** switch the underlay render mode (§20.6) live. */
   setRender(mode: Parameters<FieldHandle['setRender']>[0]): void {
     this.field.setRender(mode);

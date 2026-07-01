@@ -1006,6 +1006,20 @@ export interface FieldQueryResult {
 // a diff compares two snapshots. EXPERIMENTAL — not in the frozen surface. Causal Replay is a later
 // step. See docs/planning/critical-path/03-field-snapshot-causal-replay.md.
 
+/**
+ * A named **snapshot profile** — a concrete inclusion preset for {@link FieldHandle.snapshot}, resolved
+ * to the TIGHTEST (most private) combination of its base inclusions, any explicit `include*` flags, and
+ * the runtime {@link FieldPolicy} privacy budget. A profile can only tighten a call; it never widens past
+ * what policy allows.
+ *
+ * - `'debug'` — everything: particles, relationships, influences, and body `data` (still gated by policy).
+ * - `'agent'` — the Software-Agent read: stable ids + metrics + relationships + influence attribution +
+ *   projections, but NO opaque body `data` (raw/user-identifying payloads withheld regardless of `includeData`).
+ * - `'bug-report'` — structural + versions (relationships + influences), no user data.
+ * - `'public'` — minimal: ids + shape (bodies/metrics/projections), no relationships, influences, or data.
+ */
+export type SnapshotProfile = 'debug' | 'agent' | 'bug-report' | 'public';
+
 /** Options for {@link FieldHandle.snapshot}. */
 export interface FieldSnapshotOptions {
   /** include the raw particle pool (heavier; off by default for lightweight exports). */
@@ -1017,6 +1031,61 @@ export interface FieldSnapshotOptions {
   /** include per-body force attribution (each body's own forces at its centre, via the impulse
    *  accumulator) so a later `replay()` can derive `cause: 'force'` steps. Off by default. */
   includeInfluences?: boolean;
+  /** apply a named {@link SnapshotProfile} preset. Composes with the explicit `include*` flags and the
+   *  {@link FieldPolicy} privacy budget, always resolving to the TIGHTEST (most private) result — a
+   *  profile can never widen past what policy or an explicit deny allows. */
+  profile?: SnapshotProfile;
+}
+
+/**
+ * A scoped read CAPABILITY an {@link AgentFieldView} grants. Each names one dimension of the field's
+ * read surface; a capability set is an allow-list — a dimension the caps don't include is stripped from
+ * every reading (it tightens, never widens). Read-only throughout — there is no write capability, because
+ * *agent-readable is not agent-writable* (see `docs/canonical/agent-consumption-model.md`).
+ */
+export type AgentCapability =
+  | 'read:metrics'
+  | 'read:relationships'
+  | 'read:influences'
+  | 'read:snapshots'
+  | 'read:body-data'
+  | 'read:projections'
+  | 'read:diagnostics'
+  | 'read:replay';
+
+/** Options for {@link FieldHandle.forAgent} — the capability grant + optional redaction list. */
+export interface AgentViewOptions {
+  /** the capabilities this agent view grants. An allow-list: any dimension not listed is stripped from
+   *  every reading. An empty set yields the most-restricted view (ids + shape only). */
+  capabilities: AgentCapability[];
+  /** dotted paths stripped from every reading AFTER capability scoping (e.g. `'body.data'`, `'host.user'`,
+   *  `'metrics.temperature'`). `body.*` / `relationship.*` / `influence.*` / `projection.*` prefixes address
+   *  the per-entry shape of each list; a bare top-level key addresses the result/snapshot itself. */
+  redactions?: string[];
+}
+
+/**
+ * A READ-ONLY facade over a field, scoped to a set of {@link AgentCapability}s — the surface a Software
+ * Agent uses to read the field safely. It exposes ONLY scoped `query()` / `snapshot()` (and `replay()`
+ * when `read:replay` is granted). It has NO mutation methods — no `applyForce`, no `addBody`, no
+ * `setPolicy` — enforced by the facade's very shape: *agent-readable is not agent-writable*. Every
+ * reading is tightened to the granted capabilities, then any `redactions` paths are stripped, and the
+ * result can never widen past what the field's {@link FieldPolicy} already permits.
+ */
+export interface AgentFieldView {
+  /** the granted capabilities (a frozen copy). */
+  readonly capabilities: readonly AgentCapability[];
+  /** the redaction paths (a frozen copy). */
+  readonly redactions: readonly string[];
+  /** a capability-scoped, redacted {@link FieldQueryResult}. Dimensions the caps don't grant are absent
+   *  (no `read:influences` → no influences; no `read:relationships` → no relationships; etc.). */
+  query(q?: FieldQuery): FieldQueryResult;
+  /** a capability-scoped, redacted {@link FieldSnapshot}. Body `data` is withheld unless `read:body-data`
+   *  is granted (and policy permits it); a `profile`/`include*` request can only tighten from here. */
+  snapshot(opts?: FieldSnapshotOptions): FieldSnapshot;
+  /** narrate how the field changed between two snapshots — present ONLY when `read:replay` is granted
+   *  (otherwise `undefined`, so the facade's shape reflects the grant). */
+  replay?(a: FieldSnapshot, b: FieldSnapshot, opts?: ReplayOptions): CausalReplay;
 }
 
 /** A body captured in a {@link FieldSnapshot}. */
@@ -1321,6 +1390,15 @@ export interface FieldHandle {
    *  reduced-motion + perf pressure — reduced-motion always wins, so a policy can lower motion but never
    *  raise it. The privacy budget gates body `data` in `snapshot()`. */
   setPolicy(policy: FieldPolicy): void;
+  /**
+   * Derive a READ-ONLY {@link AgentFieldView} scoped to a set of {@link AgentCapability}s — the safe
+   * surface a Software Agent uses to read the field. The returned facade exposes ONLY scoped
+   * `query()` / `snapshot()` (and `replay()` when `read:replay` is granted); it has NO mutation methods.
+   * Readings are tightened to the granted capabilities, then any `redactions` paths are stripped, and the
+   * result can never widen past what the field's {@link FieldPolicy} already permits. Purely additive —
+   * `forAgent` reads the same live field; it does not fork or copy it.
+   */
+  forAgent(opts: AgentViewOptions): AgentFieldView;
   /**
    * Switch the underlay render mode (§20.6) live — the surface behind content. `'none'` is the
    * signals-only mode (§13.7 / #297): drawing stops from the next frame while the simulation and
