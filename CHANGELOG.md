@@ -9,15 +9,9 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Changed
 
-- **`@fundamental-engine/core`:** the default **`dprCap` is now `1.5`** (was `2`) — the dominant fill-rate
-  lever. The field canvas is a soft glow layer behind DOM content, so 1.5 vs 2 there is nearly
-  imperceptible, but it is ~1.8× less fill every frame on retina; DOM text/UI is unaffected (this only
-  sizes the field canvas). The QualityGovernor's `TIER_DPR` ladder is retuned to `[∞, 1.25, 1.1, 1]` so
-  its first step still sits below the new default. Pass a higher `dprCap` (or `setDprCap`) to opt back up.
-
-
-### Changed
-
+- **`@fundamental-engine/core`:** the default `dprCap` stays **`2`** — an experimental drop to `1.5` was
+  reverted after on-hardware benchmarking (`/perf-bench`) showed it gives no measurable fps benefit even in
+  the mix-blend/compositing case, and the QualityGovernor already lowers DPR adaptively under real load.
 - **Tests:** aggressive cross-surface integration coverage for the substrate API — new
   `substrate-api.test.ts` in `@fundamental-engine/{vanilla,three,elements,react}` (+47 tests)
   verifying `query`/`snapshot`/`diff`/`replay`/`projections` are reachable, correctly shaped, and

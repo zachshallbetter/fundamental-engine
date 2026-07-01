@@ -81,9 +81,9 @@ Five modules map to the npm / Swift packages: `:fundamental-core` ↔ `@fundamen
 ## Device pixel ratio (DPR)
 
 The field renders at the device DPR, **capped** to keep fill-rate bounded (the field is fill-rate-bound,
-not particle-bound). `dprCap` (option / `dpr-cap` attribute, default 1.5) sets the ceiling; the adaptive
+not particle-bound). `dprCap` (option / `dpr-cap` attribute, default 2) sets the ceiling; the adaptive
 quality tiers (`setQualityTier`, applied automatically by `<field-root>`) drop the effective DPR under
-load (`TIER_DPR = [∞, 1.25, 1.1, 1]`). *Pinned by:* `core/dpr-cap.test.ts`, the quality-tier tests.
+load (`TIER_DPR = [∞, 1.5, 1.25, 1]`). *Pinned by:* `core/dpr-cap.test.ts`, the quality-tier tests.
 
 ## Reduced motion
 
