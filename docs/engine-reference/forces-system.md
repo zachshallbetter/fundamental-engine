@@ -108,7 +108,7 @@ its center onto the canvas:
 canvas_x = (rect.left + rect.width / 2) · DPR
 ```
 
-- `DPR = min(devicePixelRatio, 2)` (capped at 2 for performance).
+- `DPR = min(devicePixelRatio, 1.5)` (capped at 1.5 for performance).
 - Bodies are re-measured every **6 frames** (not every frame) for cost;
   particles integrate every frame.
 - A body whose element is scrolled off-screen (beyond a `H · 0.15` margin) sets
@@ -919,7 +919,7 @@ The engine defines a `PerformanceBudget` with defaults enforced by `inspectBudge
 | `localCells` | 3 | Active `<field-cell>` scoped regions. |
 | `fieldLines` | 256 | Field-line overlay count cap. |
 | `heatmapResolution` | 6 px | Cell size of the density heatmap grid (4–8 px range). |
-| `dprCap` | 2 | Device pixel ratio ceiling for the canvas backing store. |
+| `dprCap` | 1.5 | Device pixel ratio ceiling for the canvas backing store. |
 
 ```ts
 import { inspectBudget, DEFAULT_BUDGET } from '@fundamental-engine/core';
@@ -933,7 +933,7 @@ supply; they do not sample the engine.
 
 ### 18.3 Cost controls (as-built)
 
-- DPR capped at 2 (the `dprCap` budget default above).
+- DPR capped at 1.5 (the `dprCap` budget default above).
 - Bodies measured every 6 frames; off-screen elements exert no force.
 - Spark cap 260; canvas uses `alpha: false`.
 - `store.reindex()` rebuilds the spatial hash every frame from scratch — no amortization.

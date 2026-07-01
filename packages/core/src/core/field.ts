@@ -236,8 +236,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     gradientCool: opts.gradientCool ? hexToRgb(opts.gradientCool) : theme.cool,
     gradientWarm: opts.gradientWarm ? hexToRgb(opts.gradientWarm) : theme.warm,
     waveBaseline: (opts.waveBaseline ?? theme.wave).map(hexToRgb),
-    dprCap: opts.dprCap && opts.dprCap > 0 ? opts.dprCap : 2, // backing-store DPR ceiling (#410); the
-    // dominant fill-rate lever — the ambient field is soft, so ~1.5 buys ~1.8× headroom on retina.
+    dprCap: opts.dprCap && opts.dprCap > 0 ? opts.dprCap : 1.5, // backing-store DPR ceiling (#410); the
+    // dominant fill-rate lever. Default 1.5 (was 2): the particle field is a SOFT glow layer behind DOM
+    // content — 1.5 vs 2 there is nearly imperceptible, but it is ~1.8× less fill every frame on retina.
+    // (DOM text/UI is unaffected — this only sizes the field canvas.) Pass a higher dprCap to opt back up.
     // optional z volume (z-axis.md): 0 — the default — is the flat field, byte-identical
     // to the 2D engine; > 0 opens a shallow depth the matter drifts through, opt-in.
     depth: opts.depth && opts.depth > 0 ? opts.depth : 0,
@@ -1174,7 +1176,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // ambient layer (the heatmap glow). Reversible — tier 0 restores the configured quality. Driven by
   // `setQualityTier`; the platform runtime forwards the governor's tier.
   let qualityTier = 0;
-  const TIER_DPR = [Infinity, 1.5, 1.25, 1]; // effective DPR ceiling per tier, capping cfg.dprCap further
+  const TIER_DPR = [Infinity, 1.25, 1.1, 1]; // effective DPR ceiling per tier, capping cfg.dprCap further.
+  // Retuned when the default dprCap dropped 2→1.5 (#410 follow-up): tier 1 must sit BELOW the new 1.5
+  // default or the governor's first step would no-op, so the ladder is 1.5 → 1.25 → 1.1 → 1.0.
 
   // backing store stays 0×0 while W/H — the simulation space — keep tracking the viewport.
   function sizeSurfaces(dprRaw: number): void {
