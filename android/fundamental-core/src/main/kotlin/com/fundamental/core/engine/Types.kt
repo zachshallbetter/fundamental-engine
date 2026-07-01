@@ -63,6 +63,28 @@ class Particle(
  */
 class AtomPayload(var weight: Float? = null, var payload: Map<String, Any?> = emptyMap())
 
+/**
+ * A body's FIRST-CLASS IDENTITY (substrate critical path — JS #884). A stable, structured handle for
+ * referring to a body across frames, snapshots, diffs, and relationships — decoupled from object
+ * reference and from display text. [id] is the stable primary key: unique within a field, constant for
+ * the body's life. The rest is optional grouping metadata (opaque to the engine).
+ *
+ * Identity is NOT display text, NOT necessarily a host/DOM id, and NOT an object reference. When a body
+ * carries no supplied identity, the engine DERIVES a stable one deterministically (a supplied resolver,
+ * else the host's platform id, else a monotonic `body-N` counter — NEVER random). Mirror of the JS
+ * `FieldBodyIdentity`.
+ */
+data class FieldBodyIdentity(
+    /** the stable primary key — unique within the field, constant for the body's life. */
+    val id: String,
+    /** optional grouping namespace (an app/module the body belongs to). Free-form; opaque to the engine. */
+    val namespace: String? = null,
+    /** optional kind/type tag (`"card"`, `"heading"`, `"agent"`). Free-form; opaque to the engine. */
+    val kind: String? = null,
+    /** optional host/owner tag (a renderer or view that owns the body's rendered object). Free-form. */
+    val host: String? = null,
+)
+
 /** A registered view acting as a force source. */
 class Body(
     /** Space-joined force ids (they compose). */
@@ -107,6 +129,14 @@ class Body(
     var warpTarget: Vec3? = null
     var twist: Float? = null
     var warpScale: Float? = null
+
+    /**
+     * FIRST-CLASS IDENTITY (see [FieldBodyIdentity]). Supplied via `addBody`/the `identify` resolver,
+     * else lazily DERIVED and cached the first time the body is keyed (the controller's `bodyIdentity`).
+     * Once resolved it is stable for the body's life; snapshots/diff/relationships would key on
+     * `identity.id`. Null until first keyed.
+     */
+    var identity: FieldBodyIdentity? = null
 
     // ── runtime state read/written by the integrator ─────────────────────────────────
     /** On-screen and exerting force (§2.1). */

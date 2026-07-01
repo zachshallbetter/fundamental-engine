@@ -4,6 +4,8 @@ import com.fundamental.core.engine.AtomPayload
 import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.Box
 import com.fundamental.core.engine.EnergyReport
+import com.fundamental.core.engine.FieldBodyIdentity
+import com.fundamental.core.engine.FieldPolicy
 import com.fundamental.core.engine.Particle
 import com.fundamental.core.engine.ScalarGrid
 import com.fundamental.core.engine.WaveStyle
@@ -113,6 +115,12 @@ class BodySpec(
     val angleDeg: Float? = null,
     val tint: String? = null,
     val data: Any? = null,
+    /**
+     * FIRST-CLASS IDENTITY for this programmatic body (JS #884). Supply a stable [FieldBodyIdentity]
+     * (unique `id` in the field, plus optional namespace/kind/host) so consumers can reference the body
+     * by identity rather than the returned handle. Omitted ⇒ the engine derives a synthetic `body-N`.
+     */
+    val identity: FieldBodyIdentity? = null,
     val rect: () -> Box,
 )
 
@@ -133,6 +141,9 @@ class BodyHandle internal constructor(
             body.heading = Vec3(cos(r).toFloat(), sin(r).toFloat(), 0f)
         }
     }
+
+    /** This body's resolved FIRST-CLASS IDENTITY (JS #884) — supplied, or derived + cached on first key. */
+    val identity: FieldBodyIdentity get() = controller.bodyIdentity(body)
 
     /** Current sink load: absorbed / capacity ∈ [0,1]. Zero if the body has no `sink` token. */
     val load: Float get() = if (body.capacity > 0f) (body.accreted / body.capacity).coerceIn(0f, 1f) else 0f
@@ -268,6 +279,24 @@ class FieldHandle(val controller: FieldController) {
     /** Feed the current frame's scroll velocity from the platform scroll listener. */
     fun feedScrollV(vel: Float) { _scrollV = vel }
 
+    // ── runtime FIELD POLICY (JS #892) ─────────────────────────────────────────────────
+    /**
+     * Replace the runtime [FieldPolicy] — what this host/session/user/app PERMITS. Reduced-motion always
+     * wins (a policy can lower motion but never raise it above what reduced-motion allows). Mirrors JS
+     * `setPolicy`.
+     */
+    fun setPolicy(policy: FieldPolicy) = controller.setPolicy(policy)
+    /** The live runtime policy. Mirrors JS `policy`. */
+    val policy: FieldPolicy get() = controller.policy
+    /**
+     * Feed the host's reduced-motion preference (the Kotlin analog of the JS host's `reducedMotion()` —
+     * the controller is host-agnostic, so the platform/host feeds it like scroll). When true, motion
+     * clamps to 0 regardless of policy.
+     */
+    fun feedReducedMotion(on: Boolean) { controller.reducedMotion = on }
+    /** The effective motion allowance `0..1` this frame — reduced-motion + policy folded (JS #892). */
+    fun effectiveMotion(): Float = controller.effectiveMotion()
+
     // ── imperative interactions ──────────────────────────────────────────────────────
     fun burst(x: Float, y: Float, power: Float = 1f) = controller.burst(x, y, power)
     fun flowTo(x: Float, y: Float, strength: Float? = null, radius: Float? = null) = controller.flowTo(x, y, strength, radius)
@@ -281,6 +310,7 @@ class FieldHandle(val controller: FieldController) {
         val body = Body(tokens = spec.tokens, strength = spec.strength, range = spec.range, spin = spec.spin, heading = heading)
         body.feedback = true // programmatic bodies measure density (§8) — Swift addBody parity (feedback: true)
         body.tint = spec.tint
+        body.identity = spec.identity // supplied identity overrides derivation (JS #884)
         body.rect = spec.rect
         body.box = spec.rect()
         controller.addBody(body)
@@ -396,6 +426,16 @@ class FieldHandle(val controller: FieldController) {
      */
     fun sample(x: Float, y: Float): Vec3 = controller.sample(x, y)
 
+    // ── agent permissions (JS #894) ────────────────────────────────────────────────────
+    /**
+     * A capability-scoped, READ-ONLY [AgentFieldView] over this field — the surface a Software Agent uses
+     * to read the field safely. It exposes only scoped reads (no mutators); every reading is tightened to
+     * the granted [capabilities], then [redactions] strip named paths, and nothing widens past what the
+     * field's [FieldPolicy] permits. Mirrors JS `forAgent`.
+     */
+    fun forAgent(capabilities: Collection<AgentCapability>, redactions: Collection<String> = emptyList()): AgentFieldView =
+        AgentFieldView(this, capabilities, redactions)
+
     // ── event bus ─────────────────────────────────────────────────────────────────────
     private val _listeners = mutableListOf<Triple<FieldEvent, String, (FieldEventPayload) -> Unit>>()
 
@@ -471,4 +511,16 @@ fun createField(
     depth: Float = 0f,
     particleCount: Int = 300,
     seed: Long? = null,
-): FieldHandle = FieldHandle(FieldController(width, height, depth, particleCount, seed))
+    /**
+     * FIRST-CLASS IDENTITY resolver (JS #884): derive a stable [FieldBodyIdentity] for a scanned body.
+     * Null ⇒ default derivation (a monotonic `body-N`). See [FieldController.identify].
+     */
+    identify: ((Body) -> FieldBodyIdentity?)? = null,
+    /** Initial runtime [FieldPolicy] (JS #892) — what this host/session/user/app permits. Additive. */
+    policy: FieldPolicy = FieldPolicy.UNBOUNDED,
+): FieldHandle = FieldHandle(
+    FieldController(width, height, depth, particleCount, seed).also {
+        it.identify = identify
+        it.setPolicy(policy)
+    },
+)
