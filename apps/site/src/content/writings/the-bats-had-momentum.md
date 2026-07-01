@@ -163,6 +163,26 @@ dynamic body already moves under the field; making it feel the equal-and-opposit
 and giving it real inertia, is the next push — and it's the one this note was really about. The
 foundation is built; the reciprocity-in-motion payoff is what's left to claim.
 
+## Measured — the clump hypothesis, tested (and it lost)
+
+Since the update above, **momentum proper shipped too**, both opt-in and experimental: first-class body
+**inertial mass ∝ rendered area** (`mass: true`, so a heading settles slowly and a tag snaps — measured:
+a light body recoils >1.5× a heavy one) and **own-emission reaction** (`reaction: true`, so a directional
+emitter recoils like a rocket). The whole proposal is now buildable.
+
+Which let us run the one experiment this note leaned on hardest — *"the clump might ease."* It was worth
+being honest that it needed testing, because **the test says no.** A central attractor with friction
+freezes matter into a stalled clump; turning first-class mass on made it, if anything, **slightly tighter
+(−8% spread), less mobile (−22% residual motion per frame), and markedly more oscillatory (+77%)** — not
+looser. The guess that "matter carries through a balance point" didn't hold for the swarm; the caution
+that momentum "could equally introduce new oscillation" did. (Caveat: one scenario, particle-mass only —
+own-emission reaction is body-level and orthogonal to the *particle* clump.)
+
+So the honest ledger: momentum's **body-level** story is real and measured (weight reads as inertia;
+reciprocity closes through motion). Its **clump-easing** story — the one soft claim in this note — is
+**not supported by measurement**, and shouldn't be sold. That distinction is the whole point of insisting
+on the measurement rather than the vibe.
+
 ---
 
 *The full comparison this grew out of — Fundamental against Reynolds' Boids, with the per-axis verdict
