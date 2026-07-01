@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 
 // Visual Binding Study — declarative visual binding. A real HTML heading is the semantic source; a
 // hand-authored SVG is bound to it as a `representation` via data-field-visual-for. The platform's
@@ -14,6 +15,7 @@ import DocsLayout from '../../../layouts/DocsLayout.astro';
 >
   <p class="kicker">Concept study · declarative visual binding</p>
   <h1>Visual Binding Study</h1>
+  <StatusChip label="Concept study" tone="concept" />
   <p class="lede">
     An expressive visual can stand in for a semantic element without stealing its meaning. Mark the
     visual with <code>data-field-visual-for</code> and a <code>data-field-visual-role</code>, call

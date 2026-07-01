@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import StatusChip from '../components/StatusChip.astro';
 
 // /demo — a small, additive showcase of two shipped substrate features:
 //   1. data-authority="dynamic" bodies — the engine owns their position; they recoil under the field.
@@ -20,6 +21,7 @@ import SiteFooter from '../components/SiteFooter.astro';
   <main id="main" class="demo-shell">
     <header class="demo-head">
       <h1>Substrate demo</h1>
+      <StatusChip label="Demo · experimental substrate surface" tone="demo" />
       <p>
         Two shipped substrate features, live over the page field. The <strong>anchored</strong> wells
         below hold position; the <strong>dynamic</strong> motes recoil — the engine owns their position and

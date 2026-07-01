@@ -84,6 +84,14 @@ const total = METHODS.length;
       <em>physics</em> is identical (the 36-force conformance suite asserts it). This matrix tracks
       <em>API surface</em> parity.
     </p>
+    <div class="callout">
+      <b>Three distinct axes — don't conflate them.</b>
+      <b>API parity</b> (this matrix): the <code>FieldHandle</code> method surface exists — 44/44/44.
+      <b>Conformance</b>: the force math matches, asserted by the shared cross-plane golden (the 36-force
+      suite). <b>Production readiness</b>: packaging, platform polish, and docs — this is
+      <em>Preview</em> and differs by host. Native ports are at <code>FieldHandle</code> API parity, but
+      packaging, platform polish, and production-readiness differ by host.
+    </div>
   </header>
 
   <div class="callout">

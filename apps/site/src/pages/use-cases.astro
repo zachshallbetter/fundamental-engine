@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import CodeTabs from '../components/CodeTabs.astro';
+import StatusChip from '../components/StatusChip.astro';
 import '../styles/use-cases.css';
 
 const ctaCode = `<field-root render="dots"></field-root>
@@ -42,6 +43,7 @@ const ctaCode = `<field-root render="dots"></field-root>
           data-feedback
         >with the field.</span>
       </h1>
+      <StatusChip label="Planning · product translation" tone="planning" />
       <p class="uc-standfirst">
         These are not demos. Each is a real UI problem — the kind you've already
         hand-coded with scroll spies, IntersectionObservers, animation timers, and

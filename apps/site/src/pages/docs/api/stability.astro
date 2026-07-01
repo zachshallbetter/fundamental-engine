@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import ApiStamp from '../../../components/ApiStamp.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 import {
   FROZEN_VALUES, FROZEN_TYPES, FROZEN_ELEMENTS, FROZEN_BODY_ATTR, EXPERIMENTAL, COMPAT_RULES,
 } from '../../../../../../scripts/api-surface.data.mjs';
@@ -17,6 +18,7 @@ const frozenCount = FROZEN_VALUES.length + FROZEN_TYPES.length + FROZEN_ELEMENTS
 >
   <p class="kicker">API reference</p>
   <h1>API <span class="accent">stability</span></h1>
+  <StatusChip label="Stable · 0.x contract" tone="stable" />
   <p class="lede">
     The architecture has stopped being fluid. The surface below is <b>frozen for <code>0.x</code></b>:
     each symbol stays exported, from the same package, with the same kind, and does not break for the

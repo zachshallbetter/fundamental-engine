@@ -11,6 +11,7 @@
 // an agent reads the field's structured state instead of scraping the DOM. That is the whole
 // point of "substrate, not wallpaper."
 import ExampleShell from "../components/examples/ExampleShell.astro";
+import StatusChip from "../components/StatusChip.astro";
 import data from "../data/ai-evidence.json";
 import { fmtDate } from "../lib/fmt.ts";
 
@@ -46,6 +47,7 @@ const snapshotLabel = data.snapshotAt ? fmtDate(data.snapshotAt) : "synthetic";
   <header class="ev-hero">
     <p class="ev-kicker">Fundamental · invisible fields · ai-evidence</p>
     <h1>An agent reads the <span class="accent">field</span>, not the DOM.</h1>
+    <StatusChip label="Demo · synthetic data · substrate proof" tone="demo" />
     <p class="ev-lede">
       One question. Each <strong>claim</strong> and each <strong>source</strong> is a body in an
       invisible field. Citations are real relationships — support pulls a claim and its sources

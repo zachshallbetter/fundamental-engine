@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import RecipesApplied from '../../../components/RecipesApplied.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 
 // Reading Field Study — the first "familiar-page concept study" (docs/planning-archive/live-web-examples.md).
 // A generic long-form article (no copied brand assets) reinterpreted as a field: semantic HTML first,
@@ -81,6 +82,7 @@ const sources = [
 >
   <p class="kicker">Concept study</p>
   <h1>Reading Field Study</h1>
+  <StatusChip label="Concept study" tone="concept" />
   <p class="lede">
     A familiar page — a long-form article — reinterpreted as a field. The structure stays ordinary
     semantic HTML; the field adds a second layer: orientation, memory, and relationship. It remains
