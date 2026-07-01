@@ -95,6 +95,15 @@ public struct FieldOptions {
     public var dprCap: Float?
     /// Quality tier 0–3 (0 = full, 3 = paused). Read by the platform scheduler. Mirrors JS `setQualityTier`.
     public var qualityTier: Int
+    /// FIRST-CLASS IDENTITY resolver (JS #884): derive a ``FieldBodyIdentity`` for a scanned body from its
+    /// backing view. Return `nil` to fall through to the deterministic default (a monotonic `body-N`).
+    /// Runs at scan time; the resolved identity is cached on the body for its life. Mirrors JS
+    /// `FieldOptions.identify`.
+    public var identify: ((AnyObject) -> FieldBodyIdentity?)?
+    /// Initial runtime ``FieldPolicy`` — what this host/session/user/app PERMITS (runtime rules). Change
+    /// it live with `FieldHandle.setPolicy`. `nil` = no policy (unbounded, byte-identical to a pre-policy
+    /// field). Mirrors JS `FieldOptions.policy`.
+    public var policy: FieldPolicy?
 
     public init(
         accent: String? = nil,
@@ -116,7 +125,9 @@ public struct FieldOptions {
         background: String? = nil,
         dprCap: Float? = nil,
         qualityTier: Int = 0,
-        feedbackSink: FeedbackSink? = nil
+        feedbackSink: FeedbackSink? = nil,
+        identify: ((AnyObject) -> FieldBodyIdentity?)? = nil,
+        policy: FieldPolicy? = nil
     ) {
         self.accent = accent
         self.density = density
@@ -138,6 +149,8 @@ public struct FieldOptions {
         self.dprCap = dprCap
         self.qualityTier = qualityTier
         self.feedbackSink = feedbackSink
+        self.identify = identify
+        self.policy = policy
     }
 }
 
@@ -159,14 +172,20 @@ public struct BodySpec {
     public var color: String?
     public var data: (any Sendable)?
     public var rect: () -> Box
+    /// FIRST-CLASS IDENTITY for this programmatic body (see ``FieldBodyIdentity``, JS #884). Supply a
+    /// stable identity so snapshots/diff/replay/relationships agree on `identity.id`; when omitted the
+    /// engine derives a deterministic `body-N`. Mirrors JS `BodySpec.identity`.
+    public var identity: FieldBodyIdentity?
     /// Called each frame with this body's field readings. Mirrors JS `BodySpec.onFeedback`.
     public var onFeedback: ((FeedbackChannels) -> Void)?
     public init(tokens: [String], strength: Float = 1, range: Float = 100, spin: Float = 1,
                 angle: Float? = nil, color: String? = nil, data: (any Sendable)? = nil,
+                identity: FieldBodyIdentity? = nil,
                 rect: @escaping () -> Box,
                 onFeedback: ((FeedbackChannels) -> Void)? = nil) {
         self.tokens = tokens; self.strength = strength; self.range = range; self.spin = spin
         self.angle = angle; self.color = color; self.data = data; self.rect = rect
+        self.identity = identity
         self.onFeedback = onFeedback
     }
 }
@@ -460,6 +479,22 @@ public protocol FieldHandle: AnyObject {
     /// at the agent's `position()` and delivers it via `onInfluence`. Mirrors JS `addAgent`.
     @discardableResult
     func addAgent(_ spec: AgentSpec) -> AgentHandle
+
+    // ── policy  (substrate — JS #892) ──────────────────────────────────────
+    /// The field's current runtime ``FieldPolicy`` (a value copy). An empty policy when none was set.
+    /// Mirrors JS `FieldHandle.policy`.
+    var policy: FieldPolicy { get }
+    /// Replace the runtime ``FieldPolicy`` live — what this host/session/user/app PERMITS. REPLACE (not
+    /// merge): the field runs exactly the policy handed in. Reduced-motion still wins over it (a policy
+    /// can lower motion but never raise it above what reduced-motion allows). Mirrors JS `setPolicy`.
+    func setPolicy(_ policy: FieldPolicy)
+
+    // ── agent permissions  (substrate — JS #894) ───────────────────────────
+    /// Derive a READ-ONLY ``AgentFieldView`` scoped to a set of ``AgentCapability``s — the safe surface a
+    /// Software Agent reads the field through. The returned view has NO mutation methods (enforced by its
+    /// shape) and tightens every reading to the granted caps. It reads the same live field; it does not
+    /// fork or copy it. Mirrors JS `forAgent`.
+    func forAgent(_ options: AgentViewOptions) -> any AgentFieldView
 
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)

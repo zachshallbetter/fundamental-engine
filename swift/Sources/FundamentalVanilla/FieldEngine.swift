@@ -19,6 +19,36 @@ final class FieldEngine: FieldHandle {
     private let host: any FieldHost
     private var options: FieldOptions
     private let registry: Registry
+
+    // Runtime FIELD POLICY (substrate — JS #892): what THIS host/session/user/app PERMITS (runtime),
+    // distinct from governance (static lint). Replaced live via `setPolicy`. Default: no policy →
+    // unbounded, byte-identical to the pre-policy engine.
+    private var fieldPolicy = FieldPolicy()
+
+    /// Snapshot privacy threshold — a privacy budget below this withholds body `data` (mirrors JS's
+    /// `PRIVACY_DATA_THRESHOLD`). Read by ``policyPermitsBodyData`` once the snapshot surface lands.
+    private static let privacyDataThreshold: Float = 0.5
+
+    /// The effective MOTION budget (0..1) — the single value the render/easing/integrator path reads.
+    /// Unifies reduced-motion + host policy (folded via `min`). Reduced-motion ALWAYS wins (accessibility
+    /// can only lower motion, never raise it): when it's on, this is 0. Mirrors the JS `effectiveMotion`.
+    private func effectiveMotion() -> Float {
+        if host.prefersReducedMotion { return 0 } // accessibility clamp — beats any policy
+        if fieldPolicy.allowMotionProjection == false { return 0 } // policy pins motion off
+        var m: Float = 1
+        if let mb = fieldPolicy.maxMotionBudget { m = min(m, mb) }
+        if let bm = fieldPolicy.budgets?.motion { m = min(m, bm) }
+        return max(0, min(1, m))
+    }
+
+    /// Whether the policy permits body `data` in a snapshot. Mirrors the JS privacy gate. DECLARED here:
+    /// the Swift snapshot surface isn't ported yet, so this is exposed for when it lands rather than
+    /// wired to a live reading.
+    private func policyPermitsBodyData() -> Bool {
+        if fieldPolicy.allowBodyDataInSnapshots == false { return false } // explicit deny wins
+        if let pv = fieldPolicy.budgets?.privacy, pv < Self.privacyDataThreshold { return false }
+        return true
+    }
     private let store: FieldStore
     private let env: Env
     private var loopToken: AnyObject?
@@ -29,6 +59,28 @@ final class FieldEngine: FieldHandle {
     // Simulation state
     private var bodies: [Body] = []
     private var programmaticBodies: [Body] = [] // addBody() sources — re-merged after every scan()
+
+    // FIRST-CLASS IDENTITY (substrate critical path — JS #884). Every body resolves to a stable,
+    // structured `FieldBodyIdentity`, cached on `body.identity` the first time it is keyed. Precedence:
+    // a supplied identity → the `identify` field-option resolver → a monotonic `body-N` synthetic.
+    // Deterministic (never random); stable for the body's life, so relationship endpoints, snapshots,
+    // and diff/replay all agree on `identity.id`. Mirrors the JS `bodyIdentity` closure in `field.ts`.
+    private var bodyIdSeq = 0
+    /// Resolve (and cache) a body's first-class identity. Idempotent — a body keyed twice returns the
+    /// same identity. Order: an already-cached/supplied identity → the `identify` resolver (given the
+    /// body's view) → a deterministic `body-N` synthetic.
+    @discardableResult
+    private func resolveIdentity(_ body: Body) -> FieldBodyIdentity {
+        if let ident = body.identity { return ident }
+        var ident: FieldBodyIdentity?
+        if let identify = options.identify, let view = body.view {
+            ident = identify(view)
+        }
+        let resolved = ident ?? FieldBodyIdentity(id: "body-\(bodyIdSeq)")
+        if ident == nil { bodyIdSeq += 1 }
+        body.identity = resolved
+        return resolved
+    }
     private var formTarget: Formation
     private var accent: RGB
     /// The travelling-accent journey (§9): palette stops the accent traverses with scroll.
@@ -122,8 +174,10 @@ final class FieldEngine: FieldHandle {
         let density = max(options.density ?? 1, 0)
         self.spawnCeiling = Int((130 * density).rounded()) * 4
 
+        self.fieldPolicy = options.policy ?? FieldPolicy()
+
         env.form = formTarget
-        env.dt = host.prefersReducedMotion ? 0 : 1
+        env.dt = effectiveMotion() <= 0 ? 0 : 1
         wireEnvServices()
         build()
         start()
@@ -181,7 +235,7 @@ final class FieldEngine: FieldHandle {
 
     /// Spark pool (§23) — capped, skipped under reduced motion.
     private func spawnSpark(at: Vec3, power: Float, color: String?) {
-        if host.prefersReducedMotion || sparks.count > 260 { return }
+        if effectiveMotion() <= 0 || sparks.count > 260 { return }
         let c: RGB = color.map(hexToRgb) ?? WARM
         let n = sparkCount(power: power)
         for _ in 0..<n {
@@ -281,7 +335,11 @@ final class FieldEngine: FieldHandle {
         // forces and friction stay per-frame by design (see applyForce / the integrator).
         let dtRaw = lastTimestamp.map { Float((timestamp - $0) * 60.0) } ?? 1
         lastTimestamp = timestamp
-        env.dt = host.prefersReducedMotion ? 0 : clamp(dtRaw, 0.2, 2)
+        // Effective motion budget (0..1) folds reduced-motion + policy. At 0 the field is frozen exactly
+        // as reduced-motion; a partial budget scales displacement-per-second proportionally (a
+        // maxMotionBudget: 0.5 field drifts at half speed). Reduced-motion always forces this to 0.
+        let motion = effectiveMotion()
+        env.dt = motion <= 0 ? 0 : clamp(dtRaw, 0.2, 2) * motion
         scrollVel = scrollVel * 0.7 + abs(host.scrollY - lastScrollY) * 0.3
         lastScrollY = host.scrollY
         env.scrollV = scrollVel
@@ -497,6 +555,7 @@ final class FieldEngine: FieldHandle {
 
     func scan() {
         bodies = host.scanBodies() + programmaticBodies // view-less programmatic bodies survive a rescan
+        for body in bodies { resolveIdentity(body) } // key every body to a stable first-class identity
     }
 
     func rescan() { scan() }
@@ -544,6 +603,8 @@ final class FieldEngine: FieldHandle {
         body.box = spec.rect()
         body.isVisible = boxVisible(body.box, in: host.volume)
         body.feedbackCallback = spec.onFeedback
+        body.identity = spec.identity // a supplied identity wins; else resolveIdentity derives body-N
+        resolveIdentity(body)
         programmaticBodies.append(body)
         bodies.append(body) // live this frame, before the next scan() re-merges it
         fire(FieldEventPayload(event: .bodyAdd, body: body))
@@ -793,6 +854,30 @@ final class FieldEngine: FieldHandle {
 
     func setVisible(_ on: Bool) { visible = on }
 
+    // ── policy (substrate — JS #892) ────────────────────────────────────────
+    var policy: FieldPolicy { fieldPolicy }
+
+    func setPolicy(_ policy: FieldPolicy) {
+        // REPLACE (not merge): the field runs exactly the policy handed in. Reduced-motion still wins in
+        // effectiveMotion(), so this can never raise motion above the accessibility clamp.
+        fieldPolicy = policy
+    }
+
+    // ── agent permissions (substrate — JS #894) ─────────────────────────────
+    func forAgent(_ options: AgentViewOptions) -> any AgentFieldView {
+        // A read-only, capability-scoped facade over THIS live field. Agent-readable is not
+        // agent-writable — the returned view exposes no mutators. Whether the future agentRead budget is
+        // 0 closes the surface entirely; the 0 boundary is wired, the fractional gradient is declared.
+        let budgetOpen: Bool = {
+            if let b = fieldPolicy.budgets?.agentRead { return b > 0 }
+            return true
+        }()
+        return ScopedAgentView(engine: self,
+                               capabilities: options.capabilities,
+                               redactions: options.redactions,
+                               budgetOpen: budgetOpen)
+    }
+
     func destroy() {
         if let token = loopToken { host.cancelFrame(token) }
         loopToken = nil
@@ -802,5 +887,37 @@ final class FieldEngine: FieldHandle {
         sparks.removeAll()
         bound.removeAll()
         grids.removeAll()
+    }
+}
+
+// MARK: - ScopedAgentView (substrate — JS #894)
+
+/// The concrete read-only, capability-scoped facade returned by `FieldEngine.forAgent`. Holds a weak
+/// reference to the live engine and tightens each reading to the granted ``AgentCapability`` set. It has
+/// no mutation surface — *agent-readable is not agent-writable*. Mirrors the shape of the JS agent view;
+/// the query/snapshot/replay members grow onto it when those Swift read surfaces land (see
+/// `AgentFieldView`).
+final class ScopedAgentView: AgentFieldView {
+    private weak var engine: FieldEngine?
+    let capabilities: Set<AgentCapability>
+    let redactions: [String]
+    private let budgetOpen: Bool
+
+    init(engine: FieldEngine, capabilities: Set<AgentCapability>, redactions: [String], budgetOpen: Bool) {
+        self.engine = engine
+        self.capabilities = capabilities
+        self.redactions = redactions
+        self.budgetOpen = budgetOpen
+    }
+
+    // Shape is the base grant — always readable.
+    func particleCount() -> Int { engine?.particleCount() ?? 0 }
+    func energy() -> EnergyReport { engine?.energy() ?? EnergyReport(kinetic: 0, thermal: 0, total: 0, count: 0) }
+
+    // The relationship graph is stripped unless `read:relationships` is granted (and the agentRead
+    // budget isn't pinned to 0). Tighten-only: caps can narrow this reading, never widen it.
+    func readEdges() -> [EdgeRecord] {
+        guard budgetOpen, capabilities.contains(.relationships) else { return [] }
+        return engine?.readEdges() ?? []
     }
 }
