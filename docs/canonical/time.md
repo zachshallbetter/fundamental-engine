@@ -97,3 +97,52 @@ the page owns the semantics*:
 - Experiential `memory`/`recency` (inferred) and world-grounded `recency` (declared) are the
   same *lane* with different *sources*; the engine-measured thermodynamics
   (`--temperature` etc.) are a different thing entirely (workover v0.3) and share no naming.
+
+## Temporal semantics — the five time senses
+
+The three clocks above (§1) are the page author's model. The substrate needs a finer split: once a
+field can be snapshotted, replayed, and fed external data, "time" fractures into **five distinct
+senses**, and collapsing any two of them is the recurring temporal bug. They are not
+interchangeable and no single number carries all five.
+
+| Sense | What it is | Where it lives | Kind |
+|---|---|---|---|
+| **Simulation time** | the field's own advancing clock — frames, `dt`, particle ages, wave phase | `env.t`, `env.dt`, `Particle.age`; the accumulator's `temporal` channel | engine-internal, monotone |
+| **Host time** | the platform / wall clock supplied by the host adapter | injected via `FieldHost` (never `Date.now()` in core) | external, monotone |
+| **World time** | an external / domain timestamp attached to *data* — when a record was authored, when an event will occur | `data-field-at` (§3), the `nowMs` fed to the kernels | declared, arbitrary |
+| **Semantic time** | the *meaning* of age — staleness, freshness, recency, decay, imminence | the temporal kernels (§2) mapping world/host time → weight | derived, non-linear |
+| **Replay time** | a reconstructed causal *sequence* — the ordered account a `replay()` derives between two snapshots | `replay()` steps ([causality-and-truth.md](causality-and-truth.md)) | reconstructed, ordinal |
+
+The first three are *clocks* (they tick); semantic time is a *reading* (it weighs); replay time is
+an *ordering* (it narrates). Map them back to §1: simulation time is unchanged; **host time is new
+here** — §1 folded it into simulation time, but the substrate must name the adapter-supplied wall
+clock separately because it is the thing core deliberately does not read directly. World time is
+§1's world clock. Semantic time is what the kernels *produce* from world/host time; §1's
+experiential lanes are one consumer of it. Replay time has no §1 analogue — it exists only once
+snapshots do.
+
+### Doctrine
+
+- **Adapters map host time.** Core imports no wall clock (`core/temporal.ts` takes `nowMs` from its
+  caller; the kernels never call `Date.now()`). The host adapter is the *only* place host time
+  enters, and it enters as a supplied value — this is what keeps the engine testable and
+  frame-coherent.
+- **The accumulator's `temporal` channel is simulation-time.** The `temporal` lane of the impulse
+  accumulator ([substrate-api.md](substrate-api.md)) measures *mortal age* in the field's own clock
+  — engine frames, not wall seconds and not world timestamps. Do not read a body's accumulated
+  `temporal` value as "how old the underlying data is."
+- **Semantic time must be mapped explicitly, never assumed spatial or linear.** Age → weight is a
+  *designed* function (freshness halves per half-life, imminence ramps logarithmically, retention
+  follows Ebbinghaus). Nothing makes temporal distance behave like spatial distance, and nothing
+  makes it linear. A consumer that wants staleness to matter must run a kernel; it may not infer
+  "older = further" or "twice as old = twice as weak" for free.
+- **A snapshot's frame/time is not world or semantic time.** A snapshot carries simulation time
+  (its frame) and, if the host stamped it, host time. It carries **neither world time nor semantic
+  time** unless a consumer explicitly attached them. Reading a snapshot's frame index as "when the
+  data was authored," or its age-in-frames as "staleness," silently conflates the engine clock with
+  data meaning — the exact collapse this split exists to prevent. Replay time, likewise, orders the
+  *simulation's* changes between two snapshots; it is not a timeline of world events.
+
+These lanes obey the same discipline as the rest of the naming canon: *simulation time ticks, host
+time is supplied, world time is declared, semantic time is derived, replay time is reconstructed* —
+and no one of them may stand in for another.
