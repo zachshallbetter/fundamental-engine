@@ -139,10 +139,35 @@ browser's layout loop, to carry that weight. Momentum is where you start paying 
 
 The bats had it in 1992. It's time the field did too.
 
+## Update — the first domino is falling (2026-07-01)
+
+Written above as a proposal; since then, most of the *foundation* it argues for has actually shipped in
+the `0.9.x` substrate line. The three prerequisites this note names —
+
+- *"forces have to **produce** forces instead of secretly editing velocity, so the integrator can do the
+  physics in one place"* → shipped as the **dimension-aware impulse accumulator**: every force's
+  contribution now flows through one canonical capture path (`applyAndRecord`) and is attributable per
+  force, across five channels (linear, thermal, angular, temporal, semantic).
+- *"a symplectic, fixed-timestep solver"* → shipped as an **opt-in fixed-timestep integrator**
+  (`createField({ integrator: 'fixed' })`) — the frame-rate-correct path, alongside the calm `v += F`
+  default (partial progress on [#658](https://github.com/zachshallbetter/fundamental-engine/issues/658);
+  [#659](https://github.com/zachshallbetter/fundamental-engine/issues/659) velocity-Verlet is still open).
+- *bodies that can be "**pushed** by the matter it disturbs"* → shipped as **body-authority modes**: a
+  `data-authority="dynamic"` body is engine-owned and recoils under the net field (there's a live
+  wiring of it, plus a reading of it as agent-consumable JSON, on the `/demo` page).
+
+So the "first domino" is no longer a proposal — it's largely knocked over. What remains genuinely
+*unshipped* is **momentum proper**: the specific **Newtonian own-emission reaction** (a body recoiling
+from what *it* emits, not just from other bodies' fields) and **first-class mass by rendered area**. A
+dynamic body already moves under the field; making it feel the equal-and-opposite of its *own* pushes,
+and giving it real inertia, is the next push — and it's the one this note was really about. The
+foundation is built; the reciprocity-in-motion payoff is what's left to claim.
+
 ---
 
 *The full comparison this grew out of — Fundamental against Reynolds' Boids, with the per-axis verdict
 and the explainability-vs-arbitration result — is in the research paper
 [Substrate, Not Spectacle: Behavioral Models After Boids](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/research/31-behavioral-models-after-boids.md).
-Momentum is a proposal, not a shipped feature; everything above is framed as expected results, not
-measured ones.*
+The **original argument below the update was written 2026-06-29 as a proposal**; momentum *proper*
+(own-emission reaction + first-class mass) is still unshipped, and everything framed as "expected
+results" remains a hypothesis, not a measurement.*

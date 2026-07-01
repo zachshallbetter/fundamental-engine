@@ -3,7 +3,8 @@
 > **Status: research draft (preprint, work in progress).** Paper 31 of the Fundamental family — a
 > comparison/positioning paper, not an empirical study. It situates Fundamental's relational field
 > runtime against Reynolds' 1987 distributed behavioral model ("Boids"). Claims verified against the
-> codebase and canonical docs as of 2026-06-29. See the [series index](README.md) and *the caveat
+> codebase and canonical docs as of 2026-07-01 (re-verified after the 0.9.x substrate line; see §9 and
+> Appendix A). See the [series index](README.md) and *the caveat
 > canon* therein. This is a preprint draft, not canonical product documentation; where the code and a
 > claim disagree, the code wins.
 
@@ -310,6 +311,14 @@ Per the family's caveat canon (`docs/research/README.md`):
    study runs. Boids' validation is decades deep; Fundamental's is not. No verdict in this paper
    should be read as claiming empirical parity.
 
+Limitations 1 and 3 are the momentum gap, and the `0.9.x` substrate line has begun building its
+*foundation* — per-force attribution through one canonical path (`applyAndRecord`), an opt-in
+fixed-timestep integrator, and dynamic body-authority with recoil under the net field — without
+disturbing the calm damped default. The limitations themselves still stand: mass is nominal and the
+ambient field is damped, both by design. What remains genuinely unshipped is momentum *proper* — the
+Newtonian own-emission reaction (a body recoiling from what it emits) and first-class mass — the subject
+of the companion note *"The Bats Had Momentum."*
+
 Specific to this comparison: the "clump" failure (§5) is described from the engine's behavior and the
 project's own engineering notes, not from a controlled benchmark; a quantitative characterization of
 when summation cancels (as a function of force geometry and friction) is future work. The
@@ -350,10 +359,19 @@ keep the asymmetry in validation in full view until the studies are run.
 
 ## Appendix A. Reproducibility and verification
 
-Every claim above is checkable against source as of 2026-06-29:
+Every claim above is checkable against source as of 2026-07-01 (re-verified after the `0.9.x` substrate
+line; the paper's arbitration/explainability analysis is unchanged — the **default** is still linear
+summation, and the additions below are opt-in):
 
 - **Linear summation:** `packages/core/src/core/integrator.ts` (token loop, `v += F`, `FRICTION = 0.95`,
   `|v| ≤ c`); `docs/engine-reference/forces-tests.md` (`attract swirl` = sum of parts).
+- **Opt-in fixed-timestep integrator + per-force attribution (0.9.x):** `integrator.ts`
+  (`applyAndRecord` — every force's contribution captured through one canonical path across five
+  channels; `createField({ integrator: 'fixed' })`). Realizes "forces *produce* forces" without changing
+  the default; the foundation the momentum limitations (§9.1, §9.3) sit on top of.
+- **Body-authority modes + dynamic recoil (0.9.x):** `data-authority` / `Body.authority`; a `dynamic`
+  body is engine-owned and recoils under the net field (`moveDynamicBodies`). Progress toward — not
+  yet — the Newtonian own-emission reaction §9 names as unshipped.
 - **No max-acceleration truncation:** the only clamp is on velocity (`c`), never on Δv — `integrator.ts`.
 - **Boids rules in source, by name:** `packages/core/src/contracts/passport.ts` (`align` = "boids
   alignment", `cohesion` = "boids cohesion"); `packages/core/src/forces/extended.ts`.
