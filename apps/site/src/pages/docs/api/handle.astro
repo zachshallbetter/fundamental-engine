@@ -3,6 +3,7 @@ import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
 import ApiStamp from '../../../components/ApiStamp.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 import { HANDLE } from '../../../lib/docs-api.ts';
 import { EXPERIMENTAL } from '../../../../../../scripts/api-surface.data.mjs';
 
@@ -216,6 +217,7 @@ function focusChild(child) {
   <header class="docs-hero">
     <p class="kicker">API reference</p>
     <h1>The <span class="accent">FieldHandle</span></h1>
+    <StatusChip label="Stable handle · experimental substrate methods" tone="stable" />
     <p class="lede">
       Every entry point — <code>createField</code> <ApiStamp name="createField" pkg="@fundamental-engine/core" />, <code>mountField</code>, the
       <code>FieldField</code> class, the <code>&lt;field-root&gt;</code> element (proxied), and
@@ -368,11 +370,19 @@ function focusChild(child) {
         <dt class="k"><code>release</code></dt>
         <dd class="d">A sink body reached capacity and released (supernova) — the falling edge. Payload: <code>&#123; body, count &#125;</code>.</dd>
       </div>
+      <div class="api-row">
+        <dt class="k"><code>enter</code> / <code>exit</code></dt>
+        <dd class="d">A body crossed into / out of proximity of another — thresholded and debounced so a hover jitter doesn't spam the bus.</dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>met</code></dt>
+        <dd class="d">Two bodies came into contact. Additional <code>field:*</code> events report threshold crossings (attention, entropy, memory, saturation) where supported.</dd>
+      </div>
     </dl>
     <CodeTabs variants={[{ label: 'Event bus', lang: 'js', code: eventsAbsorb }]} />
     <div class="callout">
-      Contact, settle, and enter/exit events are the next slice (#441) — they follow the same
-      <code>on</code> bus once they ship.
+      <code>absorb</code>/<code>release</code> and <code>enter</code>/<code>exit</code>/<code>met</code>
+      ship today on the same <code>on</code> bus; only <code>settle</code> remains reserved/planned (#441).
     </div>
   </section>
 

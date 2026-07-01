@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import RecipesApplied from '../../../components/RecipesApplied.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 
 // Search Field Study — data-driven via bindData(). Results are records; the trust-gradient recipe turns
 // each result's confidence into a --field-confidence gradient, and contradictory results carry polarity.
@@ -15,6 +16,7 @@ const LIVE = ['trust-gradient'];
 >
   <p class="kicker">Concept study · data-bound</p>
   <h1>Search Field Study</h1>
+  <StatusChip label="Concept study" tone="concept" />
   <p class="lede">
     A ranked list becomes an evidence landscape. Results are <b>records</b> bound through
     <code>bindData()</code>; the <a href="/recipes/trust-gradient">Trust Gradient</a> recipe turns

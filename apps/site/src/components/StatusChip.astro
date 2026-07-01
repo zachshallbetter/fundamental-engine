@@ -1,0 +1,49 @@
+---
+// A small, consistent inline status chip for the top of a page — states what a page IS
+// (stable API, a demo on synthetic data, a planning doc, a concept study) so the reader
+// calibrates before reading. Text-labelled, not color-only (the dot is decorative); the
+// tone only tints the border/dot. Distinct from ApiStamp, which stamps a single API symbol.
+//
+//   <StatusChip label="Stable · 0.x contract" tone="stable" />
+//   <StatusChip label="Demo · synthetic data · substrate proof" tone="demo" />
+interface Props {
+  /** the visible text — always shown, never color-only. */
+  label: string;
+  /** tint: stable (teal) · shipped (amber) · demo (violet) · planning/concept (blue-grey). */
+  tone?: 'stable' | 'shipped' | 'demo' | 'planning' | 'concept';
+}
+const { label, tone = 'stable' } = Astro.props;
+---
+
+<span class="status-chip" data-tone={tone}>
+  <span class="status-chip-dot" aria-hidden="true"></span>{label}
+</span>
+
+<style>
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.2rem 0 0.9rem;
+    padding: 0.16rem 0.62rem;
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 999px;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted, #9aa);
+    white-space: nowrap;
+  }
+  .status-chip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex: none;
+  }
+  .status-chip[data-tone='stable'] { color: #2dd4bf; border-color: color-mix(in srgb, #2dd4bf 45%, transparent); }
+  .status-chip[data-tone='shipped'] { color: #f5b554; border-color: color-mix(in srgb, #f5b554 45%, transparent); }
+  .status-chip[data-tone='demo'] { color: #c084fc; border-color: color-mix(in srgb, #c084fc 45%, transparent); }
+  .status-chip[data-tone='planning'] { color: #4da3ff; border-color: color-mix(in srgb, #4da3ff 45%, transparent); }
+  .status-chip[data-tone='concept'] { color: #9aa0ad; border-color: color-mix(in srgb, #9aa0ad 45%, transparent); }
+</style>

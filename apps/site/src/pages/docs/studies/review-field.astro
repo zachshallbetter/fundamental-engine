@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import RecipesApplied from '../../../components/RecipesApplied.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 
 // Review Field Study — data-driven via bindData(). Changed files and reviewers are records, bound
 // through two bindData() groups (Dependency Tension + Review Constellation). Comments link to the
@@ -27,6 +28,7 @@ const coherent = checks.filter((c) => c.ok).length / checks.length;
 >
   <p class="kicker">Concept study · data-bound</p>
   <h1>Review Field Study</h1>
+  <StatusChip label="Concept study" tone="concept" />
   <p class="lede">
     A generic pull request, reinterpreted as a field. Changed files and reviewers are <b>records</b>
     bound through <code>bindData()</code> — the <a href="/recipes/dependency-tension">Dependency

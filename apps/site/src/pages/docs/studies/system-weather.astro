@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import RecipesApplied from '../../../components/RecipesApplied.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 
 // System Weather Study — data-driven via bindData(). Dashboard metric cards are records; the
 // attention-weather recipe turns supplied heat/pressure into --field-* the CSS renders as weather.
@@ -15,6 +16,7 @@ const LIVE = ['attention-weather'];
 >
   <p class="kicker">Concept study · data-bound</p>
   <h1>System Weather Study</h1>
+  <StatusChip label="Concept study" tone="concept" />
   <p class="lede">
     A dashboard read as weather. Metric cards are <b>records</b> bound through <code>bindData()</code>;
     the <a href="/recipes/attention-weather">Attention Weather</a> recipe turns each card's heat and

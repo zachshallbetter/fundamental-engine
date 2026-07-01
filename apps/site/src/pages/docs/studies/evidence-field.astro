@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import RecipesApplied from '../../../components/RecipesApplied.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 
 // Evidence Field Study — built data-first with bindData(). Claims are records; each maps to a body with
 // support/contradiction relationships to its sources, and the evidence-field recipe turns those edges
@@ -23,6 +24,7 @@ const LIVE = ['evidence-field'];
 >
   <p class="kicker">Concept study · data-bound</p>
   <h1>Evidence Field Study</h1>
+  <StatusChip label="Concept study" tone="concept" />
   <p class="lede">
     Claims become bodies, sources bind to them, and contradictions raise entropy — the
     <a href="/recipes/evidence-field">Evidence Field</a> recipe, driven by real data through
