@@ -187,6 +187,9 @@ public final class FieldField: FieldHandle {
     /// Replace the runtime ``FieldPolicy`` live (substrate — JS #892).
     public func setPolicy(_ policy: FieldPolicy)          { handle.setPolicy(policy) }
 
+    /// Derive a READ-ONLY, capability-scoped ``AgentFieldView`` (substrate — JS #894).
+    public func forAgent(_ options: AgentViewOptions) -> any AgentFieldView { handle.forAgent(options) }
+
     public func destroy() {
         handle.destroy()
         // remove the managed render surfaces, mirroring `destroy()` removing the managed canvas.

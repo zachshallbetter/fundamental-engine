@@ -863,6 +863,21 @@ final class FieldEngine: FieldHandle {
         fieldPolicy = policy
     }
 
+    // ── agent permissions (substrate — JS #894) ─────────────────────────────
+    func forAgent(_ options: AgentViewOptions) -> any AgentFieldView {
+        // A read-only, capability-scoped facade over THIS live field. Agent-readable is not
+        // agent-writable — the returned view exposes no mutators. Whether the future agentRead budget is
+        // 0 closes the surface entirely; the 0 boundary is wired, the fractional gradient is declared.
+        let budgetOpen: Bool = {
+            if let b = fieldPolicy.budgets?.agentRead { return b > 0 }
+            return true
+        }()
+        return ScopedAgentView(engine: self,
+                               capabilities: options.capabilities,
+                               redactions: options.redactions,
+                               budgetOpen: budgetOpen)
+    }
+
     func destroy() {
         if let token = loopToken { host.cancelFrame(token) }
         loopToken = nil
@@ -872,5 +887,37 @@ final class FieldEngine: FieldHandle {
         sparks.removeAll()
         bound.removeAll()
         grids.removeAll()
+    }
+}
+
+// MARK: - ScopedAgentView (substrate — JS #894)
+
+/// The concrete read-only, capability-scoped facade returned by `FieldEngine.forAgent`. Holds a weak
+/// reference to the live engine and tightens each reading to the granted ``AgentCapability`` set. It has
+/// no mutation surface — *agent-readable is not agent-writable*. Mirrors the shape of the JS agent view;
+/// the query/snapshot/replay members grow onto it when those Swift read surfaces land (see
+/// `AgentFieldView`).
+final class ScopedAgentView: AgentFieldView {
+    private weak var engine: FieldEngine?
+    let capabilities: Set<AgentCapability>
+    let redactions: [String]
+    private let budgetOpen: Bool
+
+    init(engine: FieldEngine, capabilities: Set<AgentCapability>, redactions: [String], budgetOpen: Bool) {
+        self.engine = engine
+        self.capabilities = capabilities
+        self.redactions = redactions
+        self.budgetOpen = budgetOpen
+    }
+
+    // Shape is the base grant — always readable.
+    func particleCount() -> Int { engine?.particleCount() ?? 0 }
+    func energy() -> EnergyReport { engine?.energy() ?? EnergyReport(kinetic: 0, thermal: 0, total: 0, count: 0) }
+
+    // The relationship graph is stripped unless `read:relationships` is granted (and the agentRead
+    // budget isn't pinned to 0). Tighten-only: caps can narrow this reading, never widen it.
+    func readEdges() -> [EdgeRecord] {
+        guard budgetOpen, capabilities.contains(.relationships) else { return [] }
+        return engine?.readEdges() ?? []
     }
 }

@@ -489,6 +489,13 @@ public protocol FieldHandle: AnyObject {
     /// can lower motion but never raise it above what reduced-motion allows). Mirrors JS `setPolicy`.
     func setPolicy(_ policy: FieldPolicy)
 
+    // ── agent permissions  (substrate — JS #894) ───────────────────────────
+    /// Derive a READ-ONLY ``AgentFieldView`` scoped to a set of ``AgentCapability``s — the safe surface a
+    /// Software Agent reads the field through. The returned view has NO mutation methods (enforced by its
+    /// shape) and tightens every reading to the granted caps. It reads the same live field; it does not
+    /// fork or copy it. Mirrors JS `forAgent`.
+    func forAgent(_ options: AgentViewOptions) -> any AgentFieldView
+
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)
     func destroy()
