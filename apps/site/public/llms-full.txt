@@ -5,7 +5,7 @@ Created by Zach Shallbetter (zachshallbetter.com).
 Source: docs/canonical/, the site documentation pages (apps/site/src/pages/docs/), and the
 recipe catalog (data/recipes.json) in https://github.com/zachshallbetter/fundamental-engine
 Generated: 2026-07-01 by apps/site/scripts/gen-llms.mjs
-Canonical docs: 27 · documentation pages: 48 · recipes: 64
+Canonical docs: 29 · documentation pages: 48 · recipes: 64
 
 Three sections, in order: (1) the project's CANONICAL documents — the authority on concepts,
 terminology, and contracts; (2) the authored prose of the SITE DOCUMENTATION pages (the
@@ -48,12 +48,14 @@ host, not the boundary. Canvas is one render surface, not the whole system.
 | [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | The agent model: element, relationship, user, layout, and data agents |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Render + diagnostic methods, and **Surfaces & Placement** (underlay / overlay / typographic) |
 | [`invisible-fields.md`](invisible-fields.md) | The typographic (invisible) placement: two-field page architecture, live channels, engagement contracts, declared relationships, data provenance |
-| [`time.md`](time.md) | Time in the field: the three clocks (simulation / experiential / world), the temporal kernels, the `data-field-at` contract |
+| [`time.md`](time.md) | Time in the field: the three clocks (simulation / experiential / world), the five time senses, the temporal kernels, the `data-field-at` contract |
 | [`visual-language-and-geometry.md`](visual-language-and-geometry.md) | The visual language layer: metric→appearance mappings and geometry |
 | [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring surfaces and the FieldRecipe system |
 | [`testing-and-conformance.md`](testing-and-conformance.md) | Test contracts and the conformance framework (the Lab-as-detector) |
 | [`api-stability.md`](api-stability.md) | The freeze contract: the frozen surface, the experimental surface, the 0.x compatibility rules |
-| [`substrate-api.md`](substrate-api.md) | The shipped substrate read API (EXPERIMENTAL): `query` / `snapshot` / `diff` / `replay` / `projections` + governance lint, body authority + dynamic recoil, integrator modes, accumulator channels |
+| [`substrate-api.md`](substrate-api.md) | The shipped substrate read API (EXPERIMENTAL): `query` / `snapshot` / `diff` / `replay` / `projections` + governance lint, body authority + dynamic recoil, integrator modes, accumulator channels, first-class body identity |
+| [`coordinate-spaces.md`](coordinate-spaces.md) | The five coordinate spaces (field / host / projection / screen / semantic) and their one-way conversions; semantic-not-spatial discipline for non-DOM hosts |
+| [`causality-and-truth.md`](causality-and-truth.md) | The causality ladder (Observed → Attributed → Explained → Replayed → Predicted), the dimension / metric / channel / projection lock, and implementation-facing truth labels |
 | [`deprecation-plan.md`](deprecation-plan.md) | The migration alias surface: each living alias, its deprecation status, and the proposed removal version (timings pending maintainer sign-off) |
 | [`field-possibilities.md`](field-possibilities.md) | The full possibility space — what new kinds of interfaces become possible when meaning has field behavior (36 sections, from recipes and input agents to temporal fields, matter primitives, and the field as semantic medium) |
 | [`use-cases.md`](use-cases.md) | Concrete use cases across eight domains — the product-level translation of the possibility space into real UI problems and solutions |
@@ -1071,6 +1073,112 @@ This list records the build order, all of which has now shipped (file pointers b
 ```
 
 ========================================================================
+FILE: causality-and-truth.md
+========================================================================
+
+> **Status: canonical (concept).**
+> Two disciplines that keep the substrate honest: the **causality ladder** (how much a replay is
+> allowed to claim) and the **dimension / metric / channel / projection lock** (four naming lanes that
+> must never collapse). Plus the implementation-facing **truth labels** that sit next to the six truth
+> modes. This is *framing* over the [substrate API](substrate-api.md); it introduces no new engine
+> behavior. Follows the [status rule](documentation-standards.md).
+
+# Causality and truth
+
+The substrate can `query`, `snapshot`, `diff`, and `replay` a field as plain data
+([substrate-api.md](substrate-api.md)). That power invites over-claiming: a narrated replay *feels* like
+it proves causation, and a measured metric *feels* interchangeable with the dimension it measures. This
+document draws the two lines that keep those honest.
+
+## Part A — the causality ladder
+
+`replay()` derives an ordered account of *how* a field changed between two snapshots. It reads the two
+snapshots; **it does not re-run the sim.** So a replay is an explanation, not a proof. The ladder names
+five levels of claim, from what we directly saw to what we merely project. Each level asserts strictly
+more than the one below — and each has a hard ceiling on what it does **not** say.
+
+| Level | Asserts | Does **not** assert | Substrate source |
+|---|---|---|---|
+| **Observed** | "this value was X at frame N" | why it was X | `snapshot()`, `query()` |
+| **Attributed** | "force `attract` contributed +0.42 linear to this body" | that `attract` *caused* the outcome alone | `Env.accum` attribution / `FieldInfluenceReading` |
+| **Explained** | "density rose because these attributions net positive" | that no unmodeled factor mattered | `diff()` |
+| **Replayed** | "in order: formation activated, then relationship strengthened, then density rose" | that re-running would reproduce it identically | `replay()` |
+| **Predicted** | "under the same field, this body will move toward here" | that it *will* happen — the world may change | prediction diagnostic |
+
+**Do not call any of this "causality" unqualified.** The engine's own caveat canon applies: energy and
+momentum are not conserved by design, and only particle *count* is a strong invariant — so an
+attribution is a faithful record of *what the accumulator summed*, not a physical proof of cause.
+`replay()` steps carry the `diagnostic` lane precisely because they *explain*, they do not *measure*.
+
+Practical rule: **quote the highest level your data supports, and no higher.**
+- Only Observed if you have one snapshot.
+- Only Attributed/Explained if snapshots were captured with `includeInfluences` (otherwise `cause: 'force'`
+  steps are not even emitted).
+- Predicted is always conditional — label it as such.
+
+## Part B — the dimension / metric / channel / projection lock
+
+Four words describe four different things about one axis of a field. Collapsing any two of them is the
+recurring conceptual bug. They lock in this order:
+
+| Lane | Definition | Example |
+|---|---|---|
+| **Dimension** | an *axis of state* a body can have | `attention` |
+| **Metric** | a *measured reading* of a dimension (+ its live channel var) | `--d` / `--field-attention` |
+| **Channel** | an *accumulator lane* force accumulates in | `linear` (or `thermal`, `angular`, `temporal`, `semantic`) |
+| **Projection** | a *host expression* of the state | `outline-weight` (a CSS write) |
+
+### Worked example
+
+> A body has the **dimension** `attention`. Its current value is read as the **metric** exposed on the
+> `--d` / `--field-attention` channel var. Forces that move it accumulate in the `linear` **channel** of
+> the impulse accumulator. A registered **projection** expresses it as `outline-weight` on screen.
+
+One axis, four lanes: `attention` (dimension) · `--d` (metric channel var) · `linear` (accumulator
+channel) · `outline-weight` (projection). None of these words may stand in for another:
+
+- A dimension is not its metric — the axis exists even when nothing reads it (headless, `render: 'none'`).
+- A metric is not the accumulator channel — the metric is the *reading*; the channel is *where force
+  summed to produce it*.
+- A projection is not the state — *projection reveals state; coupling changes state* (the substrate-05
+  governance principle). A projection never writes back into a dimension.
+
+This is the naming canon (*no word lives in two lanes*) applied to the substrate's measurement surface,
+and `lintWordLanes()` ([substrate-api.md](substrate-api.md)) guards it mechanically. Note "channel" is
+doubly loaded in casual speech — the **accumulator channel** (`linear`/`thermal`/…) and the **metric
+channel var** (`--field-*`) are different lanes; this table keeps them apart.
+
+## Part C — truth labels (adjacent to the six truth modes)
+
+The six **truth modes** ([passport](../../packages/core/src/contracts/passport.ts): physical, designed,
+hybrid, diagnostic, poetic, semantic) describe *what kind of statement a force makes*. Alongside them,
+implementation needs **truth labels** describing *how a reading was produced* — the epistemic status of
+a number, not the rhetorical mode of a force:
+
+| Label | The reading is… | Reproducible? |
+|---|---|---|
+| **deterministic** | a fixed function of field state | yes — same input, same output |
+| **stochastic** | sampled with randomness | only in distribution |
+| **heuristic** | an approximation / rule of thumb | yes, but not exact truth |
+| **semantic** | derived from meaning/data, not physics | as stable as its source data |
+| **diagnostic** | an explanation *about* the field | it describes, it does not measure |
+
+These labels map onto the causality ladder: Observed/Attributed values are typically **deterministic** (at
+`dt === 1` the integrator is byte-identical); a **stochastic** reading can never climb above Explained;
+**diagnostic** is the lane of every `replay()` step. A serialized record (see the frontier
+[Field Protocol](../planning/field-protocol.md)) should carry its truth label so a consumer never
+over-reads a heuristic or a narrated replay as measured cause.
+
+## Related documents
+
+| Document | Role |
+|---|---|
+| [`substrate-api.md`](substrate-api.md) | `replay()` + snapshot trio + the accumulator channels this doc constrains |
+| [`documentation-standards.md`](documentation-standards.md) | The naming canon + status rule this lock enforces |
+| [`dimensional-coupling.md`](dimensional-coupling.md) | The coupling passport — how a channel-crossing force must declare itself |
+| [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | The six truth modes these labels sit beside |
+
+========================================================================
 FILE: common-mistakes.md
 ========================================================================
 
@@ -1158,6 +1266,113 @@ Because the system is expressive, the failure modes are mostly misuse. Don't:
 - Say **"formation"** when you mean a *global formation mode* (`wells`/`lanes`/…), or **"Configuration"** when you mean a *Field Formation*.
 - Use **"Matter"** when you mean authored behavior.
 - Create a **force token for every concept** — most concepts are metrics, dimensions, or projections, not new forces (the recipe/force canon is locked).
+
+========================================================================
+FILE: coordinate-spaces.md
+========================================================================
+
+> **Status: canonical (concept).**
+> The coordinate-space vocabulary: the distinct spaces field state lives in, and the one-way
+> conversions between them. This is *framing* — it names lanes so docs and code stop conflating
+> "screen pixels" with "field state." The host-boundary mechanics are in
+> [platform-architecture.md](platform-architecture.md); the substrate results that carry these
+> coordinates are in [substrate-api.md](substrate-api.md). Follows the
+> [status rule](documentation-standards.md).
+
+# Coordinate spaces
+
+A field is computed once and expressed many ways. That only stays coherent if we are precise about
+*which space* a coordinate is in. Fundamental keeps five spaces separate, and the conversions between
+them run **one direction each** — an adapter carries the host into the field; a projection carries the
+field back out. Never assume a number is in "the" coordinate space; ask which one.
+
+The canonical architecture statement ([documentation-standards.md](documentation-standards.md)) says the
+core imports zero DOM and routes the environment through an injected `FieldHost`. Coordinate spaces are
+the *why*: the host adapter is exactly the boundary where host space becomes field space, so the engine
+never sees pixels, points, world units, or rows — only field space.
+
+## The five spaces
+
+| Space | What lives here | Owner |
+|---|---|---|
+| **Host space** | the raw units of whatever the field is bound to — CSS px, native points, Three.js world units, data rows, graph nodes | the host |
+| **Field space** | the single internal coordinate system the engine computes in — bodies, matter, forces, metrics | `Fundamental` (the core) |
+| **Projection space** | a named output surface's own units — a CSS custom property, a font-weight step, an aria string, an audio gain, a haptic level | a registered projection |
+| **Screen space** | device pixels actually composited — DPR-scaled, the canvas render surface | the render surface |
+| **Semantic space** | non-spatial axes of state — attention, confidence, memory, polarity | the semantic model |
+
+**Field space is the hub.** Everything converts *to* it on the way in and *from* it on the way out. The
+engine only ever reasons in field space; that is what lets one core drive a DOM canvas, a native
+`Canvas`, a Three.js scene, or a headless test with the same physics.
+
+## The conversions (each one-way)
+
+```txt
+host space ── adapter ──▶ field space ── projection ──▶ projection space
+                                       └─ render ─────▶ screen space
+semantic space ── (only when mapped) ─▶ field space
+```
+
+- **Adapters convert host → field.** A `FieldHost` adapter measures the host (a DOM
+  `getBoundingClientRect`, a native rect, a world-space bounds, a data row's derived position) and hands
+  the engine field-space bodies. This is the *only* place host units enter. The DOM adapter is
+  `browserHost()`; contained fields use `containerHost(el)`; native ports mirror it
+  (`UIKitFieldHost`, the Android `View`/`Canvas` host). See
+  [platform-architecture.md](platform-architecture.md).
+- **Projections convert field → projection.** A registered projection
+  ([substrate-api.md](substrate-api.md)) reads field-space channels and writes a projection-space value:
+  density → a `--field-*` CSS var, confidence → a font-weight step, attention → an aria description.
+  A projection **reveals** state; it never writes back into field space (the substrate-05 governance
+  principle: *projection reveals state; coupling changes state*).
+- **Render converts field → screen.** The render surface takes field-space positions and composites
+  device pixels, applying DPR. Screen space is where fill-rate cost lives — never do physics here.
+- **Semantic → field only when explicitly mapped.** See below.
+
+The conversions do not compose into a round trip you can trust: field → screen → field loses precision
+(DPR, subpixel), and field → projection is often lossy on purpose (a continuous density becomes a
+three-step weight). Treat each arrow as one-way.
+
+## Semantic dimensions are not spatial
+
+A dimension like **attention** or **confidence** is an *axis of state*, not a position. It has no x/y
+until a mapping gives it one. **Semantic space must not pretend to be spatial** unless a projection or
+adapter explicitly maps it:
+
+- Reading a body's `attention` as if it were a y-coordinate is a category error — it will "work" and be
+  quietly wrong.
+- A semantic axis enters field space only through a declared mapping (an adapter that positions bodies
+  by a data value, or a projection that expresses a dimension as motion/weight/color).
+- The accumulator's `semantic` channel ([substrate-api.md](substrate-api.md)) carries these axes as
+  *contributions*, deliberately kept out of the `linear` (x/y/z) channel so nothing assumes force is
+  spatial.
+
+This is the same discipline as the naming canon (*no word lives in two lanes*): a coordinate lives in
+exactly one space, and crossing spaces is always an explicit, named conversion.
+
+## Why five spaces (the hosts that motivate them)
+
+| Host | Host space | Adapter's job |
+|---|---|---|
+| **DOM** | CSS px (layout viewport) | `getBoundingClientRect` → field bodies; write `--field-*` back |
+| **Native (UIKit/AppKit)** | points | measure native rects → field bodies |
+| **Three.js / RealityKit** | world units (3D) | project world bounds → field space; may keep a z channel |
+| **Headless** | none — synthetic bounds | supply bounds directly; no render/screen space at all |
+| **OS / desktop** | window/display px | window rects → field bodies |
+| **Data** | rows/records | derive a position or feed a semantic dimension |
+| **Graph** | nodes/edges | node → body, edge → relationship |
+
+The headless case is the clarifying one: with `render: 'none'` there is **no screen space**, yet field
+space, projection space, and semantic space all still exist and are fully inspectable. Coordinate spaces
+are a property of the *field*, not of the *pixels*.
+
+## Related documents
+
+| Document | Role |
+|---|---|
+| [`platform-architecture.md`](platform-architecture.md) | The `FieldHost` boundary — where host space becomes field space |
+| [`substrate-api.md`](substrate-api.md) | Field-space readings + projections that convert to projection space |
+| [`definition-document.md`](definition-document.md) | The operating model these spaces serve |
+| [`causality-and-truth.md`](causality-and-truth.md) | The dimension/metric/channel/projection lock these spaces depend on |
 
 ========================================================================
 FILE: definition-document.md
@@ -6284,7 +6499,7 @@ interface FieldQuery {
 }
 interface FieldQueryResult {
   query: FieldQuery; frame: number; time: number; region?: FieldRect;
-  bodies: FieldBodyReading[];             // id, rect, tokens, metrics, dimensions, activeFormations, authority
+  bodies: FieldBodyReading[];             // id, identity, rect, tokens, metrics, dimensions, activeFormations, authority
   metrics: Record<string, number>;
   relationships: FieldRelationshipReading[];   // from/to ids, type, strength, memory, active, causal
   influences: FieldInfluenceReading[];    // source body, force token, channel, contribution (Δv | heat)
@@ -6292,6 +6507,27 @@ interface FieldQueryResult {
   lens?: string;                          // the lens id this reading was scoped through, when supplied
 }
 ```
+
+**First-class body identity.** Every `FieldBodyReading` (and every snapshot body) carries a stable,
+structured `identity` alongside the top-level `id`:
+
+```ts
+interface FieldBodyIdentity {
+  id: string;          // stable primary key — unique in the field, constant for the body's life
+  namespace?: string;  // optional grouping (app/module); opaque to the engine
+  kind?: string;       // optional type tag ('card', 'heading', 'agent'); opaque
+  host?: string;       // optional owner tag (a renderer/view that owns the rendered object); opaque
+}
+```
+
+`identity.id === id` (back-compat), and `snapshot`/`diff`/`replay`/relationships all key on `identity.id`.
+**Identity is a doctrine, not display text:** a heading's *words* are not its identity (they can change
+while identity holds), a DOM `id` is one *source* of a stable id but not the concept, and an object
+reference is not identity (references don't survive a rescan or a serialize/replay round-trip). Supply an
+identity via `addBody({ identity })` (a bare string is shorthand for `{ id }`) or a `createField({ identify })`
+resolver that derives one from a DOM element; when none is supplied the engine derives a **deterministic**
+stable id (the element's DOM `id`, else a monotonic `body-N` — never `Math.random`), so identity is always
+present and stable.
 
 `el.getBoundingClientRect()` drops straight into `at` (it's `DOMRect`-shaped). `influences` come from
 the impulse accumulator — each carries a `channel`: `'linear'` (Δv), `'thermal'` (heat), `'angular'`
@@ -8164,6 +8400,55 @@ the page owns the semantics*:
 - Experiential `memory`/`recency` (inferred) and world-grounded `recency` (declared) are the
   same *lane* with different *sources*; the engine-measured thermodynamics
   (`--temperature` etc.) are a different thing entirely (workover v0.3) and share no naming.
+
+## Temporal semantics — the five time senses
+
+The three clocks above (§1) are the page author's model. The substrate needs a finer split: once a
+field can be snapshotted, replayed, and fed external data, "time" fractures into **five distinct
+senses**, and collapsing any two of them is the recurring temporal bug. They are not
+interchangeable and no single number carries all five.
+
+| Sense | What it is | Where it lives | Kind |
+|---|---|---|---|
+| **Simulation time** | the field's own advancing clock — frames, `dt`, particle ages, wave phase | `env.t`, `env.dt`, `Particle.age`; the accumulator's `temporal` channel | engine-internal, monotone |
+| **Host time** | the platform / wall clock supplied by the host adapter | injected via `FieldHost` (never `Date.now()` in core) | external, monotone |
+| **World time** | an external / domain timestamp attached to *data* — when a record was authored, when an event will occur | `data-field-at` (§3), the `nowMs` fed to the kernels | declared, arbitrary |
+| **Semantic time** | the *meaning* of age — staleness, freshness, recency, decay, imminence | the temporal kernels (§2) mapping world/host time → weight | derived, non-linear |
+| **Replay time** | a reconstructed causal *sequence* — the ordered account a `replay()` derives between two snapshots | `replay()` steps ([causality-and-truth.md](causality-and-truth.md)) | reconstructed, ordinal |
+
+The first three are *clocks* (they tick); semantic time is a *reading* (it weighs); replay time is
+an *ordering* (it narrates). Map them back to §1: simulation time is unchanged; **host time is new
+here** — §1 folded it into simulation time, but the substrate must name the adapter-supplied wall
+clock separately because it is the thing core deliberately does not read directly. World time is
+§1's world clock. Semantic time is what the kernels *produce* from world/host time; §1's
+experiential lanes are one consumer of it. Replay time has no §1 analogue — it exists only once
+snapshots do.
+
+### Doctrine
+
+- **Adapters map host time.** Core imports no wall clock (`core/temporal.ts` takes `nowMs` from its
+  caller; the kernels never call `Date.now()`). The host adapter is the *only* place host time
+  enters, and it enters as a supplied value — this is what keeps the engine testable and
+  frame-coherent.
+- **The accumulator's `temporal` channel is simulation-time.** The `temporal` lane of the impulse
+  accumulator ([substrate-api.md](substrate-api.md)) measures *mortal age* in the field's own clock
+  — engine frames, not wall seconds and not world timestamps. Do not read a body's accumulated
+  `temporal` value as "how old the underlying data is."
+- **Semantic time must be mapped explicitly, never assumed spatial or linear.** Age → weight is a
+  *designed* function (freshness halves per half-life, imminence ramps logarithmically, retention
+  follows Ebbinghaus). Nothing makes temporal distance behave like spatial distance, and nothing
+  makes it linear. A consumer that wants staleness to matter must run a kernel; it may not infer
+  "older = further" or "twice as old = twice as weak" for free.
+- **A snapshot's frame/time is not world or semantic time.** A snapshot carries simulation time
+  (its frame) and, if the host stamped it, host time. It carries **neither world time nor semantic
+  time** unless a consumer explicitly attached them. Reading a snapshot's frame index as "when the
+  data was authored," or its age-in-frames as "staleness," silently conflates the engine clock with
+  data meaning — the exact collapse this split exists to prevent. Replay time, likewise, orders the
+  *simulation's* changes between two snapshots; it is not a timeline of world events.
+
+These lanes obey the same discipline as the rest of the naming canon: *simulation time ticks, host
+time is supplied, world time is declared, semantic time is derived, replay time is reconstructed* —
+and no one of them may stand in for another.
 
 ========================================================================
 FILE: use-cases.md
