@@ -426,6 +426,16 @@ class FieldHandle(val controller: FieldController) {
      */
     fun sample(x: Float, y: Float): Vec3 = controller.sample(x, y)
 
+    // ── agent permissions (JS #894) ────────────────────────────────────────────────────
+    /**
+     * A capability-scoped, READ-ONLY [AgentFieldView] over this field — the surface a Software Agent uses
+     * to read the field safely. It exposes only scoped reads (no mutators); every reading is tightened to
+     * the granted [capabilities], then [redactions] strip named paths, and nothing widens past what the
+     * field's [FieldPolicy] permits. Mirrors JS `forAgent`.
+     */
+    fun forAgent(capabilities: Collection<AgentCapability>, redactions: Collection<String> = emptyList()): AgentFieldView =
+        AgentFieldView(this, capabilities, redactions)
+
     // ── event bus ─────────────────────────────────────────────────────────────────────
     private val _listeners = mutableListOf<Triple<FieldEvent, String, (FieldEventPayload) -> Unit>>()
 
