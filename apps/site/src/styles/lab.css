@@ -5,7 +5,7 @@
    in instrument.css; this file is the Lab's own chrome.
    Tinting hook: --fc (the active force color), set on `.lab`.
    ============================================================ */
-.lab { position: relative; z-index: 2; width: 100%; max-width: 1500px; margin: 0 auto; padding: calc(58px + 32px) 28px 56px; --fc: var(--accent); }
+.lab { position: relative; z-index: 2; width: 100%; max-width: var(--content-max); margin: 0 auto; padding: calc(58px + 32px) 28px 56px; --fc: var(--accent); }
 body:has(.lab) { align-items: flex-start; }
 /* the [hidden] attribute must win over the display rules below (we toggle panels with it) */
 .lab [hidden] { display: none !important; }

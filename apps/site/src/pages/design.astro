@@ -632,7 +632,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   .ds-sep { width: 1px; height: 12px; background: var(--line-2); }
   @media (max-width: 820px) { .ds-nav { display: none; } }
 
-  .ds-main { max-width: 1360px; margin: 0 auto; padding: 0 clamp(1.25rem, 3vw, 2.75rem) 5rem; }
+  .ds-main { max-width: var(--content-max); margin: 0 auto; padding: 0 clamp(1.25rem, 3vw, 2.75rem) 5rem; }
 
   .ds-hero { padding: clamp(3rem, 9vh, 6rem) 0 clamp(2rem, 5vh, 3.5rem); }
   .hero-eyebrow { display: flex; align-items: center; gap: 0.8rem; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
