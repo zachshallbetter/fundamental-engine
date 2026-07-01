@@ -222,6 +222,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     waveCenter: opts.waveCenter ?? null,
     background: opts.background ?? 'opaque', // 'transparent' → clear to transparent, underlay over light content
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
+    reaction: opts.reaction ?? false, // Newtonian own-emission recoil for dynamic bodies (#873)
     separation: opts.separation != null && opts.separation >= 0 ? opts.separation : 0,
     attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
@@ -361,6 +362,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const BODY_FRICTION = 0.9; // heavier than particle FRICTION so dynamic bodies settle, not drift forever
   const MAX_BODY_SPEED = 8; // px/frame cap — keeps a dynamic body from flinging off under a strong well
   const MASS_REF_AREA = 4800; // px² reference (~120×40 body) → inertia 1; sqrt+clamp keeps the range sane (#872)
+  const REACTION_COEFF = 0.02; // scales own-emission recoil (summed over matter in range); capped by MAX_BODY_SPEED (#873)
   function moveDynamicBodies(): void {
     for (const b of bodies) {
       if (b.authority !== 'dynamic' || !b.vis) continue;
@@ -385,8 +387,24 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         b.inertia = Math.min(4, Math.max(0.4, Math.sqrt(area / MASS_REF_AREA)));
       }
       const invM = 1 / Math.max(b.inertia ?? b.M, 1e-4);
-      let vx = (b.bvx ?? 0) + fx * invM * env.dt;
-      let vy = (b.bvy ?? 0) + fy * invM * env.dt;
+      // Newtonian own-emission reaction (#873): B feels the equal-and-opposite of the net impulse it
+      // imparts to nearby matter — a directional emitter recoils like a rocket, closing reciprocity
+      // through *motion*, not just feedback. Off by default (byte-identical). Best paired with `mass`.
+      let reFx = 0, reFy = 0;
+      if (cfg.reaction && b.tokens.length > 0) {
+        const r2 = b.range * b.range;
+        const self = [b];
+        for (const p of store.particles) {
+          if (p.cap) continue;
+          const ddx = p.x - bx, ddy = p.y - by;
+          if (ddx * ddx + ddy * ddy > r2) continue; // only matter B can actually push
+          const bf = forceAt(self, reg.forces, env, p.x, p.y);
+          reFx -= bf.fx; // third law: the body gets the opposite of what it pushes
+          reFy -= bf.fy;
+        }
+      }
+      let vx = (b.bvx ?? 0) + (fx + reFx * REACTION_COEFF) * invM * env.dt;
+      let vy = (b.bvy ?? 0) + (fy + reFy * REACTION_COEFF) * invM * env.dt;
       vx *= BODY_FRICTION;
       vy *= BODY_FRICTION;
       const sp = Math.hypot(vx, vy);

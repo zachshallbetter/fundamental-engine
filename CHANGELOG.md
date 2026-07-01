@@ -22,6 +22,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **Newtonian own-emission reaction** (substrate momentum, #873). New
+  opt-in `reaction` option: a **dynamic** body feels the equal-and-opposite of the net impulse it imparts
+  to nearby matter (`moveDynamicBodies` sums the body's own force over in-range particles and recoils by
+  `-Σf · coeff / inertia`, capped) — so a directional emitter kicks back like a rocket, closing the
+  reciprocity thesis through *motion*, not just feedback. Best paired with `mass` (recoil ÷ inertial
+  mass, #872). Default false ⇒ byte-identical. Measured: a `stream` body recoils opposite its emission;
+  off ⇒ no self-recoil. **Experimental.** Completes momentum (#871) with #872.
+
+
 - **`@fundamental-engine/core`:** **first-class body inertial mass** (substrate momentum, #872). The
   existing `mass` option (§21.3, particle mass ∝ size) now also gives **dynamic bodies** an inertial mass
   ∝ rendered area (`Body.inertia = clamp(sqrt(area/ref), 0.4, 4)`), and `moveDynamicBodies` recoils by

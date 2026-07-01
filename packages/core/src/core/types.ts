@@ -580,6 +580,11 @@ export interface FieldOptions {
    *  (heavier matter moves less). Also gives DYNAMIC bodies inertial mass ∝ rendered area (#872), so a
    *  big heading recoils slowly and a small tag snaps. Default false (unit mass, byte-identical). */
   mass?: boolean;
+  /** Newtonian own-emission reaction (substrate momentum, #873): when true, a DYNAMIC body feels the
+   *  equal-and-opposite of the net impulse it imparts to nearby matter (a directional emitter recoils
+   *  like a rocket; reciprocity closes through *motion*, not just feedback). Best paired with `mass`
+   *  (recoil ÷ inertial mass). Default false ⇒ byte-identical. **Experimental.** */
+  reaction?: boolean;
   /** strength of particle-to-particle separation/repulsion force (0 to 1, default 0). */
   separation?: number;
   /** color template for the travelling accent (§9): a built-in name
