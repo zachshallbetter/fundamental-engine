@@ -28,12 +28,25 @@ test('lint flags a speed-conserving force that declares no coupling', () => {
   assert.equal(warnings[0]!.subject, 'phantom');
 });
 
-test('lint warns on an unknown declared dimension name', () => {
-  const typo: ForcePassport = { ...PASSPORTS.wall, token: 'typo' as never, couplesDimensions: ['lateral'] };
+test('lint warns on an unknown declared dimension name (non-conserving force → warning only)', () => {
+  // attract does NOT conserve speed, so it needs no coupling — a stray unknown lane is just a warning.
+  const typo: ForcePassport = { ...PASSPORTS.attract, token: 'typo' as never, couplesDimensions: ['lateral'] };
   const warnings = lintDimensionCoupling([typo]);
   assert.equal(warnings.length, 1);
   assert.equal(warnings[0]!.severity, 'warning');
   assert.match(warnings[0]!.message, /not a known dimension lane/);
+});
+
+test('a speed-conserving force that declares ONLY an invalid lane still errors (codex P2)', () => {
+  // 'lienar' is a typo of 'linear' — declared.length is non-zero, but there is no VALID coupling, so the
+  // no-coupling error must NOT be skipped (plus the unknown-lane warning).
+  const typo: ForcePassport = { ...PASSPORTS.wall, token: 'typo' as never, couplesDimensions: ['lienar'] };
+  const warnings = lintDimensionCoupling([typo]);
+  assert.equal(warnings.length, 2, 'error (no valid coupling) + warning (unknown lane)');
+  const err = warnings.find((w) => w.severity === 'error');
+  assert.ok(err, 'errors: no valid coupling');
+  assert.match(err!.message, /no VALID couplesDimensions/);
+  assert.ok(warnings.some((w) => w.severity === 'warning' && /not a known dimension lane/.test(w.message)));
 });
 
 test('a non-conserving force without a declaration is fine (most forces couple nothing)', () => {

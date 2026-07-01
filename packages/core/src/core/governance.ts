@@ -66,12 +66,17 @@ export function lintDimensionCoupling(passports: readonly ForcePassport[] = Obje
   const out: GovernanceWarning[] = [];
   for (const p of passports) {
     const declared = p.couplesDimensions ?? [];
-    if (p.movesParticles && p.conservesSpeed && declared.length === 0) {
+    // Count VALID lanes, not raw length — a speed-conserving mover that declares only unknown lanes
+    // (e.g. a `['lienar']` typo) has no real coupling and must still error, not slip through on length.
+    const validDeclared = declared.filter((d) => COUPLING_DIMENSIONS.has(d));
+    if (p.movesParticles && p.conservesSpeed && validDeclared.length === 0) {
       out.push({
         rule: 'field/no-dimension-coupling-without-passport',
         severity: 'error',
         subject: p.token,
-        message: `"${p.token}" conserves speed (it redirects velocity) but declares no couplesDimensions — a dimension-coupling force must declare its coupling.`,
+        message: declared.length === 0
+          ? `"${p.token}" conserves speed (it redirects velocity) but declares no couplesDimensions — a dimension-coupling force must declare its coupling.`
+          : `"${p.token}" conserves speed but declares no VALID couplesDimensions (only ${JSON.stringify(declared)}) — a dimension-coupling force must declare a known lane.`,
       });
     }
     for (const d of declared) {
