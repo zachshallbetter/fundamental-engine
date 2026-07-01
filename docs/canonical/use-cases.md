@@ -90,7 +90,7 @@ A long-form article where pull quotes and key terms carry mass. Particles cluste
 near editorially heavy content. As the reader moves through the page, the field
 re-orients to whatever high-mass elements are in the viewport.
 
-→ *Recipe: `Reading Field` — see [`field-possibilities.md §7`](field-possibilities.md#7-formations) (reading formation) and §24 (memory possibilities).*
+→ *Recipe: `Reading Field` — see [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes) (reading formation) and §24 (memory possibilities).*
 
 **What the field does:** `<blockquote>` and `<strong>` elements receive
 `data-body="attract"` with varying `data-strength`. As they scroll into viewport,
@@ -110,7 +110,7 @@ Multi-step flows — checkout, onboarding, wizard — where each completed step 
 its gravity and the next step's gravity increases. The submit button at the end of a
 long form is the strongest body on the page.
 
-→ *Recipe: `Guided Flow` — see [`field-possibilities.md §7`](field-possibilities.md#7-formations) (coherence formation) and §6 (coherent condition).*
+→ *Recipe: `Guided Flow` — see [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes) (coherence formation) and §6 (coherent condition).*
 
 **What the field does:** steps are registered bodies with strength 0 (neutral) until
 active. The active step has strength 1; the next step has latent strength 0.4.
@@ -290,7 +290,7 @@ concentrates at the active item. CSS maps `--d` to `opacity` or `filter: brightn
 A collection of posts where each article's body strength is its view count or
 normalized read time. On a category page, the field creates a content topography.
 
-→ *Formation: `reading` — see [`field-possibilities.md §7`](field-possibilities.md#7-formations).*
+→ *Formation: `reading` — see [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes).*
 
 **What the field does:** view count maps to `data-strength`. The field's density
 distribution over the article grid is a spatial representation of readership.
@@ -400,7 +400,7 @@ field creates a topography of importance.
 A kanban board where blocked or overdue cards accumulate urgency mass. The board's
 field density distribution shows where bottlenecks are without a filter or sort.
 
-→ *Formation: `pressure` — [`field-possibilities.md §7`](field-possibilities.md#7-formations). Conditions: `stale`, `thresholded` from §6. Boundary: §23 (Permission Boundary for column scope).*
+→ *Formation: `pressure` — [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes). Conditions: `stale`, `thresholded` from §6. Boundary: §23 (Permission Boundary for column scope).*
 
 ---
 
@@ -532,7 +532,7 @@ Claims become bodies. Sources bind to them — strong sources pull closer, weak 
 orbit at distance. Contradictory sources repel. Verified claims gain coherence and
 mass. Unverified claims remain unstable, visibly unsettled in the field.
 
-→ *Recipe: `Evidence Field` — [`field-possibilities.md §7`](field-possibilities.md#7-formations) (evidence formation) and §9 (recipe catalog).*
+→ *Recipe: `Evidence Field` — [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes) (evidence formation) and §9 (recipe catalog).*
 
 **What the field does:** each claim is a `data-body` whose strength is its confidence
 score. Each source is a related body with `data-field-relation` to the claim it
@@ -581,7 +581,7 @@ A document or interface with contested information — two sources that contradi
 other, two recommendations that conflict. The field holds the contradiction in visible
 tension rather than collapsing it into a resolved state.
 
-→ *Formation: `conflict` — [`field-possibilities.md §7`](field-possibilities.md#7-formations). Recipes: `Conflict Field`, `Disagreement Charge`.*
+→ *Formation: `conflict` — [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes). Recipes: `Conflict Field`, `Disagreement Charge`.*
 
 **What the field does:** conflicting bodies carry opposing charge
 (`data-body="charge"`). The field maintains charge separation between them. The

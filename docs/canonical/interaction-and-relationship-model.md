@@ -21,6 +21,11 @@ This document expands `Fundamental` beyond particles.
 
 Particles are only one class of field participant. Users, elements, relationships, events, layouts, and data can also be agents.
 
+> **Association is not coupling.** Relationships associate by default. Forces couple. A Field Formation
+> decides which associations become couplings. A relationship edge does **not** cause a force on its
+> own — this matters most for evidence, research, and knowledge-graph use, where readers otherwise
+> assume every edge exerts a pull.
+
 Core expansion:
 
 ```txt

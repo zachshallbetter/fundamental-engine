@@ -343,15 +343,21 @@ Consensus Well
 
 Conditions should not spam DOM events. Continuous state belongs in CSS variables and platform state. Discrete transitions belong in thresholded events.
 
-## 7. Formations
+## 7. Global formation modes
 
-→ *Shipped use cases: [use-cases.md §I](use-cases.md#i-universal-ui-patterns) (reading weight — `reading` formation; completion momentum — `coherence` formation), §IV (article topography — `reading` formation), §VII (kanban physics — `pressure` formation), §X (evidence field — `evidence` formation; conflict field — `conflict` formation), §XI (presence field — `presence` formation).*
+> Two senses of "formation" live nearby — keep them apart. A **global formation mode** (a.k.a.
+> *field-shape mode*) is a whole-field bias set via `setFormation(...)`: `ambient`, `wells`, `lanes`,
+> `scatter`, `accretion`. A **Field Formation** is the authored, recipe-backed conceptual arrangement
+> named by *meaning* (`reading`, `evidence`, `conflict`, …). This section is about the *modes*; the
+> named `reading`/`evidence`/… Field Formations below map to `FieldRecipe` records.
 
-A formation is a global or scoped field arrangement.
+→ *Shipped use cases: [use-cases.md §I](use-cases.md#i-universal-ui-patterns) (reading weight — `reading` Field Formation; completion momentum — `coherence` Field Formation), §IV (article topography — `reading` Field Formation), §VII (kanban physics — `pressure` Field Formation), §X (evidence field — `evidence` Field Formation; conflict field — `conflict` Field Formation), §XI (presence field — `presence` Field Formation).*
 
-Formations do not replace force tokens. They bias the whole field.
+A global formation mode is a whole-field arrangement.
 
-Current and future formations can include:
+Global formation modes do not replace force tokens. They bias the whole field.
+
+Current and future global formation modes can include:
 
 ```txt
 ambient

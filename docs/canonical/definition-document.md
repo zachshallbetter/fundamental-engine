@@ -34,6 +34,30 @@ The field bends them back.
 
 It is a relational behavior layer for the web.
 
+**A field can render nothing, contain no particles, and still be complete:** if it has bodies,
+relationships, metrics, queryable state, and projections or feedback, it is a field. The runtime
+hierarchy makes this precise:
+
+```txt
+Bodies         REQUIRED participants
+Metrics        REQUIRED readings
+Relationships  OPTIONAL associations
+Particles      OPTIONAL matter (one agent type, not the substrate)
+Projections    OPTIONAL host surfaces
+```
+
+**The default field is calm.** No render surface, no surprise motion, no coupling, no body movement, no
+body-data exposure, and no projection mutation of field state — every one of those is opt-in. Calm is
+the baseline; expressiveness is chosen.
+
+**"Field" resolves at three levels — don't collapse them:**
+
+```txt
+Computational Field  the live runtime model: bodies, forces, metrics, relationships, particles, influences, state — it EXECUTES.
+Semantic Field       the meaning layer: claims, sources, priorities, confidence, attention, risk, provenance — it EXPLAINS what the execution means.
+Projection Field     the host-visible expression: CSS, native state, SVG, Canvas, haptics, sound, annotations, agent JSON — it REVEALS it.
+```
+
 ## 2. Interface Physics
 
 Interface physics is the use of spatial, temporal, and relational forces to express state, meaning, attention, and interaction in a user interface.
