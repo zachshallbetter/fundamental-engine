@@ -90,6 +90,10 @@ public struct AtomPayload: Sendable {
 /// Parsed from platform-specific attribute equivalents; runtime fields refreshed each scan/frame.
 public final class Body {
     // ── identity ────────────────────────────────────────────────────────────
+    /// FIRST-CLASS IDENTITY (see ``FieldBodyIdentity``, JS #884). Supplied via `addBody`'s spec or the
+    /// `identify` field option, else lazily DERIVED and cached the first time the body is keyed. Once
+    /// resolved it is stable for the body's life; snapshots/diff/replay/relationships key on `identity.id`.
+    public var identity: FieldBodyIdentity?
     /// Opaque platform reference (UIView, NSView, Entity…). Weak to avoid retain cycles.
     public weak var view: AnyObject?
     /// Space-joined force ids (they compose, §4).

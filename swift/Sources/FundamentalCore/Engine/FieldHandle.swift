@@ -95,6 +95,11 @@ public struct FieldOptions {
     public var dprCap: Float?
     /// Quality tier 0–3 (0 = full, 3 = paused). Read by the platform scheduler. Mirrors JS `setQualityTier`.
     public var qualityTier: Int
+    /// FIRST-CLASS IDENTITY resolver (JS #884): derive a ``FieldBodyIdentity`` for a scanned body from its
+    /// backing view. Return `nil` to fall through to the deterministic default (a monotonic `body-N`).
+    /// Runs at scan time; the resolved identity is cached on the body for its life. Mirrors JS
+    /// `FieldOptions.identify`.
+    public var identify: ((AnyObject) -> FieldBodyIdentity?)?
 
     public init(
         accent: String? = nil,
@@ -116,7 +121,8 @@ public struct FieldOptions {
         background: String? = nil,
         dprCap: Float? = nil,
         qualityTier: Int = 0,
-        feedbackSink: FeedbackSink? = nil
+        feedbackSink: FeedbackSink? = nil,
+        identify: ((AnyObject) -> FieldBodyIdentity?)? = nil
     ) {
         self.accent = accent
         self.density = density
@@ -138,6 +144,7 @@ public struct FieldOptions {
         self.dprCap = dprCap
         self.qualityTier = qualityTier
         self.feedbackSink = feedbackSink
+        self.identify = identify
     }
 }
 
@@ -159,14 +166,20 @@ public struct BodySpec {
     public var color: String?
     public var data: (any Sendable)?
     public var rect: () -> Box
+    /// FIRST-CLASS IDENTITY for this programmatic body (see ``FieldBodyIdentity``, JS #884). Supply a
+    /// stable identity so snapshots/diff/replay/relationships agree on `identity.id`; when omitted the
+    /// engine derives a deterministic `body-N`. Mirrors JS `BodySpec.identity`.
+    public var identity: FieldBodyIdentity?
     /// Called each frame with this body's field readings. Mirrors JS `BodySpec.onFeedback`.
     public var onFeedback: ((FeedbackChannels) -> Void)?
     public init(tokens: [String], strength: Float = 1, range: Float = 100, spin: Float = 1,
                 angle: Float? = nil, color: String? = nil, data: (any Sendable)? = nil,
+                identity: FieldBodyIdentity? = nil,
                 rect: @escaping () -> Box,
                 onFeedback: ((FeedbackChannels) -> Void)? = nil) {
         self.tokens = tokens; self.strength = strength; self.range = range; self.spin = spin
         self.angle = angle; self.color = color; self.data = data; self.rect = rect
+        self.identity = identity
         self.onFeedback = onFeedback
     }
 }

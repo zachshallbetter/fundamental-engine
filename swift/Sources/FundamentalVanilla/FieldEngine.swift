@@ -29,6 +29,28 @@ final class FieldEngine: FieldHandle {
     // Simulation state
     private var bodies: [Body] = []
     private var programmaticBodies: [Body] = [] // addBody() sources — re-merged after every scan()
+
+    // FIRST-CLASS IDENTITY (substrate critical path — JS #884). Every body resolves to a stable,
+    // structured `FieldBodyIdentity`, cached on `body.identity` the first time it is keyed. Precedence:
+    // a supplied identity → the `identify` field-option resolver → a monotonic `body-N` synthetic.
+    // Deterministic (never random); stable for the body's life, so relationship endpoints, snapshots,
+    // and diff/replay all agree on `identity.id`. Mirrors the JS `bodyIdentity` closure in `field.ts`.
+    private var bodyIdSeq = 0
+    /// Resolve (and cache) a body's first-class identity. Idempotent — a body keyed twice returns the
+    /// same identity. Order: an already-cached/supplied identity → the `identify` resolver (given the
+    /// body's view) → a deterministic `body-N` synthetic.
+    @discardableResult
+    private func resolveIdentity(_ body: Body) -> FieldBodyIdentity {
+        if let ident = body.identity { return ident }
+        var ident: FieldBodyIdentity?
+        if let identify = options.identify, let view = body.view {
+            ident = identify(view)
+        }
+        let resolved = ident ?? FieldBodyIdentity(id: "body-\(bodyIdSeq)")
+        if ident == nil { bodyIdSeq += 1 }
+        body.identity = resolved
+        return resolved
+    }
     private var formTarget: Formation
     private var accent: RGB
     /// The travelling-accent journey (§9): palette stops the accent traverses with scroll.
@@ -497,6 +519,7 @@ final class FieldEngine: FieldHandle {
 
     func scan() {
         bodies = host.scanBodies() + programmaticBodies // view-less programmatic bodies survive a rescan
+        for body in bodies { resolveIdentity(body) } // key every body to a stable first-class identity
     }
 
     func rescan() { scan() }
@@ -544,6 +567,8 @@ final class FieldEngine: FieldHandle {
         body.box = spec.rect()
         body.isVisible = boxVisible(body.box, in: host.volume)
         body.feedbackCallback = spec.onFeedback
+        body.identity = spec.identity // a supplied identity wins; else resolveIdentity derives body-N
+        resolveIdentity(body)
         programmaticBodies.append(body)
         bodies.append(body) // live this frame, before the next scan() re-merges it
         fire(FieldEventPayload(event: .bodyAdd, body: body))
