@@ -39,6 +39,18 @@ This document unbundles those jobs behind one seam — the **Carrier** — so th
 structure becomes *declared, readable, swappable, and governed* like every other lane of the
 substrate, and the sine waves become one built-in implementation instead of an engine opinion.
 
+**The waves are not the only instance.** The 2026-07-02 doctrine audit found the same pattern
+inside the integrator: the formation `wander` term applies a hardcoded **curl-noise eddy**
+(`sin(p.x·0.0032 + t·0.12) + cos(p.y·0.0034 − t·0.15)`, `integrator.ts:588`) — index-constant
+structure, identical in every project, applied whenever the active formation's wander exceeds
+0.05 (the default `ambient` formation qualifies). The adjacent brownian kick is fine (it is
+unstructured and goes through the injected rng); the *structured* eddy is a second Currents.
+Its disposition is the `curl` carrier below — the eddy geometry moves behind the seam and
+becomes opt-in, seeded, and declared. The element layer also **re-encodes the waves default
+independently** (`packages/elements/src/index.ts:197`), and the Swift port retains pre-#538
+defaults (`render: .dots`, `waves: true` — `FieldHandle.swift:118`), so Step 0 is wider than
+one line in core (see Migration).
+
 ## Core principle
 
 ```txt
@@ -178,7 +190,11 @@ question below.
 ## Migration and cross-plane treatment
 
 ```txt
-Step 0  waves default off (separate PR, precedent #538) — pins on the pages built on them
+Step 0  waves default off (separate PR, precedent #538) — ACROSS ALL SURFACES: the core
+        default (field.ts:364), the element's independent re-encoding (elements/index.ts:197),
+        and the Swift port's retained pre-#538 defaults (FieldHandle.swift:118 — waves AND
+        render, which never got the signals-first flip; Kotlin checked the same way).
+        Pins on the pages built on them.
 Step 1  this document — terminology + seam agreed
 Step 2  JS core: CarrierRegistry + the integrator carrier pass; waves refactored onto the
         seam, behavior-identical-when-enabled (golden-pinned); reservoir against anchors
@@ -223,6 +239,9 @@ on the measure cadence into a cache and the integrator reads the cache.
    `'linear'` with `source: 'carrier:<id>'`. Recommend the latter (no channel proliferation).
 6. **The homepage.** Keep the waves carrier pinned there, or move it to the `field` carrier
    once shipped — a brand decision, not an engineering one.
+7. **The wander split.** The brownian kick (unstructured, rng-seeded) arguably stays as
+   honest thermal texture; the structured curl eddy moves behind the seam as the `curl`
+   carrier. Confirm that split, and whether the default formation keeps any wander at all.
 
 ## Non-goals
 
