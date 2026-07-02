@@ -310,7 +310,9 @@ const FILTER_COLOR: Record<string, string> = {
 
     // re-runs on each client-side navigation to /lab (ClientRouter); no-op elsewhere.
     function setup() {
-      const lab = $('lab');
+      // the content landmark is id="main" since the a11y skip-link pass (#401) — select the
+      // lab root by class, not the old id (the old `$('lab')` guard bailed and killed setup).
+      const lab = document.querySelector('main.lab') as HTMLElement | null;
       const canvas = $('chamber') as HTMLCanvasElement | null;
       if (!lab || !canvas) return;
       const W = window as Any;
@@ -386,20 +388,89 @@ const FILTER_COLOR: Record<string, string> = {
         if (ov.vx != null && s.particles[0]) s.particles[0].vx = ov.vx;
         if (ov.vy != null && s.particles[0]) s.particles[0].vy = ov.vy;
         if (ov.frames != null) s.frames = ov.frames;
+        // Scenario.seed — the runner's determinism seam: runScenario swaps Math.random for a
+        // seeded PRNG during the run, so RNG forces (thermal, jet, spawn scatter) replay
+        // exactly. RNG-force experiments carry a catalog seed; this override replaces it.
+        if (ov.seed != null) s.seed = ov.seed;
         if (s.particles.length === 0) return s;
         if (!isPair(cur)) {
           const count = Math.max(1, Math.min(40, Math.round(ov.count ?? s.particles.length)));
-          if (count > s.particles.length) {
-            const base = s.particles[0];
-            const extra = count - s.particles.length;
-            const spread = (s.body.range || 200) * 0.9;
-            for (let i = 0; i < extra; i++) {
-              const t = extra === 1 ? 0 : i / (extra - 1) - 0.5;
-              s.particles.push({ ...base, x: base.x, y: base.y + t * spread, vx: base.vx, vy: base.vy });
-            }
-          }
+          if (count > s.particles.length) placeExtras(s, count, ov);
         }
         return s;
+      }
+
+      // ── particle placement (Tune → placement) ──
+      // Placement is consumer-side by design: ScenarioParticle takes explicit coordinates.
+      // The injected extras are laid out by the selected mode; particles[0] — the tracked
+      // test particle — is never moved, so the conformance expectations keep measuring the
+      // canonical track. `scatter` draws from the same PRNG family the runner seeds
+      // Math.random with, so one seed pins both the layout and any RNG force in the run.
+      const PLACEMENTS = ['fan', 'clone', 'ring', 'scatter'];
+      const PLACE_TIP: Any = {
+        fan: 'a curtain of parallel tracks across the field axis',
+        clone: 'exact copies of the test particle (RNG forces fan them apart)',
+        ring: 'evenly around the body at the test particle’s radius',
+        scatter: 'seeded-random positions and headings around the body',
+      };
+      const placementOf = (ov: Any) => (PLACEMENTS.includes(ov.placement) ? ov.placement : 'fan');
+      const rollSeed = () => 1 + Math.floor(Math.random() * 99998);
+      // mulberry32 — the PRNG family runScenario uses for Scenario.seed
+      function mulberry32(seed: number): () => number {
+        let a = seed >>> 0;
+        return () => {
+          a |= 0;
+          a = (a + 0x6d2b79f5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+      function placeExtras(s: Any, count: number, ov: Any) {
+        const base = s.particles[0];
+        const extra = count - s.particles.length;
+        const spread = (s.body.range || 200) * 0.9;
+        const mode = placementOf(ov);
+        const bx = s.body.cx ?? 0, by = s.body.cy ?? 0;
+        const bvx = base.vx ?? 0, bvy = base.vy ?? 0;
+        const rand = mulberry32(ov.seed != null ? ov.seed : 1);
+        for (let i = 0; i < extra; i++) {
+          if (mode === 'clone') {
+            s.particles.push({ ...base });
+          } else if (mode === 'ring') {
+            // evenly around the body at the test particle's radius; velocities rotate with
+            // the positions so the pattern stays rotationally symmetric
+            const r0 = Math.hypot(base.x - bx, base.y - by);
+            const r = r0 > 8 ? r0 : spread * 0.4;
+            const a0 = r0 > 8 ? Math.atan2(base.y - by, base.x - bx) : 0;
+            const da = (2 * Math.PI * (i + 1)) / count;
+            s.particles.push({
+              ...base,
+              x: bx + Math.cos(a0 + da) * r,
+              y: by + Math.sin(a0 + da) * r,
+              vx: bvx * Math.cos(da) - bvy * Math.sin(da),
+              vy: bvx * Math.sin(da) + bvy * Math.cos(da),
+            });
+          } else if (mode === 'scatter') {
+            // seeded-random positions in the disc around the body, headings randomised at
+            // the test particle's speed — same seed, same layout
+            const a = rand() * 2 * Math.PI;
+            const r = Math.sqrt(rand()) * spread;
+            const sp = Math.hypot(bvx, bvy);
+            const h = rand() * 2 * Math.PI;
+            s.particles.push({
+              ...base,
+              x: bx + Math.cos(a) * r,
+              y: by + Math.sin(a) * r,
+              vx: Math.cos(h) * sp,
+              vy: Math.sin(h) * sp,
+            });
+          } else {
+            // fan (default) — the classic curtain of parallel tracks
+            const t = extra === 1 ? 0 : i / (extra - 1) - 0.5;
+            s.particles.push({ ...base, x: base.x, y: base.y + t * spread, vx: base.vx, vy: base.vy });
+          }
+        }
       }
 
       function firstPassFrame(exp: Any, res: Any) {
@@ -784,7 +855,8 @@ const FILTER_COLOR: Record<string, string> = {
         return specs;
       }
       function renderParams() {
-        const rows = paramSpecs().map((sp: Any) => {
+        const specs = paramSpecs();
+        const rows = specs.map((sp: Any) => {
           const cv = overrides[sp.key] != null ? overrides[sp.key] : sp.val;
           const frac = Math.max(0, Math.min(1, (sp.def - sp.min) / (sp.max - sp.min || 1)));
           const sym = sp.sym ? `<span class="sym">${sp.sym}</span>` : '';
@@ -800,7 +872,24 @@ const FILTER_COLOR: Record<string, string> = {
             ${chips ? `<div class="bands">${chips}</div>` : ''}
           </div>`;
         }).join('');
-        $('params')!.innerHTML = rows;
+        // placement + seed — how injected extras are laid out (needs the count knob), and the
+        // run seed (Scenario.seed) that pins RNG forces + the scatter layout for reproducibility.
+        const mode = placementOf(overrides);
+        const placementRow = specs.some((sp: Any) => sp.key === 'count')
+          ? `<div class="param">
+              <label>placement<span class="unit">extras</span></label>
+              <div class="bands">${PLACEMENTS.map((m) => `<button type="button" class="band${m === mode ? ' on' : ''}" data-place="${m}" title="${PLACE_TIP[m]}">${m}</button>`).join('')}</div>
+            </div>`
+          : '';
+        const seedRow = `<div class="param">
+            <label>seed<span class="unit">run</span></label>
+            <input class="num" type="number" data-seed min="0" max="99999" step="1" placeholder="default" value="${overrides.seed ?? ''}" title="Run seed (Scenario.seed) — pins RNG forces (thermal, jet, spawn) and the scatter layout; empty = the scenario's own default">
+            <div class="bands">
+              <button type="button" class="band" data-seed-act="roll" title="roll a fresh seed">↻ roll</button>
+              <button type="button" class="band${overrides.seed == null ? ' on' : ''}" data-seed-act="default" title="the scenario's default (RNG-force experiments carry a catalog seed)">default</button>
+            </div>
+          </div>`;
+        $('params')!.innerHTML = rows + placementRow + seedRow;
         $('params')!.querySelectorAll('input[data-param]').forEach((el) =>
           el.addEventListener('input', () => {
             const inp = el as HTMLInputElement, key = inp.dataset.param!, val = parseFloat(inp.value);
@@ -812,9 +901,37 @@ const FILTER_COLOR: Record<string, string> = {
           }),
         );
         // quick-pick bands: jump a control to a named value, then refire
-        $('params')!.querySelectorAll('.band').forEach((el) =>
+        $('params')!.querySelectorAll('.band[data-band-key]').forEach((el) =>
           el.addEventListener('click', () => {
             overrides[(el as HTMLElement).dataset.bandKey!] = parseFloat((el as HTMLElement).dataset.bandVal!);
+            setPreset('custom');
+            evaluate();
+          }),
+        );
+        // placement chips — scatter auto-rolls a seed if none is set, so it is reproducible
+        // (and sharable) by construction
+        $('params')!.querySelectorAll('.band[data-place]').forEach((el) =>
+          el.addEventListener('click', () => {
+            const m = (el as HTMLElement).dataset.place!;
+            overrides.placement = m;
+            if (m === 'scatter' && overrides.seed == null) overrides.seed = rollSeed();
+            setPreset('custom');
+            evaluate();
+          }),
+        );
+        // seed — commit on change (blur/Enter); clearing the field returns to the scenario default
+        const seedInp = $('params')!.querySelector('input[data-seed]') as HTMLInputElement | null;
+        seedInp?.addEventListener('change', () => {
+          const v = Math.round(parseFloat(seedInp.value));
+          if (Number.isFinite(v)) overrides.seed = Math.max(0, Math.min(99999, v));
+          else delete overrides.seed;
+          setPreset('custom');
+          evaluate();
+        });
+        $('params')!.querySelectorAll('.band[data-seed-act]').forEach((el) =>
+          el.addEventListener('click', () => {
+            if ((el as HTMLElement).dataset.seedAct === 'roll') overrides.seed = rollSeed();
+            else delete overrides.seed;
             setPreset('custom');
             evaluate();
           }),
@@ -918,7 +1035,8 @@ const FILTER_COLOR: Record<string, string> = {
       // ── export ──
       function buildHash() {
         const parts = [cur];
-        for (const k of ['strength', 'range', 'spin', 'angle', 'box', 'absorbR', 'vx', 'vy', 'count']) if (overrides[k] != null) parts.push(`${k}=${overrides[k]}`);
+        for (const k of ['strength', 'range', 'spin', 'angle', 'box', 'absorbR', 'vx', 'vy', 'count', 'seed']) if (overrides[k] != null) parts.push(`${k}=${overrides[k]}`);
+        if (overrides.placement != null) parts.push(`placement=${overrides.placement}`);
         return parts.join(';');
       }
       function buildRecord() {
@@ -1019,7 +1137,7 @@ const FILTER_COLOR: Record<string, string> = {
         if (hash) {
           const [force, ...kv] = hash.split(';');
           if (byForce[force]) {
-            for (const pair of kv) { const [k, v] = pair.split('='); if (v != null) overrides[k] = parseFloat(v); }
+            for (const pair of kv) { const [k, v] = pair.split('='); if (v != null) overrides[k] = k === 'placement' ? v : parseFloat(v); }
             selectForce(force, true);
             return;
           }
