@@ -137,7 +137,9 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   `--d`/`--field-*`/`--load` stop updating and bodies driven by them stop moving) — those are already
   reduced-motion-safe and are not flagged. Like the other stylesheet-walking lints it is heuristic and
   browser-coupled: it no-ops where stylesheets are unreachable (SSR / tests / cross-origin), so it can
-  only under-report, never false-positive; opacity/colour changes are not treated as motion. Runs
+  only under-report, never false-positive; opacity/colour changes are not treated as motion, and the
+  transform-family match is property-name-anchored so typography (`text-transform: uppercase`) is not
+  mistaken for movement. Runs
   automatically inside `lintPlatform`. (This is the lint half of RC-8; the real assistive-tech pass
   remains a separate manual step.)
 

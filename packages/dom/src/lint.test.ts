@@ -437,6 +437,30 @@ test('lintReducedMotion does not flag a static body (opacity/colour are not moti
   }
 });
 
+test('lintReducedMotion does not mistake text-transform (typography) for a transform (motion)', () => {
+  const prevDoc = (globalThis as { document?: unknown }).document;
+  // The /docs regression shape: an uppercase heading. `text-transform:` contains the substring
+  // `transform:` at a `\b` boundary (the hyphen), so a naive word-boundary match reads a purely
+  // typographic declaration as motion and flags every uppercase [data-body] heading on the page.
+  (globalThis as { document?: unknown }).document = motionDoc(
+    [{
+      selectorText: '.map-title',
+      cssText: '.map-title{text-transform:uppercase;letter-spacing:0.09em;color:red}',
+    }],
+    [], // no reduced-motion branch — none is needed; nothing moves
+  );
+  try {
+    const heading = bodyEl(['.map-title']);
+    const root = { querySelectorAll: () => [heading] } as unknown as ParentNode;
+    assert.deepEqual(lintReducedMotion(root), [], 'text-transform is typography, not motion → not flagged');
+    // …and the same declaration inline is likewise not motion.
+    const inlineHeading = bodyEl([], 'text-transform: uppercase');
+    assert.deepEqual(lintReducedMotion({ querySelectorAll: () => [inlineHeading] } as unknown as ParentNode), []);
+  } finally {
+    (globalThis as { document?: unknown }).document = prevDoc;
+  }
+});
+
 test('lintReducedMotion flags an inline STATIC transform, and no-ops without a document', () => {
   const prevDoc = (globalThis as { document?: unknown }).document;
   // inline static transform (not feedback-driven), no matching reduced-motion rule → flagged

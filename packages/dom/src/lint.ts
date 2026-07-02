@@ -386,7 +386,12 @@ function expressesIndependentMotion(cssText: string): boolean {
   // 2. a transform-family set / transitioned — but ONLY if its value is NOT a feedback var (else the
   //    engine gates it under reduced motion). We check each transform-family declaration individually so a
   //    feedback-driven transform in the same block doesn't get mis-read as static.
-  for (const m of css.matchAll(/\b(transform|translate|rotate|scale)\s*:\s*([^;}]*)/g)) {
+  //    The property name is anchored on the LEFT with (?<![\w-]) — `\b` alone treats the hyphen in
+  //    `text-transform:` as a boundary and mis-reads a purely typographic declaration as motion (the
+  //    false positive that flagged every uppercase heading). The trade: vendor-prefixed forms
+  //    (`-webkit-transform:`) are no longer seen — acceptable under-reporting for a heuristic dev lint,
+  //    which promises never to false-positive, not never to miss.
+  for (const m of css.matchAll(/(?<![\w-])(transform|translate|rotate|scale)\s*:\s*([^;}]*)/g)) {
     const value = m[2] ?? '';
     if (/\bnone\b/.test(value)) continue; // transform:none is identity → no motion
     if (FEEDBACK_VAR_READS.some((v) => value.includes(v))) continue; // feedback-driven → engine-gated
