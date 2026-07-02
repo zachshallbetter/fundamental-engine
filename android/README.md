@@ -227,7 +227,8 @@ Also ported:
   `FeedbackRegistry`, `RelationshipRegistry`, `VisualBindingRegistry`, `OverlayRegistry`), the
   **`FieldPlatform`** coordinator (wires `read→measure`, `write→flush`), and the `QualityGovernor` /
   `FieldPerf` budget governors. The platform seam — `FieldHost` / `FieldVolume` / `FieldProjection` —
-  lives in core (Android-free). JVM-tested (`FrameSchedulerTests`, `FieldPlatformTests`).
+  lives in core (Android-free). JVM-tested (`FrameSchedulerTests`, `FieldPlatformTests`, `RegistriesTests`,
+  `GovernorPerfTests` — the Swift `FundamentalPlatformTests` suite case-for-case).
 
 - **`:fundamental-android`** (mirror of `UIKitFieldHost` / `@fundamental-engine/vanilla`) — the imperative
   non-Compose host: `FieldFieldView` (a custom `View` driving a `FieldController` from the `Choreographer`,
