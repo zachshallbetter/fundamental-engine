@@ -27,7 +27,7 @@ test.describe("docs sidebar · Priority Well", () => {
     await page.goto("/docs/api/handle");
     const groups = page.locator(".docs-group");
     const count = await groups.count();
-    expect(count).toBe(6);
+    expect(count).toBe(8); // Start · Build · Reference · Substrate · Assurance · Research/Frontier · Field studies · Examples
     // every group declares a decorative glyph + a per-section color (CSS custom props)
     for (let i = 0; i < count; i++) {
       expect((await groups.nth(i).evaluate((el) => el.style.getPropertyValue("--group-glyph"))).trim().length).toBeGreaterThan(0);

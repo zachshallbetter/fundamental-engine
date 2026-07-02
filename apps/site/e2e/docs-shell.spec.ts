@@ -98,10 +98,12 @@ test.describe("docs shell", () => {
       els.map((e) => e.textContent?.trim()),
     );
     expect(titles).toEqual([
-      "Start here",
-      "Concepts",
+      "Start",
       "Build",
       "Reference",
+      "Substrate",
+      "Assurance",
+      "Research / Frontier",
       "Field studies",
       "Examples",
     ]);
