@@ -456,10 +456,11 @@ release-readiness gates are pinned too: a [lifecycle contract](docs/canonical/li
 README truth guard, recipe-catalog validation, custom-elements-manifest validation, and internal-link
 validation.
 
-**The public surface is frozen and additive-only.** `pnpm check:api` fails the build if a stable export
-changes, `pnpm check:dist` verifies every package's entry points resolve, and `pnpm check:readme` keeps
-these READMEs true to the code. New options and methods may be **added**; nothing stable is renamed or
-removed without a major. See [API stability](docs/canonical/api-stability.md) and the
+**The stable public surface is frozen; new surface is added additively.** `pnpm check:api` fails the build
+if a stable export changes, `pnpm check:dist` verifies every package's entry points resolve, and
+`pnpm check:readme` keeps these READMEs true to the code. New options and methods (including the
+experimental substrate API — `query`/`snapshot`/`diff`/`replay`/`forAgent`/projections) may be **added**;
+nothing stable is renamed or removed without a major. See [API stability](docs/canonical/api-stability.md) and the
 [1.0 surface record](docs/planning/1.0-surface.md) for the full tiering.
 
 ## Packages
@@ -512,8 +513,8 @@ Sigstore/SLSA build attestation). Most web projects want **`npm i @fundamental-e
 host-bundled default door) or **`@fundamental-engine/react`** for React; `@fundamental-engine/elements`
 and `@fundamental-engine/core` are there when you need them. No build step? Import from a CDN —
 `import { createField } from 'https://esm.sh/@fundamental-engine/vanilla'`. Releases publish from CI on a
-`vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface
-is frozen and additive-only; the support and versioning policy is in [`SUPPORT.md`](SUPPORT.md).
+`vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The stable public
+surface is frozen, with new surface added additively; the support and versioning policy is in [`SUPPORT.md`](SUPPORT.md).
 
 ## Documentation
 

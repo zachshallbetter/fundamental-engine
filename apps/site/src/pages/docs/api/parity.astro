@@ -50,6 +50,13 @@ const METHODS: ParityRow[] = [
   { method: 'clearFocus',           swift: true,  kotlin: true,  three: true  },
   { method: 'particleCount',        swift: true,  kotlin: true,  three: true  },
   { method: 'energy',               swift: true,  kotlin: true,  three: true  },
+  // ── substrate read API (critical-path 02/03) — mirrored to the native cores ──
+  { method: 'query',                swift: true,  kotlin: true,  three: true,  note: 'structured read of bodies/metrics/relationships; the influences/projections/dimensions lanes stay empty on the ports until an accumulator/registry/dimension lane lands (JS field names kept)' },
+  { method: 'snapshot',             swift: true,  kotlin: true,  three: true,  note: 'point-in-time field capture; body data withheld by default (tightest-wins profile)' },
+  { method: 'diff',                 swift: true,  kotlin: true,  three: true,  note: 'pure comparison of two snapshots — added/removed/changed bodies, metric deltas, relationship + formation changes' },
+  { method: 'replay',               swift: true,  kotlin: true,  three: true,  note: 'causal replay over a snapshot pair; force-attributed steps empty-for-now on the ports (no impulse accumulator yet)' },
+  { method: 'projections',          swift: false, kotlin: true,  three: true,  note: 'projection registry — JS core + web + Kotlin (agent-json + callback surfaces); Swift port in progress; css/dom/svg surfaces are web-first' },
+  { method: 'forAgent',             swift: true,  kotlin: true,  three: true,  note: 'capability-scoped, redacted, read-only agent view (agent-readable is not agent-writable)' },
   { method: 'sample',               swift: true,  kotlin: true,  three: true,  note: 'force-probe at world point; Swift delegates to forceAt(); Kotlin delegates to controller.sample() → forceAt()' },
   { method: 'sampleScalar',         swift: true,  kotlin: true,  three: true  },
   { method: 'sampleGradient',       swift: true,  kotlin: true,  three: true  },
