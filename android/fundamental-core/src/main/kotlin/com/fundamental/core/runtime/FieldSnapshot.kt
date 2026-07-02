@@ -16,7 +16,8 @@ import com.fundamental.core.math.Vec3
 /**
  * The engine build / snapshot-format version — the Kotlin mirror of the JS `FIELD_VERSION` (`version.ts`).
  * Stamped onto every [FieldSnapshot.version] so a capture records the format it was produced by. Kept in
- * lockstep with the JS constant.
+ * lockstep with the JS constant / the release version: `VersionLockstepTests` fails the build if this
+ * drifts from `packages/core/package.json` (#923) — update it here on every release bump.
  */
 const val FIELD_VERSION: String = "0.9.2"
 

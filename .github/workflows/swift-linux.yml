@@ -8,9 +8,10 @@ name: swift-linux
 on:
   push:
     branches: [swift-port, main]
-    paths: ['swift/**', '.github/workflows/swift-linux.yml']
+    # packages/core/package.json: a release version bump must re-run the FIELD_VERSION lockstep test (#923)
+    paths: ['swift/**', '.github/workflows/swift-linux.yml', 'packages/core/package.json']
   pull_request:
-    paths: ['swift/**', '.github/workflows/swift-linux.yml']
+    paths: ['swift/**', '.github/workflows/swift-linux.yml', 'packages/core/package.json']
 
 jobs:
   core:

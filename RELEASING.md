@@ -44,17 +44,23 @@ contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
    pnpm --filter "@fundamental-engine/*" exec npm version <patch|minor|major> --no-git-tag-version
    ```
    The private apps (`site`, `starter`) are versioned independently and are not published.
-4. **Commit, tag, push the tag** — pushing the tag triggers the release workflow:
+4. **Bump `FIELD_VERSION` on all three planes** — the constant is hand-maintained per plane, and a
+   lockstep test on each fails CI if it drifts from `packages/core/package.json`:
+   - JS: `packages/core/src/version.ts` (guard: `version.test.ts`)
+   - Swift: `swift/Sources/FundamentalCore/Engine/FieldSnapshot.swift` (guard: `VersionLockstepTests`)
+   - Kotlin: `android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/FieldSnapshot.kt`
+     (guard: `VersionLockstepTests`)
+5. **Commit, tag, push the tag** — pushing the tag triggers the release workflow:
    ```sh
    git commit -am "release: vX.Y.Z"
    git tag -a vX.Y.Z -m "Release X.Y.Z"   # annotated; this repo requires it
    git push && git push origin vX.Y.Z
    ```
-5. **CI publishes.** `.github/workflows/release.yml` runs the full gate, then publishes every
+6. **CI publishes.** `.github/workflows/release.yml` runs the full gate, then publishes every
    `@fundamental-engine/*` package with provenance. Watch it: `gh run watch` (or the Actions tab). It re-reads the
    `NPM_TOKEN` secret each run, so a failed publish can be retried with `gh run rerun <id> --failed`.
-6. **Create the GitHub release** for the tag, pasting the CHANGELOG section.
-7. **Smoke-test** a clean install (`npm i @fundamental-engine/vanilla` in a fresh directory) and confirm the scoped
+7. **Create the GitHub release** for the tag, pasting the CHANGELOG section.
+8. **Smoke-test** a clean install (`npm i @fundamental-engine/vanilla` in a fresh directory) and confirm the scoped
    packages resolve the core dependency.
 
 ## What CI does
