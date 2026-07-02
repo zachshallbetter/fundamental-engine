@@ -529,6 +529,17 @@ public protocol FieldHandle: AnyObject {
     /// with a per-field sequence. Read-only throughout: `snapshot()` never mutates field state.
     func snapshot(_ opts: FieldSnapshotOptions?) -> FieldSnapshot
 
+    // ── substrate READ API: diff  (JS critical-path 03) ─────────────────────
+    /// Compare two ``FieldSnapshot``s and report what changed, by lane (bodies, relationships, metrics,
+    /// formations). PURE — reads only the two snapshot objects, never the live field, and mutates nothing;
+    /// delegates to the free function ``diffFieldSnapshots(_:_:)``. Because it takes both snapshots as
+    /// arguments it needs no field access at all — it lives on the handle only for API symmetry with
+    /// `snapshot()`. Mirror of the JS `@fundamental-engine/core` `field.diff(a, b)` (and the Kotlin
+    /// `:fundamental-core` port) — same ``FieldDiff`` shape + field names + comparison semantics so a diff
+    /// is identical across planes. Order-independent within each lane. See ``diffFieldSnapshots(_:_:)`` for
+    /// the per-lane rules.
+    func diff(_ a: FieldSnapshot, _ b: FieldSnapshot) -> FieldDiff
+
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)
     func destroy()

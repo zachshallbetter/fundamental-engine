@@ -1070,6 +1070,10 @@ final class FieldEngine: FieldHandle {
         return snap
     }
 
+    // Substrate READ API — diff (JS critical-path 03). PURE comparison of two snapshots; needs no field
+    // state, so it just delegates to the free function (which owns the per-lane comparison semantics).
+    func diff(_ a: FieldSnapshot, _ b: FieldSnapshot) -> FieldDiff { diffFieldSnapshots(a, b) }
+
     func destroy() {
         if let token = loopToken { host.cancelFrame(token) }
         loopToken = nil

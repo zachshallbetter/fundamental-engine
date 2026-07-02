@@ -159,3 +159,184 @@ public func resolveSnapshotFlags(_ opts: FieldSnapshotOptions) -> ResolvedSnapsh
         includeInfluences: base.includeInfluences && opts.includeInfluences != false
     )
 }
+
+// MARK: - Field Snapshot diffing (JS `diffFieldSnapshots`, Kotlin `diffFieldSnapshots`)
+
+// `diff(a, b)` is a PURE comparison of two ``FieldSnapshot``s — no live field state — so it is trivially
+// testable and usable outside a running field (CI assertions, stored bug reports, AI memory).
+// ``FieldHandle/diff(_:_:)`` delegates to ``diffFieldSnapshots(_:_:)`` here. Capture
+// (``FieldHandle/snapshot(_:)``) lives on the handle (it needs the live field); this module owns the
+// comparison so the two halves stay independent. Result SHAPE + field names + semantics mirror the JS
+// `@fundamental-engine/core` and the Kotlin `:fundamental-core` port 1:1.
+
+/// A before/after pair for one metric value (the JS/Kotlin `{ from, to }` shape — Swift has no anonymous
+/// record, so it gets a named struct, matching the Kotlin port's `MetricDelta`).
+public struct MetricDelta: Sendable, Equatable {
+    public var from: Float
+    public var to: Float
+    public init(from: Float, to: Float) { self.from = from; self.to = to }
+}
+
+/// A before/after pair for a boolean (JS/Kotlin `{ from, to }` over booleans — e.g. a relationship's
+/// `active`). Named struct, matching the Kotlin port's `BoolDelta`.
+public struct BoolDelta: Sendable, Equatable {
+    public var from: Bool
+    public var to: Bool
+    public init(from: Bool, to: Bool) { self.from = from; self.to = to }
+}
+
+/// A change to one body between two snapshots (JS/Kotlin `BodyChange`). ``kind`` is `"added"`, `"removed"`,
+/// or `"changed"`. For `"changed"`, ``metrics`` holds the per-metric before/after for the metrics that
+/// differ.
+public struct BodyChange: Sendable, Equatable {
+    public var id: String
+    /// `"added"` | `"removed"` | `"changed"`.
+    public var kind: String
+    /// Per-metric before/after for the metrics that changed (kind `"changed"`); `nil` otherwise.
+    public var metrics: [String: MetricDelta]?
+    public init(id: String, kind: String, metrics: [String: MetricDelta]? = nil) {
+        self.id = id; self.kind = kind; self.metrics = metrics
+    }
+}
+
+/// A change to one relationship (edge) between two snapshots (JS/Kotlin `RelationshipChange`). The edge is
+/// keyed by `from`+`to`+`type`. ``kind`` is `"added"`, `"removed"`, or `"changed"`; for `"changed"`,
+/// ``strength`` and/or ``active`` carry the before/after for whichever differed.
+public struct RelationshipChange: Sendable, Equatable {
+    public var from: String
+    public var to: String
+    public var type: String
+    /// `"added"` | `"removed"` | `"changed"`.
+    public var kind: String
+    public var strength: MetricDelta?
+    public var active: BoolDelta?
+    public init(from: String, to: String, type: String, kind: String,
+                strength: MetricDelta? = nil, active: BoolDelta? = nil) {
+        self.from = from; self.to = to; self.type = type; self.kind = kind
+        self.strength = strength; self.active = active
+    }
+}
+
+/// A change to one field-level metric between two snapshots (JS/Kotlin `MetricChange`).
+public struct MetricChange: Sendable, Equatable {
+    public var key: String
+    public var from: Float
+    public var to: Float
+    public init(key: String, from: Float, to: Float) { self.key = key; self.from = from; self.to = to }
+}
+
+/// A Field Formation that activated or deactivated between two snapshots (JS/Kotlin `FormationChange`).
+/// ``kind`` is `"activated"` (present in `b`, absent in `a`) or `"deactivated"` (absent in `b`, present in
+/// `a`).
+public struct FormationChange: Sendable, Equatable {
+    public var id: String
+    public var kind: String
+    public init(id: String, kind: String) { self.id = id; self.kind = kind }
+}
+
+/// The structured comparison of two ``FieldSnapshot``s — what changed in the field, by lane (JS/Kotlin
+/// `FieldDiff`). ``from``/``to`` are the compared snapshots' ids. Order-independent within each lane;
+/// produced by the PURE ``diffFieldSnapshots(_:_:)``.
+public struct FieldDiff: Sendable, Equatable {
+    /// The id of snapshot `a`.
+    public var from: String
+    /// The id of snapshot `b`.
+    public var to: String
+    public var bodyChanges: [BodyChange]
+    public var relationshipChanges: [RelationshipChange]
+    public var metricChanges: [MetricChange]
+    public var formationChanges: [FormationChange]
+    public init(from: String, to: String, bodyChanges: [BodyChange],
+                relationshipChanges: [RelationshipChange], metricChanges: [MetricChange],
+                formationChanges: [FormationChange]) {
+        self.from = from; self.to = to; self.bodyChanges = bodyChanges
+        self.relationshipChanges = relationshipChanges; self.metricChanges = metricChanges
+        self.formationChanges = formationChanges
+    }
+}
+
+/// The composite key an edge is compared by (mirror of the JS `relKey` / Kotlin `relKey`): `from` + `to`
+/// + `type`.
+private func relKey(_ r: FieldRelationshipReading) -> String { "\(r.from) \(r.to) \(r.type)" }
+
+/// Compare two field snapshots and report what changed, by lane (bodies, relationships, metrics,
+/// formations). PURE — reads only the two snapshot objects, never the live field, and mutates nothing.
+/// Order-independent within each lane. Mirror of the JS `diffFieldSnapshots(a, b)` and the Kotlin port.
+///
+/// - **bodies:** keyed by `id`. A body only in `a` → `removed`; only in `b` → `added`; in both with any
+///   differing metric value → `changed` (with per-metric before/after over the union of metric keys,
+///   missing treated as `0`). A body with identical metrics yields no change.
+/// - **relationships:** keyed by `from`+`to`+`type`. Only in `a` → `removed`; only in `b` → `added`; in
+///   both with a differing `strength` and/or `active` → `changed` (carrying the before/after that
+///   differed).
+/// - **metrics:** the union of field-level metric keys; any differing value (missing treated as `0`) →
+///   a ``MetricChange``.
+/// - **formations:** set difference — in `b` not `a` → `activated`; in `a` not `b` → `deactivated`.
+public func diffFieldSnapshots(_ a: FieldSnapshot, _ b: FieldSnapshot) -> FieldDiff {
+    // ── bodies ──────────────────────────────────────────────────────────────────────────────────
+    var bodyChanges: [BodyChange] = []
+    let aBodies = Dictionary(a.bodies.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
+    let bBodies = Dictionary(b.bodies.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
+    for (id, av) in aBodies {
+        guard let bv = bBodies[id] else {
+            bodyChanges.append(BodyChange(id: id, kind: "removed"))
+            continue
+        }
+        var metrics: [String: MetricDelta] = [:]
+        let keys = Set(av.metrics.keys).union(bv.metrics.keys)
+        for k in keys {
+            let from = av.metrics[k] ?? 0
+            let to = bv.metrics[k] ?? 0
+            if from != to { metrics[k] = MetricDelta(from: from, to: to) }
+        }
+        if !metrics.isEmpty { bodyChanges.append(BodyChange(id: id, kind: "changed", metrics: metrics)) }
+    }
+    for id in bBodies.keys where aBodies[id] == nil {
+        bodyChanges.append(BodyChange(id: id, kind: "added"))
+    }
+
+    // ── relationships ─────────────────────────────────────────────────────────────────────────
+    var relationshipChanges: [RelationshipChange] = []
+    let aRel = Dictionary(a.relationships.map { (relKey($0), $0) }, uniquingKeysWith: { _, last in last })
+    let bRel = Dictionary(b.relationships.map { (relKey($0), $0) }, uniquingKeysWith: { _, last in last })
+    for (k, ar) in aRel {
+        guard let br = bRel[k] else {
+            relationshipChanges.append(RelationshipChange(from: ar.from, to: ar.to, type: ar.type, kind: "removed"))
+            continue
+        }
+        let strength = ar.strength != br.strength ? MetricDelta(from: ar.strength, to: br.strength) : nil
+        let active = ar.active != br.active ? BoolDelta(from: ar.active, to: br.active) : nil
+        if strength != nil || active != nil {
+            relationshipChanges.append(RelationshipChange(from: ar.from, to: ar.to, type: ar.type,
+                                                          kind: "changed", strength: strength, active: active))
+        }
+    }
+    for (k, br) in bRel where aRel[k] == nil {
+        relationshipChanges.append(RelationshipChange(from: br.from, to: br.to, type: br.type, kind: "added"))
+    }
+
+    // ── field-level metrics ─────────────────────────────────────────────────────────────────────
+    var metricChanges: [MetricChange] = []
+    let metricKeys = Set(a.metrics.keys).union(b.metrics.keys)
+    for key in metricKeys {
+        let from = a.metrics[key] ?? 0
+        let to = b.metrics[key] ?? 0
+        if from != to { metricChanges.append(MetricChange(key: key, from: from, to: to)) }
+    }
+
+    // ── formations ────────────────────────────────────────────────────────────────────────────
+    var formationChanges: [FormationChange] = []
+    let aForm = Set(a.formations)
+    let bForm = Set(b.formations)
+    for id in bForm where !aForm.contains(id) { formationChanges.append(FormationChange(id: id, kind: "activated")) }
+    for id in aForm where !bForm.contains(id) { formationChanges.append(FormationChange(id: id, kind: "deactivated")) }
+
+    return FieldDiff(
+        from: a.id,
+        to: b.id,
+        bodyChanges: bodyChanges,
+        relationshipChanges: relationshipChanges,
+        metricChanges: metricChanges,
+        formationChanges: formationChanges
+    )
+}

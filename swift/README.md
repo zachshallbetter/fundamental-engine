@@ -190,8 +190,17 @@ Ported and tested — the full engine:
   profile strips it even against an explicit `includeData: true` (TIGHTEST-wins, `resolveSnapshotFlags`).
   `createdAt` is the field clock (`env.t`, deterministic), `id` is `snap-<frame>-<n>`, `version` is
   `FIELD_VERSION`. The result mirrors the JS shape + the Kotlin port 1:1; tested (`SubstrateParityTests`).
-  `influences`/`projections` are present-but-empty for now. The rest of the substrate READ API —
-  `diff`/`replay`/`projections` — is a follow-up on both native planes.
+  `influences`/`projections` are present-but-empty for now.
+- **Substrate READ API — `diff()`** (JS critical-path 03): `FieldHandle.diff(_:_:)` is a PURE comparison of
+  two `FieldSnapshot`s (no live field access, no mutation) reporting what changed by lane — `bodyChanges`
+  (added/removed/changed, with per-metric before/after over the union of metric keys, missing read as `0`),
+  `relationshipChanges` (keyed by `from`+`to`+`type`, carrying the differing `strength`/`active`),
+  `metricChanges` (field-level, key union, missing → 0), and `formationChanges` (activated/deactivated set
+  difference). The handle method delegates to the free `diffFieldSnapshots(_:_:)`; the `MetricDelta` /
+  `BoolDelta` named structs stand in for JS's inline `{ from, to }` (matching the Kotlin port). The
+  `FieldDiff` shape + field names + comparison semantics mirror the JS core and the Kotlin `:fundamental-core`
+  port 1:1; tested (`SubstrateParityTests`). The rest of the substrate READ API — `replay`/`projections` —
+  is a follow-up on both native planes.
 - **Vanilla surface** (§13): the full FieldHandle.
 
 Not yet ported (the platform-adjacent tranche — most is DOM-specific and maps to
