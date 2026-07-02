@@ -7,6 +7,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Docs
+
+- **`@fundamental-engine/dom`:** corrected the stale `QualityGovernor` header comment
+  (`packages/dom/src/governor.ts`) — it still said the engine-side quality responses were "NOT
+  automatic yet", but since #413 the `<field-root>` runtime forwards each tier change to
+  `handle.setQualityTier` (DPR cap + heatmap drop applied automatically); only *further* responses
+  (render simplification, particle caps) remain the embedder's via `field:quality-tier`. Comment
+  only — no runtime change. Part of the #588 docs pass (the createField unguarded-path guidance on
+  the performance page, the TypeScript/core guides, and `docs/canonical/platform-architecture.md`).
+
 ### Fixed
 
 - **`@fundamental-engine/three`:** **`threeBackend`'s overlay `z` now offsets the projected field

@@ -305,9 +305,18 @@ budget overruns), resets it on `visibilitychange`, and dispatches a `field:quali
 CustomEvent (bubbles, composed, `detail: { tier, durationMs }`) from the scan root whenever the
 tier changes. One consumer is built in: at tier 2 the platform tick — measurement, feedback
 writes, relationship discovery — runs every 2nd frame, at tier 3 every 4th. The engine keeps
-simulating at full rate; only the platform's DOM read/write cadence drops. Engine-side responses
-(render simplification, particle caps) are the embedder's to wire via the event — that surface is
-unfrozen/experimental.
+simulating at full rate; only the platform's DOM read/write cadence drops. The engine-side
+response is applied automatically too (#413): the runtime forwards each tier change to
+`handle.setQualityTier`, which caps the effective backing-store DPR (`TIER_DPR = [∞, 1.5, 1.25,
+1]`, further capping `dprCap`) and skips the heatmap at tier 2+ — reversibly; tier 0 restores the
+configured quality. *Further* engine-side responses (render simplification, particle caps) remain
+the embedder's to wire via the event — that surface is unfrozen/experimental.
+
+All of the above is `<field-root>`'s wiring. **Raw `createField` runs no governor**: nothing
+feeds it frame durations and nothing calls `setQualityTier`, so a consumer on the low-level door
+gets the full-cost path — cap `dprCap` up front, or construct a `QualityGovernor` (exported from
+`@fundamental-engine/dom`) and forward its tiers yourself. See the performance guide's
+[createField is the unguarded path](https://fundamental-engine.com/docs/performance#createfield-unguarded).
 
 ## Reading Field
 

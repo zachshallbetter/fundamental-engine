@@ -30,13 +30,31 @@ const energyEx = `const field = document.querySelector('field-root');
 const { kinetic, thermal, total, count } = field.energy();
 // kinetic: Σ ½·m·|v|²   thermal: Σ heat   total: kinetic + thermal`;
 
-const guardEx = `import { createField } from '@fundamental-engine/core';
+const guardEx = `import { createField } from '@fundamental-engine/vanilla';
+import { QualityGovernor } from '@fundamental-engine/dom';
 
-// Full-viewport createField canvas: cap DPR up front (the dominant fill-rate lever).
-const field = createField(canvas, { host, render: 'dots', dprCap: 1 });
+// 1. Cap DPR up front — the dominant fill-rate lever. The default ceiling is 2;
+//    dprCap: 1 quarters the pixels written per frame on a DPR-2 display.
+const field = createField(canvas, { render: 'dots', dprCap: 1 });
 
-// …or apply an adaptive quality tier yourself (0 = full, 3 = leanest).
-field.setQualityTier(2);   // caps the effective DPR and drops the heaviest ambient layer`;
+// 2. Or wire the same adaptive governor <field-root> uses: feed it frame spacing and
+//    forward tier changes — the engine caps DPR + drops the heatmap on its own levers.
+const governor = new QualityGovernor();
+let last = 0;
+const tick = (t: number) => {
+  const dt = last ? t - last : 0;
+  last = t;
+  if (dt > 0 && dt < 500) {          // skip discontinuity frames (tab switch, sleep)
+    const tier = governor.feed(dt);
+    if (tier !== undefined) field.setQualityTier(tier);
+  }
+  requestAnimationFrame(tick);
+};
+requestAnimationFrame(tick);
+document.addEventListener('visibilitychange', () => { last = 0; governor.reset(); });
+
+// 3. Skip all draw work whenever your canvas is hidden or scrolled away.
+field.setVisible(false);   // simulation + feedback signals stay live`;
 ---
 
 <DocsLayout
@@ -126,27 +144,51 @@ field.setQualityTier(2);   // caps the effective DPR and drops the heaviest ambi
   <section class="docs-sec" id="createfield-unguarded">
     <h2><code>createField</code> is the unguarded path</h2>
     <p>
-      <code>&lt;field-root&gt;</code> protects itself: the platform runtime forwards an adaptive
-      quality tier to it (<code>setQualityTier</code>), so under sustained frame overrun it caps the
-      effective backing-store DPR and drops the heaviest ambient layer on its own. Raw
-      <code>createField</code> does <strong>not</strong> — reaching for the low-level door to drive a
+      <code>&lt;field-root&gt;</code> protects itself. Its wiring, all automatic:
+    </p>
+    <ul class="model">
+      <li>
+        <b>Adaptive quality (#413)</b> — the platform runtime feeds a <code>QualityGovernor</code>
+        rAF-to-rAF frame spacing and forwards each tier change to <code>setQualityTier</code>, so under
+        sustained frame overrun the engine caps the effective backing-store DPR (1.5 / 1.25 / 1 by
+        tier) and drops the heaviest ambient layer (the heatmap) at tier 2+ — and restores full
+        quality when frames recover.
+      </li>
+      <li>
+        <b>Offscreen draw-skip</b> — an <code>IntersectionObserver</code> on the element calls
+        <code>setVisible(false)</code> whenever the host is hidden or zero-sized, skipping all draw
+        work while the simulation and its feedback signals stay live.
+      </li>
+      <li>
+        <b>Overlay-surface hygiene</b> — the front overlay canvas (a full-viewport
+        <code>mix-blend-mode</code> layer that costs a whole-screen re-blend every frame just by
+        being in the compositing tree) is created lazily and taken out of the tree whenever no
+        reading is active.
+      </li>
+    </ul>
+    <p>
+      Raw <code>createField</code> — and the <code>mountField</code> / <code>FieldField</code> doors
+      that wrap it — wires <strong>none of this</strong>. Reaching for the low-level door to drive a
       custom or full-viewport canvas gives you the full-cost path with no automatic throttle and no
-      signal.
+      signal. Only two guards are built into that path: the default <code>dprCap</code> of 2, and the
+      tab-level pause on <code>visibilitychange</code>.
     </p>
     <div class="callout callout--warn">
       <b>Full-viewport <code>createField</code> can starve the host page.</b> A heavy full-screen
       canvas at DPR&nbsp;2 is fill-rate-bound (see the <a href="#tuning-note">DPR note</a> below); left
-      uncapped it competes with the host's own CSS transitions and timers on the main thread. This is
-      expected browser behavior for any heavy canvas, not an engine bug — but with <code>createField</code>
+      at the default ceiling it competes with the host's own CSS transitions and timers on the main
+      thread — frozen mid-transition tweens and throttled timers are the symptom. This is expected
+      browser behavior for any heavy canvas, not an engine bug — but with <code>createField</code>
       nothing steers you away from it.
     </div>
     <p>
-      So for a full-viewport <code>createField</code> canvas, set a guard yourself: cap the DPR with the
-      <code>dprCap</code> option (the dominant fill-rate lever; <code>dprCap: 1</code> roughly doubles
-      headroom on retina), and/or apply a quality tier with <code>setQualityTier</code>. Better still,
-      prefer <code>&lt;field-root&gt;</code> for a page field, or a <strong>contained</strong> field
-      (<code>new FieldField(&#123; bounds: el &#125;)</code> / <code>containerHost(el)</code>) so the
-      canvas only covers the region that needs it.
+      So for a full-viewport <code>createField</code> canvas, set the guards yourself: cap the DPR with
+      the <code>dprCap</code> option (the dominant fill-rate lever), wire the same
+      <code>QualityGovernor</code> the element uses (exported from <code>@fundamental-engine/dom</code>)
+      to <code>setQualityTier</code>, and call <code>setVisible(false)</code> when your canvas leaves
+      the screen. Better still, prefer <code>&lt;field-root&gt;</code> for a page field, or a
+      <strong>contained</strong> field (<code>new FieldField(&#123; bounds: el &#125;)</code> /
+      <code>containerHost(el)</code>) so the canvas only covers the region that needs it.
     </p>
     <CodeTabs variants={[{ label: 'Guard a createField canvas', lang: 'ts', code: guardEx }]} />
   </section>
@@ -189,7 +231,7 @@ field.setQualityTier(2);   // caps the effective DPR and drops the heaviest ambi
   <section class="docs-sec">
     <h2>What the runtime doesn't measure (yet)</h2>
     <p>
-      The engine has no self-measurement of frame cost. <code>inspectBudget()</code> can tell you
+      The engine core has no self-measurement of frame cost. <code>inspectBudget()</code> can tell you
       particle count is over limit, but can't tell you if that's actually causing a frame-time
       problem. The highest-priority gaps:
     </p>
@@ -199,9 +241,10 @@ field.setQualityTier(2);   // caps the effective DPR and drops the heaviest ambi
         Without it, you can't tell whether the bottleneck is the physics tick or the canvas draw.
       </li>
       <li>
-        <b>Adaptive quality governor</b> — currently <code>prefers-reduced-motion</code> is the only
-        quality lever, and it is binary (full physics or full freeze). No automatic response to
-        sustained frame overrun.
+        <b>Self-governance outside <code>&lt;field-root&gt;</code></b> — the adaptive governor
+        shipped (#413), but only the element feeds it: a raw <code>createField</code> field never
+        measures its own frame cost and never responds to sustained overrun on its own (see
+        <a href="#createfield-unguarded">the unguarded path</a> above).
       </li>
       <li>
         <b>Per-force timing</b> — some force types (hunt, metaball, shaped source) are meaningfully
@@ -209,8 +252,10 @@ field.setQualityTier(2);   // caps the effective DPR and drops the heaviest ambi
       </li>
     </ul>
     <p>
-      These are tracked as the <b><code>FieldPerf</code> design direction</b> — a proposed
-      interface that would be observable the same way <code>energy()</code> is. See
+      The first slice of this shipped as <b><code>createFieldPerf</code></b> in
+      <code>@fundamental-engine/dom</code> — whole-frame timing (fps, detected budget, percentiles,
+      dropped frames, optional LoAF/TBT), fed rAF timestamps from your own loop. The sim/render
+      split and per-force timings remain open. See
       <code>docs/engine-reference/observable-surface.md</code> for the full gap analysis.
     </p>
   </section>
