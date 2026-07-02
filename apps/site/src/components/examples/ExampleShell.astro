@@ -8,6 +8,7 @@ import SiteNav from "../SiteNav.astro";
 import SiteFooter from "../SiteFooter.astro";
 import { INVISIBLE_FIELDS } from "../../lib/invisible-fields.ts";
 import FieldExplainer from "./FieldExplainer.astro";
+import DataHonesty from "../DataHonesty.astro";
 import "../../styles/evidence.css";
 
 interface Props {
@@ -19,8 +20,20 @@ interface Props {
   mainClass?: string;
   /** extra attributes on <main> (e.g. data-field="on" state hooks) */
   mainAttrs?: Record<string, string>;
+  /** override the auto data-honesty facts (pages not in the roster, e.g. ai-evidence). When set,
+   *  this renders instead of the roster entry's honesty block. Pass null to render none. */
+  honesty?: {
+    source: string;
+    snapshot: string;
+    liveRefresh: string;
+    notClaimed: string;
+  } | null;
 }
-const { title, description, current, mainClass = "", mainAttrs = {} } = Astro.props;
+const { title, description, current, mainClass = "", mainAttrs = {}, honesty } = Astro.props;
+// data-honesty facts: an explicit prop wins; otherwise pull from the roster entry (every
+// invisible-field example carries them). `honesty={null}` opts out entirely.
+const rosterHonesty = INVISIBLE_FIELDS.find((f) => f.slug === current)?.honesty;
+const dataHonesty = honesty === null ? undefined : (honesty ?? rosterHonesty);
 ---
 
 <Base title={title} description={description}>
@@ -53,6 +66,7 @@ const { title, description, current, mainClass = "", mainAttrs = {} } = Astro.pr
     </aside>
     <main id="main" class:list={["ev-page", mainClass]} {...mainAttrs}>
       <FieldExplainer slug={current} />
+      {dataHonesty && <DataHonesty {...dataHonesty} />}
       <slot />
     </main>
   </div>

@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import StatusChip from '../../../components/StatusChip.astro';
+import DataHonesty from '../../../components/DataHonesty.astro';
 
 // Visual Binding Study — declarative visual binding. A real HTML heading is the semantic source; a
 // hand-authored SVG is bound to it as a `representation` via data-field-visual-for. The platform's
@@ -23,6 +24,13 @@ import StatusChip from '../../../components/StatusChip.astro';
     text remains real HTML. The SVG is a bound representation. The visual can be expressive, but the
     semantic source remains inspectable and accessible.
   </p>
+
+  <DataHonesty
+    source="A real HTML heading (the semantic source of truth) plus one hand-authored SVG bound to it as a representation. The SVG is drawn by hand — not extracted from a font or generated from data."
+    snapshot="Static content defined in-page; no external data, no snapshot, no snapshot script."
+    liveRefresh="No live refresh. The platform scans, lints, and inspects the binding once in the browser; the inspector read-out updates live from that scan."
+    notClaimed="The platform verifies the accessibility contract (a representation must be aria-hidden, bound to a real source). It does not read or interpret the SVG's content — meaning lives in the semantic HTML, not the visual."
+  />
 
   <div class="vb-demo">
     <section class="vb-pane">

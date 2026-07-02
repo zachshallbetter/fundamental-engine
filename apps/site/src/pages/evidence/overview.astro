@@ -12,6 +12,16 @@ import { INVISIBLE_FIELDS } from "../../lib/invisible-fields.ts";
   description="Twelve real interfaces where the field runs with no drawn surface: data becomes bodies, the field measures, and the measurements come back as typography, ink, and anchor."
   current="overview"
   mainClass="ex-overview"
+  honesty={{
+    source:
+      "Every example is REAL data from a named public source (OpenAlex, Stack Overflow, CoinGecko, GitHub, npm, Hacker News, Launch Library, Open Library, ListenBrainz, Wikimedia). Each page names its own source and license.",
+    snapshot:
+      "Each source is a committed snapshot in src/data/examples/, stamped snapshotAt on refresh via scripts/snapshot-examples.mjs — builds never fetch, so they are deterministic.",
+    liveRefresh:
+      "Each page upgrades to live in the browser (wireLiveChip: a polite poll that skips hidden tabs and retires on failure). The committed snapshot is the SSR baseline and the no-JS truth.",
+    notClaimed:
+      "The field measures THE FIELD — emphasis, attention, decay, and relationship pressure in the interface. It never measures your users, judges the underlying data, or decides what is true. It makes a chosen signal legible; it does not choose the signal for you.",
+  }}
 >
   <header class="ev-head">
     <p class="ev-kicker">Invisible fields · the examples, explained</p>

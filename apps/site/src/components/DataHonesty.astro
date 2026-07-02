@@ -1,0 +1,105 @@
+---
+// DataHonesty — a compact, calm "data honesty" strip for any data-backed page.
+//
+// Fundamental represents support, contradiction, confidence, provenance, attention, and
+// relationship pressure as READABLE FIELD STATE — it does NOT decide whether a claim is true.
+// The host / data source / model supplies the domain facts. So every data-backed example has to
+// be honest about four things: what data it uses, whether it's a snapshot, whether it
+// live-refreshes, and what the field does NOT claim.
+//
+//   <DataHonesty
+//     source="Real OpenAlex citation counts (openalex.org, CC0)"
+//     snapshot="Committed snapshot, stamped snapshotAt on refresh via snapshot-examples.mjs"
+//     liveRefresh="Upgrades to live in the browser (polite poll); the snapshot is the no-JS baseline"
+//     notClaimed="The field reads citation counts as mass — it does not judge whether any paper is correct."
+//   />
+//
+// Rendered as four labelled rows (mono labels, muted text, thin border) — a labelled region,
+// not decoration, so assistive tech reads it as content.
+interface Props {
+  /** what the data IS — e.g. "Synthetic snapshot" / "Real Stack Overflow export (CC BY-SA)". */
+  source: string;
+  /** how snapshotting works / when it was captured. */
+  snapshot: string;
+  /** whether/how it live-refreshes, or "Static committed snapshot". */
+  liveRefresh: string;
+  /** what the field does NOT assert — the truth boundary. */
+  notClaimed: string;
+}
+const { source, snapshot, liveRefresh, notClaimed } = Astro.props;
+const rows = [
+  { k: "source", label: "Data source", value: source },
+  { k: "snapshot", label: "Snapshot", value: snapshot },
+  { k: "live", label: "Live refresh", value: liveRefresh },
+  { k: "not-claimed", label: "Not claimed", value: notClaimed },
+];
+---
+
+<section class="data-honesty" aria-label="Data honesty — what this data is and what the field does not claim">
+  <p class="dh-title">Data honesty</p>
+  <dl class="dh-rows">
+    {
+      rows.map((r) => (
+        <div class="dh-row" data-row={r.k}>
+          <dt>{r.label}</dt>
+          <dd>{r.value}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</section>
+
+<style>
+  .data-honesty {
+    margin: 1.25rem 0;
+    padding: 0.9rem 1.05rem 1rem;
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 0.6rem;
+    background: color-mix(in srgb, var(--line, #2a2a35) 14%, transparent);
+    font-size: 0.85rem;
+  }
+  .dh-title {
+    margin: 0 0 0.7rem;
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.68rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted, #9aa0ad);
+  }
+  .dh-rows {
+    margin: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+  .dh-row {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, max-content) 1fr;
+    gap: 0.35rem 1.1rem;
+    align-items: baseline;
+  }
+  .dh-row dt {
+    margin: 0;
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted, #9aa0ad);
+    white-space: nowrap;
+  }
+  .dh-row dd {
+    margin: 0;
+    line-height: 1.45;
+    color: var(--ink, #d7dbe2);
+  }
+  /* the truth boundary is the point — give it a touch more presence */
+  .dh-row[data-row="not-claimed"] dd {
+    color: var(--muted-2, var(--muted, #9aa0ad));
+    font-style: italic;
+  }
+  @media (max-width: 34rem) {
+    .dh-row {
+      grid-template-columns: 1fr;
+      gap: 0.15rem;
+    }
+  }
+</style>

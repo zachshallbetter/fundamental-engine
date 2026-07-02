@@ -93,6 +93,13 @@ field.setQualityTier(2);   // caps the effective DPR and drops the heaviest ambi
       The one measurement still open is a throttled mid-tier-phone profile of that page — the honest
       remaining gap.
     </p>
+    <p>
+      The bench above measures the engine's <em>algorithmic</em> cost in Node. The half that actually
+      gates the frame — <b>fill rate</b>, canvas compositing on the real GPU — is measured by the live
+      <a href="/perf-bench">fill-rate benchmark</a>: it sweeps render-mode × density × DPR in a real
+      browser and reports median/p95 fps. Run it on your own hardware (headless software-rasterizes and
+      misleads).
+    </p>
   </section>
 
   <section class="docs-sec">
