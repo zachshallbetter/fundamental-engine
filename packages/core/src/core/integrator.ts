@@ -5,6 +5,28 @@
  * then integrate and damp. Under first-class mass (§21.3) each additive body force is
  * scaled by `1/m` as it applies, while velocity-replacing (`kinematic`) forces are left
  * untouched. Reduced motion (`dt = 0`) freezes the sim (§18).
+ *
+ * INTEGRATION SCHEMES (`Env.integrator`): the default `'legacy'` is semi-implicit Euler
+ * (forces update v, then `x += v·dt`, then a per-frame decay); `'fixed'` keeps the same order
+ * but dt-scales the decays (doc 04 §Step 3). `'velocity-verlet'` (#659) is the opt-in
+ * second-order scheme, in the stored-acceleration form:
+ *
+ *   x(t+dt) = x(t) + v(t)·dt + ½·a(t)·dt²      (position full-step, BEFORE the force pass)
+ *   a′      = Δv/dt from the force pass          (forces evaluated at x(t+dt))
+ *   v(t+dt) = v(t) + ½·(a(t) + a′)·dt           (velocity half-step average)
+ *
+ * Approximations, deliberate and documented (physics caveat canon): (1) the engine's force model
+ * is impulse-based and velocity-dependent (drag-like forces read the CURRENT v), so a′ is taken
+ * as the pass's net Δv/dt rather than re-evaluating forces at the averaged velocity — the
+ * standard stored-acceleration treatment; (2) the per-step `FRICTION`/`HEAT_DECAY` decays stay
+ * outside the scheme (dt-scaled, like `'fixed'`), which alone makes it NON-symplectic — this
+ * buys positional accuracy, it does NOT make energy/momentum conserved (they are non-conserved
+ * by design; particle COUNT remains the invariant); (3) a *kinematic* (velocity-REPLACING)
+ * force — `jet`/`wall`/`lens`/`gate`/`warp` — is a discontinuity, not an acceleration: when one
+ * fires, the replaced velocity stands un-averaged and the stored acceleration resets, so the
+ * next position step doesn't extrapolate across the break; (4) a pair force's equal-and-opposite
+ * leg on the NEIGHBOUR (`collide`/`link`) folds into that neighbour's own v(t) or Δv whenever
+ * its turn comes — same class of caveat the fixed-timestep note below already carries.
  */
 
 import type { Body, ConditionRegistry, Env, FieldImpulseAccumulator, Force, ForceRegistry, Particle } from './types.ts';
@@ -78,6 +100,9 @@ export function applyAndRecord(f: Force, b: Body, p: Particle, env: Env, inv = 1
     p.vy = bvy + (p.vy - bvy) * inv;
     if (p.vz !== undefined) p.vz = bvz + (p.vz - bvz) * inv;
   }
+  // velocity-Verlet (#659): mirror the fast path's discontinuity mark on the capture path too.
+  if (f.kinematic && env.integrator === 'velocity-verlet' && (p.vx !== bvx || p.vy !== bvy || (p.vz ?? 0) !== bvz))
+    env.kinTouch = true;
   const acc = env.accum;
   if (acc !== undefined) {
     const dvx = p.vx - bvx;
@@ -139,6 +164,17 @@ function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void
   // Default hot path: byte-identical to the pre-accumulator engine (zero overhead — no capture).
   if (env.accum === undefined) {
     if (inv === 1 || f.kinematic) {
+      // velocity-Verlet (#659): a kinematic force that actually changes velocity marks the
+      // particle's pass as a discontinuity (env.kinTouch) — the half-step average is skipped.
+      // One boolean test on the default path; the capture only runs under the opt-in mode.
+      if (f.kinematic && env.integrator === 'velocity-verlet') {
+        const bvx = p.vx;
+        const bvy = p.vy;
+        const bvz = p.vz ?? 0;
+        f.apply(b, p, env);
+        if (p.vx !== bvx || p.vy !== bvy || (p.vz ?? 0) !== bvz) env.kinTouch = true;
+        return;
+      }
       f.apply(b, p, env);
       return;
     }
@@ -166,6 +202,8 @@ export function step(input: StepInput): void {
   const { store, bodies, env, forces, conditions, waves, separation } = input;
   const dt = env.dt;
   if (dt === 0) return;
+  // the opt-in second-order scheme (#659) — see the header doc for the math + approximations.
+  const verlet = env.integrator === 'velocity-verlet';
   const { W, H, form } = env;
   // expose the net structure field so field-following forces (`fieldflow`) can read the
   // superposition of every body's field() — the same vector the streamlines view draws.
@@ -209,12 +247,31 @@ export function step(input: StepInput): void {
       p.x += (p.cap.cx - p.x) * 0.18;
       p.y += (p.cap.cy - p.y) * 0.18;
       if (p.z) p.z += -p.z * 0.18;
+      // held matter has no acceleration of its own — drop any stored Verlet lane so a later
+      // release doesn't extrapolate a stale a(t). Only ever defined under the opt-in mode.
+      if (p.ax !== undefined) p.ax = p.ay = p.az = 0;
       continue;
     }
     // normalize the optional lane once: after this the lane is concrete numbers for
     // the rest of this particle's frame (forces and the integrate step write through).
     if (p.z === undefined) p.z = 0;
     if (p.vz === undefined) p.vz = 0;
+    // velocity-Verlet (#659): the position FULL-STEP runs first, from last step's velocity and
+    // stored acceleration — x(t+dt) = x(t) + v(t)·dt + ½·a(t)·dt² — so the force pass below
+    // evaluates a′ at x(t+dt). v0 keeps v(t) for the half-step average after the pass.
+    let v0x = 0;
+    let v0y = 0;
+    let v0z = 0;
+    if (verlet) {
+      const h = 0.5 * dt * dt;
+      p.x += p.vx * dt + (p.ax ?? 0) * h;
+      p.y += p.vy * dt + (p.ay ?? 0) * h;
+      p.z! += p.vz! * dt + (p.az ?? 0) * h;
+      v0x = p.vx;
+      v0y = p.vy;
+      v0z = p.vz!;
+      env.kinTouch = false;
+    }
     const pz = p.z;
 
     // wave current (§2.3): near a wave line, drift along its slope like debris.
@@ -447,6 +504,28 @@ export function step(input: StepInput): void {
       }
     }
 
+    // velocity-Verlet second half (#659): fold this step's impulse into the half-step average.
+    if (verlet) {
+      // the pass's net Δv is a′·dt — every force above evaluated at the updated position.
+      const dvx = p.vx - v0x;
+      const dvy = p.vy - v0y;
+      const dvz = p.vz! - v0z;
+      if (env.kinTouch) {
+        // a kinematic (velocity-REPLACING) force fired: a discontinuity, not an acceleration.
+        // The replaced velocity stands as-is; the stored acceleration resets so the next
+        // position step doesn't extrapolate across the break.
+        p.ax = p.ay = p.az = 0;
+      } else {
+        // v(t+dt) = v(t) + ½·(a(t) + a′)·dt — ½·a(t)·dt from the stored lane, ½·Δv for a′.
+        p.vx = v0x + 0.5 * ((p.ax ?? 0) * dt + dvx);
+        p.vy = v0y + 0.5 * ((p.ay ?? 0) * dt + dvy);
+        p.vz = v0z + 0.5 * ((p.az ?? 0) * dt + dvz);
+        p.ax = dvx / dt;
+        p.ay = dvy / dt;
+        p.az = dvz / dt;
+      }
+    }
+
     // global safety cap (§20.10): no token or composite may drive a free particle past
     // c (the unit system's "speed of light"). The natural primitives self-clamp; this
     // enforces it for *every* force. A non-finite velocity slips the `> c²` test — the
@@ -476,11 +555,14 @@ export function step(input: StepInput): void {
     // integrate, then damp (§2.2). The z lane integrates identically — inert at 0. Under the opt-in
     // fixed-timestep integrator (doc 04 §Step 3) the per-step damping scales with `dt` (`FRICTION^dt`)
     // so it is frame-rate independent; at `dt === 1` `Math.pow(FRICTION, 1) === FRICTION`, so the
-    // default path is byte-identical.
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.z! += p.vz! * dt;
-    const fr = env.integrator === 'fixed' ? Math.pow(FRICTION, dt) : FRICTION;
+    // default path is byte-identical. Velocity-Verlet already took its position full-step before
+    // the force pass (its decays are dt-scaled like fixed's).
+    if (!verlet) {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.z! += p.vz! * dt;
+    }
+    const fr = env.integrator === 'fixed' || verlet ? Math.pow(FRICTION, dt) : FRICTION;
     p.vx *= fr;
     p.vy *= fr;
     p.vz! *= fr;
@@ -512,7 +594,7 @@ export function step(input: StepInput): void {
       }
     }
 
-    p.heat *= env.integrator === 'fixed' ? Math.pow(HEAT_DECAY, dt) : HEAT_DECAY;
+    p.heat *= env.integrator === 'fixed' || verlet ? Math.pow(HEAT_DECAY, dt) : HEAT_DECAY;
 
     // mortal matter ages (the class-[S] sink): spawned particles carry a finite `age`
     // and despawn at ≤ 0, so a continuous source stays budgeted. Immortal base-field

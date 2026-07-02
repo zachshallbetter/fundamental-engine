@@ -17,6 +17,23 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   only — no runtime change. Part of the #588 docs pass (the createField unguarded-path guidance on
   the performance page, the TypeScript/core guides, and `docs/canonical/platform-architecture.md`).
 
+### Added
+
+- **`@fundamental-engine/core` + `@fundamental-engine/elements`:** **opt-in velocity-Verlet
+  integrator mode (#659).** `integrator: 'velocity-verlet'` (also
+  `<field-root integrator="velocity-verlet">`) runs the second-order scheme in its
+  stored-acceleration form: the position full-step uses the previous step's acceleration
+  (`x += v·dt + ½·a·dt²`), the force pass then evaluates `a′` at the updated position, and the
+  velocity takes the half-step average (`v += ½·(a + a′)·dt`). The engine's impulse-based,
+  velocity-dependent force model is folded in the standard way — a step's net Δv is read as
+  `a′·dt` — and kinematic velocity-REPLACING forces (`jet`/`wall`/`lens`/`gate`/`warp`) bypass
+  the average as discontinuities (the replaced velocity stands; the stored acceleration resets).
+  The `FRICTION`/`HEAT_DECAY` decays are dt-scaled like `'fixed'`. Caveat canon: this buys
+  positional accuracy, not conservation — energy/momentum remain non-conserved by design and the
+  per-step decay keeps the scheme non-symplectic; particle count stays the invariant. Purely
+  opt-in: the default `'legacy'` path is byte-identical and the cross-plane conformance golden
+  (generated at defaults) is unchanged. JS core only; Swift/Kotlin port parity is a follow-up.
+
 ### Fixed
 
 - **`@fundamental-engine/three`:** **`threeBackend`'s overlay `z` now offsets the projected field

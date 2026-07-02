@@ -65,3 +65,16 @@ test('renderMode passes through every recognized drawing mode', () => {
     assert.equal(renderModeFor(m), m, `render="${m}" passes through`);
   }
 });
+
+// Same pure-getter pattern for the integrator attribute (#659): both opt-in modes pass through;
+// anything else (incl. absent) is undefined, so createField falls back to the default 'legacy'.
+const integratorGet = Object.getOwnPropertyDescriptor(FieldField.prototype, 'integrator')!.get!;
+const integratorFor = (attr: string | null): string | undefined =>
+  integratorGet.call({ getAttribute: () => attr });
+
+test('integrator accepts both opt-in modes and rejects everything else (#659)', () => {
+  assert.equal(integratorFor('fixed'), 'fixed', 'integrator="fixed" passes through');
+  assert.equal(integratorFor('velocity-verlet'), 'velocity-verlet', 'integrator="velocity-verlet" passes through');
+  assert.equal(integratorFor(null), undefined, 'absent ⇒ undefined (legacy default)');
+  assert.equal(integratorFor('nonsense'), undefined, 'unknown value ⇒ undefined (legacy default)');
+});

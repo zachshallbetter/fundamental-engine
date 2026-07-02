@@ -77,6 +77,15 @@ test('integrator: the fixed-timestep integrator is accepted (doc 04 §Step 3, no
   }
 });
 
+test('integrator: the velocity-verlet integrator is accepted (#659, no throw)', () => {
+  const field = createField(fakeCanvas(), { host: fakeHost(), render: 'none', integrator: 'velocity-verlet' });
+  try {
+    assert.ok(field, 'field initialises with integrator: "velocity-verlet"');
+  } finally {
+    field.destroy();
+  }
+});
+
 test('integrator: defaults to legacy when omitted (the shipped semi-implicit Euler)', () => {
   const field = createField(fakeCanvas(), { host: fakeHost(), render: 'none' });
   try {
