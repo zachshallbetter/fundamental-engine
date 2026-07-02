@@ -187,6 +187,31 @@ The engagement spine (job 4) generalizes as anchor deformation: an anchor curve 
 toward engaged bodies. Whether that lives on the carrier or on the reveal side is an open
 question below.
 
+## Final homes — where the wallpaper lands (decided 2026-07-02)
+
+The seam is the **extraction mechanism**: "move the waves out of the engine" is not a package
+move (elements is web-only; both native planes render waves), it is the wave code ceasing to be
+engine and becoming *a carrier implementation registered through a public seam*, outside the
+integrator hot path. The sugar guarantee makes the move non-breaking whenever it lands:
+`waves` / `waveStyle` / `waveCenter` / `waveBaseline` remain permanently as thin sugar that
+registers the built-in waves carrier — code relocates, the option surface never breaks.
+
+```txt
+Waves (Currents)          → a carrier module behind the seam (steps 2-4); options stay as sugar
+Curl eddy (integrator)    → the curl carrier, same module family (step 2)
+Element waves default     → deleted — the element forwards the option (Step 0, #979)
+Swift pre-#538 defaults   → aligned to signals-first (Step 0, #979)
+Homepage inbox mock       → a real field reading in site code (#973)
+Painted site proofs       → derived from the live engine, in site code (#977)
+Render reference points   → not moved — mode parameters; home is FieldOptions, declared (#975)
+Ambient orbit/wander      → defaults zeroed; the dials remain declared formation knobs (#978)
+```
+
+Sequencing (decided): the pre-1.0 scope is honesty — Step 0 + the audit fixes above (#973-#979).
+The move itself (steps 2-4, the seam build) is the **first post-1.0 program item**: with defaults
+off, 1.0 imposes no wallpaper, the sugar guarantee makes the later relocation non-breaking, and a
+three-plane hot-path SPI is the wrong thing to rush against a release.
+
 ## Migration and cross-plane treatment
 
 ```txt
