@@ -84,6 +84,16 @@ const lift: Force = {
       <code>aria-hidden</code>. Reduced motion is honoured automatically, and the loop pauses
       when the tab is backgrounded.
     </div>
+    <div class="callout callout--warn">
+      <b>This is the unguarded perf path.</b> <code>&lt;field-root&gt;</code> self-throttles under
+      sustained frame overrun (adaptive quality tiers cap the effective DPR and drop the heatmap)
+      and skips draw work while hidden; raw <code>createField</code> does neither. For a
+      full-viewport canvas, cap the DPR (<code>dprCap: 1</code>) or contain the field
+      (<code>bounds</code> in <code>@fundamental-engine/vanilla</code> /
+      <code>containerHost(el)</code>), and call <code>setVisible(false)</code> when the canvas
+      leaves the screen — see
+      <a href="/docs/performance#createfield-unguarded">the performance guide</a>.
+    </div>
     <div class="callout">
       <b>Want a managed canvas?</b> <code>@fundamental-engine/vanilla</code> creates and tears down the
       canvas for you — as a <code>FieldField</code> class or the <code>mountField()</code>

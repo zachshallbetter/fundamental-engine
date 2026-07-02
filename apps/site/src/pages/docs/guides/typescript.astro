@@ -27,6 +27,17 @@ const field = mountField({ render: 'trails' });
 // or own the canvas entirely — this createField is browser-wired (host injected for you).
 // The lowest-level engine entry is @fundamental-engine/core's createField with an explicit host.
 const own = createField(document.querySelector('canvas'), { accent: '#2dd4bf' });`;
+
+const guard = `import { createField, FieldField } from '@fundamental-engine/vanilla';
+
+// full-viewport canvas → cap the DPR (the dominant fill-rate lever; default ceiling 2)
+const field = createField(canvas, { render: 'dots', dprCap: 1 });
+
+// component-scale → contain the field, so the canvas only covers what needs it
+const card = new FieldField({ bounds: document.querySelector('.card') });
+
+// hidden or scrolled away → skip all draw work (signals stay live)
+field.setVisible(false);`;
 ---
 
 <DocsLayout
@@ -87,6 +98,27 @@ const own = createField(document.querySelector('canvas'), { accent: '#2dd4bf' })
       <b>One package, everything vanilla.</b> The catalog data (<code>FORCES</code>,
       <code>FORMATIONS</code>, <code>CONDITIONS</code>, <code>PALETTE</code>) and the engine
       contracts are re-exported, so a force picker or legend needs no second install.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>These are the unguarded doors</h2>
+    <p>
+      Every entry in this package — <code>FieldField</code>, <code>mountField</code>,
+      <code>createField</code> — starts the engine at full cost and leaves it there.
+      <code>&lt;field-root&gt;</code> self-throttles: under sustained frame overrun its runtime
+      applies an adaptive quality tier automatically (capping the effective DPR, dropping the
+      heatmap), and it skips all draw work while the element is hidden. The vanilla doors wire
+      <b>none</b> of that — a full-viewport canvas here runs unthrottled, and a heavy one starves
+      the host page's own transitions and timers.
+    </p>
+    <CodeTabs variants={[{ label: 'Guard it yourself', lang: 'ts', code: guard }]} />
+    <div class="callout callout--warn">
+      <b>Shipping a full-viewport field?</b> Cap <code>dprCap</code>, contain it with
+      <code>bounds</code>, or prefer <code>&lt;field-root&gt;</code> — and for the automatic
+      throttle on this path (the same <code>QualityGovernor</code> the element uses, wired by
+      hand), see <a href="/docs/performance#createfield-unguarded">createField is the unguarded
+      path</a> in the performance guide.
     </div>
   </section>
 </DocsLayout>

@@ -10,8 +10,12 @@
  *
  * Shipped consumer: the `<field-root>` platform runtime throttles its own tick cadence (the
  * measurement/feedback DOM work) to every 2nd frame at tier 2 and every 4th at tier 3, and
- * emits `field:quality-tier` so embedders can wire engine-side responses (render simplification,
- * particle caps) — those are NOT automatic yet.
+ * forwards each tier change to the engine via `handle.setQualityTier` (#413) — the engine then
+ * caps the effective backing-store DPR and drops the heatmap at tier 2+ on its own levers,
+ * reversibly. The `field:quality-tier` event still fires so embedders can layer further
+ * responses (render simplification, particle caps) on top — those remain manual. Raw
+ * `createField` wires NO governor: a consumer on that path constructs one and forwards
+ * `feed()` results to `handle.setQualityTier` itself.
  *
  * Feed it rAF-to-rAF spacing (or better, measured work time). Callers should skip discontinuity
  * frames (tab switches, system sleep) and reset() on visibilitychange — the elements runtime does.
