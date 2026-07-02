@@ -173,6 +173,17 @@ Ported and tested — the full engine:
 - **Render modes** (§20.6): dots, trails, links, metaballs (marching squares), voronoi
   (nearest-site walls), streamlines, none (signals-only) — plus waves, the bound
   shimmer, sparks (§23), and the heatmap glow (H1) on the CoreGraphics backend.
+  Matter presentation matches the JS treatment (#416/#417): every free particle is a
+  soft ADDITIVE glow — a wide faint bloom under a crisp core (`particleSprite`, the
+  exact field.ts size/alpha/falloff math) — and captured matter (`p.cap`, §6.9) draws
+  as the dim orbital cloud (small fixed accent dots), never linked/streaked/splatted as
+  free matter. Both backends share the sprite + tint math (`RenderModes.swift`), pinned
+  by `ParticleSpriteTests` (exact numbers), `SoftGlowRenderTests` (deterministic
+  pixels through the real CG surface), and the `VisualSnapshot` glow signature.
+  DIVERGENCES (host-API/perf-forced): CG batches dots into per-color path fills, so
+  same-bucket overlaps fill once instead of summing per particle; Metal's fragment
+  shader soft-steps every disc edge where canvas arcs are hard-edged; CG `trails`
+  streaks by velocity instead of the canvas faded-clear accumulation.
 - **Recipes** (authoring §5): schema + validation + the compiler, with the locked
   64-recipe catalog embedded from the canonical `recipes.json` (4 tiers × 16, never
   hand-retyped) — every recipe validates against the standard registry in the tests.

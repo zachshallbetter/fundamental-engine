@@ -100,49 +100,50 @@ public final class FieldSurfaceLayer: CALayer {
         ctx.setLineWidth(width)
     }
 
-    private func particleColor(_ p: Particle, _ frame: RenderFrame) -> RGB {
-        let vol = frame.volume
-        let cx = vol.width / 2
-        let cy = vol.height / 2
-        let dx = p.position.x - cx
-        let dy = p.position.y - cy
-        let rs = clamp((dx * dx + dy * dy) / (cx * cx + cy * cy), 0, 1)
-        let base = particleRGB(rs: rs, heat: p.heat, accent: frame.accent)
-        // carried pigment (§): a stained particle blends 75% toward its pigment over the field
-        // tint — NOT a full replacement (matches the JS source, field.ts), so stained matter stays
-        // legible against the accent rather than reading over-saturated.
-        guard let stain = p.color.map(hexToRgb) else { return base }
-        return base + (stain - base) * 0.75
+    private func particleColor(_ p: Particle, _ frame: RenderFrame, rs: Float) -> RGB {
+        particleTint(rs: rs, heat: p.heat, accent: frame.accent, stain: p.color.map(hexToRgb))
+    }
+
+    /// The `rs` of a projected particle — normalized dist² from the swarm's thermal
+    /// anchor (W/2, 0.4·H), shared with the sprite math (core `particleRS`).
+    private func particleRS(_ x: Float, _ y: Float, _ frame: RenderFrame) -> Float {
+        FundamentalCore.particleRS(x: x, y: y, width: frame.volume.width, height: frame.volume.height)
     }
 
     // MARK: matter modes (§20.6)
 
+    /// The soft-glow dots treatment (field.ts render(), #417): every FREE particle is a
+    /// wide faint bloom under a crisp core (core `particleSprite`), composited
+    /// ADDITIVELY (.plusLighter = canvas 'lighter') so overlapping glows sum instead of
+    /// occlude; CAPTURED matter (p.cap, §6.9) draws as the dim orbital cloud — small
+    /// fixed accent dots, visibly held by the sink, distinct from the free swarm.
+    ///
     /// Batched by quantized color: hundreds of per-dot setFillColor + fillEllipse calls
     /// collapse into one path-fill per color bucket (~20–40 buckets a frame). Each CG
     /// state change + fill flushes the rasterizer; batching is the difference between
-    /// a CPU renderer that keeps 60fps and one that doesn't.
+    /// a CPU renderer that keeps 60fps and one that doesn't. DIVERGENCE (perf-forced):
+    /// same-bucket overlaps fill once per path instead of summing per particle (JS adds
+    /// per fill call); a particle's own bloom + core always land in different alpha
+    /// buckets, so the glow itself composes additively.
     private func drawDots(_ frame: RenderFrame, in ctx: CGContext) {
+        ctx.setBlendMode(.plusLighter) // the JS matter pass runs under 'lighter'
+        defer { ctx.setBlendMode(.normal) }
         var buckets: [UInt32: CGMutablePath] = [:]
         var colors: [UInt32: (RGB, Float)] = [:]
         // .dot keeps the fast addEllipse; a custom shape stamps its unit polygon scaled by the radius.
         let shape = frame.particleShape.vertices
         let glow = frame.particleGlow   // scales how much heat inflates + brightens each particle
-        for p in frame.particles {
-            let (x, y) = frame.projection.project(p.position)
-            let depth = frame.projection.depthHint(p.position)
-            let radius = CGFloat(p.size * (1 + p.heat * 0.8 * glow) * (1 - depth * 0.5))
-            let rgb = particleColor(p, frame)
-            let alpha = clamp((0.55 + p.heat * 0.4 * glow) * (1 - depth * 0.6), 0, 1)
+        func push(_ x: Float, _ y: Float, _ radius: CGFloat, _ rgb: RGB, _ alpha: Float, dot: Bool = false) {
             // quantize to 16 levels/channel + 16 alpha steps → a stable, small bucket set
             let k = ((UInt32(rgb.x) >> 4) << 12) | ((UInt32(rgb.y) >> 4) << 8)
-                  | ((UInt32(rgb.z) >> 4) << 4) | UInt32(alpha * 15)
+                  | ((UInt32(rgb.z) >> 4) << 4) | UInt32(clamp(alpha, 0, 1) * 15)
             let path = buckets[k] ?? {
                 let p = CGMutablePath()
                 buckets[k] = p
                 colors[k] = (rgb, alpha)
                 return p
             }()
-            if let verts = shape, verts.count >= 3 {
+            if !dot, let verts = shape, verts.count >= 3 {
                 path.move(to: CGPoint(x: CGFloat(x) + CGFloat(verts[0].x) * radius,
                                       y: CGFloat(y) + CGFloat(verts[0].y) * radius))
                 for j in 1..<verts.count {
@@ -155,6 +156,21 @@ public final class FieldSurfaceLayer: CALayer {
                                            width: radius * 2, height: radius * 2))
             }
         }
+        for p in frame.particles {
+            let (x, y) = frame.projection.project(p.position)
+            if p.cap != nil {
+                // captured matter is held in orbit by the sink — the dim orbital cloud,
+                // always a plain dot (the cloud reads as accretion, not as shaped matter).
+                push(x, y, CGFloat(CapturedCloud.radius), frame.accent, CapturedCloud.alpha, dot: true)
+                continue
+            }
+            let rs = particleRS(x, y, frame)
+            let sprite = particleSprite(size: p.size, heat: p.heat, rs: rs,
+                                        depthHint: frame.projection.depthHint(p.position), glow: glow)
+            let rgb = particleColor(p, frame, rs: rs)
+            push(x, y, CGFloat(sprite.bloomSize), rgb, sprite.bloomAlpha) // the wide, faint aura
+            push(x, y, CGFloat(sprite.size), rgb, sprite.alpha)           // the crisp bright core
+        }
         for (k, path) in buckets {
             let (rgb, alpha) = colors[k]!
             fill(ctx, rgb, alpha)
@@ -163,14 +179,23 @@ public final class FieldSurfaceLayer: CALayer {
         }
     }
 
-    /// Light-painting: each particle drawn as a velocity-stretched streak.
+    /// Light-painting: each particle drawn as a velocity-stretched streak. Captured
+    /// matter never streaks — it is held, so it draws as the same dim orbital cloud the
+    /// dots treatment uses (JS trails reuses the dot pass; the streak is this backend's
+    /// stand-in for the canvas faded-clear accumulation CG layers don't have).
     private func drawTrails(_ frame: RenderFrame, in ctx: CGContext) {
         ctx.setLineCap(.round)
         for p in frame.particles {
             let (x, y) = frame.projection.project(p.position)
+            if p.cap != nil {
+                let r = CGFloat(CapturedCloud.radius)
+                fill(ctx, frame.accent, CapturedCloud.alpha)
+                ctx.fillEllipse(in: CGRect(x: CGFloat(x) - r, y: CGFloat(y) - r, width: r * 2, height: r * 2))
+                continue
+            }
             let tail = p.position - p.velocity * 6
             let (tx, ty) = frame.projection.project(tail)
-            stroke(ctx, particleColor(p, frame), 0.4 + p.heat * 0.5, width: CGFloat(p.size))
+            stroke(ctx, particleColor(p, frame, rs: particleRS(x, y, frame)), 0.4 + p.heat * 0.5, width: CGFloat(p.size))
             ctx.move(to: CGPoint(x: CGFloat(tx), y: CGFloat(ty)))
             ctx.addLine(to: CGPoint(x: CGFloat(x), y: CGFloat(y)))
             ctx.strokePath()
@@ -188,7 +213,7 @@ public final class FieldSurfaceLayer: CALayer {
         }
         var buckets: [Int64: [Int]] = [:]
         buckets.reserveCapacity(ps.count)
-        for (i, p) in ps.enumerated() {
+        for (i, p) in ps.enumerated() where p.cap == nil { // captured matter is held, not free — never linked (JS parity)
             buckets[key(Int32(p.position.x / r), Int32(p.position.y / r)), default: []].append(i)
         }
         // Collect segments grouped by quantized alpha, then stroke each segment as its
@@ -198,7 +223,7 @@ public final class FieldSurfaceLayer: CALayer {
         // batched version was worse). A 2-point path cannot self-intersect — per-segment
         // strokes inside per-alpha groups dodge both costs.
         var groups: [[(CGFloat, CGFloat, CGFloat, CGFloat)]] = Array(repeating: [], count: 12)
-        for (i, p) in ps.enumerated() {
+        for (i, p) in ps.enumerated() where p.cap == nil {
             let cx = Int32(p.position.x / r)
             let cy = Int32(p.position.y / r)
             for dx: Int32 in -1...1 {
@@ -231,7 +256,7 @@ public final class FieldSurfaceLayer: CALayer {
         let cols = Int(frame.volume.width / step) + 2
         let rows = Int(frame.volume.height / step) + 2
         var grid = [Float](repeating: 0, count: cols * rows)
-        for p in frame.particles {
+        for p in frame.particles where p.cap == nil { // captured matter is out of the blob skin (JS parity)
             splatDensity(grid: &grid, cols: cols, rows: rows, step: step,
                          px: p.position.x, py: p.position.y, radius: 34) // JS RAD (fixed, not size-scaled)
         }
@@ -549,7 +574,7 @@ public final class FieldSurfaceLayer: CALayer {
         let cols = Int(frame.volume.width / step) + 2
         let rows = Int(frame.volume.height / step) + 2
         var grid = [Float](repeating: 0, count: cols * rows)
-        for q in frame.particles {
+        for q in frame.particles where q.cap == nil { // held matter doesn't read as free temperature/energy (JS parity)
             let w = weight(q)
             if w > 1e-5 {
                 splatDensity(grid: &grid, cols: cols, rows: rows, step: step,

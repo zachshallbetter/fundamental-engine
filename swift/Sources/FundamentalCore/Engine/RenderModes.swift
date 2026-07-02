@@ -14,6 +14,88 @@ public func linkAlpha(d: Float, r: Float, maxAlpha: Float = 0.12) -> Float {
     return (1 - d / r) * maxAlpha
 }
 
+// ── Soft-glow matter treatment (§20.8, field.ts render() — #416/#417) ────────────
+//
+// The JS dots treatment draws every FREE particle as a soft additive glow: a wide,
+// faint bloom disc under a crisp bright core (composited with canvas 'lighter'), sized
+// and faded by distance from the swarm's thermal anchor, inflated and brightened by
+// heat. CAPTURED matter (p.cap — held in orbit by a sink, §6.9) renders instead as the
+// dim orbital cloud: small fixed accent dots, visibly distinct from the free swarm.
+// This is the pure math behind both, shared by the CoreGraphics and Metal backends so
+// the two Swift draw paths cannot drift apart — mirrored from field.ts render().
+
+/// One free particle's draw attributes for the dots treatment.
+public struct ParticleSprite: Equatable {
+    /// Core disc radius: `(size · (1 − 0.4·rs) + heat · 2 · glow) · zk`.
+    public let size: Float
+    /// Core alpha: `clamp((0.5 − 0.3·rs + heat · 0.5 · glow) · zk, 0, 1)`.
+    public let alpha: Float
+    /// Bloom disc radius — a fixed pad past the core (`size + 1.2`), NOT heat-scaled:
+    /// heat reads only through the brighter, slightly larger core, never a growing
+    /// aura (the JS #434 follow-up — a heat-scaled halo bloomed clusters into rings).
+    public let bloomSize: Float
+    /// Bloom alpha: `0.12 · alpha` — just enough to soften the point into a star.
+    public let bloomAlpha: Float
+
+    public init(size: Float, alpha: Float, bloomSize: Float, bloomAlpha: Float) {
+        self.size = size
+        self.alpha = alpha
+        self.bloomSize = bloomSize
+        self.bloomAlpha = bloomAlpha
+    }
+}
+
+/// Captured-matter rendering (the accretion's orbital cloud): dim, small, accent-
+/// colored — the body gathers and holds a real cloud, then the supernova flings it
+/// back out. Constant regardless of heat/depth, matching field.ts.
+public enum CapturedCloud {
+    /// Orbital-cloud dot radius (px).
+    public static let radius: Float = 1.3
+    /// Orbital-cloud dot alpha.
+    public static let alpha: Float = 0.55
+}
+
+/// Normalized distance² (`rs` ∈ [0,1]) from the swarm's thermal anchor — the input the
+/// sprite + `particleRGB` cool→warm ramp read. The anchor sits at (W/2, 0.4·H), a touch
+/// above centre; distance normalizes by the farthest-corner reach, exactly as field.ts:
+/// `maxD = hypot(max(cx, W−cx), max(cy, H−cy))`.
+public func particleRS(x: Float, y: Float, width W: Float, height H: Float) -> Float {
+    let cx = W / 2
+    let cy = H * 0.4
+    let mx = max(cx, W - cx)
+    let my = max(cy, H - cy)
+    let maxD = max((mx * mx + my * my).squareRoot(), 1)
+    let dx = x - cx
+    let dy = y - cy
+    let d = min(1, (dx * dx + dy * dy).squareRoot() / maxD)
+    return d * d
+}
+
+/// The soft-glow sprite of one free particle. `depthHint` is the host projection's
+/// depth recession ∈ [0,1] (0 on flat hosts) — matter deeper in the volume draws
+/// smaller and fainter by the JS factor 0.55. `glow` is the Swift-plane heat dial
+/// (`FieldOptions.particleGlow`, default 1): it scales the HEAT term of size + alpha,
+/// so `glow == 1` is byte-for-byte the JS math.
+public func particleSprite(size: Float, heat: Float, rs: Float,
+                           depthHint: Float = 0, glow: Float = 1) -> ParticleSprite {
+    let zk = 1 - clamp(depthHint, 0, 1) * 0.55
+    let s = (size * (1 - 0.4 * rs) + heat * 2 * glow) * zk
+    let a = clamp((0.5 - 0.3 * rs + heat * 0.5 * glow) * zk, 0, 1)
+    return ParticleSprite(size: s, alpha: a, bloomSize: s + 1.2, bloomAlpha: 0.12 * a)
+}
+
+/// Free-particle draw color: the cool→warm ramp by `rs`, blended toward the accent by
+/// heat (`particleRGB`), then — for stained matter (§20.8 pigment) — 75% toward the
+/// carried pigment over the field tint, NOT a full replacement, so stained matter stays
+/// legible rather than reading over-saturated. Matches field.ts; shared by both
+/// backends (the Metal path previously substituted the stain for the accent, which
+/// over-saturated pigmented particles relative to the JS and CG treatments).
+public func particleTint(rs: Float, heat: Float, accent: RGB, stain: RGB?) -> RGB {
+    let base = particleRGB(rs: rs, heat: heat, accent: accent)
+    guard let stain else { return base }
+    return base + (stain - base) * 0.75
+}
+
 // ── Metaballs — marching squares over a particle density field ──────────────────
 
 /// A line segment in cell-local coordinates ([0,1]², origin top-left, +y down).
