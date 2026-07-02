@@ -42,6 +42,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/elements`:** **per-cell particle budgets + isolation on `<field-cell>`
+  (#685, shadow-dom.md §31.19).** Two new attributes cap a standalone local cell's resource use so a
+  docs page full of demos stays cheap: `max-particles` is a hard ceiling on the pool size (it clamps
+  *both* the auto-size and an explicit `count`, so a cell can never exceed its declared budget), and
+  `fps` throttles the animation loop to a target framerate (0/absent = the display's native rAF
+  cadence). Each cell already owns its own pool; both caps are enforced **per instance**, so a
+  saturating cell cannot share, starve, or resize a neighbour. Additive and backward-compatible —
+  cells without the new attributes behave exactly as before.
+
 - **`@fundamental-engine/core`:** **opt-in charge-gated `fieldflow` (#711).** A new body flag
   `data-charge-gated` restricts the `fieldflow` force to *charged* matter (`charge ≠ 0`), modelling
   magnetized plasma tied to the field line so it composes with `charge`; neutral matter drifts free.

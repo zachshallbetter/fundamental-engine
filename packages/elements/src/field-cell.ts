@@ -24,14 +24,23 @@ const clamp = (v: number, lo: number, hi: number): number =>
  * - `IntersectionObserver` gates the rAF loop — paused when off-screen.
  * - Honours `prefers-reduced-motion`: renders one static frame, no animation.
  *
+ * **Budgets & isolation (shadow-dom.md §31.19).** Each cell owns its *own* pool, so
+ * many cells on a docs page never share or starve one budget. Hard caps keep that
+ * budget cheap: `max-particles` clamps the pool ceiling (over both the auto-size and an
+ * explicit `count`), and `fps` throttles the animation loop to a target framerate. Both
+ * caps are enforced per instance — a saturating cell cannot spill particles or frame
+ * cost into a neighbour.
+ *
  * @summary A standalone, in-frame demo field that renders one force with its own
  * particle pool, in-view-gated. Registered as `<field-cell>`.
  * @attr {string} force - The single force token rendered: `attract` | `repel` | `swirl` | `gravity` | `stream` | `buoyancy` | `tether`.
  * @attr {string} color - Accent color (hex) for the cell's particles.
  * @attr {number} count - Number of particles in the cell's pool.
+ * @attr {number} max-particles - Hard ceiling on the pool size (§31.19); caps both the auto-size and an explicit `count`.
+ * @attr {number} fps - Target frames per second for the animation loop (§31.19); throttles rAF so many cells stay cheap.
  */
 export class FieldCell extends HTMLElementBase {
-  static readonly observedAttributes = ['force', 'color', 'count'];
+  static readonly observedAttributes = ['force', 'color', 'count', 'max-particles', 'fps'];
 
   private readonly canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D | null = null;
@@ -49,9 +58,12 @@ export class FieldCell extends HTMLElementBase {
   private cursorX: number | null = null;
   private cursorY: number | null = null;
 
+  /** rAF timestamp of the last rendered frame — drives the `fps` throttle (§31.19). */
+  private lastStepTs = 0;
+
   private readonly onPointerMove: (e: PointerEvent) => void;
   private readonly onPointerLeave: () => void;
-  private readonly tick: () => void;
+  private readonly tick: (ts?: number) => void;
 
   constructor() {
     super();
@@ -72,8 +84,11 @@ export class FieldCell extends HTMLElementBase {
       this.cursorX = null;
       this.cursorY = null;
     };
-    this.tick = (): void => {
-      this.step();
+    this.tick = (ts?: number): void => {
+      const now = typeof ts === 'number' ? ts : this.rafNow();
+      // fps budget (§31.19): render only when this frame is within budget; 0 (default)
+      // renders every frame at the display's native rAF cadence.
+      if (this.shouldRenderFrame(now)) this.step();
       this.raf = requestAnimationFrame(this.tick);
     };
   }
@@ -94,8 +109,33 @@ export class FieldCell extends HTMLElementBase {
     return Number.isFinite(v) && v > 0 ? Math.round(v) : 0;
   }
 
-  attributeChangedCallback(): void {
-    // force/color read live each frame; count change rebuilds on next resize.
+  /**
+   * Hard ceiling on the pool size (§31.19 scoped local-cell budget); `0` (default) means
+   * no cap. Clamps *both* the auto-size and an explicit `count`, so a cell can never
+   * exceed its declared budget no matter how large its frame grows.
+   */
+  get maxParticles(): number {
+    const v = Number(this.getAttribute('max-particles'));
+    return Number.isFinite(v) && v > 0 ? Math.round(v) : 0;
+  }
+
+  /**
+   * Target frames per second for the animation loop (§31.19); `0` (default) means run at
+   * the display's native rAF cadence. A positive value throttles the loop so a page full
+   * of demo cells stays cheap — each cell keeps its own frame budget.
+   */
+  get fps(): number {
+    const v = Number(this.getAttribute('fps'));
+    return Number.isFinite(v) && v > 0 ? v : 0;
+  }
+
+  attributeChangedCallback(name: string): void {
+    // force/color are read live each frame; count / max-particles change the pool size, so
+    // rebuild it now (not just on the next resize) — the declared budget takes effect at once.
+    if (this.ctx && (name === 'count' || name === 'max-particles')) {
+      this.buildPool();
+      if (!this.raf) this.step();
+    }
     if (this.isPrefersReducedMotion() && this.ctx) this.step();
   }
 
@@ -137,6 +177,31 @@ export class FieldCell extends HTMLElementBase {
     );
   }
 
+  /** A monotonic timestamp for the fps throttle, in ms (rAF-timestamp compatible). */
+  private rafNow(): number {
+    return typeof performance !== 'undefined' && typeof performance.now === 'function'
+      ? performance.now()
+      : Date.now();
+  }
+
+  /**
+   * The per-cell frame-budget gate (§31.19). With no `fps` (0), every frame renders. With a
+   * positive `fps`, a frame renders only once its `1000/fps` ms interval has elapsed since the
+   * last render; renders advance `lastStepTs`. Each cell keeps its own budget — one cell's rate
+   * never affects another's.
+   */
+  private shouldRenderFrame(now: number): boolean {
+    const fps = this.fps;
+    if (fps <= 0) return true;
+    // First frame of a run (lastStepTs === 0) always renders and starts the clock, so a
+    // resumed cell isn't stalled up to one interval; thereafter, throttle to 1000/fps ms.
+    if (this.lastStepTs === 0 || now - this.lastStepTs >= 1000 / fps) {
+      this.lastStepTs = now;
+      return true;
+    }
+    return false;
+  }
+
   /** Fit the canvas to the element box (DPR-aware) and rebuild the pool. */
   private fit(): void {
     if (!this.ctx) return;
@@ -157,10 +222,13 @@ export class FieldCell extends HTMLElementBase {
     if (!this.raf) this.step();
   }
 
-  /** Build the particle pool sized to the frame area. */
+  /** Build the particle pool sized to the frame area, capped by the cell's budget (§31.19). */
   private buildPool(): void {
     const area = this.boxW * this.boxH;
-    const n = this.count > 0 ? this.count : clamp(Math.round(area / 9000), 16, 90);
+    const requested = this.count > 0 ? this.count : clamp(Math.round(area / 9000), 16, 90);
+    // Hard cap: max-particles clamps both the auto-size and an explicit count (per-cell budget).
+    const cap = this.maxParticles;
+    const n = cap > 0 ? Math.min(requested, cap) : requested;
     const pool: CellParticle[] = [];
     for (let i = 0; i < n; i++) {
       pool.push({
@@ -179,6 +247,8 @@ export class FieldCell extends HTMLElementBase {
       this.step(); // one static frame, no loop
       return;
     }
+    // Fresh frame budget on resume, so re-entering view isn't stalled by the fps throttle.
+    this.lastStepTs = 0;
     this.raf = requestAnimationFrame(this.tick);
   }
 
