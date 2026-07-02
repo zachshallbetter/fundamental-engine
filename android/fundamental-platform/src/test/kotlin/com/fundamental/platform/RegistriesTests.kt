@@ -264,4 +264,27 @@ class RegistriesTests {
         assertFalse(reg.has(body), "the unresolvable body was dropped from the registry")
         assertEquals(0, reg.count)
     }
+
+    @Test
+    fun measurementRegistryReReadsScrolledGeometryEveryMeasure() {
+        // Scroll body-centre tracking (#508/#509): measure() re-reads geometry from the host on
+        // EVERY call — no internal cache or throttle — so a scrolled body's centre is fresh each
+        // read-phase and never needs the JS core's between-measure scroll-delta compensation. If
+        // a measure cadence is ever introduced, this fails and the JS `dScroll` compensation
+        // (field.ts) must be ported alongside it.
+        val host = ScrollingTestHost(FieldVolume(375f, 812f))
+        val reg = MeasurementRegistry()
+        val docY = 600f
+        val body = Body(tokens = listOf("attract"))
+        host.docBoxes[body] = Box(center = Vec3(187f, docY, 0f), halfExtents = Vec3(50f, 25f, 0f))
+        reg.register(body)
+
+        for (i in 1..12) {
+            host.scroll = i * 8f
+            val out = reg.measure(now = i / 60.0, volume = host.volume, host = host)
+            assertEquals(1, out.size)
+            assertEquals(docY - host.scroll, out[0].box.center.y, "read $i: the measurement reflects the live scroll")
+            assertEquals(docY - host.scroll, body.box.center.y, "read $i: the body's cached box is refreshed")
+        }
+    }
 }

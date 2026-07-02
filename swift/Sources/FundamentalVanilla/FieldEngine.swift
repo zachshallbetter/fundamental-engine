@@ -431,6 +431,16 @@ final class FieldEngine: FieldHandle {
 
         // refresh body geometry + visibility from the host (the read phase), and resolve
         // warp pairings (§22.3) into live relocate targets.
+        //
+        // Scroll body-centre tracking (JS #508, native audit #509): geometry is re-read from the
+        // host EVERY frame, so a body's force-centre tracks a scroll/pan with zero staleness by
+        // construction. The JS core measures only every 6th frame (getBoundingClientRect can force
+        // synchronous layout — a DOM-only hazard) and therefore translates the cached centres by
+        // the per-frame scroll delta between measures (`b.cy -= dScroll`, field.ts); native
+        // worldBox reads don't force layout, so the per-frame read IS the fix here and a delta
+        // shift would double-count the scroll already present in the fresh measure. If a measure
+        // cadence/throttle is ever introduced, port the JS compensation with its contained guard
+        // (scroll-invariant mounts must not be shifted). Pinned by ScrollTrackingTests.
         for b in bodies {
             if let view = b.view, let box = host.worldBox(of: view) {
                 b.box = box
