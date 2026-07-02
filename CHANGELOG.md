@@ -129,15 +129,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 - **`@fundamental-engine/dom`:** **reduced-motion platform lint (`lintReducedMotion`, RC-8 / #325).** A
   new dev-only lint rule (`motion-without-reduced-motion`) flags the accessibility sibling of the
-  silent-contract gap: a `[data-body]` that expresses motion — a CSS `animation`, a
-  `transform`/`translate`/`rotate`/`scale`, a `transition` on a movement property, or a feedback var
-  (`var(--d…)`/`var(--field-…)`/`var(--load…)`) driving a motion property — with **no**
+  silent-contract gap: a `[data-body]` that expresses **independent** motion — a CSS `animation`, or a
+  static (non-feedback-driven) `transform`/`translate`/`rotate`/`scale` — with **no**
   `@media (prefers-reduced-motion: reduce)` rule that matches it. The invariant it guards is *reduced
-  motion removes motion, not meaning*. Like the other stylesheet-walking lints it is heuristic and
+  motion removes motion, not meaning*. **Feedback-var-driven motion is deliberately exempt:** this engine
+  gates motion at the engine level (under `prefers-reduced-motion` the field freezes, dt=0, so
+  `--d`/`--field-*`/`--load` stop updating and bodies driven by them stop moving) — those are already
+  reduced-motion-safe and are not flagged. Like the other stylesheet-walking lints it is heuristic and
   browser-coupled: it no-ops where stylesheets are unreachable (SSR / tests / cross-origin), so it can
-  only under-report, never false-positive; opacity/colour changes are deliberately not treated as
-  motion. Runs automatically inside `lintPlatform`. (This is the lint half of RC-8; the real
-  assistive-tech pass remains a separate manual step.)
+  only under-report, never false-positive; opacity/colour changes are not treated as motion. Runs
+  automatically inside `lintPlatform`. (This is the lint half of RC-8; the real assistive-tech pass
+  remains a separate manual step.)
 
 - **`@fundamental-engine/core`:** **opt-in charge-gated `fieldflow` (#711).** A new body flag
   `data-charge-gated` restricts the `fieldflow` force to *charged* matter (`charge ≠ 0`), modelling

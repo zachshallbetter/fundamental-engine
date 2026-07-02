@@ -365,36 +365,39 @@ export function lintCompositingPerf(root: ParentNode): PlatformLintWarning[] {
 }
 
 /**
- * CSS shorthands/longhands that make a body *move* — the property families a body uses to express
- * motion. A body driven only through, say, `opacity` or `color` is not motion (reduced-motion is about
- * movement, not any change), so those are deliberately absent.
+ * Whether a declaration block expresses **independent** motion — movement the engine cannot gate under
+ * reduced motion, so the author must supply a `prefers-reduced-motion` branch. Two families count:
+ *
+ *   1. a CSS `animation` (keyframes run on the compositor timeline, unaffected by the field), and
+ *   2. a `transform`/`translate`/`rotate`/`scale`, or a `transition` on one of those (or `all`), whose
+ *      value is a **static author value** — NOT derived from a field feedback var.
+ *
+ * The critical exemption (architectural): this engine handles reduced motion at the ENGINE level — under
+ * `prefers-reduced-motion` the field freezes (dt=0), so the feedback channels (`--d`, `--field-*`,
+ * `--load`) stop updating and any body whose motion is DRIVEN by reading one of them stops moving. Such a
+ * body is already reduced-motion-safe and must NOT be flagged. So a motion property whose value reads a
+ * feedback var is treated as engine-gated (not independent). `opacity`/`color` are not movement and never
+ * count. Case-folded; operates on `cssText`/inline style text (no computed styles) to match the rest of lint.
  */
-const MOTION_PROPERTIES = [
-  'transform',
-  'translate',
-  'rotate',
-  'scale',
-  'animation',
-  'transition', // a `transition` that animates a motion property; narrowed below
-] as const;
-
-/** A rule "expresses motion" if it declares an animation, or transitions/sets a movement property. */
-function ruleExpressesMotion(cssText: string): boolean {
+function expressesIndependentMotion(cssText: string): boolean {
   const css = cssText.toLowerCase();
-  // an animation (name + keyframes) always moves unless keyframes are static — treat as motion.
+  // 1. a CSS animation (name + @keyframes) runs independent of the field → always independent motion.
   if (/\banimation(-name)?\s*:/.test(css) && !/\banimation(-name)?\s*:\s*none\b/.test(css)) return true;
-  // a transform / translate / rotate / scale set to anything but none/identity moves the body.
-  if (/\b(transform|translate|rotate|scale)\s*:/.test(css) && !/\btransform\s*:\s*none\b/.test(css)) return true;
-  // a transition that names a movement property (or `all`) animates motion when the value changes.
-  if (/\btransition[^;{}]*:/.test(css) && /(transform|translate|rotate|scale|\ball\b)/.test(css)) return true;
+  // 2. a transform-family set / transitioned — but ONLY if its value is NOT a feedback var (else the
+  //    engine gates it under reduced motion). We check each transform-family declaration individually so a
+  //    feedback-driven transform in the same block doesn't get mis-read as static.
+  for (const m of css.matchAll(/\b(transform|translate|rotate|scale)\s*:\s*([^;}]*)/g)) {
+    const value = m[2] ?? '';
+    if (/\bnone\b/.test(value)) continue; // transform:none is identity → no motion
+    if (FEEDBACK_VAR_READS.some((v) => value.includes(v))) continue; // feedback-driven → engine-gated
+    return true; // a static author transform → independent motion
+  }
+  // a `transition` that animates a movement property (or `all`) with a static author value is independent.
+  // (A transition merely eases changes; if the changing property is itself feedback-driven, the engine
+  //  freeze stills it — so a transition is only independent when paired with a static transform above,
+  //  which the loop already caught. A bare `transition: transform …` with no static transform in the same
+  //  block does nothing on its own, so it is not counted here.)
   return false;
-}
-
-/** A body reads a feedback channel into a motion property → the field drives its movement. */
-function readsFeedbackIntoMotion(cssText: string): boolean {
-  if (!FEEDBACK_VAR_READS.some((v) => cssText.includes(v))) return false;
-  const css = cssText.toLowerCase();
-  return /\b(transform|translate|rotate|scale|top|left|right|bottom|margin|inset)\b/.test(css);
 }
 
 /** Strip pseudo-classes / pseudo-elements from a selector so it can be matched against a body. */
@@ -403,13 +406,18 @@ function cleanSelector(part: string): string {
 }
 
 /**
- * The accessibility sibling of the silent-contract lint (`lintFeedbackWritesUnread`): a body that
- * **moves** — via a CSS animation, a transform/translate/rotate/scale, a transition on a movement
- * property, or by reading a feedback channel (`var(--d…)`, `var(--field-…)`, `var(--load…)`) into a
- * motion property — but has **no** `@media (prefers-reduced-motion: reduce)` companion rule that
- * matches it. That is the a11y invariant this gate enforces: *reduced motion removes motion, not
- * meaning* — a body that animates must offer a still form that keeps its meaning. Without the
- * reduced-motion branch, a user who asked the OS to stop animations still gets the movement.
+ * The accessibility sibling of the silent-contract lint (`lintFeedbackWritesUnread`): a `[data-body]`
+ * that expresses **independent** motion — a CSS `@keyframes` animation, or a static (non-feedback-driven)
+ * `transform`/`translate`/`rotate`/`scale` — but has **no** `@media (prefers-reduced-motion: reduce)`
+ * companion rule that matches it. That is the a11y invariant this gate enforces: *reduced motion removes
+ * motion, not meaning* — a body that moves on its own must offer a still form. Without the reduced-motion
+ * branch, a user who asked the OS to stop animations still gets the movement.
+ *
+ * **Feedback-var-driven motion is deliberately exempt.** This engine gates motion at the ENGINE level:
+ * under `prefers-reduced-motion` the field freezes (dt=0), so `--d`/`--field-*`/`--load` stop updating and
+ * any body driven by them stops moving — it is already reduced-motion-safe and does NOT need a per-body
+ * `@media` rule. Flagging those would be architecturally wrong (and would flood the site's own hundreds of
+ * feedback-driven bodies). So only genuinely independent motion, which the engine cannot gate, is flagged.
  *
  * "Has a reduced-motion equivalent" is determined structurally: some rule inside a
  * `@media (prefers-reduced-motion: reduce)` block has a selector that matches the same body (after
@@ -420,8 +428,8 @@ function cleanSelector(part: string): string {
  * **Dev-only, heuristic, browser-coupled** — like the feedback consumer lints, it walks the document's
  * accessible stylesheets and no-ops where they are unreachable (SSR / tests / cross-origin), so it can
  * only ever under-report, never false-positive. Scoped to `[data-body]` elements only. Bodies whose
- * motion is expressed *inline* are also considered (an inline `animation`/`transform`/feedback-read),
- * and are only cleared by a matching reduced-motion rule — inline styles can't carry a media query.
+ * independent motion is expressed *inline* are also considered, and are only cleared by a matching
+ * reduced-motion rule — inline styles can't carry a media query.
  */
 export function lintReducedMotion(root: ParentNode): PlatformLintWarning[] {
   const out: PlatformLintWarning[] = [];
@@ -443,7 +451,7 @@ export function lintReducedMotion(root: ParentNode): PlatformLintWarning[] {
       if (!r.selectorText || !r.cssText) continue;
       if (underReduced) {
         reducedSelectors.push(r.selectorText);
-      } else if (ruleExpressesMotion(r.cssText) || readsFeedbackIntoMotion(r.cssText)) {
+      } else if (expressesIndependentMotion(r.cssText)) {
         motionSelectors.push(r.selectorText);
       }
     }
@@ -463,19 +471,20 @@ export function lintReducedMotion(root: ParentNode): PlatformLintWarning[] {
       }),
     );
 
-  // Pass 2: for each body, does it move (via CSS rule or inline) and lack a reduced-motion branch?
+  // Pass 2: for each body, does it move INDEPENDENTLY (via CSS rule or inline) and lack a reduced-motion
+  // branch? Feedback-var-driven motion is already engine-gated, so it never reaches here.
   root.querySelectorAll('[data-body]').forEach((el) => {
     const style = el.getAttribute('style') ?? '';
-    const movesInline = ruleExpressesMotion(style) || readsFeedbackIntoMotion(style);
+    const movesInline = expressesIndependentMotion(style);
     const movesViaRule = matchesAny(motionSelectors, el);
-    if (!movesInline && !movesViaRule) return; // static body → nothing to guard
+    if (!movesInline && !movesViaRule) return; // static / engine-gated body → nothing to guard
     if (matchesAny(reducedSelectors, el)) return; // has a reduced-motion branch → honoured
     out.push({
       code: 'motion-without-reduced-motion',
       severity: 'warning',
       element: el,
       message:
-        'a field body expresses motion (animation / transform / a feedback var driving movement) but no @media (prefers-reduced-motion: reduce) rule matches it — reduced motion must remove motion without removing meaning; add a reduced-motion branch that stills it',
+        'a field body expresses independent motion (a CSS animation, or a static transform not driven by a field feedback var) but no @media (prefers-reduced-motion: reduce) rule matches it — reduced motion must remove motion without removing meaning; add a reduced-motion branch that stills it',
     });
   });
   return out;

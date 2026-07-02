@@ -368,17 +368,17 @@ function bodyEl(matchSelectors: string[], style = ''): Element {
   } as unknown as Element;
 }
 
-test('lintReducedMotion flags a motion-bearing body with NO reduced-motion equivalent', () => {
+test('lintReducedMotion flags a body with INDEPENDENT motion (CSS animation) and NO reduced-motion equivalent', () => {
   const prevDoc = (globalThis as { document?: unknown }).document;
   (globalThis as { document?: unknown }).document = motionDoc(
-    [{ selectorText: '.pulse', cssText: '.pulse{animation:throb 2s infinite}' }],
+    [{ selectorText: '.pulse', cssText: '.pulse{animation:throb 2s infinite}' }], // keyframes → engine can't gate
     [], // no reduced-motion branch at all
   );
   try {
     const body = bodyEl(['.pulse']);
     const root = { querySelectorAll: () => [body] } as unknown as ParentNode;
     const w = lintReducedMotion(root);
-    assert.equal(w.length, 1, 'the moving body with no reduced-motion branch is flagged');
+    assert.equal(w.length, 1, 'the independently-animating body with no reduced-motion branch is flagged');
     assert.equal(w[0]!.code, 'motion-without-reduced-motion');
     assert.equal(w[0]!.element, body);
   } finally {
@@ -386,10 +386,10 @@ test('lintReducedMotion flags a motion-bearing body with NO reduced-motion equiv
   }
 });
 
-test('lintReducedMotion stays quiet when a prefers-reduced-motion rule matches the same body', () => {
+test('lintReducedMotion stays quiet when a prefers-reduced-motion rule matches the animating body', () => {
   const prevDoc = (globalThis as { document?: unknown }).document;
   (globalThis as { document?: unknown }).document = motionDoc(
-    [{ selectorText: '.pulse', cssText: '.pulse{transform:translateY(var(--d))}' }],
+    [{ selectorText: '.pulse', cssText: '.pulse{animation:throb 2s infinite}' }],
     ['.pulse'], // author gave it a reduced-motion branch → honoured
   );
   try {
@@ -401,7 +401,28 @@ test('lintReducedMotion stays quiet when a prefers-reduced-motion rule matches t
   }
 });
 
-test('lintReducedMotion does not flag a static body (no animation / transform / motion feedback)', () => {
+test('lintReducedMotion does NOT flag feedback-var-driven motion — the engine gates it under reduced motion', () => {
+  const prevDoc = (globalThis as { document?: unknown }).document;
+  // transform driven by --d: under prefers-reduced-motion the field freezes (dt=0), --d stops updating,
+  // and this body stops moving. Already reduced-motion-safe via the engine — must NOT be flagged, even
+  // with no per-body @media rule. This is the shape of the site's hundreds of real bodies.
+  (globalThis as { document?: unknown }).document = motionDoc(
+    [{ selectorText: '.driven', cssText: '.driven{transform:translateY(calc(var(--d) * 20px))}' }],
+    [],
+  );
+  try {
+    const driven = bodyEl(['.driven']);
+    const root = { querySelectorAll: () => [driven] } as unknown as ParentNode;
+    assert.deepEqual(lintReducedMotion(root), [], 'feedback-var-driven motion is engine-gated → exempt');
+    // …and an inline feedback-driven transform is likewise exempt.
+    const inlineDriven = bodyEl([], 'transform: translateY(calc(var(--field-attention) * 8px))');
+    assert.deepEqual(lintReducedMotion({ querySelectorAll: () => [inlineDriven] } as unknown as ParentNode), []);
+  } finally {
+    (globalThis as { document?: unknown }).document = prevDoc;
+  }
+});
+
+test('lintReducedMotion does not flag a static body (opacity/colour are not motion)', () => {
   const prevDoc = (globalThis as { document?: unknown }).document;
   (globalThis as { document?: unknown }).document = motionDoc(
     [{ selectorText: '.calm', cssText: '.calm{opacity:var(--field-attention);color:red}' }], // opacity/color ≠ motion
@@ -416,12 +437,12 @@ test('lintReducedMotion does not flag a static body (no animation / transform / 
   }
 });
 
-test('lintReducedMotion flags an inline-styled moving body, and no-ops without a document', () => {
+test('lintReducedMotion flags an inline STATIC transform, and no-ops without a document', () => {
   const prevDoc = (globalThis as { document?: unknown }).document;
-  // inline transform reading a feedback var, no matching reduced-motion rule → flagged
+  // inline static transform (not feedback-driven), no matching reduced-motion rule → flagged
   (globalThis as { document?: unknown }).document = motionDoc([], []);
   try {
-    const inline = bodyEl([], 'transform: translateY(var(--d, 0))');
+    const inline = bodyEl([], 'transform: translateY(-20px)');
     const w = lintReducedMotion({ querySelectorAll: () => [inline] } as unknown as ParentNode);
     assert.equal(w.length, 1);
     assert.equal(w[0]!.code, 'motion-without-reduced-motion');
