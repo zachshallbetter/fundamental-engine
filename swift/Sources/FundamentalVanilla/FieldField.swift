@@ -180,6 +180,12 @@ public final class FieldField: FieldHandle {
     public func setDprCap(_ cap: Float)                   { handle.setDprCap(cap) }
     public func setQualityTier(_ tier: Int)               { handle.setQualityTier(tier) }
 
+    /// Pause the frame loop — display link stopped, all simulation state retained. Sticky across
+    /// host visibility changes; idempotent. See ``FieldHandle/pause()`` (#605).
+    public func pause()                                   { handle.pause() }
+    /// Resume a paused frame loop — idempotent; the first resumed frame runs at `dt = 1`.
+    /// See ``FieldHandle/resume()``.
+    public func resume()                                  { handle.resume() }
     public func setVisible(_ on: Bool)                    { handle.setVisible(on) }
 
     /// The field's PROJECTION REGISTRY (substrate — JS critical-path 05). Register named projections that

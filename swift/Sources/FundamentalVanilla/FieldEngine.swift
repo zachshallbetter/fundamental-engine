@@ -57,6 +57,16 @@ final class FieldEngine: FieldHandle {
     private let env: Env
     private var loopToken: AnyObject?
 
+    // Loop lifecycle (#605). Two independent pause lanes, both gating the SAME display link:
+    //   userPaused — an explicit pause()/resume() pair, sticky (a visibility resume never overrides it);
+    //   hostPaused — presentation-driven (the host reported hidden through the visibility seam).
+    // The loop runs only while BOTH are false; syncLoop() is the single reconciliation point, so
+    // double-pause / double-resume are no-ops by construction. Simulation state is never touched.
+    private var userPaused = false
+    private var hostPaused = false
+    /// Set by destroy() — a late resume() can never resurrect a torn-down field's loop.
+    private var destroyed = false
+
     /// The render backend, if the mount provides one (signals-only when nil).
     var renderer: (any FieldRenderer)?
 
@@ -203,6 +213,11 @@ final class FieldEngine: FieldHandle {
 
         unsubscribers.append(host.onResize { [weak self] in self?.build() })
         unsubscribers.append(host.onScroll { [weak self] in self?.sampleScroll() })
+        // Presentation-aware auto-pause (#605): when the host reports a visibility change, stop the
+        // display link entirely while hidden and restart it on return — the Swift counterpart of the
+        // JS field's Page Visibility handler (`host.hidden()` → rAF cancelled). The per-tick
+        // `!host.isHidden` guard stays as the fallback for hosts that report hidden without firing.
+        unsubscribers.append(host.onVisibility { [weak self] in self?.visibilityChanged() })
     }
 
     // MARK: Env services (the closures the JS env carries)
@@ -335,6 +350,44 @@ final class FieldEngine: FieldHandle {
     private func start() {
         loopToken = host.scheduleFrame { [weak self] timestamp in
             self?.tick(at: timestamp)
+        }
+    }
+
+    // MARK: Loop lifecycle (pause / resume — #605)
+
+    /// Explicit pause — stop the display link, keep every bit of simulation state. Sticky: a
+    /// host visibility resume never overrides it; only `resume()` does. Idempotent.
+    func pause() {
+        userPaused = true
+        syncLoop()
+    }
+
+    /// Explicit resume — restart a paused loop (unless the host still reports hidden). Idempotent.
+    func resume() {
+        userPaused = false
+        syncLoop()
+    }
+
+    /// The host's visibility seam fired — mirror `host.isHidden` into the presentation pause lane.
+    private func visibilityChanged() {
+        hostPaused = host.isHidden
+        syncLoop()
+    }
+
+    /// The single loop reconciliation point: run ⟺ not destroyed ∧ not user-paused ∧ not host-paused.
+    /// Idempotence lives here — a redundant pause/resume finds the loop already in the right state.
+    private func syncLoop() {
+        let shouldRun = !destroyed && !userPaused && !hostPaused
+        if shouldRun {
+            guard loopToken == nil else { return } // already running
+            // No time-jump on resume: forget the pre-pause frame time so the first resumed frame
+            // integrates at dt = 1 (the `?? 1` seed in tick), exactly like the field's first-ever
+            // frame. (The 0.2…2 dt clamp would cap a stale gap anyway; this removes it entirely.)
+            lastTimestamp = nil
+            start()
+        } else if let token = loopToken {
+            host.cancelFrame(token)
+            loopToken = nil
         }
     }
 
@@ -1090,6 +1143,7 @@ final class FieldEngine: FieldHandle {
     }
 
     func destroy() {
+        destroyed = true // a late resume() must never resurrect the loop
         if let token = loopToken { host.cancelFrame(token) }
         loopToken = nil
         for unsub in unsubscribers { unsub() }

@@ -34,6 +34,8 @@ field.scan()                                  // discover bodies in the view tre
 field.setFormation("wells")
 field.burst(x: 200, y: 300)                   // the JS-shaped call
 field.burst(at: tap.location(in: myView))     // or a CGPoint from a gesture
+field.pause()                                 // stop the display link (state retained) —
+field.resume()                                //   e.g. around a .sheet / .fullScreenCover
 // …
 field.destroy()
 ```
@@ -235,6 +237,19 @@ Ported and tested — the full engine:
   and safe between ticks; the same routine the agent consumers use. Field/world coordinate space, matching
   `query`/`snapshot` rects and the JS golden. Mirrors the Kotlin `:fundamental-core` port 1:1; tested
   (`SubstrateParityTests`).
+- **Loop lifecycle — `pause()` / `resume()` + presentation-aware auto-pause** (#605):
+  `FieldHandle.pause()` stops the host's display link outright (simulation state fully retained);
+  `resume()` restarts it. Both idempotent; an explicit pause is *sticky* — a host visibility resume
+  never overrides it — and the engine re-bases its frame clock on resume so a long pause can't
+  integrate as elapsed time (the first resumed frame runs at `dt = 1`). The hosts drive the same gate
+  automatically through the visibility seam: `UIKitFieldHost` observes the app + scene background/
+  foreground notifications (`UIApplication.didEnterBackground`/`willEnterForeground`/`didBecomeActive`,
+  `UIScene.didEnterBackground`/`willEnterForeground` filtered to the view's scene) and
+  `AppKitFieldHost` observes app hide/unhide + window occlusion — the native analog of the web
+  field's Page Visibility pause (`browserHost.hidden()` + `onVisibility` → rAF cancelled). Each host
+  also has an `isPaused` SPI folded into `isHidden` for compositions that hold the host rather than
+  the handle. SwiftUI does NOT hide views covered by `.sheet`/`.fullScreenCover` — call `pause()` on
+  presentation and `resume()` on dismiss. Tested (`PauseResumeTests`).
 - **Vanilla surface** (§13): the full FieldHandle.
 
 Not yet ported (the platform-adjacent tranche — most is DOM-specific and maps to
