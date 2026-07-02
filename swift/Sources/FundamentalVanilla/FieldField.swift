@@ -194,6 +194,10 @@ public final class FieldField: FieldHandle {
     /// ``FieldHandle/query(_:)``.
     public func query(_ q: FieldQuery? = nil) -> FieldQueryResult { handle.query(q) }
 
+    /// Capture the field's STATE at this frame (substrate READ API — JS critical-path 03). See
+    /// ``FieldHandle/snapshot(_:)``.
+    public func snapshot(_ opts: FieldSnapshotOptions? = nil) -> FieldSnapshot { handle.snapshot(opts) }
+
     public func destroy() {
         handle.destroy()
         // remove the managed render surfaces, mirroring `destroy()` removing the managed canvas.

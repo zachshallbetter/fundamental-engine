@@ -63,12 +63,13 @@ public struct AgentViewOptions: Sendable {
 /// not agent-writable*. Every reading is tightened to the granted capabilities. Mirrors the JS
 /// `AgentFieldView`.
 ///
-/// PARITY NOTE: the JS view scopes `query()` / `snapshot()` / `replay()`. `FieldHandle.query()` now
-/// exists on the Swift core (substrate READ API — JS #837), but `snapshot()` / `replay()` do not yet, so
-/// this facade still scopes the read surface that has always existed — energy, particle counts, and the
-/// relationship (edge) graph — under the same tighten-only capability rules. Scoping `query()` through the
-/// agent view (the JS `scopeQuery` intersect-include path) is a focused follow-up; it grows the
-/// query/snapshot members when that lands. A capability the view doesn't grant strips the matching reading.
+/// PARITY NOTE: the JS view scopes `query()` / `snapshot()` / `replay()`. `FieldHandle.query()` and
+/// `FieldHandle.snapshot()` now exist on the Swift core (substrate READ API — JS #837 / critical-path 03),
+/// but `replay()` does not yet, so this facade still scopes the read surface that has always existed —
+/// energy, particle counts, and the relationship (edge) graph — under the same tighten-only capability
+/// rules. Scoping `query()` / `snapshot()` through the agent view (the JS `scopeQuery` intersect-include
+/// path) is a focused follow-up; it grows the query/snapshot members when that lands. A capability the
+/// view doesn't grant strips the matching reading.
 public protocol AgentFieldView: AnyObject {
     /// The granted capabilities (a frozen copy).
     var capabilities: Set<AgentCapability> { get }

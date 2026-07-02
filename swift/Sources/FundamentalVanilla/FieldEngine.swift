@@ -41,9 +41,8 @@ final class FieldEngine: FieldHandle {
         return max(0, min(1, m))
     }
 
-    /// Whether the policy permits body `data` in a snapshot. Mirrors the JS privacy gate. DECLARED here:
-    /// the Swift snapshot surface isn't ported yet, so this is exposed for when it lands rather than
-    /// wired to a live reading.
+    /// Whether the policy permits body `data` in a snapshot. Mirrors the JS privacy gate. Read by
+    /// ``snapshot(_:)`` as the second half of the TIGHTEST-wins privacy gate (opts opt in, policy permits).
     private func policyPermitsBodyData() -> Bool {
         if fieldPolicy.allowBodyDataInSnapshots == false { return false } // explicit deny wins
         if let pv = fieldPolicy.budgets?.privacy, pv < Self.privacyDataThreshold { return false }
@@ -59,6 +58,17 @@ final class FieldEngine: FieldHandle {
     // Simulation state
     private var bodies: [Body] = []
     private var programmaticBodies: [Body] = [] // addBody() sources — re-merged after every scan()
+
+    // The engine `Body` has no `data` slot (the carried record lives on the returned `BodyHandle`), so a
+    // programmatic body's opaque `data` is kept here, keyed by object identity, and read back by
+    // ``snapshot(_:)`` under the privacy gate. Mirrors the Kotlin port's `FieldController.bodyData` +
+    // `dataOf`. Populated at `addBody`; a removed body's entry is left to be reclaimed with the body.
+    private var bodyData: [ObjectIdentifier: (any Sendable)] = [:]
+    /// The opaque `data` carried for a programmatic body, or `nil`. Mirrors the Kotlin port's `dataOf`.
+    private func dataOf(_ body: Body) -> (any Sendable)? { bodyData[ObjectIdentifier(body)] }
+
+    /// Per-field snapshot id sequence — feeds `snap-<frame>-<n>`. Mirrors the Kotlin port's `snapSeq`.
+    private var snapSeq = 0
 
     // FIRST-CLASS IDENTITY (substrate critical path — JS #884). Every body resolves to a stable,
     // structured `FieldBodyIdentity`, cached on `body.identity` the first time it is keyed. Precedence:
@@ -609,6 +619,7 @@ final class FieldEngine: FieldHandle {
         body.feedbackCallback = spec.onFeedback
         body.identity = spec.identity // a supplied identity wins; else resolveIdentity derives body-N
         resolveIdentity(body)
+        if let data = spec.data { bodyData[ObjectIdentifier(body)] = data } // for snapshot(_:) readback
         programmaticBodies.append(body)
         bodies.append(body) // live this frame, before the next scan() re-merges it
         fire(FieldEventPayload(event: .bodyAdd, body: body))
@@ -626,6 +637,7 @@ final class FieldEngine: FieldHandle {
                 guard let self, let body else { return }
                 self.programmaticBodies.removeAll { $0 === body }
                 self.bodies.removeAll { $0 === body }
+                self.bodyData.removeValue(forKey: ObjectIdentifier(body)) // release the carried data slot
                 // drop any edges whose endpoint was this body
                 self.edges.removeAll { $0.from === body || $0.to === body }
                 self.fire(FieldEventPayload(event: .bodyRemove, body: body))
@@ -984,6 +996,78 @@ final class FieldEngine: FieldHandle {
             projections: [],
             lens: nil
         )
+    }
+
+    // MARK: Substrate READ API — snapshot (JS critical-path 03)
+
+    func snapshot(_ opts: FieldSnapshotOptions? = nil) -> FieldSnapshot {
+        let flags = resolveSnapshotFlags(opts ?? FieldSnapshotOptions())
+        // Privacy gate (TIGHTEST-wins): caller opted in AND the runtime policy permits body data.
+        let includeData = flags.includeData && policyPermitsBodyData()
+
+        let bodySnaps: [FieldBodySnapshot] = bodies.map { b in
+            let identity = resolveIdentity(b)
+            let c = b.center
+            var metrics: [String: Float] = [
+                "density": b.d,
+                "count": b.count,
+                "engaged": b.isEngaged ? 1 : 0,
+            ]
+            if b.capacity > 0 { metrics["load"] = min(max(b.accreted / b.capacity, 0), 1) }
+            return FieldBodySnapshot(
+                id: identity.id,
+                identity: identity,
+                // No body-authority lane in the port yet — fixed "anchored", the JS default.
+                authority: "anchored",
+                rect: FieldRect(x: c.x - b.box.hw, y: c.y - b.box.hh, width: b.box.hw * 2, height: b.box.hh * 2),
+                position: Vec3(c.x, c.y, 0),
+                tokens: b.tokens,
+                metrics: metrics,
+                // The port has no measured field-dimension lane yet — empty, matching the JS field name.
+                dimensions: [:],
+                // Withheld by default: included only when the caller opted in AND the policy permits.
+                data: includeData ? dataOf(b) : nil
+            )
+        }
+
+        let relationships: [FieldRelationshipReading] = flags.includeRelationships ? edges.compactMap { e in
+            guard let from = e.from, let to = e.to else { return nil } // skip edges whose endpoint was removed
+            return FieldRelationshipReading(
+                from: resolveIdentity(from).id,
+                to: resolveIdentity(to).id,
+                type: e.type,
+                strength: e.strength,
+                memory: e.memory,
+                active: e.active,
+                causal: e.active
+            )
+        } : []
+
+        var metrics: [String: Float] = [
+            "particles": Float(particleCount()),
+            "bodies": Float(bodies.count),
+        ]
+        if !bodies.isEmpty {
+            let sumD = bodies.reduce(Float(0)) { $0 + $1.d }
+            metrics["meanDensity"] = sumD / Float(bodies.count)
+        }
+
+        let snap = FieldSnapshot(
+            id: "snap-\(env.frameN)-\(snapSeq)",
+            createdAt: env.t,           // the FIELD clock, not wall time — deterministic
+            frame: env.frameN,
+            version: FIELD_VERSION,
+            formations: [formationName],
+            bodies: bodySnaps,
+            relationships: relationships,
+            metrics: metrics,
+            // influences: no impulse accumulator in the port yet — empty, matching the JS field name.
+            influences: [],
+            // No projection registry in the port yet — empty, matching the JS field name.
+            projections: []
+        )
+        snapSeq += 1
+        return snap
     }
 
     func destroy() {

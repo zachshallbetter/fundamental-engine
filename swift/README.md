@@ -181,8 +181,17 @@ Ported and tested — the full engine:
   an `include` filter. The result (`FieldQueryResult`) mirrors the JS shape 1:1 so a reading serializes
   identically across planes; tested (`SubstrateParityTests`). The `influences`/`projections`/`lens` lanes
   are present-but-empty for now (no impulse accumulator, projection registry, or lens lane in the port
-  yet). The rest of the substrate READ API — `snapshot`/`diff`/`replay`/`projections` — is a follow-up on
-  both native planes.
+  yet).
+- **Substrate READ API — `snapshot()`** (JS critical-path 03): `FieldHandle.snapshot(_:)` captures the
+  field's STATE at a frame — a portable, serializable `FieldSnapshot` (bodies with identity + rect +
+  position + tokens + metrics, the active formation, field-level metrics, relationships). Distinct from
+  the perf `FieldPerfSnapshot`. Body `data` is WITHHELD by default and included only when the caller opts
+  in (`includeData` / a permissive `profile`) AND the runtime `FieldPolicy` permits it; a `public`
+  profile strips it even against an explicit `includeData: true` (TIGHTEST-wins, `resolveSnapshotFlags`).
+  `createdAt` is the field clock (`env.t`, deterministic), `id` is `snap-<frame>-<n>`, `version` is
+  `FIELD_VERSION`. The result mirrors the JS shape + the Kotlin port 1:1; tested (`SubstrateParityTests`).
+  `influences`/`projections` are present-but-empty for now. The rest of the substrate READ API —
+  `diff`/`replay`/`projections` — is a follow-up on both native planes.
 - **Vanilla surface** (§13): the full FieldHandle.
 
 Not yet ported (the platform-adjacent tranche — most is DOM-specific and maps to

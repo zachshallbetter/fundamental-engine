@@ -512,6 +512,23 @@ public protocol FieldHandle: AnyObject {
     /// Read-only throughout: `query()` never mutates field state. Mirrors JS `FieldHandle.query`.
     func query(_ q: FieldQuery?) -> FieldQueryResult
 
+    // ── substrate READ API: snapshot  (JS critical-path 03) ─────────────────
+    /// Capture the field's STATE at this frame — a portable, serializable ``FieldSnapshot`` (bodies, their
+    /// metrics + identity, the active formation, field-level metrics, relationships). This is *what the
+    /// field was doing*, the basis for `diff`/`replay` (later follow-ups); DISTINCT from the perf-metrics
+    /// snapshot. Mirror of the JS `@fundamental-engine/core` `snapshot()` (and the Kotlin
+    /// `:fundamental-core` port) — same field names + shape so a capture is identical across planes.
+    ///
+    /// PRIVACY: each body's opaque `data` is WITHHELD by default — it is included only when `opts`
+    /// (`includeData` / a permissive `profile`) opts in AND the runtime ``FieldPolicy`` permits body data.
+    /// Relationships default in; `influences` / `projections` are present-but-empty in this port (no
+    /// impulse accumulator / projection registry yet — the field names mirror JS so the shape stays
+    /// identical).
+    ///
+    /// `createdAt` is the FIELD clock (`env.t`), not wall time — deterministic. `id` is `snap-<frame>-<n>`
+    /// with a per-field sequence. Read-only throughout: `snapshot()` never mutates field state.
+    func snapshot(_ opts: FieldSnapshotOptions?) -> FieldSnapshot
+
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)
     func destroy()
