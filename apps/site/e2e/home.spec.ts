@@ -1,9 +1,12 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 
-// The live manual, on BOTH of its homepages: / (the grown-up version) and /eli5 (the plain-language
-// one). The two pages share the manual shell — the same <field-root>, HomeRuntime,
-// StageFieldOverlay, and NaturalFieldsSection — so the same invariants are pinned over both routes.
+// The live manual + the field shell, across the three routes that run it: / (the slimmed homepage —
+// hero, install, the real-interface proof), /engine-tour (the full force-by-force manual, moved off the
+// homepage in the restructure), and /eli5 (the plain-language homepage). All three share the field shell
+// (<field-root>, HomeRuntime, StageFieldOverlay), so boot + no-errors pin over all of them; the sections
+// a page lacks skip by *checking the DOM* (skipUnless), not by hardcoding a route list — so the slimmed
+// homepage runs the boot/no-errors invariant and skips the manual-stage ones it no longer carries.
 // Pins the behaviors the home QA audit verified (and the two bugs it fixed): the engine boots and
 // seeds, every chip-bearing stage gets its traced field-line canvas (preset compositions included),
 // the install chip copies, body chips drag with a real pointer, agitate fires a shock ring, the
@@ -17,7 +20,7 @@ async function skipUnless(page: Page, selector: string, what: string) {
   test.skip((await page.locator(selector).count()) === 0, `${what} — not on this page`);
 }
 
-for (const route of ["/", "/eli5"] as const) {
+for (const route of ["/", "/engine-tour", "/eli5"] as const) {
   test.describe(`${route} (the live manual)`, () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(route);
@@ -44,11 +47,18 @@ for (const route of ["/", "/eli5"] as const) {
           .filter((s) => s.querySelector("[data-body], [data-preset]"))
           .filter((s) => s.querySelectorAll("canvas.stage-field").length !== 1)
           .map((s) => s.querySelector(".stage-label")?.textContent?.trim() ?? "unlabeled stage");
-      expect(await page.locator(".stage:has([data-body]), .stage:has([data-preset])").count()).toBeGreaterThan(0);
-      // painting is time-sliced (it yields between stages), so the canvases land progressively
-      await expect
-        .poll(async () => page.evaluate(untracedStages), { timeout: 20000 })
-        .toEqual([]);
+      // The manual stages only exist on the pages that carry the manual (/engine-tour, /eli5). On the
+      // slimmed / homepage there are none — so gate the traced-canvas invariant on their presence, while
+      // still pinning boot + no-errors on every route (a clean-boot regression guard for the home too).
+      const stageCount = await page
+        .locator(".stage:has([data-body]), .stage:has([data-preset])")
+        .count();
+      if (stageCount > 0) {
+        // painting is time-sliced (it yields between stages), so the canvases land progressively
+        await expect
+          .poll(async () => page.evaluate(untracedStages), { timeout: 20000 })
+          .toEqual([]);
+      }
       expect(errors).toEqual([]);
     });
 
