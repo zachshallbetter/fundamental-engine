@@ -14,9 +14,10 @@ name: swift-macos
 on:
   push:
     branches: [main]
-    paths: ['swift/**', '.github/workflows/swift-macos.yml']
+    # packages/core/package.json: a release version bump must re-run the FIELD_VERSION lockstep test (#923)
+    paths: ['swift/**', '.github/workflows/swift-macos.yml', 'packages/core/package.json']
   pull_request:
-    paths: ['swift/**', '.github/workflows/swift-macos.yml']
+    paths: ['swift/**', '.github/workflows/swift-macos.yml', 'packages/core/package.json']
 
 jobs:
   apple:

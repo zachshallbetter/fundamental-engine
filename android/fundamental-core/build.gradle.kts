@@ -45,12 +45,27 @@ val syncGolden by tasks.registering(Copy::class) {
     into(layout.buildDirectory.dir("golden-resources/fixtures"))
 }
 
+// ── FIELD_VERSION lockstep — canonical version source ────────────────────────────────────────────
+// The canonical engine version is the JS core's package version (`packages/core/package.json` — the
+// same file `version.test.ts` locks the JS FIELD_VERSION to). Synced onto the test classpath, same
+// mechanism as the golden, so `VersionLockstepTests` fails the build if a release bump leaves the
+// Kotlin FIELD_VERSION stale (#923).
+val coreVersionSource = rootProject.file("../packages/core/package.json")
+
+val syncCoreVersion by tasks.registering(Copy::class) {
+    description = "Sync the canonical core package.json (the version source) into test resources."
+    from(coreVersionSource)
+    into(layout.buildDirectory.dir("version-resources/version"))
+}
+
 sourceSets.test {
     resources.srcDir(layout.buildDirectory.dir("golden-resources"))
+    resources.srcDir(layout.buildDirectory.dir("version-resources"))
 }
 
 tasks.named<ProcessResources>("processTestResources") {
     dependsOn(syncGolden)
+    dependsOn(syncCoreVersion)
 }
 
 // ── The locked 64-recipe canon — single source of truth ──────────────────────────────────────────

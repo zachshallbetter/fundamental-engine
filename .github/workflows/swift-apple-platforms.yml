@@ -8,10 +8,13 @@ on:
     paths:
       - 'swift/**'
       - '.github/workflows/swift-apple-platforms.yml'
+      # a release version bump must re-run the FIELD_VERSION lockstep test (#923)
+      - 'packages/core/package.json'
   pull_request:
     paths:
       - 'swift/**'
       - '.github/workflows/swift-apple-platforms.yml'
+      - 'packages/core/package.json'
 
 jobs:
   ios-simulator:

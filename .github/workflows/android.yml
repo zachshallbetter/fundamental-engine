@@ -17,11 +17,14 @@ on:
       - 'android/**'
       - '.github/workflows/android.yml'
       - 'swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json'
+      # a release version bump must re-run the FIELD_VERSION lockstep test (#923)
+      - 'packages/core/package.json'
   pull_request:
     paths:
       - 'android/**'
       - '.github/workflows/android.yml'
       - 'swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json'
+      - 'packages/core/package.json'
 
 jobs:
   build:

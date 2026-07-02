@@ -276,7 +276,7 @@ struct SubstrateParityTests {
         #expect(snap.id.hasPrefix("snap-"))
         #expect(snap.createdAt == 0)                       // field clock at capture (no ticks yet)
         #expect(!snap.version.isEmpty)
-        #expect(snap.version == "0.9.2")                   // FIELD_VERSION mirror
+        #expect(snap.version == FIELD_VERSION)             // stamps the engine version (lockstep: #923)
         #expect(snap.formations == ["wells"])              // active formation id(s)
 
         // bodies carry ids + identity + metrics + position/rect + tokens.

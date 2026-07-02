@@ -18,8 +18,9 @@ import Foundation
 /// records the format it was produced by.
 ///
 /// The Swift port has no standalone package-version constant to source from, so this is defined here
-/// mirroring the Kotlin port. Keep it in lockstep with the package version (npm `latest`) and the JS
-/// `FIELD_VERSION`.
+/// mirroring the Kotlin port. Kept in lockstep with the package version (npm `latest`) and the JS
+/// `FIELD_VERSION`: `VersionLockstepTests` fails the suite if this drifts from
+/// `packages/core/package.json` (#923) — update it here on every release bump.
 public let FIELD_VERSION: String = "0.9.2"
 
 /// Options for ``FieldHandle/snapshot(_:)`` (JS `FieldSnapshotOptions`). Composes with the runtime privacy
