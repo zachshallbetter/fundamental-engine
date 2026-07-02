@@ -18,6 +18,7 @@ host, not the boundary. Canvas is one render surface, not the whole system.
 
 | Document | Role |
 |---|---|
+| [`substrate-overview.md`](substrate-overview.md) | The one-page mental model — the substrate in five verbs (Declare → Influence → Read → Reveal → Govern); links out to the authoritative doc for each. Read first |
 | [`definition-document.md`](definition-document.md) | The operating model — what Fundamental *is* ("substrate, not wallpaper") |
 | [`documentation-standards.md`](documentation-standards.md) | How Fundamental is described everywhere: the architecture statement, the status taxonomy, the naming policy, the verify-against-code rule |
 | [`natural-fields.md`](natural-fields.md) | The four Natural Fields (gravity→importance, electromagnetic→polarity, strong→binding, weak→transformation) — concepts, not tokens |

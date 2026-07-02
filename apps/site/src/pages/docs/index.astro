@@ -50,6 +50,19 @@ const HOOKS: Record<string, string> = {
   '/docs/performance': 'the scheduler, the hot path, and the cost of beauty',
   '/docs/accessibility': 'reduced motion loses no meaning; meaning lives in semantic DOM',
   '/docs/accessibility-preview': 'the animated field and its static fallback, side by side',
+  '/docs/getting-started': 'install to a first field, the shortest route in',
+  '/docs/reactive-component': 'a contained, signals-only component — no particles',
+  '/docs/field-channels': 'the --field-* / --d channels, and bindData for real data',
+  '/docs/implementations': 'the same field across DOM, React, elements, Swift, and Kotlin',
+  '/docs/contour-typography': 'type that follows the field — the typographic placement',
+  '/docs/support': 'what is frozen, what is experimental, and how to get help',
+  '/docs/guides/swift': 'FundamentalSwiftUI on iOS / macOS / visionOS',
+  '/docs/guides/kotlin': 'the Jetpack Compose and View hosts on Android',
+  '/docs/guides/three': 'the field bound to a Three.js scene',
+  '/ai-evidence': 'agent-readable claims, sources, relationships, and confidence',
+  '/demo': 'dynamic bodies, recoil, and live agent-json',
+  '/evidence': 'ordinary pages as readable fields, no particle swarm',
+  '/writings': 'the arXiv-style paper family on the ideas behind the field',
 };
 
 // render only what the sidebar renders — ready pages, non-empty groups
@@ -152,6 +165,45 @@ const hookFor = (href: string): string | undefined =>
     </p>
   </section>
 
+  <section class="docs-sec" data-paths>
+    <h2>Choose your path</h2>
+    <p>
+      Start where you are. The normal developer path — install, then build — is first; the substrate
+      model is here when you want to read, reveal, and govern the field.
+    </p>
+    <ul class="paths" aria-label="Where to start">
+      <li><b>I want to install it</b> → <a href="/docs/getting-started">Quick start</a></li>
+      <li><b>I want to understand it</b> → <a href="/docs/concepts">Concepts</a> · <a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/substrate-overview.md">the five-verb substrate overview</a></li>
+      <li><b>I want to build with it</b> → <a href="/docs/authoring">Guides</a></li>
+      <li><b>I want the API</b> → <a href="/docs/api">API reference</a></li>
+      <li><b>I want examples</b> → <a href="/docs/showcase">Examples</a> · <a href="/evidence">Evidence demos</a></li>
+      <li><b>I want the substrate model</b> → <a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/README.md">Canonical docs</a></li>
+      <li><b>I want stability / release info</b> → <a href="/docs/api/stability">API stability</a> · <a href="/changelog">Changelog</a></li>
+    </ul>
+  </section>
+
+  <section class="docs-sec" data-demos>
+    <h2>Substrate demos</h2>
+    <p>
+      The substrate is legible three ways — as an agent-readable graph, as live physics with an
+      agent-json readout, and as ordinary pages that measure themselves. All three run the real engine.
+    </p>
+    <ul class="demos" aria-label="Substrate demos">
+      <li>
+        <a href="/ai-evidence"><b>AI Evidence</b></a>
+        <span>agent-readable claims, sources, relationships, and confidence</span>
+      </li>
+      <li>
+        <a href="/demo"><b>Substrate Demo</b></a>
+        <span>dynamic bodies, recoil, and live agent-json</span>
+      </li>
+      <li>
+        <a href="/evidence"><b>Invisible Fields</b></a>
+        <span>ordinary pages as readable fields, no particle swarm</span>
+      </li>
+    </ul>
+  </section>
+
   <section class="docs-sec" data-map>
     <h2>The map</h2>
     <p>
@@ -204,11 +256,58 @@ const hookFor = (href: string): string | undefined =>
       The docs ship as plain text too — <a href="/llms.txt">/llms.txt</a> is this map in the
       llms.txt format, and <a href="/llms-full.txt">/llms-full.txt</a> is the full canonical
       documentation concatenated; the field's agent consumption model, applied to its own docs.
+      For a live agent-readable example, see <a href="/ai-evidence">AI Evidence</a> — claims,
+      sources, relationships, and confidence as a field an agent can read.
     </p>
   </footer>
 </DocsLayout>
 
 <style>
+  /* choose your path — the reader's front door, developer path first */
+  .paths {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .paths li {
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  /* substrate demos — promoted, first-class */
+  .demos {
+    list-style: none;
+    margin: 0.7rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.7rem;
+  }
+  .demos li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.015);
+  }
+  .demos li a {
+    font-size: 0.92rem;
+    text-decoration: none;
+  }
+  .demos li a:hover {
+    text-decoration: underline;
+  }
+  .demos li span {
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--text-4, #8a8fa0);
+  }
+
   /* the map — group cards drawn from DOCS_NAV */
   .map-grid {
     display: grid;

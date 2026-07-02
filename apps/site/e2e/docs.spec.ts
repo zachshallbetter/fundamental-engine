@@ -19,8 +19,11 @@ test.describe("/docs", () => {
 
   test("every sidebar destination resolves", async ({ page }) => {
     await page.goto("/docs/tutorial");
+    // Internal destinations only — the regrouped IA deep-links some groups (Substrate, Assurance,
+    // Research) OUT to canonical markdown on GitHub via GH_DOC(); those are external URLs the
+    // network-blocked runner can't fetch, and resolving them isn't the site's responsibility.
     const hrefs: string[] = await page.$$eval("#docsSide a", (as) =>
-      [...new Set(as.map((a) => a.getAttribute("href")!))],
+      [...new Set(as.map((a) => a.getAttribute("href")!).filter((h) => h.startsWith("/")))],
     );
     expect(hrefs.length).toBeGreaterThan(10);
     const statuses = await page.evaluate(
