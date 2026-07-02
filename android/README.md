@@ -71,6 +71,14 @@ Ported and tested:
   focus), data atoms (`seed` / `atomAt`), open scalar channels (`addField` / `sampleField`), the BMI
   toggles (`setAttention` / `setCausality` / `setHeatmap`) + `sampleScalar` / `sampleGradient`, `energy`,
   `particleCount`, and `readParticles` (stride-5 wire format). JVM-tested.
+- **Substrate READ API — `query()`** (JS #837 / critical-path 02) — `FieldHandle.query(q)` answers a
+  structured, read-only question over the live field: bodies (identity + rect + tokens + metrics), the
+  active formation, field-level metrics (`particles` / `bodies` / `meanDensity`), and relationships,
+  scoped by a point/rect/global region and an `include` filter. The result (`FieldQueryResult`) mirrors
+  the JS shape 1:1 so a reading serializes identically across planes. JVM-tested (`FieldQueryTests`).
+  The `influences` / `projections` / `lens` lanes are present-but-empty for now (the port has no impulse
+  accumulator, projection registry, or lens lane yet). The rest of the substrate READ API —
+  `snapshot` / `diff` / `replay` / `projections` — is a follow-up on both native planes.
 - **The Jetpack Compose host** (`:fundamental-compose`) — `FieldView` (drives one frame per display
   frame via `withFrameNanos`, renders the pool on a Compose `Canvas`, tap-to-burst) and
   `Modifier.fieldBody(...)` (a composable becomes a body tracking its on-screen bounds), plus a

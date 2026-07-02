@@ -103,6 +103,10 @@ class FieldController(
     /** The formation the field eases toward (set via [setFormation]). */
     var formationTarget: Formation = Formation.NEUTRAL
 
+    /** The name of the active global formation — the JS `formationName`, reported by [FieldHandle.query]. */
+    var formationName: String = "ambient"
+        private set
+
     /** Short-range anti-clumping separation strength (0 = off). */
     var separation: Float = 0f
 
@@ -269,7 +273,7 @@ class FieldController(
 
     /** Ease toward a named global formation (ambient / wells / lanes / scatter / accretion). */
     fun setFormation(name: String) {
-        formation(name)?.let { formationTarget = it.preset }
+        formation(name)?.let { formationTarget = it.preset; formationName = name }
     }
 
     /** One-shot: shove + heat matter near a point (the §11 burst interaction). */
