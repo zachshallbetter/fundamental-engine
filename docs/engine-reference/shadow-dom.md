@@ -11,9 +11,10 @@
 > `FieldController` helper (§31.1) removes the event boilerplate. Engine pieces:
 > `core/shadow.ts` (`FieldController`, `ShadowRegistry`), `core/scanner.ts` (`bodyFromElement`,
 > rect-provider measurement), and the event wiring in `core/field.ts`; covered by
-> `core/shadow.test.ts`. The production-hardening additions in §31 (portals, scopes, the
-> registration handshake, SSR queue, throttled field events, local-cell budgets) remain
-> **proposed**. Summary in [`field-concept.md`](../planning-archive/field-concept.md) §24–26.
+> `core/shadow.test.ts`. Most production-hardening additions in §31 (portals, scopes, the
+> registration handshake, SSR queue, throttled field events) remain **proposed**;
+> **local-cell budgets shipped** on `<field-cell>` (§31.19, #685 — `max-particles` + `fps`).
+> Summary in [`field-concept.md`](../planning-archive/field-concept.md) §24–26.
 
 > **Phase D note (platform runtime).** Shadow-DOM host registration is now handled by
 > `@fundamental-engine/dom`: the platform owns DOM participation, so a registered host's `getRect`
@@ -1341,15 +1342,34 @@ Local cells need hard caps.
 
 ```html
 <field-cell
-  mode="local"
-  density="0.5"
+  force="swirl"
+  count="120"
   max-particles="120"
-  max-bodies="12"
   fps="30"
 ></field-cell>
 ```
 
 This prevents docs pages from becoming expensive when many examples exist.
+
+> **Shipped (`<field-cell>`, #685).** `<field-cell>` accepts two budget attributes,
+> enforced **per instance** (each cell already owns its own particle pool, so budgets never
+> cross cells):
+>
+> - **`max-particles`** — a hard ceiling on the pool size. It clamps *both* the auto-size
+>   (frame-area heuristic) and an explicit `count`, so a cell can never exceed its declared
+>   budget however large its frame grows. Absent/0 = no cap (unchanged behaviour).
+> - **`fps`** — throttles the animation loop to a target framerate (frames inside a
+>   `1000/fps` ms window are skipped). Absent/0 = the display's native rAF cadence. The first
+>   frame of each run always renders, so a cell resumed into view is never stalled up to one
+>   interval.
+>
+> `max-bodies` from the sketch above is **not** implemented: `<field-cell>` is a
+> single-force "poster" engine (§25.1) with no registered force *bodies* to cap — it renders
+> one force over a particle pool. The body budget only becomes meaningful for a cell that
+> hosts a full body registry (not the current design), so it is deferred rather than shipped
+> as a dead attribute. `density`/`mode` from the sketch are likewise not `<field-cell>`
+> attributes today; the shipped knobs are `force` / `color` / `count` / `max-particles` /
+> `fps`.
 
 ### 20. Add teardown guarantees for local cells
 

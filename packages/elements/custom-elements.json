@@ -84,7 +84,7 @@
       "declarations": [
         {
           "kind": "class",
-          "description": "`<field-cell force=\"swirl\" color=\"#2dd4bf\">` — an in-frame field surface (§25.1).\n\nA standalone field sized to its container that renders *one* force, with its own\nlightweight particle pool, its own pointer interaction, and a lifecycle that pauses\nwhen off-screen. It is **not** the §-engine: it's a lighter \"demo/poster\" engine,\ncompletely separate from the page `<field-root>` and the core field loop.\n\n- `ResizeObserver` re-fits the canvas (DPR-aware) and rebuilds the pool.\n- `IntersectionObserver` gates the rAF loop — paused when off-screen.\n- Honours `prefers-reduced-motion`: renders one static frame, no animation.",
+          "description": "`<field-cell force=\"swirl\" color=\"#2dd4bf\">` — an in-frame field surface (§25.1).\n\nA standalone field sized to its container that renders *one* force, with its own\nlightweight particle pool, its own pointer interaction, and a lifecycle that pauses\nwhen off-screen. It is **not** the §-engine: it's a lighter \"demo/poster\" engine,\ncompletely separate from the page `<field-root>` and the core field loop.\n\n- `ResizeObserver` re-fits the canvas (DPR-aware) and rebuilds the pool.\n- `IntersectionObserver` gates the rAF loop — paused when off-screen.\n- Honours `prefers-reduced-motion`: renders one static frame, no animation.\n\n**Budgets & isolation (shadow-dom.md §31.19).** Each cell owns its *own* pool, so\nmany cells on a docs page never share or starve one budget. Hard caps keep that\nbudget cheap: `max-particles` clamps the pool ceiling (over both the auto-size and an\nexplicit `count`), and `fps` throttles the animation loop to a target framerate. Both\ncaps are enforced per instance — a saturating cell cannot spill particles or frame\ncost into a neighbour.",
           "name": "FieldCell",
           "members": [
             {
@@ -179,6 +179,16 @@
             },
             {
               "kind": "field",
+              "name": "lastStepTs",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0",
+              "description": "rAF timestamp of the last rendered frame — drives the `fps` throttle (§31.19)."
+            },
+            {
+              "kind": "field",
               "name": "onPointerMove",
               "type": {
                 "text": "(e: PointerEvent) => void"
@@ -199,7 +209,7 @@
               "kind": "field",
               "name": "tick",
               "type": {
-                "text": "() => void"
+                "text": "(ts?: number) => void"
               },
               "privacy": "private",
               "readonly": true
@@ -232,6 +242,24 @@
               "readonly": true
             },
             {
+              "kind": "field",
+              "name": "maxParticles",
+              "type": {
+                "text": "number"
+              },
+              "description": "Hard ceiling on the pool size (§31.19 scoped local-cell budget); `0` (default) means\nno cap. Clamps *both* the auto-size and an explicit `count`, so a cell can never\nexceed its declared budget no matter how large its frame grows.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "fps",
+              "type": {
+                "text": "number"
+              },
+              "description": "Target frames per second for the animation loop (§31.19); `0` (default) means run at\nthe display's native rAF cadence. A positive value throttles the loop so a page full\nof demo cells stays cheap — each cell keeps its own frame budget.",
+              "readonly": true
+            },
+            {
               "kind": "method",
               "name": "isPrefersReducedMotion",
               "privacy": "private",
@@ -240,6 +268,36 @@
                   "text": "boolean"
                 }
               }
+            },
+            {
+              "kind": "method",
+              "name": "rafNow",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "description": "A monotonic timestamp for the fps throttle, in ms (rAF-timestamp compatible)."
+            },
+            {
+              "kind": "method",
+              "name": "shouldRenderFrame",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "now",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "The per-cell frame-budget gate (§31.19). With no `fps` (0), every frame renders. With a\npositive `fps`, a frame renders only once its `1000/fps` ms interval has elapsed since the\nlast render; renders advance `lastStepTs`. Each cell keeps its own budget — one cell's rate\nnever affects another's."
             },
             {
               "kind": "method",
@@ -261,7 +319,7 @@
                   "text": "void"
                 }
               },
-              "description": "Build the particle pool sized to the frame area."
+              "description": "Build the particle pool sized to the frame area, capped by the cell's budget (§31.19)."
             },
             {
               "kind": "method",
@@ -320,6 +378,20 @@
                 "text": "number"
               },
               "description": "Number of particles in the cell's pool."
+            },
+            {
+              "name": "max-particles",
+              "type": {
+                "text": "number"
+              },
+              "description": "Hard ceiling on the pool size (§31.19); caps both the auto-size and an explicit `count`."
+            },
+            {
+              "name": "fps",
+              "type": {
+                "text": "number"
+              },
+              "description": "Target frames per second for the animation loop (§31.19); throttles rAF so many cells stay cheap."
             }
           ],
           "superclass": {
