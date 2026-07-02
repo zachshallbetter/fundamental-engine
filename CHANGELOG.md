@@ -16,7 +16,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
-- **`@fundamental-engine/core`:** **agent permissions + redactions + snapshot profiles** — the scoped,
+- **`@fundamental-engine/three`:** **`threeBackend` now renders `data`-overlay chip labels** — the
+  backend's `text()` was a no-op (only the chip plates drew); it now draws each numeric label as a
+  pooled `THREE.Sprite` carrying a per-string `CanvasTexture` (cached by label + color, so a steady
+  overlay uploads no new textures). Sprites are pooled and hidden — not recreated — across frames, and
+  `dispose()` frees the sprite materials + cached textures. Plate sizing (`measureText`) is unchanged;
+  the line/rect overlays are untouched. (#391) — the scoped,
   read-only surface a **Software Agent** uses to read the field safely (the safety layer over the
   query/snapshot substrate; *agent-readable is not agent-writable*). `field.forAgent({ capabilities,
   redactions? })` returns an **`AgentFieldView`** facade exposing **only** scoped `query()` / `snapshot()`

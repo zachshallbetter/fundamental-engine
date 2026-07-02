@@ -118,7 +118,8 @@ const field = createThreeField({
 });
 ```
 
-The line overlays render fully; numeric label sprites (the `data` reading) are a tracked follow-up.
+The line overlays render fully, and the `data` reading's numeric labels draw as pooled sprites — each
+distinct label string gets one cached `CanvasTexture`, reused across frames.
 
 ## Bodies — meshes that bend the field
 
