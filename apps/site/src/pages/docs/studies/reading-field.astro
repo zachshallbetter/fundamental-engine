@@ -2,6 +2,7 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import RecipesApplied from '../../../components/RecipesApplied.astro';
 import StatusChip from '../../../components/StatusChip.astro';
+import DataHonesty from '../../../components/DataHonesty.astro';
 
 // Reading Field Study — the first "familiar-page concept study" (docs/planning-archive/live-web-examples.md).
 // A generic long-form article (no copied brand assets) reinterpreted as a field: semantic HTML first,
@@ -90,6 +91,13 @@ const sources = [
     <a href="/docs/studies/evidence-field">concept studies</a>.
   </p>
 
+  <DataHonesty
+    source="Synthetic. The article, its citations, and the two example claims (one supported, one contested) are hand-authored to demonstrate the layers — not a real publication or a real citation graph."
+    snapshot="Fixed sample content defined in-page; no committed snapshot and no snapshot script feeds this study."
+    liveRefresh="No external data, so no live refresh. Attention and memory accrue in-page as you read and toggle the controls."
+    notClaimed="The field adds orientation, memory, and relationship over the semantic HTML. It does not fact-check the article or resolve the contested claim — support and conflict are shown as structure, not verdicts."
+  />
+
   <div class="study-stages">
     <div class="stage"><b>Before</b><span>A plain semantic article — headings, citations, a source list. Toggle the field off to see it.</span></div>
     <div class="stage"><b>After</b><span>Field on: sections gather attention and accrue memory, citations thread to sources, claims show support and conflict.</span></div>
@@ -103,6 +111,12 @@ const sources = [
     <button type="button" class="sc-btn" data-toggle="reduced" aria-pressed="false">Reduce motion</button>
     <span class="sc-readout" data-readout>semantic article — field off</span>
   </div>
+
+  <p class="study-hint">
+    <b>Field off</b> stops the simulation and the page reverts to the plain semantic article — different
+    from turning a single <em>projection</em> off (say, the relation lens), where the field keeps
+    running and only that one expression stops being drawn.
+  </p>
 
   <div class="rf-grid">
     <nav class="rf-toc" aria-label="Contents">
@@ -316,6 +330,7 @@ const sources = [
   .sc-btn { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--text, #e8e8ef); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.82rem; cursor: pointer; }
   .sc-btn.on { background: color-mix(in srgb, #4da3ff 22%, transparent); border-color: #4da3ff; }
   .sc-readout { font: 0.76rem ui-monospace, monospace; color: var(--muted, #9aa); margin-left: auto; }
+  .study-hint { font-size: 0.84rem; color: var(--muted, #9aa); max-width: 72ch; margin: 0 0 1rem; }
 
   .rf-grid { display: grid; grid-template-columns: 180px 1fr; gap: 1.5rem; align-items: start; }
   @media (max-width: 720px) { .rf-grid { grid-template-columns: 1fr; } .rf-toc { position: static !important; } }

@@ -2,6 +2,7 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import RecipesApplied from '../../../components/RecipesApplied.astro';
 import StatusChip from '../../../components/StatusChip.astro';
+import DataHonesty from '../../../components/DataHonesty.astro';
 
 // System Weather Study — data-driven via bindData(). Dashboard metric cards are records; the
 // attention-weather recipe turns supplied heat/pressure into --field-* the CSS renders as weather.
@@ -24,6 +25,13 @@ const LIVE = ['attention-weather'];
     still a legible grid with the field off.
   </p>
 
+  <DataHonesty
+    source="Synthetic. The metric cards, their heat and pressure values, and the anomalies are hand-authored sample records — not a real monitoring feed."
+    snapshot="Fixed sample data defined in-page; no committed snapshot and no snapshot script feeds this study."
+    liveRefresh="No external data, so no live refresh. The field re-settles as you toggle it or reduce motion."
+    notClaimed="The field turns supplied heat and pressure into weather. It does not monitor a real system or decide what is healthy — the metric values are illustrative inputs."
+  />
+
   <div class="study-stages">
     <div class="stage"><b>Before</b><span>A plain grid of metric cards.</span></div>
     <div class="stage"><b>After</b><span>Cards develop heat and pressure by activity; anomalies stand out; calm regions stay quiet.</span></div>
@@ -35,6 +43,11 @@ const LIVE = ['attention-weather'];
     <button type="button" class="sc-btn" data-study="reduced" aria-pressed="false">Reduce motion</button>
     <span class="sc-readout" data-study-status>starting…</span>
   </div>
+
+  <p class="study-hint">
+    <b>Field off</b> stops the simulation and the cards read as a plain grid — different from turning a
+    single <em>projection</em> off, where the field keeps running and only one drawn expression stops.
+  </p>
 
   <div class="sw-pulse"><span class="sw-dot"></span><b>System pulse</b><span class="sw-health" data-sw-health>—</span></div>
   <div class="sw-grid" id="sw-grid"></div>
@@ -87,6 +100,7 @@ const LIVE = ['attention-weather'];
   .sc-btn { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--text, #e8e8ef); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.82rem; cursor: pointer; }
   .sc-btn.on { background: color-mix(in srgb, #4da3ff 22%, transparent); border-color: #4da3ff; }
   .sc-readout { font: 0.76rem ui-monospace, monospace; color: var(--muted, #9aa); margin-left: auto; }
+  .study-hint { font-size: 0.84rem; color: var(--muted, #9aa); max-width: 72ch; margin: 0 0 1rem; }
 
   .sw-pulse { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 1rem; }
   .sw-pulse b { font-size: 0.9rem; }

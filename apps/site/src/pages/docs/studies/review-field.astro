@@ -2,6 +2,7 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import RecipesApplied from '../../../components/RecipesApplied.astro';
 import StatusChip from '../../../components/StatusChip.astro';
+import DataHonesty from '../../../components/DataHonesty.astro';
 
 // Review Field Study — data-driven via bindData(). Changed files and reviewers are records, bound
 // through two bindData() groups (Dependency Tension + Review Constellation). Comments link to the
@@ -36,6 +37,13 @@ const coherent = checks.filter((c) => c.ok).length / checks.length;
     them into heat, tension, and attention; comments bind to the files they touch. Usable with the field off.
   </p>
 
+  <DataHonesty
+    source="Synthetic. The changed files, reviewers, comments, and CI checks are hand-authored sample records standing in for a generic pull request — not a real PR."
+    snapshot="Fixed sample data defined in-page; no committed snapshot and no snapshot script feeds this study."
+    liveRefresh="No external data, so no live refresh. The field re-settles as you toggle it or reduce motion."
+    notClaimed="The field turns impact and dependencies into heat and tension. It does not review the code or decide whether the PR should merge — the heat and check values are illustrative inputs."
+  />
+
   <div class="study-stages">
     <div class="stage"><b>Before</b><span>A plain PR: files, comments, reviewers, checks, a merge box.</span></div>
     <div class="stage"><b>After</b><span>Files heat by impact, blocked files hold tension, reviewers' attention shows.</span></div>
@@ -47,6 +55,11 @@ const coherent = checks.filter((c) => c.ok).length / checks.length;
     <button type="button" class="sc-btn" data-study="reduced" aria-pressed="false">Reduce motion</button>
     <span class="sc-readout" data-study-status>starting…</span>
   </div>
+
+  <p class="study-hint">
+    <b>Field off</b> stops the simulation and the PR reads as a plain list — different from turning a
+    single <em>projection</em> off, where the field keeps running and only one drawn expression stops.
+  </p>
 
   <div class="rv">
     <header class="rv-head">
@@ -141,6 +154,7 @@ const coherent = checks.filter((c) => c.ok).length / checks.length;
   .sc-btn { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--text, #e8e8ef); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.82rem; cursor: pointer; }
   .sc-btn.on { background: color-mix(in srgb, #4da3ff 22%, transparent); border-color: #4da3ff; }
   .sc-readout { font: 0.76rem ui-monospace, monospace; color: var(--muted, #9aa); margin-left: auto; }
+  .study-hint { font-size: 0.84rem; color: var(--muted, #9aa); max-width: 72ch; margin: 0 0 1rem; }
 
   .rv { display: grid; gap: 1.2rem; }
   .rv-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--line, #2a2a35); padding-bottom: 0.6rem; }

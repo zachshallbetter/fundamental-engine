@@ -2,6 +2,7 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import RecipesApplied from '../../../components/RecipesApplied.astro';
 import StatusChip from '../../../components/StatusChip.astro';
+import DataHonesty from '../../../components/DataHonesty.astro';
 
 // Search Field Study — data-driven via bindData(). Results are records; the trust-gradient recipe turns
 // each result's confidence into a --field-confidence gradient, and contradictory results carry polarity.
@@ -24,6 +25,13 @@ const LIVE = ['trust-gradient'];
     field off.
   </p>
 
+  <DataHonesty
+    source="Synthetic. The query, results, source confidence, and contradiction flags are hand-authored sample records — not a real search index or a real corpus."
+    snapshot="Fixed sample data defined in-page; there is no committed data snapshot and no snapshot script feeds this study."
+    liveRefresh="No external data, so no live refresh. The field re-settles as you open results or toggle the field."
+    notClaimed="The field turns each result's confidence into a trust gradient and marks contradictions. It does not rank relevance or decide which result is correct — the confidence values are illustrative inputs."
+  />
+
   <div class="study-stages">
     <div class="stage"><b>Before</b><span>A plain ranked list of results with sources.</span></div>
     <div class="stage"><b>After</b><span>Confidence reads as a trust gradient; contradictions are flagged; opened results are marked.</span></div>
@@ -35,6 +43,12 @@ const LIVE = ['trust-gradient'];
     <button type="button" class="sc-btn" data-study="reduced" aria-pressed="false">Reduce motion</button>
     <span class="sc-readout" data-study-status>starting…</span>
   </div>
+
+  <p class="study-hint">
+    <b>Field off</b> stops the simulation and the list falls back to plain ranked results — different
+    from turning a single <em>projection</em> off, where the field keeps running and only one drawn
+    expression stops.
+  </p>
 
   <div class="se">
     <div class="se-query"><span class="se-q">field ui evidence</span><span class="se-count" data-se-count>—</span></div>
@@ -91,6 +105,7 @@ const LIVE = ['trust-gradient'];
   .sc-btn { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--text, #e8e8ef); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.82rem; cursor: pointer; }
   .sc-btn.on { background: color-mix(in srgb, #4da3ff 22%, transparent); border-color: #4da3ff; }
   .sc-readout { font: 0.76rem ui-monospace, monospace; color: var(--muted, #9aa); margin-left: auto; }
+  .study-hint { font-size: 0.84rem; color: var(--muted, #9aa); max-width: 72ch; margin: 0 0 1rem; }
 
   .se-query { display: flex; align-items: baseline; gap: 0.6rem; border-bottom: 1px solid var(--line, #2a2a35); padding-bottom: 0.4rem; margin-bottom: 0.8rem; }
   .se-q { font-size: 1.05rem; font-weight: 600; }

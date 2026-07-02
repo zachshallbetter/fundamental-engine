@@ -43,6 +43,16 @@ const snapshotLabel = data.snapshotAt ? fmtDate(data.snapshotAt) : "synthetic";
   current="ai-evidence"
   mainClass="ex-ai-evidence"
   mainAttrs={{ "data-field": "on" }}
+  honesty={{
+    source:
+      "Synthetic. The question, claims, sources, and confidence values are hand-authored to demonstrate the substrate — they are not a real study or a real dataset.",
+    snapshot:
+      "Static committed snapshot (src/data/ai-evidence.json). It is not produced by scripts/snapshot-examples.mjs and does not come from any live source.",
+    liveRefresh:
+      "No live refresh — the data is fixed. Only the field's own read-out (the agent-json panel) updates, from the running simulation.",
+    notClaimed:
+      "The field represents confidence, support, and contradiction as weight, cohesion, and charge. It does NOT verify whether any claim is true, and makes no medical or scientific assertion — the confidence numbers are illustrative inputs, not findings.",
+  }}
 >
   <header class="ev-hero">
     <p class="ev-kicker">Fundamental · invisible fields · ai-evidence</p>
@@ -148,6 +158,12 @@ const snapshotLabel = data.snapshotAt ? fmtDate(data.snapshotAt) : "synthetic";
         Refreshed from <code>field.query()</code> on a calm cadence. With the field off (or under
         reduced motion) it holds a single settled reading — the meaning survives without animation.
       </p>
+      <p class="ai-agent-foot">
+        <b>Field off vs projection off:</b> turning the whole field off stops the simulation entirely —
+        no measurement, no read-out. Turning a single <em>projection</em> off leaves the field running;
+        that one expression (here, the agent-json panel) simply isn't drawn, and the field keeps
+        measuring underneath.
+      </p>
     </aside>
   </div>
 
@@ -158,7 +174,11 @@ const snapshotLabel = data.snapshotAt ? fmtDate(data.snapshotAt) : "synthetic";
       <strong>query as data</strong>, not a pile of DOM you scrape. Same field, two surfaces: type on
       the left, structured JSON on the right. Data here is synthetic.
     </p>
-    <p class="ev-built"><a href="/evidence">See the OpenAlex evidence field →</a></p>
+    <p class="ev-built">
+      <a href="/evidence">See the OpenAlex evidence field →</a>
+      &nbsp;·&nbsp;
+      <a href="/docs/studies/evidence-field">How it works — the Evidence Field study →</a>
+    </p>
   </footer>
 </ExampleShell>
 
