@@ -293,7 +293,9 @@ element-scoped and numeric.) Formulas:
 
 **Engagement inputs** are part of this contract. The engine wires hover/focus engagement on
 `[data-hot]` elements at scan time (engaging one activates its body and gathers density — its
-`--d` rises). The platform metric pipeline reads `engaged` as
+`--d` rises). Focus engagement uses the *bubbling* `focusin`/`focusout`, so tabbing to a focusable
+descendant of a `[data-hot]` container engages it too — keyboard parity with the mouse. The platform
+metric pipeline reads `engaged` as
 `:hover | :focus | :focus-within | [data-active]` — setting `data-active` programmatically is
 the sanctioned way to mark an element "in hand" (a dragged card, a just-changed status). See
 [invisible-fields.md](invisible-fields.md) §3.

@@ -7,6 +7,22 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`@fundamental-engine/core`:** **keyboard focus now engages a `[data-hot]` body at mouse
+  parity (#665, a11y).** Engagement bound `focus`/`blur`, which do not bubble — so when a keyboard
+  user tabbed to a focusable *descendant* of a `[data-hot]` container (a card's `<a>`, a row's
+  `<button>`, an `<li>`/`<aside>` wrapper), the container's body never engaged, while a mouse user
+  got the reaction via `pointerenter`. Engagement now binds the bubbling `focusin`/`focusout`, so
+  tabbing into (or out of) any focusable content inside a `[data-hot]` element drives the same
+  engaged state — `data-active="1"`, `b.on`, wave-spine bend, `--d` gather — that hover produces
+  (the RC-8 principle: keyboard users get the same field reactions as the mouse). A directly
+  focusable `[data-hot]` element (a `[data-hot]` button/link) is unaffected — `focusin` still fires
+  on it. Engagement only sets state; the integrator (which reduced-motion already freezes) drives the
+  motion, so focus engagement is reduced-motion-safe by the same path hover is. DOM plane only — the
+  native ports set engagement from the body model and have no DOM focus event. The speculative
+  "tab order forms a current" half of #665 (a directional flow along the tab sequence) is deferred.
+
 ### Changed
 
 - **`@fundamental-engine/core`:** **the RC-6 contract-coverage guard now guards body attributes**
