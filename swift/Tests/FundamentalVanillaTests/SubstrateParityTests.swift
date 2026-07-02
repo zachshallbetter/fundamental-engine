@@ -354,4 +354,178 @@ struct SubstrateParityTests {
         #expect(snap.bodies.first?.data == nil)
         field.destroy()
     }
+
+    // MARK: - Field Snapshot diff (JS critical-path 03)
+
+    /// A hand-built snapshot — the standalone `diffFieldSnapshots` needs no live field, so the relationship
+    /// and body-metric lanes can be exercised deterministically. Mirrors the Kotlin `FieldDiffTests`.
+    private func makeSnapshot(id: String, formations: [String] = ["ambient"],
+                              bodies: [FieldBodySnapshot] = [],
+                              relationships: [FieldRelationshipReading] = [],
+                              metrics: [String: Float] = [:]) -> FieldSnapshot {
+        FieldSnapshot(id: id, createdAt: 0, frame: 0, version: "test", formations: formations,
+                      bodies: bodies, relationships: relationships, metrics: metrics)
+    }
+
+    private func rel(_ from: String, _ to: String, strength: Float, active: Bool) -> FieldRelationshipReading {
+        FieldRelationshipReading(from: from, to: to, type: "attract", strength: strength,
+                                 memory: 0, active: active, causal: active)
+    }
+
+    private func body(_ id: String, metrics: [String: Float]) -> FieldBodySnapshot {
+        FieldBodySnapshot(id: id, identity: FieldBodyIdentity(id: id, kind: "element"),
+                          authority: "anchored", rect: nil, position: nil, tokens: [],
+                          metrics: metrics, dimensions: [:])
+    }
+
+    @Test("diff reports body removal, field-metric deltas, and a formation change (integration)")
+    func diffReportsRemovalAndFormationChange() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        _ = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "attract"),
+                                   rect: { Box(center: Vec3(200, 300, 0), halfExtents: Vec3(5, 5, 0)) }))
+        let gravity = field.addBody(BodySpec(tokens: ["gravity"], identity: FieldBodyIdentity(id: "gravity"),
+                                             rect: { Box(center: Vec3(600, 300, 0), halfExtents: Vec3(8, 8, 0)) }))
+        var t = 0.0
+        for _ in 0..<10 { t += 0.016; host.fire(at: t) }
+        let a = field.snapshot()
+        #expect(a.bodies.count == 2)
+
+        // Mutate the field between captures: remove one body + change the active formation, then run on.
+        gravity.remove()
+        field.setFormation("wells")
+        for _ in 0..<20 { t += 0.016; host.fire(at: t) }
+        let b = field.snapshot()
+
+        let d = field.diff(a, b)
+
+        // from/to carry the two snapshot ids (PURE — the free function reads only the two snapshots).
+        #expect(d.from == a.id)
+        #expect(d.to == b.id)
+
+        // bodies: the gravity body was removed; the attract body remains (not reported added/removed).
+        let removed = d.bodyChanges.filter { $0.kind == "removed" }
+        #expect(removed.count == 1)
+        #expect(removed.first?.id == "gravity")
+        #expect(!d.bodyChanges.contains { $0.kind == "added" })
+
+        // field-level metrics: the `bodies` count 2 -> 1 is reported as a MetricChange.
+        let bodiesMetric = d.metricChanges.first { $0.key == "bodies" }
+        #expect(bodiesMetric != nil)
+        #expect(bodiesMetric?.from == 2)
+        #expect(bodiesMetric?.to == 1)
+
+        // formations: default "ambient" deactivated, "wells" activated (set difference).
+        #expect(d.formationChanges.contains { $0.id == "wells" && $0.kind == "activated" })
+        #expect(d.formationChanges.contains { $0.id == "ambient" && $0.kind == "deactivated" })
+
+        field.destroy()
+    }
+
+    @Test("diff reports a body addition")
+    func diffReportsBodyAddition() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        _ = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "attract"),
+                                   rect: { Box(center: Vec3(200, 300, 0), halfExtents: Vec3(5, 5, 0)) }))
+        var t = 0.0
+        for _ in 0..<3 { t += 0.016; host.fire(at: t) }
+        let a = field.snapshot()
+
+        _ = field.addBody(BodySpec(tokens: ["charge"], identity: FieldBodyIdentity(id: "charge"),
+                                   rect: { Box(center: Vec3(400, 400, 0), halfExtents: Vec3(5, 5, 0)) }))
+        for _ in 0..<3 { t += 0.016; host.fire(at: t) }
+        let b = field.snapshot()
+
+        let d = field.diff(a, b)
+        let added = d.bodyChanges.filter { $0.kind == "added" }
+        #expect(added.count == 1)
+        #expect(added.first?.id == "charge")
+        #expect(!d.bodyChanges.contains { $0.kind == "removed" })
+        field.destroy()
+    }
+
+    @Test("diff of a snapshot against itself is empty by lane (pure + deterministic)")
+    func diffOfIdenticalSnapshotIsEmpty() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        _ = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "a"),
+                                   rect: { Box(center: Vec3(10, 10, 0), halfExtents: Vec3(5, 5, 0)) }))
+        var t = 0.0
+        for _ in 0..<5 { t += 0.016; host.fire(at: t) }
+        let a = field.snapshot()
+
+        let d = field.diff(a, a)
+        #expect(d.from == a.id)
+        #expect(d.to == a.id)
+        #expect(d.bodyChanges.isEmpty)
+        #expect(d.relationshipChanges.isEmpty)
+        #expect(d.metricChanges.isEmpty)
+        #expect(d.formationChanges.isEmpty)
+        field.destroy()
+    }
+
+    @Test("diff reports relationships added / removed / changed by the from+to+type key (pure)")
+    func diffReportsRelationshipChanges() {
+        let a = makeSnapshot(id: "a", relationships: [rel("x", "y", strength: 0.5, active: true),
+                                                      rel("p", "q", strength: 0.2, active: false)])
+        // b: x->y strength changed + went idle; p->q removed; m->n added.
+        let b = makeSnapshot(id: "b", relationships: [rel("x", "y", strength: 0.9, active: false),
+                                                      rel("m", "n", strength: 0.3, active: true)])
+
+        let d = diffFieldSnapshots(a, b)
+
+        let removed = d.relationshipChanges.first { $0.kind == "removed" }
+        #expect(removed?.from == "p")
+        #expect(removed?.to == "q")
+
+        let added = d.relationshipChanges.first { $0.kind == "added" }
+        #expect(added?.from == "m")
+        #expect(added?.to == "n")
+
+        let changed = d.relationshipChanges.first { $0.kind == "changed" }
+        #expect(changed?.from == "x")
+        #expect(changed?.to == "y")
+        #expect(changed?.strength == MetricDelta(from: 0.5, to: 0.9))
+        #expect(changed?.active == BoolDelta(from: true, to: false))
+    }
+
+    @Test("diff reports body metrics added / removed / changed by id, only the differing metrics (pure)")
+    func diffBodyMetricsPure() {
+        let a = makeSnapshot(id: "a", formations: [],
+                             bodies: [body("keep", metrics: ["density": 1, "count": 3]),
+                                      body("gone", metrics: ["density": 2])])
+        let b = makeSnapshot(id: "b", formations: [],
+                             bodies: [body("keep", metrics: ["density": 5, "count": 3]),
+                                      body("new", metrics: ["density": 1])])
+
+        let d = diffFieldSnapshots(a, b)
+
+        #expect(d.bodyChanges.contains { $0.id == "gone" && $0.kind == "removed" })
+        #expect(d.bodyChanges.contains { $0.id == "new" && $0.kind == "added" })
+
+        let changed = d.bodyChanges.first { $0.id == "keep" && $0.kind == "changed" }
+        #expect(changed != nil)
+        // only density changed (1 -> 5); count unchanged so it is NOT reported.
+        #expect(changed?.metrics?.keys.sorted() == ["density"])
+        #expect(changed?.metrics?["density"] == MetricDelta(from: 1, to: 5))
+        #expect(changed?.metrics?["count"] == nil)
+    }
+
+    @Test("field-level metrics diff over the key union, missing treated as 0 (pure)")
+    func diffFieldMetricsUnionMissingZero() {
+        let a = makeSnapshot(id: "a", formations: [], metrics: ["particles": 100, "bodies": 2])
+        // b drops `bodies` (missing → 0) and gains `meanDensity`; particles unchanged (not reported).
+        let b = makeSnapshot(id: "b", formations: [], metrics: ["particles": 100, "meanDensity": 0.4])
+
+        let d = diffFieldSnapshots(a, b)
+
+        #expect(!d.metricChanges.contains { $0.key == "particles" }) // unchanged → no entry
+        let bodiesM = d.metricChanges.first { $0.key == "bodies" }
+        #expect(bodiesM?.from == 2)
+        #expect(bodiesM?.to == 0)                                    // missing in b → 0
+        let meanM = d.metricChanges.first { $0.key == "meanDensity" }
+        #expect(meanM?.from == 0)                                    // missing in a → 0
+        #expect(meanM?.to == 0.4)
+    }
 }

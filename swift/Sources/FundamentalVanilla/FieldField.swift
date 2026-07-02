@@ -198,6 +198,10 @@ public final class FieldField: FieldHandle {
     /// ``FieldHandle/snapshot(_:)``.
     public func snapshot(_ opts: FieldSnapshotOptions? = nil) -> FieldSnapshot { handle.snapshot(opts) }
 
+    /// Compare two field snapshots — a PURE diff, by lane (substrate READ API — JS critical-path 03). See
+    /// ``FieldHandle/diff(_:_:)``.
+    public func diff(_ a: FieldSnapshot, _ b: FieldSnapshot) -> FieldDiff { handle.diff(a, b) }
+
     public func destroy() {
         handle.destroy()
         // remove the managed render surfaces, mirroring `destroy()` removing the managed canvas.
