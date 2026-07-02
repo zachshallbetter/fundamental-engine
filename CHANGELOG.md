@@ -57,6 +57,19 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   The default (flag unset) is unchanged — `fieldflow` still advects ALL matter (neutral-medium
   transport). Exposed on the body contract as `chargeGated` (parsed from `data-charge-gated`).
 
+- **`@fundamental-engine/three`:** **native 3D field visuals hardened — pooled streamline tubes,
+  magnitude-coloured vector grid, cadenced re-sampling (#392).** `streamlineTubes` no longer rebuilds
+  its scene objects on every `update()`: tube `Mesh`es are now pooled and reused across retraces
+  (hidden — not removed — when a line stalls, mirroring the #391 label-sprite pool), path points reuse
+  a persistent scratch, and only the `TubeGeometry` a retrace replaces is disposed; `dispose()` still
+  frees everything. Both visuals gain an `interval` option — re-sample the field every Nth `update()`
+  call (tubes default to `6`, the engine's measure cadence; arrows to `1`) — so an expensive trace runs
+  on a cadence while the scene draws the cached geometry every frame. `vectorField` arrows now colour
+  by magnitude (a per-instance `color → hotColor` lerp, default white-hot), and both visuals place
+  their `z` as an offset off the **projected field plane** rather than an absolute world `z`, so they
+  register correctly under a `VolumeProjection({ centerZ: true })`. Renderer-free lifecycle tests pin
+  pool reuse, cadence, and disposal.
+
 - **`@fundamental-engine/three`:** **`threeBackend` now renders `data`-overlay chip labels** — the
   backend's `text()` was a no-op (only the chip plates drew); it now draws each numeric label as a
   pooled `THREE.Sprite` carrying a per-string `CanvasTexture` (cached by label + color, so a steady
