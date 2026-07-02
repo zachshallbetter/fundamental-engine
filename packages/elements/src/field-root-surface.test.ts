@@ -88,6 +88,64 @@ test('reflection is guarded — attributeChangedCallback skips re-apply while re
   assert.ok(calls.includes('setRender:links'), 'external change applies to the field');
 });
 
+// ── #676: lazy overlay-canvas creation ─────────────────────────────────────────
+
+/** access the private `ensureOverlayCanvas` through the prototype (no DOM needed for the short-circuit). */
+const ensureOverlayCanvas = (
+  FieldField.prototype as unknown as { ensureOverlayCanvas: () => HTMLCanvasElement | null }
+).ensureOverlayCanvas;
+
+test('ensureOverlayCanvas returns the existing canvas without creating a second one (idempotent, #676)', () => {
+  const existing = { tag: 'existing-canvas' } as unknown as HTMLCanvasElement;
+  const self = { overlayCanvas: existing };
+  const got = ensureOverlayCanvas.call(self as unknown as FieldField);
+  assert.equal(got, existing, 'returns the already-owned canvas');
+  assert.equal(self.overlayCanvas, existing, 'and never replaces it');
+});
+
+test('ensureOverlayCanvas creates + appends exactly one light-DOM canvas on first call (#676)', () => {
+  // stub just enough `document` to observe a single create/append, then restore it.
+  const appended: unknown[] = [];
+  const fakeCanvas = () => {
+    const attrs: Record<string, string> = {};
+    return {
+      setAttribute: (k: string, v: string) => void (attrs[k] = v),
+      style: {} as Record<string, string>,
+      _attrs: attrs,
+    };
+  };
+  const prevDoc = (globalThis as { document?: unknown }).document;
+  (globalThis as { document?: unknown }).document = {
+    createElement: () => fakeCanvas(),
+    body: { appendChild: (el: unknown) => void appended.push(el) },
+  };
+  try {
+    const self: { overlayCanvas?: HTMLCanvasElement } = {};
+    const first = ensureOverlayCanvas.call(self as unknown as FieldField);
+    assert.ok(first, 'a canvas is created');
+    assert.equal(appended.length, 1, 'appended to the light DOM exactly once');
+    assert.equal((first as unknown as { _attrs: Record<string, string> })._attrs['data-field-overlay'], '', 'marked data-field-overlay');
+    // a second call must reuse — no new create/append.
+    const second = ensureOverlayCanvas.call(self as unknown as FieldField);
+    assert.equal(second, first, 'reused on the second call');
+    assert.equal(appended.length, 1, 'still only one canvas in the DOM');
+  } finally {
+    (globalThis as { document?: unknown }).document = prevDoc;
+  }
+});
+
+test('ensureOverlayCanvas is a no-op (null) with no document — SSR-safe (#676)', () => {
+  const prevDoc = (globalThis as { document?: unknown }).document;
+  delete (globalThis as { document?: unknown }).document;
+  try {
+    const self: { overlayCanvas?: HTMLCanvasElement } = {};
+    assert.equal(ensureOverlayCanvas.call(self as unknown as FieldField), null, 'no DOM → no canvas');
+    assert.equal(self.overlayCanvas, undefined, 'and nothing is cached');
+  } finally {
+    (globalThis as { document?: unknown }).document = prevDoc;
+  }
+});
+
 // ── #542: full handle access ──────────────────────────────────────────────────
 
 test('.handle exposes the live FieldHandle (#542)', () => {

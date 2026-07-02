@@ -1531,6 +1531,17 @@
             },
             {
               "kind": "method",
+              "name": "ensureOverlayCanvas",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "HTMLCanvasElement | null"
+                }
+              },
+              "description": "Field Surfaces: lazily create + attach the front overlay surface (light DOM — the shadow host is\nz-index:0, behind content). A fixed, full-viewport, click-through, mix-blend canvas above content;\ncore sizes its backing store and draws the overlay mode onto it. Created ONCE, on the first overlay\nthat actually goes active (#676) — core invokes this as `overlayCanvasProvider` — and reused across\nrebuilds. Idempotent: returns the existing canvas on every later call, never a second element."
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -3299,6 +3310,21 @@
                 }
               ],
               "description": "pause/resume drawing (the simulation keeps running) — the element also does this automatically\nfrom its IntersectionObserver, so a manual call is for explicit control.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "ensureOverlayCanvas",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "HTMLCanvasElement | null"
+                }
+              },
+              "description": "Field Surfaces: lazily create + attach the front overlay surface (light DOM — the shadow host is\nz-index:0, behind content). A fixed, full-viewport, click-through, mix-blend canvas above content;\ncore sizes its backing store and draws the overlay mode onto it. Created ONCE, on the first overlay\nthat actually goes active (#676) — core invokes this as `overlayCanvasProvider` — and reused across\nrebuilds. Idempotent: returns the existing canvas on every later call, never a second element.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

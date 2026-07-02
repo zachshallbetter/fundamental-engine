@@ -187,13 +187,34 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // it (the caller owns the element + its fixed/pointer-events placement); its backing store is sized
   // in resize() to match the main canvas dpr. Keeps core DOM-free — the canvas is handed in.
   // Under `render: 'none'` it is never acquired either (the overlay never draws in that mode).
-  const overlayCanvas = opts.overlayCanvas ?? null;
+  // The overlay canvas may be handed in eagerly (`overlayCanvas`) OR resolved lazily the first time an
+  // overlay actually becomes active (`overlayCanvasProvider`, #676) — the host defers creating a
+  // full-viewport light-DOM canvas until a reading is switched on, so the common `overlay: off` case
+  // never adds a mix-blend canvas to the compositing tree at boot. Core stays DOM-free either way: the
+  // host owns the element; core only draws to it.
+  let overlayCanvas: HTMLCanvasElement | null = opts.overlayCanvas ?? null;
   let overlayCtx: CanvasRenderingContext2D | null = ctx ? (overlayCanvas?.getContext('2d') ?? null) : null;
   // The overlay draws exclusively through the RenderBackend contract (#373) — the structural
   // seam a WebGL/WebGPU surface implements later. Callers may inject one; the default wraps the
   // overlay's own 2d context.
   let overlayBackend: RenderBackend | null =
     opts.overlayBackend ?? (overlayCanvas && overlayCtx ? canvas2dBackend(overlayCanvas, overlayCtx) : null);
+  /**
+   * Resolve the overlay surface on demand (#676). If no canvas is bound yet but a provider was supplied,
+   * call it once, acquire its 2d context + default backend, and size the backing store to the live dpr.
+   * Idempotent — an already-resolved backend (eager canvas, injected backend, or a prior call) short-
+   * circuits. Called the first time an overlay reading becomes active (`setOverlay`) and on the
+   * `setRender('none' → …)` lazy path. No-op while the underlay `ctx` is absent (signals-only boot).
+   */
+  function ensureOverlaySurface(): void {
+    if (overlayBackend) return;
+    if (!overlayCanvas && opts.overlayCanvasProvider) overlayCanvas = opts.overlayCanvasProvider() ?? null;
+    if (!overlayCanvas || !ctx) return;
+    overlayCtx ??= overlayCanvas.getContext('2d');
+    if (!overlayCtx) return;
+    overlayBackend = opts.overlayBackend ?? canvas2dBackend(overlayCanvas, overlayCtx);
+    overlayBackend.size(W, H, host.viewport().dpr); // size to the live viewport — resize() only fires on change
+  }
 
   const store = new FieldStore();
   let nextParticleId = 1; // monotonic stable particle identity (readParticleIds); never reused
@@ -2585,6 +2606,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
   const onResize = (): void => resize();
   resize();
+  // A field created with an overlay reading ALREADY set (`overlay: 'grid'`, or `<field-root overlay=…>`
+  // at mount) resolves its overlay surface now, so the lazily-provided canvas is created at boot rather
+  // than only on a later setOverlay (#676). `overlay: 'off'` (the default) resolves nothing.
+  if (overlayStack(cfg.overlay).length) ensureOverlaySurface();
   // pause all work while the tab is backgrounded — stop the loop and the idle timer,
   // resume cleanly when it returns (browsers throttle rAF in the background, but this
   // guarantees zero work and avoids drift on return).
@@ -2668,17 +2693,19 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           console.warn(`Fundamental: setRender('${mode}') could not acquire a 2d context; staying in render 'none'`);
           return;
         }
-        if (overlayCanvas && !overlayCtx) {
-          overlayCtx = overlayCanvas.getContext('2d');
-          if (overlayCtx && !overlayBackend) overlayBackend = opts.overlayBackend ?? canvas2dBackend(overlayCanvas, overlayCtx);
-        }
+        // an overlay reading is already active → bring its surface up alongside the underlay (#676).
+        if (overlayStack(cfg.overlay).length) ensureOverlaySurface();
         sizeSurfaces(host.viewport().dpr); // the one deferred resize the lazy path needs
       }
       cfg.render = mode;
     },
     setOverlay: (mode) => {
       cfg.overlay = mode;
-      if (!overlayStack(mode).length) overlayBackend?.clear(); // empty stack → clear the front surface
+      // A non-empty reading stack resolves the overlay surface on demand (#676) — the first non-off
+      // setOverlay is where a lazily-provided canvas is created + bound. 'off'/empty just clears any
+      // surface that already exists and never forces one into being.
+      if (overlayStack(mode).length) ensureOverlaySurface();
+      else overlayBackend?.clear(); // empty stack → clear the front surface
     },
     setHeatmap: (on) => {
       cfg.heatmap = on;

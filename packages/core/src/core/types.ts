@@ -702,6 +702,17 @@ export interface FieldOptions {
    * provides the canvas, core only draws. Default unset → no overlay surface.
    */
   overlayCanvas?: HTMLCanvasElement;
+  /**
+   * Field Surfaces (overlay placement, #676): a lazy alternative to `overlayCanvas`. When no
+   * `overlayCanvas` is bound, core calls this provider ONCE — the first time an overlay reading actually
+   * becomes active (a non-`off` `setOverlay`, or `setRender` leaving `'none'` with a reading already
+   * set) — to obtain the surface. This lets a host (e.g. `<field-root>`) defer creating its
+   * full-viewport, mix-blend light-DOM canvas until an overlay is switched on, so the common
+   * `overlay: off` path never puts a canvas into the compositing tree at boot. Return `null` to decline
+   * (stays surface-less). Ignored when `overlayCanvas` is set. Keeps core DOM-free — the host still owns
+   * the element and its CSS placement.
+   */
+  overlayCanvasProvider?: () => HTMLCanvasElement | null;
   /** initial overlay visualization mode (Field Surfaces); default `'off'`. */
   overlay?: OverlayInput;
   /**

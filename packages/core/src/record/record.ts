@@ -37,7 +37,7 @@ import { seededRng } from './rng.ts';
  */
 export type RecordableFieldOptions = Omit<
   FieldOptions,
-  'host' | 'rng' | 'now' | 'overlayCanvas' | 'overlayBackend' | 'feedbackSink'
+  'host' | 'rng' | 'now' | 'overlayCanvas' | 'overlayCanvasProvider' | 'overlayBackend' | 'feedbackSink'
 >;
 
 /** What to record: the field config, the field's coordinate space, the seed, and how many frames. */
