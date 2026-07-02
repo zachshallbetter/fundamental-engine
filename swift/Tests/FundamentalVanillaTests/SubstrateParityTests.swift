@@ -14,7 +14,7 @@ import FundamentalCore
 /// can run the full sim headlessly from the minimal core alone.
 final class MinimalHost: FieldHost {
     var volume: FieldVolume { FieldVolume(width: 300, height: 300, depth: 0) }
-    var projection: any FieldProjection { FlatProjection() }
+    var projection: any HostProjection { FlatProjection() }
     private var cb: ((TimeInterval) -> Void)?
     func scheduleFrame(_ callback: @escaping (TimeInterval) -> Void) -> AnyObject { cb = callback; return NSObject() }
     func cancelFrame(_ token: AnyObject) { cb = nil }
@@ -692,6 +692,243 @@ struct SubstrateParityTests {
         #expect(b.influences.isEmpty)
         let replay = field.replay(a, b)
         #expect(!replay.steps.contains { $0.cause == .force })
+        field.destroy()
+    }
+}
+
+// MARK: - Projection Registry (substrate READ API — critical-path 05)
+
+/// Cross-plane projection-registry parity — mirror of the Kotlin `ProjectionRegistryTests` (#936) and the
+/// JS `projection-registry.test.ts` + `projection-autoapply.test.ts`. A PROJECTION maps field STATE into an
+/// output surface and NEVER mutates the field. This port implements the portable surfaces (`agent-json` +
+/// a generic host `callback`); the web surfaces (css / dom-attribute / svg) are declared for metadata parity
+/// but are web-first. `list()` feeds `query()` / `snapshot()` `projections`.
+@Suite("Projection registry parity")
+struct ProjectionRegistryParityTests {
+
+    // A visual projection whose `apply` writes to a sink — used to prove apply never touches the field.
+    private func densityOutline(_ sink: @escaping ([String: Float]) -> Void) -> FieldProjection {
+        FieldProjection(
+            id: "density-outline",
+            label: "Density Outline",
+            channels: ["density"],
+            surfaces: [.css, .annotation],
+            reducedMotionEquivalent: "outline and label",
+            accessibilityEquivalent: "semantic emphasis and explanation",
+            apply: { reading, _ in sink(reading) }
+        )
+    }
+
+    // A capture target that records every reading it receives (the callback surface's sink under test).
+    private final class Recorder: FieldProjectionTarget {
+        var readings: [[String: Float]] = []
+        func receive(_ reading: [String: Float]) { readings.append(reading) }
+    }
+
+    @Test("register / get / list / unregister round-trips with serializable metadata")
+    func registerGetListUnregister() {
+        let field = FieldField(host: HeadlessFieldHost())
+        let proj = densityOutline { _ in }
+        let off = field.projections.register(proj)
+
+        // get returns the full projection (incl. apply); list returns serializable metadata.
+        #expect(field.projections.get("density-outline") != nil)
+        let info = field.projections.list()
+        #expect(info.count == 1)
+        #expect(info[0].id == "density-outline")
+        #expect(info[0].label == "Density Outline")
+        #expect(info[0].channels == ["density"])
+        #expect(info[0].surfaces == [.css, .annotation])
+        #expect(info[0].reducedMotionEquivalent == "outline and label")
+        #expect(info[0].accessibilityEquivalent == "semantic emphasis and explanation")
+
+        // the returned unregister fn removes it.
+        off()
+        #expect(field.projections.list().isEmpty)
+        #expect(field.projections.get("density-outline") == nil)
+        field.destroy()
+    }
+
+    @Test("registering under an existing id replaces it — newer metadata wins")
+    func registerReplacesSameId() {
+        let field = FieldField(host: HeadlessFieldHost())
+        field.projections.register(agentJsonProjection(id: "p", channels: ["density"], label: "First"))
+        let off2 = field.projections.register(agentJsonProjection(id: "p", channels: ["count"], label: "Second"))
+        #expect(field.projections.list().count == 1)
+        #expect(field.projections.list()[0].label == "Second")
+        #expect(field.projections.list()[0].channels == ["count"])
+        off2()
+        #expect(field.projections.list().isEmpty)
+        field.destroy()
+    }
+
+    @Test("apply writes the reading to the target and never mutates the field")
+    func applyWritesToTargetAndNeverMutatesTheField() {
+        // Baseline: run a field 10 frames with NO projection and record particle count.
+        let baseHost = HeadlessFieldHost()
+        let baseField = FieldField(host: baseHost)
+        var t = 0.0
+        for _ in 0..<10 { t += 0.016; baseHost.fire(at: t) }
+        let baseline = baseField.particleCount()
+        baseField.destroy()
+
+        // Same field + frames, but with a projection registered AND applied — count must be identical.
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        var received: [String: Float]?
+        field.projections.register(densityOutline { received = $0 })
+        var t2 = 0.0
+        for _ in 0..<10 { t2 += 0.016; host.fire(at: t2) }
+        let target = Recorder()
+        field.projections.apply("density-outline", ["density": 0.72], target)
+
+        #expect(received == ["density": 0.72]) // apply wrote the reading to the target surface
+        #expect(field.particleCount() == baseline) // applying a projection does not change field state
+
+        // an unknown id is a no-op (no crash).
+        field.projections.apply("nope", ["density": 1], Recorder())
+        field.destroy()
+    }
+
+    @Test("query() and snapshot() report the registered projections")
+    func queryAndSnapshotReportRegisteredProjections() {
+        let field = FieldField(host: HeadlessFieldHost())
+        _ = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "hero"),
+                                   rect: { Box(center: Vec3(200, 150, 0), halfExtents: Vec3(5, 5, 0)) }))
+        field.projections.register(densityOutline { _ in })
+
+        // query().projections is populated from the registry.
+        let q = field.query()
+        #expect(q.projections.count == 1)
+        #expect(q.projections[0].id == "density-outline")
+
+        // snapshot().projections captures the same metadata.
+        let snap = field.snapshot()
+        #expect(snap.projections.count == 1)
+        #expect(snap.projections[0].label == "Density Outline")
+        #expect(snap.projections[0].surfaces == [.css, .annotation])
+        field.destroy()
+    }
+
+    @Test("agentJsonTarget captures by value and serializes with JS whole-float parity")
+    func agentJsonTargetCapturesAndSerializes() {
+        let tgt = agentJsonTarget()
+        #expect(tgt.value() == nil) // null before the first write
+        #expect(tgt.json() == "null")
+
+        tgt.receive(["density": 0.4, "attention": 0.9])
+        #expect(tgt.value() == ["density": 0.4, "attention": 0.9])
+        // whole numbers serialize without a trailing .0 (JS JSON.stringify parity).
+        tgt.receive(["k": 1])
+        #expect(tgt.json() == "{\"k\":1}")
+
+        // captured BY VALUE — mutating a source dict afterward does not change what was received.
+        var src: [String: Float] = ["density": 1]
+        tgt.receive(src)
+        src["density"] = 99
+        #expect(tgt.value()?["density"] == 1) // stored a copy, not a reference
+    }
+
+    @Test("an agent-json projection writes through apply into its target")
+    func agentJsonProjectionWritesThroughApplyIntoTarget() {
+        let field = FieldField(host: HeadlessFieldHost())
+        let tgt = agentJsonTarget()
+        field.projections.register(agentJsonProjection(id: "agent", channels: ["density"], label: "Agent view"))
+        field.projections.apply("agent", ["density": 0.5], tgt)
+        #expect(tgt.value() == ["density": 0.5])
+        field.destroy()
+    }
+
+    @Test("bind auto-applies each write phase; unbind stops further writes")
+    func bindAutoAppliesEachWritePhaseUnbindStops() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        let tgt = agentJsonTarget()
+        var n: Float = 0
+        field.projections.register(agentJsonProjection(id: "live", channels: ["k"]))
+        let unbind = field.projections.bind("live", tgt) { n += 1; return ["k": n] }
+
+        #expect(tgt.value() == nil) // no write before the first frame
+        var t = 0.0
+        t += 0.016; host.fire(at: t)
+        let afterOne = tgt.value()?["k"]
+        #expect(afterOne != nil && afterOne! >= 1) // applied on the write phase
+        t += 0.016; host.fire(at: t)
+        #expect((tgt.value()?["k"] ?? 0) > (afterOne ?? 0)) // applied again on the next frame
+
+        let stoppedAt = tgt.value()?["k"]
+        unbind()
+        t += 0.016; host.fire(at: t)
+        #expect(tgt.value()?["k"] == stoppedAt) // no further writes after unbind
+        field.destroy()
+    }
+
+    @Test("a bound projection never perturbs the simulation over N frames")
+    func boundProjectionNeverPerturbsTheSimulation() {
+        // Baseline: 10 frames, no binding.
+        let baseHost = HeadlessFieldHost()
+        let baseField = FieldField(host: baseHost)
+        var t = 0.0
+        for _ in 0..<10 { t += 0.016; baseHost.fire(at: t) }
+        let baseline = baseField.particleCount()
+        baseField.destroy()
+
+        // Same, with a projection bound and auto-applying every write phase.
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        field.projections.register(agentJsonProjection(id: "p", channels: ["density"]))
+        field.projections.bind("p", agentJsonTarget()) { ["density": 1] }
+        var t2 = 0.0
+        for _ in 0..<10 { t2 += 0.016; host.fire(at: t2) }
+        #expect(field.particleCount() == baseline) // particle count identical with a projection bound
+        field.destroy()
+    }
+
+    @Test("binding an unregistered id is inert — its target is never called")
+    func bindingAnUnregisteredIdIsInert() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        // A recorder whose reading list must stay empty: binding an unknown id must never invoke it.
+        let exploding = Recorder()
+        field.projections.bind("nope", exploding) { ["x": 1] }
+        host.fire(at: 0.016) // must not call the target
+        #expect(exploding.readings.isEmpty)
+        field.destroy()
+    }
+
+    @Test("the callback surface forwards each reading to the host sink")
+    func callbackTargetForwardsReadingsToHostSink() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        var seen: [[String: Float]] = []
+        let tgt = callbackTarget { seen.append($0) }
+        field.projections.register(callbackProjection(id: "native-label", channels: ["density"], label: "Native label"))
+        let unbind = field.projections.bind("native-label", tgt) { ["density": 0.3] }
+
+        var t = 0.0
+        t += 0.016; host.fire(at: t)
+        t += 0.016; host.fire(at: t)
+        #expect(seen.count == 2) // the host sink received one reading per write phase
+        #expect(seen.last == ["density": 0.3])
+
+        // callback surface reported in the metadata.
+        #expect(field.projections.list()[0].surfaces == [.callback])
+
+        unbind()
+        t += 0.016; host.fire(at: t)
+        #expect(seen.count == 2) // no further writes after unbind
+        field.destroy()
+    }
+
+    @Test("a field with nothing registered reports empty (not nil) projections on both reads")
+    func defaultFieldHasNoProjections() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        var t = 0.0
+        for _ in 0..<3 { t += 0.016; host.fire(at: t) }
+        #expect(field.projections.list().isEmpty)
+        #expect(field.query().projections.isEmpty)
+        #expect(field.snapshot().projections.isEmpty)
         field.destroy()
     }
 }

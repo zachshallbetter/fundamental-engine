@@ -115,7 +115,7 @@ final class UIKitFieldHost: FieldHost {
 
     /// Flat at depth 0; a shallow perspective once the field has volume — z nudges the
     /// projected position and feeds the renderer's depth-hint sizing/fading.
-    public var projection: any FieldProjection {
+    public var projection: any HostProjection {
         depth > 0 ? PerspectiveProjection(focalLength: max(depth * 4, 200)) : FlatProjection()
     }
 

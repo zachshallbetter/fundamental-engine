@@ -179,9 +179,9 @@ Ported and tested — the full engine:
   density/count/engaged/load), the active formation, field-level metrics (`particles`/`bodies`/
   `meanDensity`), and relationships (identity-keyed endpoints) — scoped by a point/rect/global region and
   an `include` filter. The result (`FieldQueryResult`) mirrors the JS shape 1:1 so a reading serializes
-  identically across planes; tested (`SubstrateParityTests`). The `influences`/`projections`/`lens` lanes
-  are present-but-empty for now (no impulse accumulator, projection registry, or lens lane in the port
-  yet).
+  identically across planes; tested (`SubstrateParityTests`). `projections` is populated from the field's
+  projection registry (see below); the `influences`/`lens` lanes are present-but-empty for now (no impulse
+  accumulator or lens lane in the port yet).
 - **Substrate READ API — `snapshot()`** (JS critical-path 03): `FieldHandle.snapshot(_:)` captures the
   field's STATE at a frame — a portable, serializable `FieldSnapshot` (bodies with identity + rect +
   position + tokens + metrics, the active formation, field-level metrics, relationships). Distinct from
@@ -190,7 +190,8 @@ Ported and tested — the full engine:
   profile strips it even against an explicit `includeData: true` (TIGHTEST-wins, `resolveSnapshotFlags`).
   `createdAt` is the field clock (`env.t`, deterministic), `id` is `snap-<frame>-<n>`, `version` is
   `FIELD_VERSION`. The result mirrors the JS shape + the Kotlin port 1:1; tested (`SubstrateParityTests`).
-  `influences`/`projections` are present-but-empty for now.
+  `projections` is populated from the field's projection registry (see below); `influences` is
+  present-but-empty for now.
 - **Substrate READ API — `diff()`** (JS critical-path 03): `FieldHandle.diff(_:_:)` is a PURE comparison of
   two `FieldSnapshot`s (no live field access, no mutation) reporting what changed by lane — `bodyChanges`
   (added/removed/changed, with per-metric before/after over the union of metric keys, missing read as `0`),
@@ -210,8 +211,24 @@ Ported and tested — the full engine:
   port (no impulse accumulator), so that lane is dormant while formation/relationship/measurement/metric are
   fully live; it comes alive unchanged once an accumulator lands. `CausalReplay` / `CausalReplayStep` /
   `CausalCause` / `ReplayOptions` shape + field names + step ordering + phrasing mirror the JS core and the
-  Kotlin `:fundamental-core` port 1:1; tested (`SubstrateParityTests`). The rest of the substrate READ API —
-  `projections` — is a follow-up on both native planes (it needs a port projection registry).
+  Kotlin `:fundamental-core` port 1:1; tested (`SubstrateParityTests`).
+- **Substrate — projection registry** (JS critical-path 05): `FieldHandle.projections` is the field's
+  `ProjectionRegistry` — register named `FieldProjection`s that map field STATE onto an output surface, and
+  read their metadata (`FieldProjectionInfo`) back through `query()` / `snapshot()` `projections`.
+  GOVERNANCE: a projection reveals state; it MAY NOT mutate the field (no forces, no body/metric writes) —
+  enforced structurally (`apply` receives a plain reading + a target, never the field) and proven by the
+  no-mutation tests (particle count identical over N frames with a projection bound + auto-applying). Bound
+  projections auto-apply once per write phase (after feedback) via the after-tick hook — read-only, never
+  moving matter. Portable surfaces on this plane: `agent-json` (`agentJsonProjection` / `agentJsonTarget`,
+  incl. JS-parity whole-float JSON serialization) and a generic host `callback` (`callbackProjection` /
+  `callbackTarget`); the web surfaces (`css` / `dom-attribute` / `svg`) are declared in the surface enum for
+  metadata parity but are web-first (they live in `@fundamental-engine/dom`). NAME NOTE: the host SPI
+  coordinate projection is spelled `HostProjection` here so the substrate `FieldProjection` keeps its
+  cross-plane public name (Kotlin separates the two by package — `runtime` vs `engine`). `register` /
+  `unregister` / `get` / `list` / `apply` / `bind` shape + semantics mirror the JS core and the Kotlin
+  `:fundamental-core` port (#936) 1:1; tested (`ProjectionRegistryParityTests`). **This completes the
+  substrate READ API — `query` / `snapshot` / `diff` / `sample` / `replay` / `projections` — at cross-plane
+  parity on both native planes (Swift + Kotlin).**
 - **Force-probe — `sample(x:y:)`** (JS #816): `FieldHandle.sample(x:y:)` returns the net force vector a
   free particle would feel at a world-space point, summed over all active bodies via the shared `forceAt`
   streamlines probe (velocity- and charge-dependent forces contribute through their `field()`). Read-only

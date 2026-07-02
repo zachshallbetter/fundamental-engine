@@ -25,11 +25,19 @@ public struct FieldVolume {
     public var size3: Vec3 { Vec3(width, height, depth) }
 }
 
-// MARK: - FieldProjection
+// MARK: - HostProjection
 
 /// Maps a 3D world position to a 2D render point (and a depth hint for size/opacity effects).
 /// Implement this on the host to control how the physics volume is projected onto a surface.
-public protocol FieldProjection {
+///
+/// NAME NOTE: this is the host SPI *coordinate* projection (flat / perspective / volumetric), the Swift
+/// analog of the Kotlin `com.fundamental.core.engine.FieldProjection`. It is deliberately NOT named
+/// `FieldProjection` here: that name is reserved for the substrate ``FieldProjection`` (the projection
+/// *registry* type — JS `FieldProjection`, Kotlin `com.fundamental.core.runtime.FieldProjection`), which
+/// maps field STATE to an output surface. Kotlin keeps the two apart by package (`engine` vs `runtime`);
+/// Swift has no in-module packages, so the host one is spelled `HostProjection` and the substrate one
+/// keeps the cross-plane public spelling `FieldProjection`.
+public protocol HostProjection {
     /// Project `p` to a 2D point in the render surface's coordinate space.
     func project(_ p: Vec3) -> (x: Float, y: Float)
     /// Depth hint ∈ [0,1] for size/opacity effects. 0 = at surface; 1 = far back.
@@ -37,7 +45,7 @@ public protocol FieldProjection {
 }
 
 /// Flat projection — z is ignored. The depth-0 (flat field) default on iOS and macOS.
-public struct FlatProjection: FieldProjection {
+public struct FlatProjection: HostProjection {
     public init() {}
     public func project(_ p: Vec3) -> (x: Float, y: Float) { (p.x, p.y) }
     public func depthHint(_ p: Vec3) -> Float { 0 }
@@ -45,7 +53,7 @@ public struct FlatProjection: FieldProjection {
 
 /// Shallow perspective projection — z gives a size/opacity nudge without leaving 2D.
 /// `strength` controls how much z deflects the projected position (default 0 = flat).
-public struct PerspectiveProjection: FieldProjection {
+public struct PerspectiveProjection: HostProjection {
     public var focalLength: Float
     public var strength: Float
 
@@ -81,7 +89,7 @@ public protocol MinimalFieldHost: AnyObject {
     // ── geometry ──────────────────────────────────────────────────────────
     var volume: FieldVolume { get }
     /// How the 3D world is projected onto the render surface.
-    var projection: any FieldProjection { get }
+    var projection: any HostProjection { get }
 
     // ── loop (time) ────────────────────────────────────────────────────────
     /// Schedule a display-sync callback. Returns a cancellation token.

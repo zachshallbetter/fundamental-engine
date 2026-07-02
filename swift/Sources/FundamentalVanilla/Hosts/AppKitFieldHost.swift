@@ -94,7 +94,7 @@ final class AppKitFieldHost: FieldHost {
     // MARK: FieldHost — projection
 
     /// Flat at depth 0; a shallow perspective once the field has volume.
-    public var projection: any FieldProjection {
+    public var projection: any HostProjection {
         depth > 0 ? PerspectiveProjection(focalLength: max(depth * 4, 200)) : FlatProjection()
     }
 

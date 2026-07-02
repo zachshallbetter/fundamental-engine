@@ -65,7 +65,7 @@ final class RealityFieldHost: FieldHost {
 
     // MARK: FieldHost — projection (identity — already 3D world space)
 
-    public var projection: any FieldProjection { IdentityProjection() }
+    public var projection: any HostProjection { IdentityProjection() }
 
     // MARK: FieldHost — body scanning
 
@@ -104,7 +104,7 @@ final class RealityFieldHost: FieldHost {
 // MARK: - IdentityProjection
 
 /// No projection — particles live directly in 3D world space.
-public struct IdentityProjection: FieldProjection {
+public struct IdentityProjection: HostProjection {
     public func project(_ p: Vec3) -> (x: Float, y: Float) { (p.x, p.y) }
     public func depthHint(_ p: Vec3) -> Float { 0 }
 }

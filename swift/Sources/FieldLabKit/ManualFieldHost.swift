@@ -21,7 +21,7 @@ public final class ManualFieldHost: FieldHost {
     public var prefersReducedMotion: Bool { false }
     public var isHidden: Bool { false }
 
-    public var projection: any FieldProjection {
+    public var projection: any HostProjection {
         fieldVolume.depth > 0
             ? PerspectiveProjection(focalLength: max(fieldVolume.depth * 4, 200))
             : FlatProjection()
