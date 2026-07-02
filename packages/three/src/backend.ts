@@ -10,27 +10,40 @@
  * still reads. Geometry is rebuilt on each `clear()` (the engine clears once at the top of every
  * overlay frame), so the scene always shows the latest readings.
  *
- * Scope: the line + rect primitives — i.e. every field-structure overlay — render fully. Text
- * labels (the `data` reading's numeric chips) are not yet drawn; `measureText` is honored so the
- * plates size correctly, and label sprites are a tracked follow-up. The line overlays need no text.
+ * Scope: the line + rect primitives — i.e. every field-structure overlay — render fully. The
+ * `data` reading's numeric chip labels render as pooled `Sprite`s: each distinct label string
+ * (color included) gets ONE `CanvasTexture`, cached and reused across frames; the sprite pool grows
+ * on demand and unused sprites are hidden on `clear()`, so a steady overlay uploads no new textures.
  */
 
 import {
   AdditiveBlending,
   BufferGeometry,
+  CanvasTexture,
   DynamicDrawUsage,
   Float32BufferAttribute,
   Group,
+  LinearFilter,
   LineBasicMaterial,
   LineSegments,
   Mesh,
   MeshBasicMaterial,
+  Sprite,
+  SpriteMaterial,
   Vector3,
 } from 'three';
 import type { RenderBackend, Stroke } from '@fundamental-engine/core';
 import type { FieldProjection } from './project.ts';
 
 const _v = new Vector3();
+const _v2 = new Vector3();
+
+/** the chip label font — matches the Canvas 2D backend's CHIP_FONT so labels read identically. */
+const CHIP_FONT = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
+/** CSS px height of the chip label box (the `10px` font + a little vertical breathing room). */
+const LABEL_PX_HEIGHT = 13;
+/** supersample factor for the label texture — crisp text without a huge atlas. */
+const LABEL_SS = 3;
 
 export interface ThreeBackendOptions {
   /** the 2D↔3D mapping (share the one your `FieldLayer` uses so overlay and swarm align). */
@@ -75,10 +88,70 @@ export function threeBackend(opts: ThreeBackendOptions): ThreeBackend {
   );
   rects.frustumCulled = false;
 
+  // label sprites live in their own group so the pool sits cleanly beside the line/rect meshes.
+  const labelGroup = new Group();
   const object = new Group();
-  object.add(lines, rects);
+  object.add(lines, rects, labelGroup);
 
   const metrics = metricsContext();
+
+  // Per-label `CanvasTexture` cache, keyed by the label string + its color. A chip's number/color is
+  // stable frame-to-frame, so this bounds texture uploads to the set of distinct labels ever drawn —
+  // no per-frame texture churn. Each entry also records the CSS-pixel width metric used to size the
+  // sprite, so `text()` need not re-measure.
+  interface LabelTex {
+    texture: CanvasTexture;
+    /** rendered width in CSS px (font metric), for the sprite's world scale. */
+    widthPx: number;
+  }
+  const labelCache = new Map<string, LabelTex>();
+
+  /** build (or fetch) the cached texture for `value` at the given color. */
+  function labelTexture(value: string, r: number, g: number, b: number, a: number): LabelTex | null {
+    if (typeof document === 'undefined') return null;
+    const key = `${value}|${r},${g},${b},${a}`;
+    const hit = labelCache.get(key);
+    if (hit) return hit;
+
+    if (metrics) metrics.font = CHIP_FONT;
+    const widthPx = metrics ? metrics.measureText(value).width : value.length * 6;
+
+    const cv = document.createElement('canvas');
+    cv.width = Math.max(1, Math.ceil(widthPx * LABEL_SS));
+    cv.height = Math.max(1, Math.ceil(LABEL_PX_HEIGHT * LABEL_SS));
+    const cx = cv.getContext('2d');
+    if (!cx) return null;
+    cx.scale(LABEL_SS, LABEL_SS);
+    cx.font = CHIP_FONT;
+    cx.textBaseline = 'middle';
+    cx.textAlign = 'left';
+    cx.fillStyle = `rgba(${r},${g},${b},${a})`;
+    cx.fillText(value, 0, LABEL_PX_HEIGHT / 2);
+
+    const texture = new CanvasTexture(cv);
+    texture.minFilter = LinearFilter; // non-power-of-two atlas; no mipmaps
+    texture.magFilter = LinearFilter;
+    const entry: LabelTex = { texture, widthPx };
+    labelCache.set(key, entry);
+    return entry;
+  }
+
+  // Sprite pool: reused across frames. `clear()` parks the cursor at 0 and hides the tail; `text()`
+  // advances it, growing the pool only when a frame needs more labels than before.
+  const labelPool: Sprite[] = [];
+  let labelCursor = 0;
+
+  function acquireLabel(): Sprite {
+    let sprite = labelPool[labelCursor];
+    if (!sprite) {
+      sprite = new Sprite(new SpriteMaterial({ transparent: true, depthWrite: false }));
+      sprite.frustumCulled = false;
+      labelPool[labelCursor] = sprite;
+      labelGroup.add(sprite);
+    }
+    labelCursor++;
+    return sprite;
+  }
 
   // persistent, growable GPU buffers — written in place each frame (DynamicDrawUsage) rather than
   // reallocating four Float32Arrays + four Float32BufferAttributes per overlay frame, which orphaned
@@ -143,6 +216,12 @@ export function threeBackend(opts: ThreeBackendOptions): ThreeBackend {
       lineCol.length = 0;
       rectPos.length = 0;
       rectCol.length = 0;
+      // hide any label sprites the previous frame used but this one won't, then rewind the cursor so
+      // the next frame reuses them from the top (texture/material stay; only visibility toggles).
+      for (let i = labelCursor; i < labelPool.length && labelPool[i]!.visible; i++) {
+        labelPool[i]!.visible = false;
+      }
+      labelCursor = 0;
     },
     segments(packed: ArrayLike<number>, stroke: Stroke): void {
       for (let i = 0; i + 3 < packed.length; i += 4) {
@@ -173,13 +252,37 @@ export function threeBackend(opts: ThreeBackendOptions): ThreeBackend {
       pushPoint(rectPos, x, y2);
       for (let k = 0; k < 6; k++) pushColor(rectCol, r, g, b, alpha);
     },
-    text(): void {
-      // label sprites are a tracked follow-up; the line overlays need no text, and the chip plate
-      // (rect) still renders. measureText is honored so plate sizing stays correct.
+    text(value: string, x: number, y: number, r: number, g: number, b: number, alpha: number): void {
+      // the engine anchors the label at baseline-middle (x = left edge, y = vertical center).
+      const entry = labelTexture(value, r, g, b, alpha);
+      if (!entry) return; // no 2D context (headless without a document) — nothing to draw
+      const sprite = acquireLabel();
+      const mat = sprite.material as SpriteMaterial;
+      if (mat.map !== entry.texture) {
+        mat.map = entry.texture;
+        mat.needsUpdate = true;
+      }
+      sprite.visible = true;
+
+      // scale the sprite to the label's world size (CSS px → world via the projection's scale) and
+      // position its CENTER — the engine's anchor is the left/middle, so nudge right by half a width.
+      // Derive the field-px→world scale from the projection itself (no projection-type coupling):
+      // project the label's left and right edges, and its top/bottom, and take the world deltas. This
+      // stays correct for any FieldProjection, and sizes the sprite to the same footprint as the plate.
+      projection.toWorld(x, y, 0, 0, 0, _v); // left edge, vertical center
+      projection.toWorld(x + entry.widthPx, y, 0, 0, 0, _v2); // right edge
+      const wWorld = _v.distanceTo(_v2);
+      projection.toWorld(x, y - LABEL_PX_HEIGHT, 0, 0, 0, _v2); // one label-height up
+      const hWorld = _v.distanceTo(_v2);
+      sprite.scale.set(wWorld || 1e-4, hWorld || 1e-4, 1);
+      // position the sprite's CENTER; the engine anchors at the left edge / vertical middle, so nudge
+      // right by half the label width. The overlay owns its own z (same plane as line/rect).
+      projection.toWorld(x + entry.widthPx / 2, y, 0, 0, 0, _v);
+      sprite.position.set(_v.x, _v.y, z);
     },
     measureText(value: string): number {
       if (metrics) {
-        metrics.font = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
+        metrics.font = CHIP_FONT;
         return metrics.measureText(value).width;
       }
       return value.length * 6; // coarse fallback when no 2D context is available
@@ -189,6 +292,10 @@ export function threeBackend(opts: ThreeBackendOptions): ThreeBackend {
       rectGeom.dispose();
       (lines.material as LineBasicMaterial).dispose();
       (rects.material as MeshBasicMaterial).dispose();
+      for (const sprite of labelPool) (sprite.material as SpriteMaterial).dispose();
+      for (const { texture } of labelCache.values()) texture.dispose();
+      labelCache.clear();
+      labelPool.length = 0;
     },
   };
 }
