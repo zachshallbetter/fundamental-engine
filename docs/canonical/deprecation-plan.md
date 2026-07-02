@@ -100,3 +100,8 @@ events, the `@fundamental-engine/platform` package) carry a dev-only deprecation
 alias (`--mass`) and the `<field-field>` tag are doc-only. All are **removed at `1.0`**. This document,
 alongside the "Deprecation & removal policy" section of [`api-stability.md`](api-stability.md), is the
 record that they are *intentionally temporary*, not permanent API.
+
+The **consumer** upgrade guide (old form → new form, per alias) is
+[`migration-0.x-to-1.0.md`](../migration-0.x-to-1.0.md); the **maintainer** file-level removal inventory
+for the human cut (source sites, tests, cross-plane status) is
+[`1.0-removal-checklist.md`](../planning/1.0-removal-checklist.md).
