@@ -7,6 +7,20 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Deprecated
+
+- **`@fundamental-engine/core` + `@fundamental-engine/platform`:** **documented sunset + dev-only
+  deprecation warnings for the migration aliases (#709).** The `forces-ui → field-ui → Fundamental`
+  rename left a few living aliases; they ship through RC1 and are **removed at `1.0`**. The
+  runtime-observable ones now warn in dev (`NODE_ENV !== 'production'`), deduped so they warn at most
+  once: (1) the `forces:*` capture/release/relocate **events** (mirror of `field:*`) warn once per event
+  name at the dispatch site in core; (2) importing the **`@fundamental-engine/platform`** package (a thin
+  re-export of `@fundamental-engine/dom`) warns once on import. The `--mass` CSS var (alias of `--load`)
+  is doc-only — a CSS-var write is not interceptable from JS. **Kept permanently, NOT deprecated:**
+  `--d`/`--field-density` (canonical dual density naming) and `--load`. The full policy is in
+  [`docs/canonical/api-stability.md`](docs/canonical/api-stability.md) ("Deprecation & removal policy")
+  and [`docs/canonical/deprecation-plan.md`](docs/canonical/deprecation-plan.md).
+
 ### Removed
 
 - **Removed the historical `ROADMAP.md` and `BACKLOG.md` root docs.** The pre-1.0 refactor roadmap and the

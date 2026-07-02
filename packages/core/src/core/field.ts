@@ -65,7 +65,7 @@ import { traceFieldLines } from './fieldlines.ts';
 import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
-import { devWarnNoOp } from '../contracts/guards.ts';
+import { devWarnNoOp, devWarnDeprecated } from '../contracts/guards.ts';
 import { FIELD_VERSION } from '../version.ts';
 import { energyReport } from '../diagnostics/energy.ts';
 import { accumulateAt } from '../diagnostics/probes.ts';
@@ -1036,9 +1036,18 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   // dispatch a discrete field event on an element, with the forces:* alias (migration window).
+  // The forces:* mirror is a migration-era alias (forces-ui → field-ui → Fundamental) kept through
+  // RC1 / 1.0 and REMOVED at 1.0 — warn once per event name in dev so consumers move to field:*
+  // (#709; see docs/canonical/deprecation-plan.md). Dedup keys on the alias name, so a body firing
+  // captured/released every frame warns at most once per name.
   function fireCaptureEvent(el: HTMLElement, name: 'captured' | 'released' | 'relocated', detail: Record<string, unknown>): void {
     el.dispatchEvent(new CustomEvent('field:' + name, { bubbles: true, composed: true, detail }));
     el.dispatchEvent(new CustomEvent('forces:' + name, { bubbles: true, composed: true, detail }));
+    devWarnDeprecated(
+      `forces:${name}`,
+      `the 'forces:${name}' event is a migration alias for 'field:${name}' and is removed at 1.0 — ` +
+        `listen for 'field:${name}' instead.`,
+    );
   }
 
   // capture/release events for sink BODIES (particle accretion): fire field:captured on the rising

@@ -113,12 +113,43 @@ of the contract until they are added to the table above.
    `forces:*` **event names** (e.g. `forces:captured`/`forces:released`), which still fire for
    compatibility. The one *current* deprecated alias is the **package** rename
    `@fundamental-engine/platform → @fundamental-engine/dom` (above) — a thin re-export of `dom`,
-   excluded from the additive-only guarantee and scheduled for removal on a later minor. The full
-   inventory of living migration aliases (these `forces:*` events, the `--field-density`/`--mass` var
-   mirrors, the `<field-field>` tag, and this package alias) — each with its deprecation status and
-   proposed removal version — is in [deprecation-plan.md](deprecation-plan.md).
+   excluded from the additive-only guarantee and **scheduled for removal at `1.0`** (it emits a
+   one-time dev-only import warning). The full inventory of living migration aliases (these `forces:*`
+   events, the `--mass` var mirror, the `<field-field>` tag, and this package alias) — each with its
+   deprecation status, whether it warns at runtime, and its removal version — is in the "Deprecation &
+   removal policy" section below and in [deprecation-plan.md](deprecation-plan.md). Note `--d` /
+   `--field-density` and `--load` are **canonical dual names, kept permanently — not deprecated.**
 7. **The experimental surface carries no guarantee.** Diagnostics/agent/render-mode exports that happen
    to ship today are *shipped-but-unfrozen* until explicitly added to the stable table.
+
+## Deprecation & removal policy
+
+A few names are migration-era aliases from the `forces-ui → field-ui → Fundamental` rename. They keep
+working through RC1 and are **removed at `1.0`**. Two var pairs that look like migration cruft are not —
+they are canonical dual naming and are kept permanently. The full per-alias inventory (file:line, warn
+vs. doc-only, replacement) lives in [`deprecation-plan.md`](deprecation-plan.md); this is the contract
+summary.
+
+### Kept permanently — NOT deprecated
+
+- **`--d` and `--field-density`** — the canonical dual density-var naming. Both are permanent; author CSS
+  may read either. This is intentional dual naming, not a deprecated alias.
+- **`--load`** — the canonical sink-load channel. Permanent. (It is `--mass` that is the deprecated alias
+  of `--load`, not the reverse — see below.)
+
+### Deprecated — shipped through RC1, removed at `1.0`
+
+| Alias | Replacement | Where it lives | Dev warn? |
+|---|---|---|---|
+| `forces:*` events (`forces:captured`/`forces:released`/`forces:relocated`) | `field:*` events | `packages/core/src/core/field.ts` (`fireCaptureEvent`) | **Yes** — dev-only, deduped once per event name, at the dispatch site |
+| `--mass` CSS var | `--load` | `packages/core/src/core/feedback-sink.ts`; mirrored in `packages/elements/src/platform-runtime.ts` | No — a CSS-var write is not runtime-observable to JS; doc-only |
+| `--forces-*` CSS vars | `--field-*` | *already removed* (`0.7.0`) — listed for the record | n/a |
+| `compat-*` packages (`compat-core`/`-elements`/`-react`/`-vanilla`) | the real `@fundamental-engine/*` packages | *already removed* (`0.7.0`); the only living compat package is `@fundamental-engine/platform` → `@fundamental-engine/dom`, which warns on import | Platform alias: **Yes** — one-time dev-only warn on import |
+
+**Sunset:** all of the above ship through RC1. The runtime-observable ones (`forces:*` events, the
+`@fundamental-engine/platform` package) emit a **dev-only** (`NODE_ENV !== 'production'`) `console.warn`,
+deduped so they warn at most once. The CSS-var aliases cannot be intercepted (CSS reads are invisible to
+JS), so they are doc-only. Everything here is **removed at `1.0`**.
 
 ## How the freeze is enforced
 
