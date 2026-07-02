@@ -32,6 +32,24 @@ never sees pixels, points, world units, or rows — only field space.
 engine only ever reasons in field space; that is what lets one core drive a DOM canvas, a native
 `Canvas`, a Three.js scene, or a headless test with the same physics.
 
+**The consumer-facing consequence.** The position-taking handle methods — `flowTo(x, y)`, `burst(x, y)`,
+and the sampling reads (`sample`, `sampleField`, `atomAt`, `focusAt`) — all take their arguments in
+**field space**, and do **not** convert for you (they store/compare the raw `x, y` against particle
+positions directly). What field space *is* in host units follows straight from the adapter's origin:
+
+- A **window field** (`browserHost` / `<field-root>`) has a zero origin, so field space **equals viewport
+  space** — pass viewport pixels (a pointer event's `clientX`/`clientY` drop straight in). A document
+  element's `getBoundingClientRect()` is viewport-relative, so a focus pinned to it must be **recomputed
+  on scroll** as the element moves under the fixed field.
+- A **contained field** (`containerHost(el)` / `bounds`) carries the container's `left,top` as its origin,
+  which the engine subtracts when it measures bodies — so args must be **container-local**
+  (`clientX − rect.left`), not viewport. These local coordinates are **scroll-invariant**: the container
+  and its contents move together, so a pinned focus stays put without recompute.
+
+The per-method contract, the "the methods don't translate for you" caveat, and worked window/contained
+examples live on the API page:
+[/docs/api/handle#coordinate-space](https://fundamental-engine.com/docs/api/handle#coordinate-space).
+
 ## The conversions (each one-way)
 
 ```txt
@@ -97,6 +115,7 @@ are a property of the *field*, not of the *pixels*.
 | Document | Role |
 |---|---|
 | [`platform-architecture.md`](platform-architecture.md) | The `FieldHost` boundary — where host space becomes field space |
+| [/docs/api/handle#coordinate-space](https://fundamental-engine.com/docs/api/handle#coordinate-space) | The consumer-facing contract for `flowTo`/`burst`/`sample` — window vs contained, scroll behavior, worked examples |
 | [`substrate-api.md`](substrate-api.md) | Field-space readings + projections that convert to projection space |
 | [`definition-document.md`](definition-document.md) | The operating model these spaces serve |
 | [`causality-and-truth.md`](causality-and-truth.md) | The dimension/metric/channel/projection lock these spaces depend on |
