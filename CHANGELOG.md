@@ -133,13 +133,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   static (non-feedback-driven) `transform`/`translate`/`rotate`/`scale` — with **no**
   `@media (prefers-reduced-motion: reduce)` rule that matches it. The invariant it guards is *reduced
   motion removes motion, not meaning*. **Feedback-var-driven motion is deliberately exempt:** this engine
-  gates motion at the engine level (under `prefers-reduced-motion` the field freezes, dt=0, so
-  `--d`/`--field-*`/`--load` stop updating and bodies driven by them stop moving) — those are already
-  reduced-motion-safe and are not flagged. Like the other stylesheet-walking lints it is heuristic and
-  browser-coupled: it no-ops where stylesheets are unreachable (SSR / tests / cross-origin), so it can
-  only under-report, never false-positive; opacity/colour changes are not treated as motion, and the
-  transform-family match is property-name-anchored so typography (`text-transform: uppercase`) is not
-  mistaken for movement. Runs
+  gates motion at the engine level — under `prefers-reduced-motion` the simulation freezes (dt=0; the
+  integrator early-returns), so ambient, sim-driven change in `--d`/`--field-*`/`--load` stops, while the
+  feedback lane stays live for direct engagement (pointer/focus); what remains is a discrete interaction
+  response, not autonomous motion — those bodies are reduced-motion-safe and are not flagged. Like the
+  other stylesheet-walking lints it is heuristic and browser-coupled: it no-ops where stylesheets are
+  unreachable (SSR / tests / cross-origin), so it can only under-report, never false-positive;
+  opacity/colour changes are not treated as motion, and the transform-family match is
+  property-name-anchored so typography (`text-transform: uppercase`) is not mistaken for movement. Runs
   automatically inside `lintPlatform`. (This is the lint half of RC-8; the real assistive-tech pass
   remains a separate manual step.)
 

@@ -403,9 +403,11 @@ test('lintReducedMotion stays quiet when a prefers-reduced-motion rule matches t
 
 test('lintReducedMotion does NOT flag feedback-var-driven motion — the engine gates it under reduced motion', () => {
   const prevDoc = (globalThis as { document?: unknown }).document;
-  // transform driven by --d: under prefers-reduced-motion the field freezes (dt=0), --d stops updating,
-  // and this body stops moving. Already reduced-motion-safe via the engine — must NOT be flagged, even
-  // with no per-body @media rule. This is the shape of the site's hundreds of real bodies.
+  // transform driven by --d: under prefers-reduced-motion the simulation freezes (dt=0 — the integrator
+  // early-returns), so ambient, sim-driven change in --d stops; the feedback lane stays live for direct
+  // engagement (pointer/focus), so the body's movement degrades to a discrete interaction response, not
+  // autonomous animation. Reduced-motion-safe via the engine — must NOT be flagged, even with no
+  // per-body @media rule. This is the shape of the site's hundreds of real bodies.
   (globalThis as { document?: unknown }).document = motionDoc(
     [{ selectorText: '.driven', cssText: '.driven{transform:translateY(calc(var(--d) * 20px))}' }],
     [],

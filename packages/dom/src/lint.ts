@@ -372,12 +372,16 @@ export function lintCompositingPerf(root: ParentNode): PlatformLintWarning[] {
  *   2. a `transform`/`translate`/`rotate`/`scale`, or a `transition` on one of those (or `all`), whose
  *      value is a **static author value** — NOT derived from a field feedback var.
  *
- * The critical exemption (architectural): this engine handles reduced motion at the ENGINE level — under
- * `prefers-reduced-motion` the field freezes (dt=0), so the feedback channels (`--d`, `--field-*`,
- * `--load`) stop updating and any body whose motion is DRIVEN by reading one of them stops moving. Such a
- * body is already reduced-motion-safe and must NOT be flagged. So a motion property whose value reads a
- * feedback var is treated as engine-gated (not independent). `opacity`/`color` are not movement and never
- * count. Case-folded; operates on `cssText`/inline style text (no computed styles) to match the rest of lint.
+ * The critical exemption (architectural): this engine handles reduced motion at the ENGINE level. Under
+ * `prefers-reduced-motion` the SIMULATION freezes (dt=0 — the integrator early-returns), so ambient,
+ * sim-driven change in the feedback channels (`--d`, `--field-*`, `--load`) stops. The feedback lane
+ * itself stays live — feedback is written every frame outside the dt gate, and engagement (pointer/focus)
+ * still moves it — so a body whose motion reads a feedback var degrades to a DISCRETE ENGAGEMENT
+ * RESPONSE: interaction feedback, not autonomous/ambient animation, which is what reduced motion is
+ * about. Motion freezes; the signals stay honest. Such a body is reduced-motion-safe and must NOT be
+ * flagged, so a motion property whose value reads a feedback var is treated as engine-gated (not
+ * independent). `opacity`/`color` are not movement and never count. Case-folded; operates on
+ * `cssText`/inline style text (no computed styles) to match the rest of lint.
  */
 function expressesIndependentMotion(cssText: string): boolean {
   const css = cssText.toLowerCase();
@@ -419,10 +423,12 @@ function cleanSelector(part: string): string {
  * branch, a user who asked the OS to stop animations still gets the movement.
  *
  * **Feedback-var-driven motion is deliberately exempt.** This engine gates motion at the ENGINE level:
- * under `prefers-reduced-motion` the field freezes (dt=0), so `--d`/`--field-*`/`--load` stop updating and
- * any body driven by them stops moving — it is already reduced-motion-safe and does NOT need a per-body
- * `@media` rule. Flagging those would be architecturally wrong (and would flood the site's own hundreds of
- * feedback-driven bodies). So only genuinely independent motion, which the engine cannot gate, is flagged.
+ * under `prefers-reduced-motion` the simulation freezes (dt=0 — the integrator early-returns), so ambient,
+ * sim-driven change in `--d`/`--field-*`/`--load` stops; the feedback lane stays live for direct
+ * engagement (pointer/focus), so what remains is a discrete interaction response, not autonomous motion —
+ * reduced-motion-safe, no per-body `@media` rule needed. Flagging those would be architecturally wrong
+ * (and would flood the site's own hundreds of feedback-driven bodies). So only genuinely independent
+ * motion, which the engine cannot gate, is flagged.
  *
  * "Has a reduced-motion equivalent" is determined structurally: some rule inside a
  * `@media (prefers-reduced-motion: reduce)` block has a selector that matches the same body (after
