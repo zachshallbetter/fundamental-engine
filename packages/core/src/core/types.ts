@@ -227,6 +227,10 @@ export interface Body {
    *  box, not its centre, so matter gathers in a shell around the shape (field-systems
    *  Stage C). Undefined ⇒ point source (the default). */
   shaped?: boolean;
+  /** `data-charge-gated` (opt-in, #711) — restrict `fieldflow` to *charged* matter (`charge ≠ 0`),
+   *  modelling magnetized plasma tied to the field line. Undefined/false ⇒ the default neutral-medium
+   *  advection (fieldflow transports ALL matter). Only read by the `fieldflow` force. */
+  chargeGated?: boolean;
   /** `data-species` — the species tag this body stamps on matter it *emits* (a `spawn` source),
    *  so multiple ecologies (pollen vs seeds vs spores) can share one field. Undefined ⇒ 0. */
   species?: number;

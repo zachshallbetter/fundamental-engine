@@ -16,6 +16,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **opt-in charge-gated `fieldflow` (#711).** A new body flag
+  `data-charge-gated` restricts the `fieldflow` force to *charged* matter (`charge ≠ 0`), modelling
+  magnetized plasma tied to the field line so it composes with `charge`; neutral matter drifts free.
+  The default (flag unset) is unchanged — `fieldflow` still advects ALL matter (neutral-medium
+  transport). Exposed on the body contract as `chargeGated` (parsed from `data-charge-gated`).
+
 - **`@fundamental-engine/three`:** **`threeBackend` now renders `data`-overlay chip labels** — the
   backend's `text()` was a no-op (only the chip plates drew); it now draws each numeric label as a
   pooled `THREE.Sprite` carrying a per-string `CanvasTexture` (cached by label + color, so a steady

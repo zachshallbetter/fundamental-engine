@@ -36,6 +36,7 @@ export type StaticBody = Pick<
   | 'when'
   | 'feedback'
   | 'shaped'
+  | 'chargeGated'
   | 'species'
   | 'affects'
   | 'fmin'
@@ -97,6 +98,7 @@ export function parseBodyParams(a: BodyAttrs): StaticBody {
     when: a.get('when') ?? '',
     feedback: a.has('feedback'),
     shaped: a.has('shaped'), // data-shaped → forces sample the element's box surface (Stage C)
+    chargeGated: a.has('charge-gated'), // data-charge-gated → fieldflow follows only charged matter (#711)
     // matter tagging (#444): data-species tags emitted matter; data-affects (comma-sep) restricts
     // this body's forces to those species. Absent ⇒ no tag / acts on all matter.
     ...(a.get('species') != null && Number.isFinite(Number.parseFloat(a.get('species')!))
