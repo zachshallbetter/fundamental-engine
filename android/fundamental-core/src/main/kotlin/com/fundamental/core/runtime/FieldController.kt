@@ -176,8 +176,7 @@ class FieldController(
         }
         // Seed the presentation lane from the host's CURRENT state — a field born hidden (created
         // before its surface attaches, or while it is off screen) never schedules an idle loop; the
-        // first visibility resume starts it. (A deliberate improvement over the Swift engine, whose
-        // init starts the display link unconditionally and guard-skips hidden frames.)
+        // first visibility resume starts it. (Mirrored by the Swift engine's init since #960.)
         hostPaused = host.isHidden
         syncLoop()
     }

@@ -209,7 +209,13 @@ final class FieldEngine: FieldHandle {
         env.dt = effectiveMotion() <= 0 ? 0 : 1
         wireEnvServices()
         build()
-        start()
+        // Seed the presentation lane from the host's CURRENT state — a field born hidden (created
+        // before its surface attaches, or while it is off screen) never schedules an idle loop;
+        // the first visibility resume starts it. Back-port of the Kotlin FieldController.attach
+        // seeding (#957/#960); before this, init started the display link unconditionally and
+        // relied on the per-tick guard to skip hidden frames.
+        hostPaused = host.isHidden
+        syncLoop()
 
         unsubscribers.append(host.onResize { [weak self] in self?.build() })
         unsubscribers.append(host.onScroll { [weak self] in self?.sampleScroll() })
