@@ -20,6 +20,12 @@ public struct FieldMeasurement {
 /// set of boxes instead of each force measuring whenever it likes (layout thrash).
 ///
 /// Strict read-phase: `measure()` only reads. Feedback (writes) happens separately.
+///
+/// Cadence (JS #508, native audit #509): `measure()` runs in the read phase of EVERY frame —
+/// there is no equivalent of the JS core's every-6th-frame measure throttle, so body centres
+/// track a scroll/pan with zero between-measure staleness and need no scroll-delta compensation.
+/// If a measure cadence is ever introduced here, port the JS `dScroll` compensation (field.ts)
+/// with its contained guard alongside it.
 public final class MeasurementRegistry {
     private var entries: [ObjectIdentifier: Body] = [:]
     public private(set) var snapshot: [FieldMeasurement] = []

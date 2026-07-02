@@ -377,6 +377,15 @@ class FieldController(
         formCurrent = easeFormation(formCurrent, formationTarget)
         env.form = formCurrent
         // view-less programmatic bodies re-sample their position each frame.
+        // Scroll body-centre tracking (JS #508, native audit #509): geometry is re-sampled EVERY
+        // tick (rect closures here; view-backed boxes pushed per frame by the host — Compose
+        // onGloballyPositioned / the platform MeasurementRegistry's per-frame read phase), so a
+        // body's force-centre tracks a scroll/pan with zero staleness. The JS core measures only
+        // every 6th frame (getBoundingClientRect can force layout) and compensates the cached
+        // centres by the per-frame scroll delta between measures; a fresh per-frame read makes
+        // that shift unnecessary — adding it would double-count. If a measure cadence is ever
+        // introduced, port the JS compensation with its contained guard. Pinned by
+        // ScrollTrackingTests.
         for (b in _bodies) b.rect?.let { b.box = it() }
         store.reindex()
         for (g in grids.values) g.step()
