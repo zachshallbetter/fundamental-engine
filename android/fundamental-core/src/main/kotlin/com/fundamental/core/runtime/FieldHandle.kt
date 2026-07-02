@@ -631,6 +631,15 @@ class FieldHandle(val controller: FieldController) {
     /** Per-field snapshot id sequence — feeds `snap-<frame>-<seq>`. */
     private var snapSeq = 0
 
+    /**
+     * Compare two [FieldSnapshot]s and report what changed, by lane (bodies / relationships / metrics /
+     * formations) — the substrate READ-API `diff` primitive (JS `FieldHandle.diff`). PURE: it reads only
+     * the two snapshot objects, never touches this field's live state, and mutates nothing (the handle is
+     * merely the door — you can pass any two captures, from this field or another). Delegates to the
+     * standalone [diffFieldSnapshots].
+     */
+    fun diff(a: FieldSnapshot, b: FieldSnapshot): FieldDiff = diffFieldSnapshots(a, b)
+
     // ── agent permissions (JS #894) ────────────────────────────────────────────────────
     /**
      * A capability-scoped, READ-ONLY [AgentFieldView] over this field — the surface a Software Agent uses

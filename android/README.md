@@ -87,8 +87,16 @@ Ported and tested:
   `FIELD_VERSION`. Body `data` is WITHHELD by default (privacy-preserving) — included only when opted in
   (`includeData` / a permissive `profile`) AND the runtime `FieldPolicy` permits it; profiles/flags resolve
   TIGHTEST-wins. `influences` / `projections` are present-but-empty (no accumulator / projection registry
-  yet). JVM-tested (`FieldSnapshotTests`). The rest of the substrate READ API — `diff` / `replay` /
-  `projections` — is a follow-up on both native planes.
+  yet). JVM-tested (`FieldSnapshotTests`).
+- **Substrate READ API — `diff()`** (JS critical-path 03) — `FieldHandle.diff(a, b)` is a PURE comparison
+  of two `FieldSnapshot`s (no live field access, no mutation) reporting what changed, by lane: `bodyChanges`
+  (added / removed / changed — "changed" = any per-metric before/after differs), `relationshipChanges`
+  (added / removed / changed by the `from`+`to`+`type` edge key, carrying `strength` / `active` deltas),
+  `metricChanges` (field-level metric before/after), and `formationChanges` (activated / deactivated).
+  The `FieldDiff` + `BodyChange` / `RelationshipChange` / `MetricChange` / `FormationChange` shapes mirror
+  the JS `@fundamental-engine/core` 1:1. The standalone `diffFieldSnapshots(a, b)` is also exported. JVM-tested
+  (`FieldDiffTests`). The rest of the substrate READ API — `replay` / `projections` — is a follow-up on both
+  native planes.
 - **The Jetpack Compose host** (`:fundamental-compose`) — `FieldView` (drives one frame per display
   frame via `withFrameNanos`, renders the pool on a Compose `Canvas`, tap-to-burst) and
   `Modifier.fieldBody(...)` (a composable becomes a body tracking its on-screen bounds), plus a
