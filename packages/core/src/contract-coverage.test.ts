@@ -65,6 +65,7 @@ const EXEMPT = new Set([
   'now', // injected clock — same
   'feedbackSink', // platform feedback seam — exercised by the elements platform-runtime tests
   'overlayCanvas', // the canvas element the surface owns — exercised via overlay tests by behavior
+  'overlayCanvasProvider', // lazy overlay-canvas factory (#676) — exercised in core/option-seams.test.ts
   'overlayBackend', // custom RenderBackend injection seam — exercised via the overlay-mode tests
 ]);
 

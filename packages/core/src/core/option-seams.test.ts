@@ -154,6 +154,106 @@ test('overlayBackend: injecting a custom backend replaces the default canvas2dBa
   }
 });
 
+// ── overlayCanvasProvider: lazy overlay-canvas resolution (#676) ──────────────────────────────────
+
+test('overlayCanvasProvider: NOT called at boot when the overlay is off (no canvas created)', () => {
+  let calls = 0;
+  const field = createField(fakeCanvas(), {
+    host: fakeHost(),
+    render: 'dots', // ctx present, so the only reason not to resolve is: no active reading
+    overlayCanvasProvider: () => {
+      calls++;
+      return fakeCanvas();
+    },
+  });
+  try {
+    assert.equal(calls, 0, 'the provider is untouched while overlay is off — no canvas at boot');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('overlayCanvasProvider: called once on the first non-off setOverlay, then reused (idempotent)', () => {
+  let calls = 0;
+  const field = createField(fakeCanvas(), {
+    host: fakeHost(),
+    render: 'dots',
+    overlayCanvasProvider: () => {
+      calls++;
+      return fakeCanvas();
+    },
+  });
+  try {
+    assert.equal(calls, 0, 'nothing before the first reading');
+    field.setOverlay('grid');
+    assert.equal(calls, 1, 'first non-off setOverlay resolves the surface exactly once');
+    field.setOverlay('path');
+    field.setOverlay(['grid', 'path']);
+    assert.equal(calls, 1, 'repeat setOverlay reuses the resolved surface — never a second provider call');
+    field.setOverlay('off');
+    field.setOverlay('grid');
+    assert.equal(calls, 1, 'off→on does not re-provision — the canvas persists');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('overlayCanvasProvider: setOverlay("off") before any reading never calls the provider', () => {
+  let calls = 0;
+  const field = createField(fakeCanvas(), {
+    host: fakeHost(),
+    render: 'dots',
+    overlayCanvasProvider: () => {
+      calls++;
+      return fakeCanvas();
+    },
+  });
+  try {
+    field.setOverlay('off');
+    field.setOverlay([]);
+    assert.equal(calls, 0, 'an off/empty stack is a no-op — no canvas is forced into being');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('overlayCanvasProvider: an INITIAL overlay reading resolves the surface at boot', () => {
+  let calls = 0;
+  const field = createField(fakeCanvas(), {
+    host: fakeHost(),
+    render: 'dots',
+    overlay: 'grid', // already active at construction → resolve during init
+    overlayCanvasProvider: () => {
+      calls++;
+      return fakeCanvas();
+    },
+  });
+  try {
+    assert.equal(calls, 1, 'a field created with an active overlay provisions its canvas once at boot');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('overlayCanvasProvider: ignored when an eager overlayCanvas is also supplied', () => {
+  let calls = 0;
+  const field = createField(fakeCanvas(), {
+    host: fakeHost(),
+    render: 'dots',
+    overlayCanvas: fakeCanvas(),
+    overlayCanvasProvider: () => {
+      calls++;
+      return fakeCanvas();
+    },
+  });
+  try {
+    field.setOverlay('grid');
+    assert.equal(calls, 0, 'the eager canvas wins; the provider is never consulted');
+  } finally {
+    field.destroy();
+  }
+});
+
 test('feedbackSink: the injected sink is accepted and field initialises without throwing', () => {
   const sink: FeedbackSink = (_el, _channels) => {};
 

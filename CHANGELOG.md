@@ -21,7 +21,19 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   pooled `THREE.Sprite` carrying a per-string `CanvasTexture` (cached by label + color, so a steady
   overlay uploads no new textures). Sprites are pooled and hidden — not recreated — across frames, and
   `dispose()` frees the sprite materials + cached textures. Plate sizing (`measureText`) is unchanged;
-  the line/rect overlays are untouched. (#391) — the scoped,
+  the line/rect overlays are untouched. (#391)
+
+- **`@fundamental-engine/core` + `@fundamental-engine/elements`:** **lazy overlay-canvas creation (#676).**
+  `<field-root>` no longer creates its full-viewport overlay canvas at boot — a mix-blend, full-viewport
+  canvas costs a whole-screen re-blend every frame it's in the compositing tree, even empty (the DPR2 /
+  mix-blend trap, #405). The element now hands core a new **`FieldOptions.overlayCanvasProvider`** (a
+  `() => HTMLCanvasElement | null` factory) instead of an eager canvas; core calls it **once**, the first
+  time an overlay reading actually goes active (a non-`off` `setOverlay`, or an `overlay=` set at mount),
+  and never before. The common `overlay: off` page adds no overlay canvas to the DOM at all; toggling
+  overlays off and on again reuses the one canvas (idempotent). Purely additive to the (unfrozen) options;
+  underlay/render, reduced-motion, and signals-first behaviour are unchanged.
+
+- **`@fundamental-engine/core`:** **agent permissions + redactions + snapshot profiles** — the scoped,
   read-only surface a **Software Agent** uses to read the field safely (the safety layer over the
   query/snapshot substrate; *agent-readable is not agent-writable*). `field.forAgent({ capabilities,
   redactions? })` returns an **`AgentFieldView`** facade exposing **only** scoped `query()` / `snapshot()`

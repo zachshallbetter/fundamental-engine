@@ -619,6 +619,28 @@ export class FieldField extends HTMLElementBase {
     }
   }
 
+  /**
+   * Field Surfaces: lazily create + attach the front overlay surface (light DOM — the shadow host is
+   * z-index:0, behind content). A fixed, full-viewport, click-through, mix-blend canvas above content;
+   * core sizes its backing store and draws the overlay mode onto it. Created ONCE, on the first overlay
+   * that actually goes active (#676) — core invokes this as `overlayCanvasProvider` — and reused across
+   * rebuilds. Idempotent: returns the existing canvas on every later call, never a second element.
+   */
+  private ensureOverlayCanvas(): HTMLCanvasElement | null {
+    if (this.overlayCanvas) return this.overlayCanvas;
+    if (typeof document === 'undefined') return null;
+    const oc = document.createElement('canvas');
+    oc.setAttribute('aria-hidden', 'true');
+    // marked so a consumer can target the overlay surface (e.g. a scroll-driven opacity fade) without
+    // reaching into the shadow internals — it's the only canvas Fundamental adds to the light DOM.
+    oc.setAttribute('data-field-overlay', '');
+    oc.style.cssText =
+      'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;mix-blend-mode:screen';
+    document.body.appendChild(oc);
+    this.overlayCanvas = oc;
+    return oc;
+  }
+
   /** (re)create the engine on the canvas, reading the current attributes. */
   private start(): void {
     // tear down any prior platform runtime before a rebuild (idempotent)
@@ -633,24 +655,17 @@ export class FieldField extends HTMLElementBase {
       this.platformRuntime = startPlatformRuntime(scanRoot);
       feedbackSink = makeFeedbackSink(this.platformRuntime.platform);
     }
-    // Field Surfaces: ensure the front overlay surface exists (light DOM — the shadow host is
-    // z-index:0, behind content). A fixed, full-viewport, click-through canvas above content; core
-    // sizes its backing store and draws the overlay mode onto it. Created once, reused across rebuilds.
-    if (!this.overlayCanvas && typeof document !== 'undefined') {
-      const oc = document.createElement('canvas');
-      oc.setAttribute('aria-hidden', 'true');
-      // marked so a consumer can target the overlay surface (e.g. a scroll-driven opacity fade) without
-      // reaching into the shadow internals — it's the only canvas Fundamental adds to the light DOM.
-      oc.setAttribute('data-field-overlay', '');
-      oc.style.cssText =
-        'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;mix-blend-mode:screen';
-      document.body.appendChild(oc);
-      this.overlayCanvas = oc;
-    }
+    // Field Surfaces: the front overlay surface is created LAZILY (#676) — a full-viewport,
+    // mix-blend light-DOM canvas costs a whole-screen re-blend every frame while it's in the
+    // compositing tree, even empty. So we hand core a PROVIDER instead of a canvas: core calls it the
+    // first time an overlay reading actually goes active (a non-off setOverlay / attribute), and not
+    // before. The common `overlay: off` boot never adds a canvas. If an overlay attribute IS already
+    // set at mount, core resolves it during construction via the same provider (create once, reuse).
     const opts: FieldOptions = {
       // pass the raw attribute so a `palette` with no `accent` adopts the palette's first stop
       accent: this.getAttribute('accent') ?? undefined,
-      overlayCanvas: this.overlayCanvas,
+      overlayCanvas: this.overlayCanvas, // may already exist from a prior start()/rebuild — reuse it
+      overlayCanvasProvider: () => this.ensureOverlayCanvas(),
       feedbackSink,
     };
     // the rest of the engine options come from the one declarative table (above), so a new
