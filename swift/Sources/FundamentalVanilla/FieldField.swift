@@ -190,6 +190,10 @@ public final class FieldField: FieldHandle {
     /// Derive a READ-ONLY, capability-scoped ``AgentFieldView`` (substrate — JS #894).
     public func forAgent(_ options: AgentViewOptions) -> any AgentFieldView { handle.forAgent(options) }
 
+    /// Ask the live field a structured, READ-ONLY question (substrate READ API — JS #837). See
+    /// ``FieldHandle/query(_:)``.
+    public func query(_ q: FieldQuery? = nil) -> FieldQueryResult { handle.query(q) }
+
     public func destroy() {
         handle.destroy()
         // remove the managed render surfaces, mirroring `destroy()` removing the managed canvas.

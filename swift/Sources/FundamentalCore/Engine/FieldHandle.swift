@@ -496,6 +496,22 @@ public protocol FieldHandle: AnyObject {
     /// fork or copy it. Mirrors JS `forAgent`.
     func forAgent(_ options: AgentViewOptions) -> any AgentFieldView
 
+    // ── substrate READ API: query  (JS #837 / critical-path 02) ─────────────
+    /// Ask the live field a structured, READ-ONLY question — which bodies are here, what they're doing,
+    /// how the field measures right now — without a render surface. Mirror of the JS
+    /// `@fundamental-engine/core` `query()` (and the Kotlin `:fundamental-core` port); the returned
+    /// ``FieldQueryResult`` has the same field names + shape, so a reading is identical across planes.
+    ///
+    /// A `nil` query is a global query (whole field, default include set). A
+    /// ``FieldQueryAt/point(x:y:radius:)`` (radius default 240) or
+    /// ``FieldQueryAt/rect(x:y:width:height:)`` scopes to a region — only bodies whose centre falls in
+    /// the region are returned, and `influences` becomes meaningful (though empty in this port until the
+    /// impulse accumulator lands). The `include` set filters which sections are computed; omitted ⇒
+    /// bodies + metrics + relationships (plus influences for a local query).
+    ///
+    /// Read-only throughout: `query()` never mutates field state. Mirrors JS `FieldHandle.query`.
+    func query(_ q: FieldQuery?) -> FieldQueryResult
+
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)
     func destroy()

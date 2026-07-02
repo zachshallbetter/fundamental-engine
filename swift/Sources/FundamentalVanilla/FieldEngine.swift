@@ -82,6 +82,10 @@ final class FieldEngine: FieldHandle {
         return resolved
     }
     private var formTarget: Formation
+    /// The active formation's id — reported as each body's `activeFormations` by `query()`. Tracks the
+    /// name passed to `setFormation`; defaults to `"ambient"` (the initial preset). Mirrors the JS
+    /// `formationName` local in `field.ts` and the Kotlin port's `controller.formationName`.
+    private var formationName = "ambient"
     private var accent: RGB
     /// The travelling-accent journey (§9): palette stops the accent traverses with scroll.
     private var journey: [RGB] = []
@@ -694,7 +698,10 @@ final class FieldEngine: FieldHandle {
     }
 
     func setFormation(_ name: String) {
-        if let def = formation(named: name) { formTarget = def.preset }
+        if let def = formation(named: name) {
+            formTarget = def.preset
+            formationName = name // query() reports this as each body's activeFormations
+        }
     }
 
     func setWaveStyle(_ style: WaveStyle) { options.waveStyle = style }
@@ -876,6 +883,107 @@ final class FieldEngine: FieldHandle {
                                capabilities: options.capabilities,
                                redactions: options.redactions,
                                budgetOpen: budgetOpen)
+    }
+
+    // ── substrate READ API: query (JS #837 / critical-path 02) ───────────────
+    func query(_ q: FieldQuery? = nil) -> FieldQueryResult {
+        let query = q ?? FieldQuery()
+        let at = query.at
+        let local = at != nil
+
+        // Resolve the region + local test (mirror of the JS/Kotlin point/rect/global branches).
+        let region: FieldRect?
+        let inRegion: (Body) -> Bool
+        switch at {
+        case let .rect(x, y, width, height):
+            region = FieldRect(x: x, y: y, width: width, height: height)
+            inRegion = { b in
+                let c = b.center
+                return c.x >= x && c.x <= x + width && c.y >= y && c.y <= y + height
+            }
+        case let .point(x, y, radius):
+            region = FieldRect(x: x - radius, y: y - radius, width: radius * 2, height: radius * 2)
+            inRegion = { b in
+                let c = b.center
+                return hypot(c.x - x, c.y - y) <= radius
+            }
+        case nil:
+            region = nil
+            inRegion = { _ in true }
+        }
+
+        // Default include set: bodies + metrics + relationships, plus influences for a local query.
+        let want: Set<FieldQueryInclude> = query.include ?? (local
+            ? [.bodies, .metrics, .relationships, .influences]
+            : [.bodies, .metrics, .relationships])
+
+        let matched = bodies.filter(inRegion)
+
+        let bodyReadings: [FieldBodyReading] = want.contains(.bodies) ? matched.map { b in
+            let identity = resolveIdentity(b)
+            let c = b.center
+            var metrics: [String: Float] = [
+                "density": b.d,
+                "count": b.count,
+                "engaged": b.isEngaged ? 1 : 0,
+            ]
+            if b.capacity > 0 { metrics["load"] = min(max(b.accreted / b.capacity, 0), 1) }
+            return FieldBodyReading(
+                id: identity.id,
+                identity: identity,
+                rect: FieldRect(x: c.x - b.box.hw, y: c.y - b.box.hh, width: b.box.hw * 2, height: b.box.hh * 2),
+                tokens: b.tokens,
+                metrics: metrics,
+                // The port has no measured field-dimension lane yet — empty, matching the JS field name.
+                dimensions: [:],
+                activeFormations: [formationName],
+                // No body-authority lane in the port yet — fixed "anchored", the JS default.
+                authority: "anchored"
+            )
+        } : []
+
+        var metrics: [String: Float] = [:]
+        if want.contains(.metrics) {
+            metrics["particles"] = Float(particleCount())
+            metrics["bodies"] = Float(matched.count)
+            if !matched.isEmpty {
+                let sumD = matched.reduce(Float(0)) { $0 + $1.d }
+                metrics["meanDensity"] = sumD / Float(matched.count)
+            }
+        }
+
+        let relationships: [FieldRelationshipReading] = want.contains(.relationships) ? edges.compactMap { e in
+            guard let from = e.from, let to = e.to else { return nil } // skip edges whose endpoint was removed
+            // A local query keeps only edges touching the region (JS: `inRegion(from) || inRegion(to)`).
+            if local, !(inRegion(from) || inRegion(to)) { return nil }
+            return FieldRelationshipReading(
+                from: resolveIdentity(from).id,
+                to: resolveIdentity(to).id,
+                type: e.type,
+                strength: e.strength,
+                memory: e.memory,
+                active: e.active,
+                causal: e.active
+            )
+        } : []
+
+        // Influences: per-force attribution at the query point. The port has no impulse accumulator yet,
+        // so this is empty-for-now (the field name mirrors JS `influences` so the shape stays identical).
+        let influences: [FieldInfluenceReading] = []
+
+        return FieldQueryResult(
+            query: query,
+            frame: env.frameN,
+            time: env.t,
+            region: region,
+            bodies: bodyReadings,
+            metrics: metrics,
+            relationships: relationships,
+            influences: influences,
+            // No projection registry in the port yet — empty, matching the JS field name.
+            projections: [],
+            lens: nil
+        )
     }
 
     func destroy() {
