@@ -539,8 +539,8 @@ class FieldHandle(val controller: FieldController) {
             metrics = metrics,
             relationships = relationships,
             influences = influences,
-            // No projection registry in the port yet — empty, matching the JS field name.
-            projections = emptyList(),
+            // The projections registered on the field (metadata only) — JS `query().projections`.
+            projections = projections.list(),
             lens = null,
         )
     }
@@ -623,8 +623,8 @@ class FieldHandle(val controller: FieldController) {
             metrics = metrics,
             // influences: no impulse accumulator in the port yet — empty, matching the JS field name.
             influences = emptyList(),
-            // No projection registry in the port yet — empty, matching the JS field name.
-            projections = emptyList(),
+            // The projections registered on the field at capture (metadata only) — JS `snapshot().projections`.
+            projections = projections.list(),
         )
     }
 
@@ -716,10 +716,27 @@ class FieldHandle(val controller: FieldController) {
         }
     }
 
+    // ── substrate Projection Registry (JS critical-path 05) ────────────────────────────
+    /**
+     * The field's PROJECTION REGISTRY (JS `FieldHandle.projections`) — register named [FieldProjection]s
+     * that map field STATE into an output surface, and read their metadata back through `query()` /
+     * `snapshot()`. GOVERNANCE: a projection reveals state; it MAY NOT mutate the field (no forces, no body
+     * or metric writes) — enforced by the registry only ever calling `apply(reading, target)`, never the
+     * field. Bound projections auto-apply once per write phase (after feedback) via the after-tick hook.
+     *
+     * Portable surfaces on this native plane: `agent-json` ([agentJsonProjection] / [agentJsonTarget]) and a
+     * generic host `callback` ([callbackProjection] / [callbackTarget]). The web surfaces (css / dom / svg)
+     * are web-first and live in `@fundamental-engine/dom`. Mirrors the JS `ProjectionRegistry` shape.
+     */
+    val projections: ProjectionRegistry = ProjectionRegistry()
+
     // ── lifecycle ────────────────────────────────────────────────────────────────────
     init {
-        // Wire the after-tick hook so TICK events and agent updates fire each frame.
+        // Wire the after-tick hook so TICK events + agent updates fire each frame, and bound projections
+        // auto-apply on the write phase (after feedback easing — read-only; never moves matter, mirroring
+        // the JS `applyBoundProjections()` call site).
         controller.onAfterTick = {
+            projections.applyBoundProjections()
             tickAgents()
             fireEvent(FieldEvent.TICK, FieldEventPayload(FieldEvent.TICK))
         }

@@ -95,8 +95,8 @@ data class FieldQueryResult(
     val relationships: List<FieldRelationshipReading>,
     /** per-force attributions at the query point. Empty until the port exposes an impulse accumulator. */
     val influences: List<FieldInfluenceReading>,
-    /** the projections registered on the field (metadata only). Empty until the port adds a projection registry. */
-    val projections: List<Any>,
+    /** the projections registered on the field (metadata only) — see [ProjectionRegistry] / [FieldHandle.projections]. */
+    val projections: List<FieldProjectionInfo>,
     /** the lens id this reading was scoped through, when a lens was supplied. `null` (no lens lane yet). */
     val lens: String? = null,
 )
