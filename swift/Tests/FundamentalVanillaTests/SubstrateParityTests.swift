@@ -132,6 +132,28 @@ struct SubstrateParityTests {
         field.destroy()
     }
 
+    // MARK: - #816 sample() force-probe
+
+    @Test("sample() reports the net force toward a nearby attractor and ~zero far away")
+    func sampleForceProbe() {
+        let field = FieldField(host: HeadlessFieldHost())
+        // an attractor at (100, 100) with ample range
+        _ = field.addBody(BodySpec(tokens: ["attract"], strength: 2, range: 400,
+                                   rect: { Box(center: Vec3(100, 100, 0), halfExtents: Vec3(4, 4, 0)) }))
+        field.scan() // sample the body rect into its box
+
+        // probe a point below-right of the body — the force should pull back toward it (up-left)
+        let f = field.sample(x: 140, y: 140)
+        #expect(f.x < 0) // pulled toward the body (which sits at lower x)
+        #expect(f.y < 0) // pulled toward the body (which sits at lower y)
+        #expect(simd_length(f) > 0)
+
+        // a point far outside range feels ~nothing
+        let far = field.sample(x: 900, y: 900)
+        #expect(simd_length(far) == 0)
+        field.destroy()
+    }
+
     // MARK: - #837 Field Query (substrate READ API — critical-path 02)
 
     @Test("a global query returns every body with ids + metrics and field metrics")

@@ -201,6 +201,12 @@ Ported and tested — the full engine:
   `FieldDiff` shape + field names + comparison semantics mirror the JS core and the Kotlin `:fundamental-core`
   port 1:1; tested (`SubstrateParityTests`). The rest of the substrate READ API — `replay`/`projections` —
   is a follow-up on both native planes.
+- **Force-probe — `sample(x:y:)`** (JS #816): `FieldHandle.sample(x:y:)` returns the net force vector a
+  free particle would feel at a world-space point, summed over all active bodies via the shared `forceAt`
+  streamlines probe (velocity- and charge-dependent forces contribute through their `field()`). Read-only
+  and safe between ticks; the same routine the agent consumers use. Field/world coordinate space, matching
+  `query`/`snapshot` rects and the JS golden. Mirrors the Kotlin `:fundamental-core` port 1:1; tested
+  (`SubstrateParityTests`).
 - **Vanilla surface** (§13): the full FieldHandle.
 
 Not yet ported (the platform-adjacent tranche — most is DOM-specific and maps to
