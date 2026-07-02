@@ -555,7 +555,7 @@
               "kind": "field",
               "name": "renderMode",
               "type": {
-                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'"
+                "text": "| 'dots'\n    | 'trails'\n    | 'links'\n    | 'metaballs'\n    | 'voronoi'\n    | 'streamlines'\n    | 'flow'\n    | 'knockout'\n    | 'redshift'\n    | 'blackbody'\n    | 'depth'\n    | 'none'"
               },
               "description": "render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,\nnever draw (#297). Set `render=\"dots\"` (or another drawing mode) to get a visible surface.",
               "readonly": true
@@ -1040,7 +1040,7 @@
                 {
                   "name": "mode",
                   "type": {
-                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'"
+                    "text": "| 'dots'\n      | 'trails'\n      | 'links'\n      | 'metaballs'\n      | 'voronoi'\n      | 'streamlines'\n      | 'flow'\n      | 'knockout'\n      | 'redshift'\n      | 'blackbody'\n      | 'depth'\n      | 'none'"
                   }
                 }
               ],
@@ -2121,7 +2121,7 @@
               "kind": "field",
               "name": "renderMode",
               "type": {
-                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'"
+                "text": "| 'dots'\n    | 'trails'\n    | 'links'\n    | 'metaballs'\n    | 'voronoi'\n    | 'streamlines'\n    | 'flow'\n    | 'knockout'\n    | 'redshift'\n    | 'blackbody'\n    | 'depth'\n    | 'none'"
               },
               "description": "render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,\nnever draw (#297). Set `render=\"dots\"` (or another drawing mode) to get a visible surface.",
               "readonly": true,
@@ -2762,7 +2762,7 @@
                 {
                   "name": "mode",
                   "type": {
-                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'"
+                    "text": "| 'dots'\n      | 'trails'\n      | 'links'\n      | 'metaballs'\n      | 'voronoi'\n      | 'streamlines'\n      | 'flow'\n      | 'knockout'\n      | 'redshift'\n      | 'blackbody'\n      | 'depth'\n      | 'none'"
                   }
                 }
               ],

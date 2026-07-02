@@ -44,7 +44,9 @@ export interface RecipeRenderPlan {
   unapplied: string[];
 }
 
-const MATTER_MODES = new Set(['particles', 'dots', 'trails', 'links', 'metaballs', 'voronoi']);
+const MATTER_MODES = new Set([
+  'particles', 'dots', 'trails', 'links', 'metaballs', 'voronoi', 'knockout', 'redshift', 'blackbody', 'depth',
+]);
 const OVERLAY_READINGS = new Set(['streamlines', 'force-vectors', 'field-lines', 'grid', 'temperature', 'energy', 'path', 'data']);
 
 /** Derive the render plan from a recipe's declared layers (pure; `particles` is the base matter

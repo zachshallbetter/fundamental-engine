@@ -34,6 +34,30 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   for a purely radial resting attract (no spiral). Applies to the `ambient` formation only (the
   section formations keep their authored presets). Proven default-unchanged in
   `ambient-formation-declared.test.ts`.
+- **`@fundamental-engine/core` + `@fundamental-engine/elements`:** **four new underlay render
+  modes — `knockout`, `redshift`, `blackbody`, `depth` (#667, #668, #669, #670).** All are
+  additive values on the existing `render` option / `setRender(mode)` /
+  `<field-root render="…">` union; the default (`'none'`) and every existing mode are
+  untouched. `knockout` inverts figure and ground: the field paints a solid accent wash and
+  matter erases feathered holes through it (`destination-out`) — matter as negative space;
+  for the field-visible-only-inside-letters treatment the host clips the canvas to real type
+  with a CSS mask (§11-safe — matter never assembles into letterforms). `redshift` keeps the
+  dots geometry but tints by spectral shift: Doppler from each particle's radial velocity
+  against a viewport-centre observer (receding red, approaching blue, normalized by the unit
+  system's `env.c`) plus a gravitational red near body wells. `blackbody` tints by energy
+  (carried heat + kinetic) on a thermal ramp — ember → deep red → orange → warm white →
+  blue-white — with brightness rising with temperature. `depth` makes the z lane visible as
+  true 2.5D: far-to-near painter's sorting (drawn source-over so near matter occludes far),
+  perspective parallax toward the viewport centre, and a draw-time defocus (wider halo,
+  faded core) with distance — exactly the dots pass in a flat field. The pure geometry/color
+  math (`knockoutHoleRadius`, `radialVelocity`/`dopplerShift`/`wellWeight`/`redshiftShift`/
+  `redshiftRGBInto`, `blackbodyT`/`blackbodyRGBInto`, `depthScale`/`depthProject`/
+  `depthAlpha`/`depthBlurRadius`) lives in `core/render-modes.ts` with pinned unit tests,
+  mirroring the port-ready extraction pattern (#961). No new surfaces, no `mix-blend`, no
+  per-frame allocation (the depth sort reuses a persistent index scratch). The four modes
+  join the `RENDER_MODES` catalog (now 20 entries), the recipe render layers, and the
+  `<field-root>` CEM. JS core only; Swift/Kotlin port parity is a follow-up.
+
 - **`@fundamental-engine/core` + `@fundamental-engine/elements`:** **opt-in velocity-Verlet
   integrator mode (#659).** `integrator: 'velocity-verlet'` (also
   `<field-root integrator="velocity-verlet">`) runs the second-order scheme in its

@@ -286,10 +286,12 @@ reads as a translation of the four fundamental fields into interface behavior. S
 **8 presets** compose primitives into cosmology with no new engine code: `blackhole`, `whitehole`,
 `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
 
-**16 render modes (all shipped):** the matter/structure modes `dots`, `trails`, `links`, `streamlines`,
-`metaballs`, `voronoi`, `field-lines`, `heatmap`; and the diagnostic modes `force-vectors`, `contours`,
-`potential`, `energy`, `topology`, `inspector`, `causality`, `prediction`. Live on
-[`/docs/diagnostics`](https://fundamental-engine.com/docs/diagnostics).
+**20 render modes (all shipped):** the matter/structure modes `dots`, `trails`, `links`, `streamlines`,
+`metaballs`, `voronoi`, `field-lines`, `heatmap`, `knockout` (matter as negative space in a field
+wash), `redshift` (Doppler + gravitational spectral tint), `blackbody` (energy on a thermal ramp),
+`depth` (the z lane as 2.5D — parallax, occlusion, defocus); and the diagnostic modes
+`force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`, `causality`,
+`prediction`. Live on [`/docs/diagnostics`](https://fundamental-engine.com/docs/diagnostics).
 
 **Controlled flow.** `field.flowTo(x, y)` places a movable flow focus the field bends toward — it pulls
 matter in and curves the streamlines; retarget it each frame to follow the pointer, an element, a path,

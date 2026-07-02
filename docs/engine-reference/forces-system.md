@@ -626,7 +626,7 @@ and `ds-interactions.js`):
 | `setAttention(on)` | Toggle conserved attention (§2.4) — one finite strength budget. |
 | `setCausality(on)` | Toggle cross-boundary causality (Concept 4) — density spills to neighbours. |
 | `setHeatmap(on)` | Toggle the density heatmap layer (H1). |
-| `setRender(mode)` | Switch the underlay render mode (§20.6): `dots` · `trails` · `links` · `metaballs` · `voronoi` · `streamlines` · `flow` (a composite — `dots` + `streamlines`) · `none` (the signals-only mode — never draws; see §13.7). |
+| `setRender(mode)` | Switch the underlay render mode (§20.6): `dots` · `trails` · `links` · `metaballs` · `voronoi` · `streamlines` · `flow` (a composite — `dots` + `streamlines`) · `knockout` · `redshift` · `blackbody` · `depth` · `none` (the signals-only mode — never draws; see §13.7). |
 | `setOverlay(mode)` | Render a field-structure visualization on the overlay surface: `off` · `streamlines` · `force-vectors` · `field-lines`. |
 | `setSeparation(strength)` | Particle-to-particle short-range repulsion strength (`0..1`, default `0`) — keeps free matter from clumping. Mirrors `FieldOptions.separation` and the `separation` attribute on `<field-root>`. |
 | `setWaveCenter(center)` | Set the center the `circular` Currents orbit (§24.1). Resolved live in three modes: a body token tracked each frame (e.g. `star`/`vortex`), a custom `{ x, y }` coordinate (or a `() => { x, y }` provider), or `null` to fall back to the viewport center. |
@@ -1387,21 +1387,21 @@ The integrator is decoupled from the draw; these change the *look* without
 touching the physics. Each is a swap of the particle draw pass in the renderer.
 The render-mode catalog (authoritative in `packages/core/src/visual/visualization.ts`
 `RENDER_MODES`, with per-mode shipped/planned status) **now ships a broad set** — the
-six core particle-draw swaps plus the structure, scalar, graph, and debug/diagnostic
-modes that drive `/docs/diagnostics`. The core `setRender()` API surfaces the six
+ten core particle-draw swaps plus the structure, scalar, graph, and debug/diagnostic
+modes that drive `/docs/diagnostics`. The core `setRender()` API surfaces the ten
 particle-draw modes (`dots`, `trails`, `links`, `metaballs`, `voronoi`,
-`streamlines`); the remaining shipped modes are render *layers* exposed through the
+`streamlines`, `knockout`, `redshift`, `blackbody`, `depth` — plus the `flow`
+composite); the remaining shipped modes are render *layers* exposed through the
 visualization/diagnostics surface (`field-lines`, `heatmap`, `force-vectors`,
 `contours`, `potential`, `energy`, `topology`, `inspector`, `causality`,
-`prediction`). `knockout`, `redshift`, and `blackbody` remain spec-only and are
-marked **planned**.
+`prediction`).
 
 > **The shipped `heatmap` render mode vs. the density-heatmap overlay.** The shipped
 > `heatmap` render mode renders the density/`heat` grid as an attention contour
 > (`status: 'shipped'` in the catalog). It is distinct from the **density-heatmap
 > overlay layer** (the `heatmap` field option / `toggleHeatmap`, drawn as a glow
 > underlay and sampled to bodies as `--field-heatmap-density`, §2 / field-systems H1).
-> The overlay is a layer under the particle draw, not one of the six core draw-pass
+> The overlay is a layer under the particle draw, not one of the ten core draw-pass
 > modes.
 
 | Mode | How | Result | Status |
@@ -1422,9 +1422,10 @@ marked **planned**.
 | `inspector` | overlay bodies, agents, metrics, contracts | live diagnostic readout | shipped |
 | `causality` | draw each agent's contribution sources | what is acting on what | shipped |
 | `prediction` | draw a ghost trajectory ahead of each agent | predicted motion | shipped |
-| `knockout` | clip particle draw to text via `destination-in` | the field visible only inside letters | planned |
-| `redshift` | tint by velocity/proximity (Doppler + gravitational, §20.8) | relativistic accretion-disk look | planned |
-| `blackbody` | tint by energy on a blackbody ramp (§20.8) | physically-warm temperature color | planned |
+| `knockout` | paint an accent field wash, erase matter via `destination-out` | matter as negative space; the host clips the canvas to type with a CSS mask for the field-inside-letters treatment (§11-safe — matter never assembles into letterforms) | shipped |
+| `redshift` | tint by velocity/proximity (Doppler + gravitational) | relativistic accretion-disk look | shipped |
+| `blackbody` | tint by energy on a blackbody ramp | physically-warm temperature color | shipped |
+| `depth` | sort far-to-near, project by perspective scale, defocus with distance | the z lane as 2.5D — parallax, occlusion, depth of field | shipped |
 
 ### 20.7 Force relationships (the "side" relationships)
 Forces aren't a flat list — they relate by inversion, intensity, composition, and

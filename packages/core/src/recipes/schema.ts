@@ -27,7 +27,11 @@ export type RenderLayer =
   | 'metaballs'
   | 'voronoi'
   | 'field-lines'
-  | 'heatmap';
+  | 'heatmap'
+  | 'knockout'
+  | 'redshift'
+  | 'blackbody'
+  | 'depth';
 
 /** A diagnostic mode that reveals a recipe's behavior (the debug / scalar / graph overlays). */
 export type DiagnosticMode =
@@ -131,6 +135,7 @@ export interface VisualizationPreset {
 
 const RENDER_LAYERS: ReadonlySet<string> = new Set<RenderLayer>([
   'particles', 'dots', 'trails', 'links', 'streamlines', 'metaballs', 'voronoi', 'field-lines', 'heatmap',
+  'knockout', 'redshift', 'blackbody', 'depth',
 ]);
 
 const DIAGNOSTIC_MODES: ReadonlySet<string> = new Set<DiagnosticMode>([

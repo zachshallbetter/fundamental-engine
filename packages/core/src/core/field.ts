@@ -58,7 +58,25 @@ import { registerNaturalForces } from '../forces/natural.ts';
 import { registerExtendedForces } from '../forces/extended.ts';
 import { ScalarGridImpl } from './scalar-grid.ts';
 import { sparkCount, burstImpulse } from './reactions.ts';
-import { linkAlpha, marchingCell, splatDensity, nearestSite, voronoiWalls } from './render-modes.ts';
+import {
+  linkAlpha,
+  marchingCell,
+  splatDensity,
+  nearestSite,
+  voronoiWalls,
+  knockoutHoleRadius,
+  radialVelocity,
+  dopplerShift,
+  wellWeight,
+  redshiftShift,
+  redshiftRGBInto,
+  blackbodyT,
+  blackbodyRGBInto,
+  depthScale,
+  depthProject,
+  depthAlpha,
+  depthBlurRadius,
+} from './render-modes.ts';
 import { canvas2dBackend, type RenderBackend, type Stroke } from './render-backend.ts';
 import { forceAt, netField } from './streamlines.ts';
 import { traceFieldLines } from './fieldlines.ts';
@@ -613,6 +631,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let lastNow = NaN; // previous frame timestamp — drives the frame-rate-independent dt (#434)
   let mball: Float32Array | null = null; // scratch density grid for the metaballs render mode
   let vor: Int32Array | null = null; // scratch owner grid for the voronoi render mode
+  let depthIdx: number[] | null = null; // scratch draw-order index for the depth render mode (far → near)
   // EMA (exponential moving average) of the per-frame peak magnitude for each arrow renderer.
   // Normalizing to the raw frame max caused the entire arrow field to rescale in one step when
   // maxMag shifted (body drag, animated strength, density ramp) — visible as a pulsing flash.
@@ -1791,8 +1810,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // free particles — cool centre → warm edge, blended toward accent (§20.8).
     // metaballs (a molten iso-surface skin) and streamlines (the bare force field) REPLACE
     // the matter per §20.6, so suppress the dot swarm for those two; dots/trails/links/voronoi
-    // keep it (their overlays read against the particles).
-    const showMatter = cfg.render !== 'metaballs' && cfg.render !== 'streamlines';
+    // keep it (their overlays read against the particles). The four matter-swap modes
+    // (knockout / redshift / blackbody / depth, #667–#670) draw their own particle pass
+    // below — same suppression, different material.
+    const showMatter =
+      cfg.render !== 'metaballs' &&
+      cfg.render !== 'streamlines' &&
+      cfg.render !== 'knockout' &&
+      cfg.render !== 'redshift' &&
+      cfg.render !== 'blackbody' &&
+      cfg.render !== 'depth';
     ctx!.globalCompositeOperation = 'lighter';
     const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
     const cx = W / 2;
@@ -1986,6 +2013,144 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
       ctx!.stroke();
       ctx!.globalCompositeOperation = 'source-over';
+    }
+
+    // knockout (#667): figure-ground inversion — the field is a solid accent sheet and matter
+    // is NEGATIVE space: each particle erases a feathered hole through everything beneath it
+    // (waves, heatmap, sparks — a true print knockout). §11-safe by construction: matter never
+    // assembles into letterforms; for the "field visible only inside letters" treatment the
+    // host clips this canvas to real type with a CSS mask/clip-path — the type stays type and
+    // the field shows through it. One full-canvas wash (the clear's cost class) + two arcs per
+    // particle (the dots-mode cost envelope); no extra surface, no mix-blend.
+    if (cfg.render === 'knockout') {
+      const wash = curAccent;
+      ctx!.fillStyle = `rgba(${wash[0]},${wash[1]},${wash[2]},${0.22 * boot})`;
+      ctx!.fillRect(0, 0, W, H);
+      ctx!.globalCompositeOperation = 'destination-out';
+      for (const p of store.particles) {
+        if (p.cap) continue;
+        const zk = cfg.depth > 0 ? 1 - Math.min(Math.abs(p.z ?? 0) / cfg.depth, 1) * 0.55 : 1;
+        const hole = knockoutHoleRadius(p.size, p.heat, zk);
+        // feathered punch: a soft rim then a hard core (destination-out reads only the alpha)
+        ctx!.fillStyle = `rgba(0,0,0,${0.38 * boot})`;
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, hole + 2.2, 0, 6.28318);
+        ctx!.fill();
+        ctx!.fillStyle = `rgba(0,0,0,${boot})`;
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, hole, 0, 6.28318);
+        ctx!.fill();
+      }
+      ctx!.globalCompositeOperation = 'source-over';
+    }
+
+    // redshift (#668): the dots geometry tinted by SPECTRAL SHIFT instead of the heat ramp —
+    // the Doppler term reads each particle's radial velocity against an observer at the
+    // viewport centre (receding reds, approaching blues, normalized by the unit system's
+    // velocity cap env.c), and the gravitational term reads proximity to body wells (light
+    // climbing out loses energy, so a well only reddens). The §20.6 "relativistic
+    // accretion-disk" look: matter falling around a sink wears its infall.
+    if (cfg.render === 'redshift') {
+      ctx!.globalCompositeOperation = 'lighter';
+      const ox = W / 2;
+      const oy = H / 2;
+      for (const p of store.particles) {
+        if (p.cap) continue;
+        let well = 0;
+        for (const b of bodies) {
+          const reach = b.range || 200;
+          const dx = p.x - b.cx;
+          const dy = p.y - b.cy;
+          const w = wellWeight(dx * dx + dy * dy, reach * reach);
+          if (w > well) well = w;
+        }
+        const s = redshiftShift(dopplerShift(radialVelocity(p.x, p.y, p.vx, p.vy, ox, oy), env.c), well);
+        redshiftRGBInto(_rgb, s);
+        const zk = cfg.depth > 0 ? 1 - Math.min(Math.abs(p.z ?? 0) / cfg.depth, 1) * 0.55 : 1;
+        const mag = s < 0 ? -s : s;
+        const size = (p.size + mag * 1.6) * zk;
+        const alpha = clamp((0.4 + 0.45 * mag) * boot * zk, 0, 1);
+        ctx!.fillStyle = `rgba(${_rgb[0] | 0},${_rgb[1] | 0},${_rgb[2] | 0},${alpha})`;
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, size, 0, 6.28318);
+        ctx!.fill();
+      }
+      ctx!.globalCompositeOperation = 'source-over';
+    }
+
+    // blackbody (#669): thermal truth — each particle tinted by its ENERGY on a Planckian-ish
+    // ramp (near-black ember → deep red → orange → warm white → blue-white), brightness rising
+    // with temperature so cold matter barely glows and hot matter reads white (§20.6). Energy =
+    // carried heat + kinetic (|v|² against a 0.3·env.c reference). Caveat canon: a reading of
+    // the designed unit system, not radiometry.
+    if (cfg.render === 'blackbody') {
+      ctx!.globalCompositeOperation = 'lighter';
+      for (const p of store.particles) {
+        if (p.cap) continue;
+        const t = blackbodyT(p.vx, p.vy, p.heat, env.c);
+        blackbodyRGBInto(_rgb, t);
+        const zk = cfg.depth > 0 ? 1 - Math.min(Math.abs(p.z ?? 0) / cfg.depth, 1) * 0.55 : 1;
+        const size = (p.size + t * 2.2) * zk;
+        const alpha = clamp((0.16 + 0.84 * t) * boot * zk, 0, 1);
+        const cr = _rgb[0] | 0;
+        const cg = _rgb[1] | 0;
+        const cb = _rgb[2] | 0;
+        // hot matter blooms: a soft halo under the crisp core, scaled by temperature
+        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${0.14 * alpha})`;
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, size + 1.4 + t * 2, 0, 6.28318);
+        ctx!.fill();
+        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, size, 0, 6.28318);
+        ctx!.fill();
+      }
+      ctx!.globalCompositeOperation = 'source-over';
+    }
+
+    // depth (#670): the z lane made visible — true 2.5D. Particles are sorted far-to-near
+    // (painter's algorithm, drawn source-over so near matter OCCLUDES far — additive 'lighter'
+    // would make the order meaningless), projected toward the viewport centre by a perspective
+    // scale (motion parallax emerges as z integrates), and defocused with distance: a wider
+    // soft halo + a faded core, the cheap draw-time stand-in for blur (no ctx.filter, which
+    // costs a composited surface per particle). In a flat field (depth: 0, z ≡ 0) every factor
+    // is exactly 1 and this is the dots pass in painter's order. The index array is a persistent
+    // scratch (reallocated only when the count changes) — no per-frame allocation.
+    if (cfg.render === 'depth') {
+      const parts = store.particles;
+      const n = parts.length;
+      if (!depthIdx || depthIdx.length !== n) depthIdx = new Array<number>(n);
+      for (let i = 0; i < n; i++) depthIdx[i] = i;
+      depthIdx.sort((a, b) => Math.abs(parts[b]!.z ?? 0) - Math.abs(parts[a]!.z ?? 0)); // far first
+      const FOCAL = 480; // px — perspective focal length (z volumes are a few hundred px)
+      const ox = W / 2;
+      const oy = H / 2;
+      for (let i = 0; i < n; i++) {
+        const p = parts[depthIdx[i]!]!;
+        if (p.cap) continue;
+        const z = p.z ?? 0;
+        const zn = cfg.depth > 0 ? Math.min(Math.abs(z) / cfg.depth, 1) : 0;
+        const scale = depthScale(z, FOCAL);
+        const px = depthProject(p.x, ox, scale);
+        const py = depthProject(p.y, oy, scale);
+        const d = Math.min(1, Math.hypot(px - cx, py - cy) / maxD);
+        const rs = d * d;
+        const h = p.heat;
+        particleRGBInto(_rgb, rs, h, acc, cfg.gradientCool, cfg.gradientWarm);
+        const size = (p.size * (1 - 0.4 * rs) + h * 2) * scale;
+        const alpha = clamp((0.5 - 0.3 * rs + h * 0.5) * boot * depthAlpha(zn), 0, 1);
+        const cr = _rgb[0] | 0;
+        const cg = _rgb[1] | 0;
+        const cb = _rgb[2] | 0;
+        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${0.12 * alpha})`;
+        ctx!.beginPath();
+        ctx!.arc(px, py, size + 1.2 + depthBlurRadius(zn), 0, 6.28318);
+        ctx!.fill();
+        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
+        ctx!.beginPath();
+        ctx!.arc(px, py, size, 0, 6.28318);
+        ctx!.fill();
+      }
     }
 
     // streamlines: draw the force field itself — a grid of arrows along the net push a still test

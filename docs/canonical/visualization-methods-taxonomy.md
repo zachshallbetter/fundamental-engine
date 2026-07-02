@@ -62,20 +62,21 @@ DOM state shows reciprocity.
 
 ## Render Modes Catalog
 
-The engine ships a **16-mode** catalog (`RENDER_MODES` in `packages/core/src/visual/visualization.ts`),
+The engine ships a **20-mode** catalog (`RENDER_MODES` in `packages/core/src/visual/visualization.ts`),
 split into matter/structure modes and diagnostic modes. All are shipped, but they reach the screen by
 two different paths:
 
 - **Underlay modes via `setRender(mode)`** — `FieldHandle.setRender` (and the `render` option) accepts
-  the seven underlay modes `dots` / `trails` / `links` / `metaballs` / `voronoi` / `streamlines` /
-  `flow` (plus `none`). The `<field-root>` `render` *attribute* exposes the same set.
+  the eleven underlay modes `dots` / `trails` / `links` / `metaballs` / `voronoi` / `streamlines` /
+  `flow` / `knockout` / `redshift` / `blackbody` / `depth` (plus `none`). The `<field-root>` `render`
+  *attribute* exposes the same set.
 - **Diagnostic modes via the diagnostics API** — `force-vectors`, `contours`, `potential`, `energy`,
   `topology`, `inspector`, `causality`, and `prediction` are drawn through the diagnostics renderers
   (`drawTopology`, `drawInspector`, `drawCausality`, `drawPrediction`, etc. in `diagnostics/`), not
   through `setRender`.
 
 Note that `flow` is a `setRender`-only composite (it draws `dots` + `streamlines` together) and is
-**not** a standalone entry in the 16-mode `RENDER_MODES` catalog — see the catalog table below.
+**not** a standalone entry in the 20-mode `RENDER_MODES` catalog — see the catalog table below.
 
 | Render mode | Type | Shows |
 |---|---|---|
@@ -95,6 +96,10 @@ Note that `flow` is a `setRender`-only composite (it draws `dots` + `streamlines
 | `inspector` | diagnostic | bodies, agents, metrics, contracts |
 | `causality` | diagnostic | contribution sources |
 | `prediction` | diagnostic | ghost trajectory |
+| `knockout` | matter | matter as negative space — an accent field wash with particle-punched holes (`destination-out`); the host clips the canvas to type with a CSS mask for the field-inside-letters treatment (§11-safe: matter never assembles into letterforms) |
+| `redshift` | matter | spectral shift — Doppler tint from radial velocity (receding red, approaching blue, against `env.c`) plus gravitational red near body wells |
+| `blackbody` | matter | energy on a thermal ramp — ember → red → orange → white → blue-white, brightness rising with temperature (a reading of the unit system, not radiometry) |
+| `depth` | matter | the z lane made visible — far-to-near painter's sorting (near occludes far), perspective parallax, defocus with distance; identity in a flat field |
 
 **Composite (`setRender`-only, not a catalog entry):**
 
@@ -102,9 +107,9 @@ Note that `flow` is a `setRender`-only composite (it draws `dots` + `streamlines
 |---|---|---|
 | `flow` | composite | `dots` + `streamlines` drawn together |
 
-`flow` is a valid `setRender` / `render`-option value but is **not** one of the 16 `RENDER_MODES`
+`flow` is a valid `setRender` / `render`-option value but is **not** one of the 20 `RENDER_MODES`
 catalog entries — it is a composite that draws the `dots` and `streamlines` modes together. The
-catalog count stays **16**; `flow` is documented here as the composite.
+catalog count stays **20**; `flow` is documented here as the composite.
 
 ## Visualization Presets
 
