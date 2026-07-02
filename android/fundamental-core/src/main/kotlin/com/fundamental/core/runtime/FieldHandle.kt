@@ -426,6 +426,125 @@ class FieldHandle(val controller: FieldController) {
      */
     fun sample(x: Float, y: Float): Vec3 = controller.sample(x, y)
 
+    // ── substrate READ API: query (JS #837 / critical-path 02) ─────────────────────────
+    /**
+     * Ask the live field a structured, READ-ONLY question — which bodies are here, what they're doing,
+     * how the field measures right now. Mirror of the JS `@fundamental-engine/core` `query()`; the result
+     * [FieldQueryResult] has the same field names + shape so a reading is identical across planes.
+     *
+     * A `null` query is a global query (whole field, default include set). A [FieldQueryAt.Point] (with a
+     * radius, default 240) or [FieldQueryAt.Rect] scopes to a region — only bodies whose centre falls in
+     * the region are returned, and `influences` becomes meaningful (though empty in this port until the
+     * impulse accumulator lands). `include` filters the sections; omitted ⇒ bodies + metrics +
+     * relationships (plus influences for a local query).
+     *
+     * Read-only throughout: `query()` never mutates field state.
+     */
+    fun query(q: FieldQuery? = null): FieldQueryResult {
+        val query = q ?: FieldQuery()
+        val at = query.at
+        val local = at != null
+
+        // Resolve the region + local test (mirror of the JS point/rect/global branches).
+        val region: FieldRect?
+        val inRegion: (Body) -> Boolean
+        when (at) {
+            is FieldQueryAt.Rect -> {
+                region = FieldRect(at.x, at.y, at.width, at.height)
+                inRegion = { b ->
+                    val c = b.box.center
+                    c.x >= at.x && c.x <= at.x + at.width && c.y >= at.y && c.y <= at.y + at.height
+                }
+            }
+            is FieldQueryAt.Point -> {
+                val r = at.radius
+                region = FieldRect(at.x - r, at.y - r, r * 2f, r * 2f)
+                inRegion = { b ->
+                    val c = b.box.center
+                    kotlin.math.hypot((c.x - at.x).toDouble(), (c.y - at.y).toDouble()).toFloat() <= r
+                }
+            }
+            null -> {
+                region = null
+                inRegion = { true }
+            }
+        }
+
+        // Default include set: bodies + metrics + relationships, plus influences for a local query.
+        val want = query.include ?: if (local)
+            setOf(FieldQueryInclude.BODIES, FieldQueryInclude.METRICS, FieldQueryInclude.RELATIONSHIPS, FieldQueryInclude.INFLUENCES)
+        else
+            setOf(FieldQueryInclude.BODIES, FieldQueryInclude.METRICS, FieldQueryInclude.RELATIONSHIPS)
+
+        val matched = controller.bodies.filter(inRegion)
+
+        val bodyReadings: List<FieldBodyReading> = if (want.contains(FieldQueryInclude.BODIES)) {
+            matched.map { b ->
+                val identity = controller.bodyIdentity(b)
+                val c = b.box.center
+                FieldBodyReading(
+                    id = identity.id,
+                    identity = identity,
+                    rect = FieldRect(c.x - b.box.hw, c.y - b.box.hh, b.box.hw * 2f, b.box.hh * 2f),
+                    tokens = b.tokens.toList(),
+                    metrics = buildMap {
+                        put("density", b.d)
+                        put("count", b.count)
+                        put("engaged", if (b.isEngaged) 1f else 0f)
+                        if (b.capacity > 0f) put("load", (b.accreted / b.capacity).coerceIn(0f, 1f))
+                    },
+                    // The port has no measured field-dimension lane yet — empty, matching the JS field name.
+                    dimensions = emptyMap(),
+                    activeFormations = listOf(controller.formationName),
+                    // No body-authority lane in the port yet — fixed "anchored", the JS default.
+                    authority = "anchored",
+                )
+            }
+        } else emptyList()
+
+        val metrics: Map<String, Float> = if (want.contains(FieldQueryInclude.METRICS)) {
+            buildMap {
+                put("particles", controller.particleCount.toFloat())
+                put("bodies", matched.size.toFloat())
+                if (matched.isNotEmpty()) {
+                    put("meanDensity", matched.sumOf { it.d.toDouble() }.toFloat() / matched.size)
+                }
+            }
+        } else emptyMap()
+
+        val relationships: List<FieldRelationshipReading> = if (want.contains(FieldQueryInclude.RELATIONSHIPS)) {
+            controller.readEdges().map { e ->
+                FieldRelationshipReading(
+                    from = e.from?.toString() ?: "",
+                    to = e.to?.toString() ?: "",
+                    type = e.type,
+                    strength = e.strength,
+                    memory = e.memory,
+                    active = e.active,
+                    causal = e.active,
+                )
+            }
+        } else emptyList()
+
+        // Influences: per-force attribution at the query point. The port has no impulse accumulator yet,
+        // so this is empty-for-now (the field name mirrors JS `influences` so the shape stays identical).
+        val influences: List<FieldInfluenceReading> = emptyList()
+
+        return FieldQueryResult(
+            query = query,
+            frame = controller.env.frameN,
+            time = controller.env.t,
+            region = region,
+            bodies = bodyReadings,
+            metrics = metrics,
+            relationships = relationships,
+            influences = influences,
+            // No projection registry in the port yet — empty, matching the JS field name.
+            projections = emptyList(),
+            lens = null,
+        )
+    }
+
     // ── agent permissions (JS #894) ────────────────────────────────────────────────────
     /**
      * A capability-scoped, READ-ONLY [AgentFieldView] over this field — the surface a Software Agent uses
