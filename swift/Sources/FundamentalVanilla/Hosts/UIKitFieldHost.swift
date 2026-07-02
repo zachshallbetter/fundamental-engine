@@ -61,8 +61,21 @@ final class UIKitFieldHost: FieldHost {
         UIAccessibility.isReduceMotionEnabled
     }
 
+    /// Explicit host-level pause SPI (#605) — folded into `isHidden`, so flipping it drives the
+    /// engine's auto-pause through the same visibility seam the lifecycle notifications use.
+    /// SwiftUI does NOT set `UIView.isHidden` on views covered by `.sheet` / `.fullScreenCover`
+    /// (they stay in the window hierarchy, ticking invisibly) — a presenter sets this instead.
+    /// Callers holding a `FieldHandle` should prefer `pause()` / `resume()` on the handle.
+    public var isPaused: Bool = false {
+        didSet { if oldValue != isPaused { fireVisibility() } }
+    }
+
+    /// The app (or this view's scene) is in the background — the UIKit analog of `document.hidden`.
+    private var backgrounded = false
+
     public var isHidden: Bool {
-        rootView?.isHidden ?? true
+        guard let view = rootView else { return true }
+        return view.isHidden || isPaused || backgrounded
     }
 
     // MARK: FieldHost — loop
@@ -149,22 +162,62 @@ final class UIKitFieldHost: FieldHost {
         return Box(center: Vec3(cx, cy, 0), halfExtents: Vec3(hw, hh, 0))
     }
 
-    // MARK: Notifications
+    // MARK: Notifications — the presentation-aware lifecycle (#605)
+    //
+    // The UIKit analog of the web's Page Visibility pause: while the app (or this view's scene) is
+    // backgrounded, `isHidden` reads true and the visibility seam fires, so the engine stops the
+    // display link entirely; on return it fires again and the engine restarts. Note `willResign` /
+    // control-center pulls do NOT pause (the app stays foreground-inactive but visible), matching
+    // `document.hidden` semantics on the web.
 
     private func setupNotifications() {
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(appDidBecomeActive),
-            name: UIApplication.didBecomeActiveNotification, object: nil)
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(appDidEnterBackground),
-            name: UIApplication.didEnterBackgroundNotification, object: nil)
+        let nc = NotificationCenter.default
+        // App lifecycle — the whole app entered / left the background.
+        nc.addObserver(self, selector: #selector(hostDidBackground),
+                       name: UIApplication.didEnterBackgroundNotification, object: nil)
+        nc.addObserver(self, selector: #selector(hostWillForeground),
+                       name: UIApplication.willEnterForegroundNotification, object: nil)
+        nc.addObserver(self, selector: #selector(hostWillForeground),
+                       name: UIApplication.didBecomeActiveNotification, object: nil)
+        // Scene lifecycle — iPad multi-window / visionOS: ONE scene can background (its window
+        // closed or off-space) while the app process stays active. Filtered to this view's scene.
+        nc.addObserver(self, selector: #selector(sceneDidBackground(_:)),
+                       name: UIScene.didEnterBackgroundNotification, object: nil)
+        nc.addObserver(self, selector: #selector(sceneWillForeground(_:)),
+                       name: UIScene.willEnterForegroundNotification, object: nil)
     }
 
-    @objc private func appDidBecomeActive() {
-        visibilityObservers.forEach { $0() }
+    @objc private func hostDidBackground() {
+        backgrounded = true
+        fireVisibility()
     }
 
-    @objc private func appDidEnterBackground() {
+    @objc private func hostWillForeground() {
+        backgrounded = false
+        fireVisibility()
+    }
+
+    @objc private func sceneDidBackground(_ note: Notification) {
+        guard isOwnScene(note.object) else { return }
+        backgrounded = true
+        fireVisibility()
+    }
+
+    @objc private func sceneWillForeground(_ note: Notification) {
+        guard isOwnScene(note.object) else { return }
+        backgrounded = false
+        fireVisibility()
+    }
+
+    /// Whether a scene notification is about the scene this view lives in. A view not yet attached
+    /// to a window can't be attributed to a scene — those fall through to the app-level pair.
+    private func isOwnScene(_ object: Any?) -> Bool {
+        guard let scene = object as? UIScene,
+              let own = rootView?.window?.windowScene else { return false }
+        return scene === own
+    }
+
+    private func fireVisibility() {
         visibilityObservers.forEach { $0() }
     }
 

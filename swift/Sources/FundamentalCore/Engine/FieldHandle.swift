@@ -567,6 +567,21 @@ public protocol FieldHandle: AnyObject {
     func replay(_ a: FieldSnapshot, _ b: FieldSnapshot, _ opts: ReplayOptions) -> CausalReplay
 
     // ── lifecycle ─────────────────────────────────────────────────────────
+    /// Pause the frame loop — the host's display link is cancelled and every bit of simulation state
+    /// (pool, waves, grids, feedback, edges) is retained, ready to resume. Idempotent: pausing a
+    /// paused field is a no-op. DISTINCT from `setVisible(false)` (which skips *drawing* while the
+    /// sim keeps ticking) and from `destroy()` (teardown). An explicit `pause()` is *sticky*: the
+    /// presentation-aware hosts auto-pause/resume through the visibility seam (app background,
+    /// window occlusion), but a visibility resume never overrides an explicit pause. This is the
+    /// caller-facing control for presentations the host cannot observe — SwiftUI does NOT set
+    /// `isHidden` on views covered by `.sheet` / `.fullScreenCover`, so the presenter pauses the
+    /// field itself (#605). The web analog is the automatic Page Visibility pause (`browserHost`'s
+    /// `hidden()` + `onVisibility` → rAF cancelled).
+    func pause()
+    /// Resume a paused frame loop. Idempotent: resuming a running field is a no-op. The engine
+    /// re-bases its frame clock so the first resumed frame runs at `dt = 1` — a long pause can
+    /// never integrate as elapsed time (no teleporting matter).
+    func resume()
     func setVisible(_ on: Bool)
     func destroy()
 }

@@ -224,11 +224,16 @@ final class HeadlessFieldHost: FieldHost {
     var scrollY: Float { 0 }
     var scrollHeight: Float { 0 }
     var prefersReducedMotion: Bool { false }
-    var isHidden: Bool { false }
+    /// Presentation state — set by tests, delivered via `fireVisibility()` (#605).
+    var hidden = false
+    var isHidden: Bool { hidden }
     var projection: any HostProjection { FlatProjection() }
 
     private(set) var cancelCalled = false
+    /// How many times the engine (re)scheduled the loop — pause/resume idempotency probe (#605).
+    private(set) var scheduleCount = 0
     private var frameCallback: ((TimeInterval) -> Void)?
+    private var visibilityCallbacks: [() -> Void] = []
 
     /// Bodies returned by scanBodies(); set by tests.
     var bodies: [Body] = []
@@ -237,6 +242,7 @@ final class HeadlessFieldHost: FieldHost {
 
     func scheduleFrame(_ callback: @escaping (TimeInterval) -> Void) -> AnyObject {
         frameCallback = callback
+        scheduleCount += 1
         return NSObject()
     }
 
@@ -250,9 +256,17 @@ final class HeadlessFieldHost: FieldHost {
         frameCallback?(time)
     }
 
+    /// Deliver a visibility change to the engine (the host seam the lifecycle notifications use).
+    func fireVisibility() {
+        visibilityCallbacks.forEach { $0() }
+    }
+
     func onResize(_ cb: @escaping () -> Void) -> () -> Void { { } }
     func onScroll(_ cb: @escaping () -> Void) -> () -> Void { { } }
-    func onVisibility(_ cb: @escaping () -> Void) -> () -> Void { { } }
+    func onVisibility(_ cb: @escaping () -> Void) -> () -> Void {
+        visibilityCallbacks.append(cb)
+        return { }
+    }
     func onInput(_ cb: @escaping () -> Void) -> () -> Void { { } }
 
     func scanBodies() -> [Body] { bodies }

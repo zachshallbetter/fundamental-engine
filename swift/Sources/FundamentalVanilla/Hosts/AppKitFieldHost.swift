@@ -10,6 +10,7 @@ final class AppKitFieldHost: FieldHost {
     private weak var rootView: NSView?
     private var displayLink: CADisplayLink?
     private var frameCallback: ((TimeInterval) -> Void)?
+    private var visibilityObservers: [() -> Void] = []
     /// Simulation depth (pt). 0 = flat (the default, byte-identical to the JS field);
     /// > 0 gives the field a shallow volume rendered through a perspective projection.
     private let depth: Float
@@ -17,6 +18,12 @@ final class AppKitFieldHost: FieldHost {
     public init(rootView: NSView, depth: Float = 0) {
         self.rootView = rootView
         self.depth = max(0, depth)
+        setupNotifications()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        displayLink?.invalidate()
     }
 
     // MARK: FieldHost — geometry
@@ -43,7 +50,22 @@ final class AppKitFieldHost: FieldHost {
         NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     }
 
-    public var isHidden: Bool { rootView?.isHidden ?? true }
+    /// Explicit host-level pause SPI (#605), the `UIKitFieldHost` mirror — folded into `isHidden`,
+    /// so flipping it drives the engine's auto-pause through the visibility seam. Callers holding
+    /// a `FieldHandle` should prefer `pause()` / `resume()` on the handle.
+    public var isPaused: Bool = false {
+        didSet { if oldValue != isPaused { fireVisibility() } }
+    }
+
+    /// The app is hidden (⌘H / `NSApplication` hide) — the macOS analog of `document.hidden`.
+    private var appHidden = false
+    /// This view's window is fully occluded (covered / minimized / on another Space).
+    private var occluded = false
+
+    public var isHidden: Bool {
+        guard let view = rootView else { return true }
+        return view.isHidden || isPaused || appHidden || occluded
+    }
 
     // MARK: FieldHost — loop (CADisplayLink, macOS 14)
     //
@@ -88,8 +110,50 @@ final class AppKitFieldHost: FieldHost {
     }
 
     public func onScroll(_ callback: @escaping () -> Void) -> () -> Void { { } }
-    public func onVisibility(_ callback: @escaping () -> Void) -> () -> Void { { } }
+    public func onVisibility(_ callback: @escaping () -> Void) -> () -> Void {
+        visibilityObservers.append(callback)
+        let idx = visibilityObservers.count - 1
+        return { [weak self] in self?.visibilityObservers.remove(at: idx) }
+    }
     public func onInput(_ callback: @escaping () -> Void) -> () -> Void { { } }
+
+    // MARK: Notifications — the presentation-aware lifecycle (#605)
+    //
+    // The macOS analog of the web's Page Visibility pause: while the app is hidden (⌘H) or this
+    // view's window is fully occluded (covered / minimized / another Space), `isHidden` reads true
+    // and the visibility seam fires, so the engine stops the display link entirely; on return it
+    // fires again and the engine restarts. Mirrors `UIKitFieldHost`'s background/foreground pair.
+
+    private func setupNotifications() {
+        let nc = NotificationCenter.default
+        nc.addObserver(self, selector: #selector(appDidHide),
+                       name: NSApplication.didHideNotification, object: nil)
+        nc.addObserver(self, selector: #selector(appDidUnhide),
+                       name: NSApplication.didUnhideNotification, object: nil)
+        // Occlusion fires for every window; filtered to this view's window in the handler.
+        nc.addObserver(self, selector: #selector(occlusionChanged(_:)),
+                       name: NSWindow.didChangeOcclusionStateNotification, object: nil)
+    }
+
+    @objc private func appDidHide() {
+        appHidden = true
+        fireVisibility()
+    }
+
+    @objc private func appDidUnhide() {
+        appHidden = false
+        fireVisibility()
+    }
+
+    @objc private func occlusionChanged(_ note: Notification) {
+        guard let window = note.object as? NSWindow, window === rootView?.window else { return }
+        occluded = !window.occlusionState.contains(.visible)
+        fireVisibility()
+    }
+
+    private func fireVisibility() {
+        visibilityObservers.forEach { $0() }
+    }
 
     // MARK: FieldHost — projection
 
