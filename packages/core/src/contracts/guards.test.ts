@@ -18,6 +18,7 @@ import {
   assertVisualizationPure,
   checkForceContract,
   devWarnNoOp,
+  devWarnDeprecated,
   resetNoOpWarnings,
 } from './guards.ts';
 import { passportFor } from './passport.ts';
@@ -125,6 +126,42 @@ test('devWarnNoOp: silent on the production path (checks disabled)', () => {
     resetNoOpWarnings();
     devWarnNoOp('NOOP_NO_HEATMAP', 'should not appear in production.');
     assert.equal(count, 0, 'no warning when contract checks are off');
+  } finally {
+    console.warn = orig;
+    setContractChecks(true); // restore for any later tests
+  }
+});
+
+test('devWarnDeprecated: warns once per alias id in dev, deduped, canonical names silent (#709)', () => {
+  const orig = console.warn;
+  const seen: string[] = [];
+  console.warn = (msg?: unknown) => void seen.push(String(msg));
+  try {
+    setContractChecks(true);
+    resetNoOpWarnings();
+    // the forces:* alias path fires the same id every frame → warned exactly once.
+    devWarnDeprecated('forces:captured', "'forces:captured' is a migration alias, removed at 1.0.");
+    devWarnDeprecated('forces:captured', "'forces:captured' is a migration alias, removed at 1.0.");
+    assert.equal(seen.length, 1, 'deduped to one warning for the same alias');
+    assert.match(seen[0], /\[Fundamental:DEPRECATED_ALIAS\]/);
+    assert.match(seen[0], /removed at 1\.0/);
+    // a DIFFERENT alias id gets its own single warning.
+    devWarnDeprecated('forces:released', "'forces:released' is a migration alias, removed at 1.0.");
+    assert.equal(seen.length, 2);
+  } finally {
+    console.warn = orig;
+  }
+});
+
+test('devWarnDeprecated: silent on the production path (checks disabled)', () => {
+  const orig = console.warn;
+  let count = 0;
+  console.warn = () => void count++;
+  try {
+    setContractChecks(false);
+    resetNoOpWarnings();
+    devWarnDeprecated('forces:captured', 'should not appear in production.');
+    assert.equal(count, 0, 'no deprecation warning when contract checks are off (production)');
   } finally {
     console.warn = orig;
     setContractChecks(true); // restore for any later tests
