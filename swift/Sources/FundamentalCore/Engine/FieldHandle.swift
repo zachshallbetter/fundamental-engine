@@ -540,6 +540,19 @@ public protocol FieldHandle: AnyObject {
     /// the per-lane rules.
     func diff(_ a: FieldSnapshot, _ b: FieldSnapshot) -> FieldDiff
 
+    // ── substrate READ API: replay  (JS critical-path 03 phase 2) ───────────
+    /// Explain HOW the field changed from snapshot `a` to snapshot `b` — an ordered, narrated sequence of
+    /// causes (formation activations → relationship shifts → body measurements → metric moves → force
+    /// attributions), the substrate READ-API `replay` primitive. PURE: like ``diff(_:_:)`` it reads only the
+    /// two snapshot objects, never touches this field's live state, and mutates nothing (pass any two
+    /// captures); delegates to the free function ``replayFieldSnapshots(_:_:_:)``, which composes
+    /// ``diffFieldSnapshots(_:_:)``. ``ReplayOptions/focus`` scopes the replay to one body id. Mirror of the
+    /// JS `@fundamental-engine/core` `field.replay(a, b, opts)` (and the Kotlin `:fundamental-core` port) —
+    /// same ``CausalReplay`` shape + field names + step ordering + phrasing so a replay is identical across
+    /// planes. The `force` lane derives from each snapshot's `influences`; those are empty in this port (no
+    /// impulse accumulator yet), so that lane is dormant while the structural lanes are fully live.
+    func replay(_ a: FieldSnapshot, _ b: FieldSnapshot, _ opts: ReplayOptions) -> CausalReplay
+
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)
     func destroy()

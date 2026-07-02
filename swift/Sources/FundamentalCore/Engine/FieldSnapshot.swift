@@ -340,3 +340,165 @@ public func diffFieldSnapshots(_ a: FieldSnapshot, _ b: FieldSnapshot) -> FieldD
         formationChanges: formationChanges
     )
 }
+
+// MARK: - Causal Replay (JS critical-path 03 phase 2 — `replayFieldSnapshots`)
+
+// Explain HOW the field changed between two snapshots — an ordered, narrated sequence of causes derived
+// PURELY from the diff (formation activations → relationship shifts → body measurements → metric moves →
+// force attributions). ``FieldHandle/replay(_:_:_:)`` delegates to ``replayFieldSnapshots(_:_:_:)`` here.
+// Like `diff`, it reads only the two snapshot objects, never the live field, and mutates nothing. Result
+// SHAPE + field names + semantics mirror the JS `@fundamental-engine/core` and the Kotlin `:fundamental-core`
+// port 1:1 so a replay serializes identically across planes. EXPERIMENTAL until stabilized. See
+// packages/core/src/core/field-snapshot.ts and FieldSnapshot.kt.
+//
+// PORT NOTE (influences-derived cause empty-for-now): the JS `force` lane derives per-body force-attribution
+// shifts from each snapshot's `influences`. This port has NO impulse accumulator, so captured `influences`
+// are always empty (exactly as `query`/`snapshot`/`diff` left them). The force-lane logic is mirrored
+// field-for-field below but simply produces no steps until the port grows an accumulator — the shape stays
+// identical, only that one lane is dormant. The structural lanes (formation/relationship/measurement/metric)
+// are fully live.
+
+/// The lane a ``CausalReplayStep`` belongs to (JS `CausalCause`, Kotlin `CausalCause`).
+public enum CausalCause: String, Sendable {
+    case force
+    case relationship
+    case metric
+    case formation
+    case measurement
+}
+
+/// Options for ``FieldHandle/replay(_:_:_:)`` (JS `ReplayOptions`, Kotlin `ReplayOptions`).
+public struct ReplayOptions: Sendable {
+    /// Restrict the replay to steps touching this body id (its metrics, or a relationship endpoint).
+    public var focus: String?
+    public init(focus: String? = nil) { self.focus = focus }
+}
+
+/// One narrated cause in a ``CausalReplay`` (JS `CausalReplayStep`, Kotlin `CausalReplayStep`).
+/// ``contribution`` is the structured before/after behind the ``description`` — a ``MetricDelta`` for a
+/// metric/force move, else `nil`. (The JS `contribution` is `unknown`; every value it actually carries is a
+/// `{ from, to }` delta, so this port types it as ``MetricDelta`` — matching the Kotlin port's `Any?` slot
+/// which likewise only ever holds a `MetricDelta`.)
+public struct CausalReplayStep: Sendable, Equatable {
+    public var frame: Int
+    public var time: Float
+    public var cause: CausalCause
+    /// The body/edge the cause originates from (a body id, or a relationship's `from`).
+    public var source: String?
+    /// The affected target, when the cause is a relationship.
+    public var target: String?
+    /// A human-readable account of the change (lane: diagnostic).
+    public var description: String
+    /// The structured before/after behind the description (e.g. a ``MetricDelta``); `nil` when none.
+    public var contribution: MetricDelta?
+    public init(frame: Int, time: Float, cause: CausalCause, source: String? = nil,
+                target: String? = nil, description: String, contribution: MetricDelta? = nil) {
+        self.frame = frame; self.time = time; self.cause = cause; self.source = source
+        self.target = target; self.description = description; self.contribution = contribution
+    }
+}
+
+/// An explanation of how the field changed between two snapshots — the ordered causal steps (JS
+/// `CausalReplay`, Kotlin `CausalReplay`). PURE (derived from the two snapshots); plain data, safe to
+/// serialize.
+public struct CausalReplay: Sendable, Equatable {
+    /// The id of snapshot `a`.
+    public var from: String
+    /// The id of snapshot `b`.
+    public var to: String
+    /// The focus body id, if the replay was scoped to one.
+    public var focus: String?
+    public var steps: [CausalReplayStep]
+    public init(from: String, to: String, focus: String? = nil, steps: [CausalReplayStep]) {
+        self.from = from; self.to = to; self.focus = focus; self.steps = steps
+    }
+}
+
+/// Explain HOW the field changed from snapshot `a` to snapshot `b` — an ordered, narrated sequence of causes
+/// derived from the diff (formation activations → relationship shifts → body measurements → metric changes →
+/// force attributions). PURE; preserves the before/after on each step's ``CausalReplayStep/contribution``.
+/// ``ReplayOptions/focus`` scopes the replay to one body id (its metrics, or a relationship it participates
+/// in). Mirror of the JS `replayFieldSnapshots(a, b, opts)` and the Kotlin port; ``FieldHandle/replay(_:_:_:)``
+/// delegates here.
+///
+/// Step ordering (mirrors JS): formations first (the global bias that frames the window), then relationships
+/// (edges formed / dissolved / strengthened / activated), then bodies (entered / left, then per-metric
+/// movements), then forces. The force lane compares each `(source, force, channel)` influence's magnitude
+/// A→B and narrates which force engaged/grew/weakened/released — but only when BOTH snapshots captured
+/// influences. In this port influences are always empty (no accumulator), so the force lane yields no steps.
+public func replayFieldSnapshots(_ a: FieldSnapshot, _ b: FieldSnapshot,
+                                 _ opts: ReplayOptions = ReplayOptions()) -> CausalReplay {
+    func r2(_ n: Float) -> Float { (n * 1000).rounded() / 1000 }
+    let d = diffFieldSnapshots(a, b)
+    let frame = b.frame
+    let time = b.createdAt
+    var steps: [CausalReplayStep] = []
+    func step(_ cause: CausalCause, _ description: String, source: String? = nil,
+              target: String? = nil, contribution: MetricDelta? = nil) {
+        steps.append(CausalReplayStep(frame: frame, time: time, cause: cause, source: source,
+                                      target: target, description: description, contribution: contribution))
+    }
+
+    // formations first (the global bias that frames everything else this window)
+    for f in d.formationChanges {
+        step(.formation, "Formation '\(f.id)' \(f.kind)", source: f.id)
+    }
+    // relationships — the edges that strengthened / activated / appeared
+    for rc in d.relationshipChanges {
+        let what: String
+        if rc.kind == "added" { what = "formed" }
+        else if rc.kind == "removed" { what = "dissolved" }
+        else {
+            var parts: [String] = []
+            if let active = rc.active { parts.append(active.to ? "became active" : "went idle") }
+            if let strength = rc.strength {
+                let verb = strength.to >= strength.from ? "strengthened" : "weakened"
+                parts.append("\(verb) \(r2(strength.from))→\(r2(strength.to))")
+            }
+            what = parts.isEmpty ? "changed" : parts.joined(separator: ", ")
+        }
+        step(.relationship, "Relationship \(rc.from)→\(rc.to) (\(rc.type)) \(what)",
+             source: rc.from, target: rc.to, contribution: rc.strength)
+    }
+    // bodies — entered/left, then per-metric movements
+    for bc in d.bodyChanges {
+        if bc.kind == "added" {
+            step(.measurement, "Body \(bc.id) entered the field", source: bc.id)
+        } else if bc.kind == "removed" {
+            step(.measurement, "Body \(bc.id) left the field", source: bc.id)
+        } else if let metrics = bc.metrics {
+            for (k, v) in metrics {
+                let dir = v.to > v.from ? "rose" : "fell"
+                step(.metric, "Body \(bc.id) \(k) \(dir) \(r2(v.from))→\(r2(v.to))",
+                     source: bc.id, contribution: v)
+            }
+        }
+    }
+
+    // forces — per-body attribution shifts (only when BOTH snapshots captured influences, via
+    // snapshot(includeInfluences)). Compares each (source, force, channel)'s magnitude A→B so the replay can
+    // say *which force* drove the change. EMPTY-FOR-NOW: this port has no impulse accumulator, so
+    // `influences` is always empty and this lane yields no steps. The logic mirrors JS field-for-field so
+    // the lane comes alive unchanged once an accumulator lands.
+    if !a.influences.isEmpty && !b.influences.isEmpty {
+        func mag(_ c: Vec3) -> Float { (c.x * c.x + c.y * c.y + c.z * c.z).squareRoot() }
+        func key(_ i: FieldInfluenceReading) -> String { "\(i.source) \(i.force) \(i.channel)" }
+        let am = Dictionary(a.influences.map { (key($0), $0) }, uniquingKeysWith: { _, last in last })
+        let bm = Dictionary(b.influences.map { (key($0), $0) }, uniquingKeysWith: { _, last in last })
+        for k in Set(am.keys).union(bm.keys) {
+            let ai = am[k]
+            let bi = bm[k]
+            let m0 = ai.map { mag($0.contribution) } ?? 0
+            let m1 = bi.map { mag($0.contribution) } ?? 0
+            if abs(m1 - m0) < 1e-9 { continue }
+            let ref = bi ?? ai!
+            let verb = m1 > m0 ? (m0 == 0 ? "engaged" : "grew") : (m1 == 0 ? "released" : "weakened")
+            let lane = ref.channel == "thermal" ? " (thermal)" : ""
+            step(.force, "Force \(ref.force) on \(ref.source)\(lane) \(verb) \(r2(m0))→\(r2(m1))",
+                 source: ref.source, contribution: MetricDelta(from: m0, to: m1))
+        }
+    }
+
+    let focused = opts.focus.map { f in steps.filter { $0.source == f || $0.target == f } } ?? steps
+    return CausalReplay(from: a.id, to: b.id, focus: opts.focus, steps: focused)
+}

@@ -550,4 +550,148 @@ struct SubstrateParityTests {
         #expect(meanM?.from == 0)                                    // missing in a → 0
         #expect(meanM?.to == 0.4)
     }
+
+    // MARK: - Causal Replay (JS critical-path 03 phase 2)
+
+    @Test("replay narrates a mutation sequence in canonical lane order (formations → relationships → bodies → metrics)")
+    func replayCanonicalLaneOrder() {
+        // Three snapshots across a mutation sequence, hand-built so every lane is exercised deterministically.
+        // a → b: a formation flips, an edge changes, a body's metric moves, a field metric moves, a body leaves.
+        let a = makeSnapshot(id: "a", formations: ["ambient"],
+                             bodies: [body("hero", metrics: ["density": 1]),
+                                      body("gone", metrics: ["density": 2])],
+                             relationships: [rel("hero", "gone", strength: 0.4, active: false)],
+                             metrics: ["bodies": 2])
+        let b = makeSnapshot(id: "b", formations: ["wells"],
+                             bodies: [body("hero", metrics: ["density": 3])],
+                             relationships: [rel("hero", "gone", strength: 0.8, active: true)],
+                             metrics: ["bodies": 1])
+
+        let replay = replayFieldSnapshots(a, b)
+
+        #expect(replay.from == "a")
+        #expect(replay.to == "b")
+        #expect(replay.focus == nil)
+
+        // Canonical lane order: formations first, then relationships, then bodies (measurements/metrics),
+        // then forces. Assert the ORDER of the lanes as they appear.
+        let causes = replay.steps.map { $0.cause }
+        let firstFormation = causes.firstIndex(of: .formation)
+        let firstRelationship = causes.firstIndex(of: .relationship)
+        let firstBodyLane = causes.firstIndex { $0 == .measurement || $0 == .metric }
+        #expect(firstFormation != nil)
+        #expect(firstRelationship != nil)
+        #expect(firstBodyLane != nil)
+        #expect(firstFormation! < firstRelationship!)
+        #expect(firstRelationship! < firstBodyLane!)
+
+        // Formation lane: "wells" activated, "ambient" deactivated — both narrated.
+        #expect(replay.steps.contains { $0.cause == .formation && $0.description == "Formation 'wells' activated" })
+        #expect(replay.steps.contains { $0.cause == .formation && $0.description == "Formation 'ambient' deactivated" })
+
+        // Relationship lane: became active + strengthened, with the before/after in `contribution`.
+        let relStep = replay.steps.first { $0.cause == .relationship }
+        #expect(relStep?.source == "hero")
+        #expect(relStep?.target == "gone")
+        #expect(relStep?.description == "Relationship hero→gone (attract) became active, strengthened 0.4→0.8")
+        #expect(relStep?.contribution == MetricDelta(from: 0.4, to: 0.8))
+
+        // Measurement lane: the `gone` body left the field.
+        #expect(replay.steps.contains {
+            $0.cause == .measurement && $0.source == "gone" && $0.description == "Body gone left the field"
+        })
+
+        // Metric lane: hero density rose 1→3, contribution carries the delta.
+        let metricStep = replay.steps.first { $0.cause == .metric && $0.source == "hero" }
+        #expect(metricStep?.description == "Body hero density rose 1.0→3.0")
+        #expect(metricStep?.contribution == MetricDelta(from: 1, to: 3))
+
+        // Every step is stamped with b's frame/time.
+        #expect(replay.steps.allSatisfy { $0.frame == b.frame && $0.time == b.createdAt })
+
+        // A field-metric move (bodies 2→1) is a diff MetricChange, NOT a replay step lane — replay's `.metric`
+        // lane is per-BODY. So no `.metric` step should be sourced from a field metric key.
+        #expect(!replay.steps.contains { $0.cause == .metric && $0.description.contains("bodies") })
+    }
+
+    @Test("replay entered/left narration across a live three-snapshot sequence")
+    func replayThreeSnapshotLiveSequence() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        _ = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "attract"),
+                                   rect: { Box(center: Vec3(200, 300, 0), halfExtents: Vec3(5, 5, 0)) }))
+        var t = 0.0
+        for _ in 0..<5 { t += 0.016; host.fire(at: t) }
+        let s1 = field.snapshot()
+
+        // s1 → s2: add a body.
+        let charge = field.addBody(BodySpec(tokens: ["charge"], identity: FieldBodyIdentity(id: "charge"),
+                                            rect: { Box(center: Vec3(400, 400, 0), halfExtents: Vec3(5, 5, 0)) }))
+        for _ in 0..<5 { t += 0.016; host.fire(at: t) }
+        let s2 = field.snapshot()
+
+        // s2 → s3: remove it.
+        charge.remove()
+        for _ in 0..<5 { t += 0.016; host.fire(at: t) }
+        let s3 = field.snapshot()
+
+        let entered = field.replay(s1, s2)
+        #expect(entered.steps.contains {
+            $0.cause == .measurement && $0.source == "charge" && $0.description == "Body charge entered the field"
+        })
+
+        let left = field.replay(s2, s3)
+        #expect(left.steps.contains {
+            $0.cause == .measurement && $0.source == "charge" && $0.description == "Body charge left the field"
+        })
+        field.destroy()
+    }
+
+    @Test("replay focus scopes steps to the one body id (its metrics + its relationships)")
+    func replayFocusScopesToBody() {
+        let a = makeSnapshot(id: "a", formations: ["ambient"],
+                             bodies: [body("hero", metrics: ["density": 1]),
+                                      body("other", metrics: ["density": 5])],
+                             relationships: [rel("hero", "other", strength: 0.2, active: false)],
+                             metrics: [:])
+        let b = makeSnapshot(id: "b", formations: ["ambient"],
+                             bodies: [body("hero", metrics: ["density": 4]),
+                                      body("other", metrics: ["density": 9])],
+                             relationships: [rel("hero", "other", strength: 0.6, active: true)],
+                             metrics: [:])
+
+        let full = replayFieldSnapshots(a, b)
+        let focused = replayFieldSnapshots(a, b, ReplayOptions(focus: "hero"))
+
+        #expect(focused.focus == "hero")
+        // Every focused step touches "hero" as source or target.
+        #expect(focused.steps.allSatisfy { $0.source == "hero" || $0.target == "hero" })
+        // The "other" body's own metric move is present in the full replay but dropped by the focus.
+        #expect(full.steps.contains { $0.source == "other" })
+        #expect(!focused.steps.contains { $0.source == "other" && $0.target != "hero" })
+        // The hero→other relationship IS kept (source == hero), and hero's own metric move is kept.
+        #expect(focused.steps.contains { $0.cause == .relationship && $0.source == "hero" })
+        #expect(focused.steps.contains { $0.cause == .metric && $0.source == "hero" })
+    }
+
+    @Test("replay force lane is empty-for-now (no impulse accumulator in this port)")
+    func replayForceLaneEmptyForNow() {
+        // Even with influences requested, the port captures none (no accumulator), so replay yields no
+        // `.force` steps — the shape is present, the lane is dormant, mirroring JS/Kotlin.
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        _ = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "attract"),
+                                   rect: { Box(center: Vec3(200, 300, 0), halfExtents: Vec3(5, 5, 0)) }))
+        var t = 0.0
+        for _ in 0..<3 { t += 0.016; host.fire(at: t) }
+        let a = field.snapshot(FieldSnapshotOptions(includeInfluences: true))
+        for _ in 0..<10 { t += 0.016; host.fire(at: t) }
+        let b = field.snapshot(FieldSnapshotOptions(includeInfluences: true))
+
+        #expect(a.influences.isEmpty)
+        #expect(b.influences.isEmpty)
+        let replay = field.replay(a, b)
+        #expect(!replay.steps.contains { $0.cause == .force })
+        field.destroy()
+    }
 }

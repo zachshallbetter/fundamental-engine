@@ -199,8 +199,19 @@ Ported and tested — the full engine:
   difference). The handle method delegates to the free `diffFieldSnapshots(_:_:)`; the `MetricDelta` /
   `BoolDelta` named structs stand in for JS's inline `{ from, to }` (matching the Kotlin port). The
   `FieldDiff` shape + field names + comparison semantics mirror the JS core and the Kotlin `:fundamental-core`
-  port 1:1; tested (`SubstrateParityTests`). The rest of the substrate READ API — `replay`/`projections` —
-  is a follow-up on both native planes.
+  port 1:1; tested (`SubstrateParityTests`).
+- **Substrate READ API — `replay()`** (JS critical-path 03 phase 2): `FieldHandle.replay(_:_:_:)` explains
+  HOW the field changed between two `FieldSnapshot`s — a PURE, ordered narration composed from the diff, in
+  canonical lane order: formations → relationships (formed/dissolved/strengthened/activated) → bodies
+  (entered/left, then per-metric moves) → forces. Every `CausalReplayStep` is stamped with `b`'s frame/time
+  and carries the structured before/after in `contribution`; `ReplayOptions.focus` drops steps not touching
+  that body id. The handle method delegates to the free `replayFieldSnapshots(_:_:_:)` (which composes
+  `diffFieldSnapshots`). The `force` lane derives from each snapshot's `influences` — empty-for-now on this
+  port (no impulse accumulator), so that lane is dormant while formation/relationship/measurement/metric are
+  fully live; it comes alive unchanged once an accumulator lands. `CausalReplay` / `CausalReplayStep` /
+  `CausalCause` / `ReplayOptions` shape + field names + step ordering + phrasing mirror the JS core and the
+  Kotlin `:fundamental-core` port 1:1; tested (`SubstrateParityTests`). The rest of the substrate READ API —
+  `projections` — is a follow-up on both native planes (it needs a port projection registry).
 - **Force-probe — `sample(x:y:)`** (JS #816): `FieldHandle.sample(x:y:)` returns the net force vector a
   free particle would feel at a world-space point, summed over all active bodies via the shared `forceAt`
   streamlines probe (velocity- and charge-dependent forces contribute through their `field()`). Read-only
