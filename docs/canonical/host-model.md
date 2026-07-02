@@ -1,9 +1,11 @@
 > **Status: canonical (overview).**
 > The host model: how any environment — DOM, headless, native, custom renderer — becomes a
-> surface the field runs on. This document is the **Declare** verb's foundation and a map: it
-> states the contract and links outward to the detailed docs rather than restating them. The
-> host-conformance mechanics live in [platform-architecture.md](platform-architecture.md); the
-> coordinate lanes in [coordinate-spaces.md](coordinate-spaces.md); the per-body lifecycle in
+> surface the field runs on. This document is the **Declare** verb's foundation and the single
+> home of the [host-conformance checklist](#host-conformance-checklist); for the rest it is a
+> map — it states the contract and links outward to the detailed docs rather than restating
+> them. The platform mechanics (registries, scheduler, runtime) live in
+> [platform-architecture.md](platform-architecture.md); the coordinate lanes in
+> [coordinate-spaces.md](coordinate-spaces.md); the per-body lifecycle in
 > [body-lifecycle.md](body-lifecycle.md). Follows the [status rule](documentation-standards.md).
 
 # The host model
@@ -78,23 +80,41 @@ the stable seam.
 
 ## Host conformance checklist
 
-A new host is first-class when it answers each question below. This is the third parity/testing category
-alongside **API-surface parity** and **mathematical conformance** (the shared cross-plane golden at
-`depth: 0`) — see [platform-architecture.md → Host conformance](platform-architecture.md) for the full
-table and the graceful-degradation floor.
+This section is the checklist's **one home** — other docs link here rather than carrying their own
+copy. Host conformance is the third parity/testing category alongside **API-surface parity** (the
+public surface exists on every plane) and **mathematical conformance** (the shared cross-plane golden
+at `depth: 0`): *does this environment adapter supply the capabilities the field expects, and degrade
+cleanly where it does not?* A new host is first-class when it answers each question below (the
+optional rows are the capability ladder above, restated as certification questions):
 
-1. **Measurement / geometry** — provide `root` + `viewport()` so bodies can be resolved in field space.
-2. **Coordinate mapping** — return a `viewport` origin (`originX` / `originY`) if the field is
+| Question | Capability | Absent ⇒ |
+|---|---|---|
+| Provides geometry? | `root` + `viewport()` — bodies resolve in field space | **required** — a host without it is not a host |
+| Ticks time? | `raf` / `cancelRaf` | **required** |
+| Reports scroll? | `scrollY` / `scrollHeight` | scroll readouts read 0 |
+| Accepts a heatmap canvas? | `createCanvas` | heatmap draw modes throw; `render: 'none'` unaffected |
+| Honors reduced motion? | `reducedMotion` | motion always allowed |
+| Auto-pauses when hidden? | `hidden` / `onVisibility` | the loop never auto-pauses |
+| Emits events? | `onResize` / `onScroll` / `onInput` | no resize/scroll/input signals |
+| Relays DOM body events? | `onBodyEvent` | programmatic bodies only (`addBody`) |
+| Preserves an a11y equivalent? | host-specific | the embedder wires ARIA/semantics on its plane |
+
+`hostCapabilities(host)` is the machine-readable form of this checklist; the graceful-degradation
+floor is pinned by `packages/core/src/core/minimal-host.test.ts` (a field runs against a host with
+**none** of the optional capabilities). The accessibility row is host-specific by design: the field
+state is a behavior layer over the host's source of meaning, not a replacement for it — wire ARIA /
+semantics on your plane.
+
+Beyond the capability rows, four contract disciplines complete the checklist:
+
+1. **Coordinate mapping** — return a `viewport` origin (`originX` / `originY`) if the field is
    container-scoped rather than window-scoped, so bodies, canvas, and readouts share one space.
-3. **Time** — schedule and cancel frames (`raf` / `cancelRaf`).
-4. **Body identity** — respect stable `FieldBodyIdentity` across a rescan (see below); do not re-key a
+2. **Body identity** — respect stable `FieldBodyIdentity` across a rescan (see below); do not re-key a
    body on re-measure.
-5. **Lifecycle** — support declare → measure → participate → remove for the bodies your environment
+3. **Lifecycle** — support declare → measure → participate → remove for the bodies your environment
    introduces (DOM scan, or programmatic `addBody` / `handle.remove()`).
-6. **Teardown** — every subscription you return (`onResize` / `onScroll` / …) hands back an unsubscribe;
+4. **Teardown** — every subscription you return (`onResize` / `onScroll` / …) hands back an unsubscribe;
    honor it so the field tears down cleanly.
-7. **Accessibility equivalent** (host-specific) — wire ARIA / semantics on your plane; the field state is
-   a behavior layer over the host's source of meaning, not a replacement for it.
 
 ## Coordinate spaces
 
@@ -122,6 +142,6 @@ DOM-vs-synthetic differences and the identity-stability rule: → [body-lifecycl
 
 ---
 
-See also: [platform-architecture.md](platform-architecture.md) (registries, scheduler, runtime, host
-conformance), [system-contracts.md](system-contracts.md) (the hard platform contract), and
+See also: [platform-architecture.md](platform-architecture.md) (registries, scheduler, runtime),
+[system-contracts.md](system-contracts.md) (the hard platform contract), and
 [substrate-api.md](substrate-api.md) (the read APIs the host's field state feeds).
