@@ -123,10 +123,16 @@ public final class MetalFieldRenderer: FieldRenderer {
             let att = desc.colorAttachments[0]!
             att.pixelFormat = .bgra8Unorm
             att.isBlendingEnabled = true
+            // ADDITIVE, canvas-'lighter' composition (#417): every layer this backend
+            // owns — matter, waves, the bound shimmer, sparks — draws under 'lighter'
+            // in the JS source, so overlapping glows SUM toward white instead of
+            // occluding (the soft-glow cluster look near accretion sinks depends on
+            // it). Premultiplied source + dst ONE = src + dst, clamped by the unorm
+            // target — exactly what 2D-canvas 'lighter' computes.
             att.sourceRGBBlendFactor = .one              // premultiplied source
             att.sourceAlphaBlendFactor = .one
-            att.destinationRGBBlendFactor = .oneMinusSourceAlpha
-            att.destinationAlphaBlendFactor = .oneMinusSourceAlpha
+            att.destinationRGBBlendFactor = .one
+            att.destinationAlphaBlendFactor = .one
             return try device.makeRenderPipelineState(descriptor: desc)
         }
         circlePipeline = try pipeline(vertex: "circleVert", fragment: "circleFrag")
@@ -148,14 +154,14 @@ public final class MetalFieldRenderer: FieldRenderer {
                                   x2, y2, 0, 0, r, g, b, a])
     }
 
-    private func particleColor(_ p: Particle, _ frame: RenderFrame) -> RGB {
-        let vol = frame.volume
-        let cx = vol.width / 2
-        let cy = vol.height / 2
-        let dx = p.position.x - cx
-        let dy = p.position.y - cy
-        let rs = clamp((dx * dx + dy * dy) / (cx * cx + cy * cy), 0, 1)
-        return particleRGB(rs: rs, heat: p.heat, accent: p.color.map(hexToRgb) ?? frame.accent)
+    private func particleColor(_ p: Particle, _ frame: RenderFrame, rs: Float) -> RGB {
+        particleTint(rs: rs, heat: p.heat, accent: frame.accent, stain: p.color.map(hexToRgb))
+    }
+
+    /// The `rs` of a projected particle — normalized dist² from the swarm's thermal
+    /// anchor (W/2, 0.4·H), shared with the sprite math (core `particleRS`).
+    private func particleRS(_ x: Float, _ y: Float, _ frame: RenderFrame) -> Float {
+        FundamentalCore.particleRS(x: x, y: y, width: frame.volume.width, height: frame.volume.height)
     }
 
     private func assemble(_ frame: RenderFrame) {
@@ -195,12 +201,19 @@ public final class MetalFieldRenderer: FieldRenderer {
         case .trails:
             for p in frame.particles {
                 let (x, y) = frame.projection.project(p.position)
+                if p.cap != nil {
+                    // held matter never streaks — the dim orbital cloud, as in dots.
+                    pushCircle(x, y, CapturedCloud.radius, frame.accent, CapturedCloud.alpha)
+                    continue
+                }
                 let tail = p.position - p.velocity * 6
                 let (tx, ty) = frame.projection.project(tail)
-                pushLine(tx, ty, x, y, particleColor(p, frame), 0.4 + p.heat * 0.5)
+                pushLine(tx, ty, x, y, particleColor(p, frame, rs: particleRS(x, y, frame)), 0.4 + p.heat * 0.5)
             }
         case .links:
-            for seg in linkSegments(particles: frame.particles) {
+            // captured matter is held, not free — never linked; R matches the JS
+            // connection radius (field.ts links R = 90, as the CG twin already does).
+            for seg in linkSegments(particles: frame.particles.filter { $0.cap == nil }, radius: 90) {
                 let (x1, y1) = frame.projection.project(seg.a)
                 let (x2, y2) = frame.projection.project(seg.b)
                 pushLine(x1, y1, x2, y2, frame.accent, seg.alpha)
@@ -215,13 +228,26 @@ public final class MetalFieldRenderer: FieldRenderer {
         }
     }
 
+    /// The soft-glow dots treatment (field.ts render(), #417): every FREE particle is
+    /// two instances — a wide faint bloom under a crisp core (core `particleSprite`),
+    /// summed by the additive pipeline; CAPTURED matter (p.cap, §6.9) is the dim
+    /// orbital cloud — small fixed accent dots, visibly held by the sink. DIVERGENCE
+    /// (host-API): the fragment shader's smoothstep edge softens every disc slightly,
+    /// where canvas arcs are hard-edged AA circles.
     private func pushDots(_ frame: RenderFrame) {
         let glow = frame.particleGlow   // scales how much heat inflates + brightens each particle
         for p in frame.particles {
             let (x, y) = frame.projection.project(p.position)
-            let depth = frame.projection.depthHint(p.position)
-            let radius = p.size * (1 + p.heat * 0.8 * glow) * (1 - depth * 0.5)
-            pushCircle(x, y, radius, particleColor(p, frame), (0.55 + p.heat * 0.4 * glow) * (1 - depth * 0.6))
+            if p.cap != nil {
+                pushCircle(x, y, CapturedCloud.radius, frame.accent, CapturedCloud.alpha)
+                continue
+            }
+            let rs = particleRS(x, y, frame)
+            let sprite = particleSprite(size: p.size, heat: p.heat, rs: rs,
+                                        depthHint: frame.projection.depthHint(p.position), glow: glow)
+            let rgb = particleColor(p, frame, rs: rs)
+            pushCircle(x, y, sprite.bloomSize, rgb, sprite.bloomAlpha) // the wide, faint aura
+            pushCircle(x, y, sprite.size, rgb, sprite.alpha)           // the crisp bright core
         }
     }
 

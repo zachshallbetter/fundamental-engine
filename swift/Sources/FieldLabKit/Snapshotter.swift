@@ -102,6 +102,11 @@ public enum Snapshotter {
         public let rows: Int
         public let lum: [Float]        // cols*rows, average luminance 0..1 per cell
         public let litFraction: Float  // share of pixels brighter than the dark background
+        /// Share of pixels above the CORE brightness threshold (bg + 0.24) — solid-disc-level
+        /// light. The soft-glow treatment (#417) fades matter toward the field edge and wraps
+        /// every core in a dim bloom shell, so most LIT pixels sit BELOW this:
+        /// `litFraction − brightFraction` reads the glow.
+        public let brightFraction: Float
         public let centroidX: Float    // 0..1, x of the lit mass
         public let centroidY: Float    // 0..1, y of the lit mass
 
@@ -148,10 +153,12 @@ public enum Snapshotter {
         let bpr = ctx.bytesPerRow
         let bg = Float(0.299 * opts.background.r + 0.587 * opts.background.g + 0.114 * opts.background.b)
         let litThreshold = bg + 0.06 // a touch above the dark background
+        let brightThreshold = bg + 0.24 // solid-core light — the glow's faded shell/edge matter stays below
 
         var lum = [Float](repeating: 0, count: cols * rows)
         var cnt = [Int](repeating: 0, count: cols * rows)
         var lit = 0
+        var bright = 0
         var sx: Float = 0, sy: Float = 0, mass: Float = 0
         for y in 0..<pxH {
             let row = y * bpr
@@ -163,12 +170,14 @@ public enum Snapshotter {
                 lum[cy * cols + cx] += l
                 cnt[cy * cols + cx] += 1
                 if l > litThreshold { lit += 1; sx += Float(x); sy += Float(y); mass += 1 }
+                if l > brightThreshold { bright += 1 }
             }
         }
         for i in lum.indices { lum[i] /= Float(max(cnt[i], 1)) }
         return Signature(
             cols: cols, rows: rows, lum: lum,
             litFraction: Float(lit) / Float(pxW * pxH),
+            brightFraction: Float(bright) / Float(pxW * pxH),
             centroidX: mass > 0 ? sx / mass / Float(pxW) : 0.5,
             centroidY: mass > 0 ? sy / mass / Float(pxH) : 0.5
         )
