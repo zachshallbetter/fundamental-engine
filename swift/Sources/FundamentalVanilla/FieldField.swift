@@ -202,6 +202,11 @@ public final class FieldField: FieldHandle {
     /// ``FieldHandle/diff(_:_:)``.
     public func diff(_ a: FieldSnapshot, _ b: FieldSnapshot) -> FieldDiff { handle.diff(a, b) }
 
+    /// Explain HOW the field changed between two snapshots — a PURE, ordered causal replay (substrate READ
+    /// API — JS critical-path 03 phase 2). See ``FieldHandle/replay(_:_:_:)``.
+    public func replay(_ a: FieldSnapshot, _ b: FieldSnapshot,
+                       _ opts: ReplayOptions = ReplayOptions()) -> CausalReplay { handle.replay(a, b, opts) }
+
     public func destroy() {
         handle.destroy()
         // remove the managed render surfaces, mirroring `destroy()` removing the managed canvas.
