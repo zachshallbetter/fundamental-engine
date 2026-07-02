@@ -38,6 +38,7 @@ host, not the boundary. Canvas is one render surface, not the whole system.
 | [`testing-and-conformance.md`](testing-and-conformance.md) | Test contracts and the conformance framework (the Lab-as-detector) |
 | [`api-stability.md`](api-stability.md) | The freeze contract: the frozen surface, the experimental surface, the 0.x compatibility rules |
 | [`substrate-api.md`](substrate-api.md) | The shipped substrate read API (EXPERIMENTAL): `query` / `snapshot` / `diff` / `replay` / `projections` + governance lint, body authority + dynamic recoil, integrator modes, accumulator channels, first-class body identity |
+| [`agent-safety-model.md`](agent-safety-model.md) | The **Govern** verb: the safety/governance model for agents reading a field — three invariants (agent-readable ≠ agent-writable; snapshots withhold opaque `body.data` by default; projections reveal, never mutate) linking outward to `substrate-api.md` (EXPERIMENTAL) |
 | [`coordinate-spaces.md`](coordinate-spaces.md) | The five coordinate spaces (field / host / projection / screen / semantic) and their one-way conversions; semantic-not-spatial discipline for non-DOM hosts |
 | [`causality-and-truth.md`](causality-and-truth.md) | The causality ladder (Observed → Attributed → Explained → Replayed → Predicted), the dimension / metric / channel / projection lock, and implementation-facing truth labels |
 | [`deprecation-plan.md`](deprecation-plan.md) | The migration alias surface: each living alias, its deprecation status, and the proposed removal version (timings pending maintainer sign-off) |
