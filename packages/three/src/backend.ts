@@ -18,10 +18,10 @@
 
 import {
   AdditiveBlending,
+  BufferAttribute,
   BufferGeometry,
   CanvasTexture,
   DynamicDrawUsage,
-  Float32BufferAttribute,
   Group,
   LinearFilter,
   LineBasicMaterial,
@@ -48,7 +48,11 @@ const LABEL_SS = 3;
 export interface ThreeBackendOptions {
   /** the 2D↔3D mapping (share the one your `FieldLayer` uses so overlay and swarm align). */
   projection: FieldProjection;
-  /** world-space `z` the overlay draws at — put it just in front of a flat field (default 0.01). */
+  /** world-z OFFSET off the projected field plane — the overlay sits just in front of wherever the
+   *  projection places the field's `z = 0` plane (default 0.01). A `PlaneProjection` or an
+   *  uncentered `VolumeProjection` puts that plane at world-z 0, so the offset reads as an absolute
+   *  z there; a `VolumeProjection({ centerZ: true })` shifts the plane to `-depth/2 · depthScale`
+   *  and the overlay follows it. */
   z?: number;
 }
 
@@ -162,8 +166,11 @@ export function threeBackend(opts: ThreeBackendOptions): ThreeBackend {
   let rectPosData: Float32Array = new Float32Array(0);
   let rectColData: Float32Array = new Float32Array(0);
 
-  function dynAttr(data: Float32Array): Float32BufferAttribute {
-    const attr = new Float32BufferAttribute(data, 3);
+  function dynAttr(data: Float32Array): BufferAttribute {
+    // BufferAttribute holds `data` BY REFERENCE, so the in-place writes below reach the GPU buffer.
+    // (`Float32BufferAttribute` would silently COPY the array at construction — the attribute then
+    // holds its own zeros and every later `data.set(...)` writes memory the GPU never sees.)
+    const attr = new BufferAttribute(data, 3);
     attr.setUsage(DynamicDrawUsage);
     return attr;
   }
@@ -181,14 +188,14 @@ export function threeBackend(opts: ThreeBackendOptions): ThreeBackend {
       geom.setAttribute(name, dynAttr(data));
     }
     data.set(src);
-    (geom.getAttribute(name) as Float32BufferAttribute).needsUpdate = true;
+    (geom.getAttribute(name) as BufferAttribute).needsUpdate = true;
     return data;
   }
 
   /** map a CSS-pixel point to the overlay plane and push xyz onto `arr` (overlay owns its own z). */
   function pushPoint(arr: number[], x: number, y: number): void {
-    projection.toWorld(x, y, 0, 0, 0, _v); // z/heat/size irrelevant — the overlay draws at a fixed plane
-    arr.push(_v.x, _v.y, z);
+    projection.toWorld(x, y, 0, 0, 0, _v); // heat/size irrelevant; engine z = 0 → the field's page plane
+    arr.push(_v.x, _v.y, _v.z + z); // offset OFF the projected plane (not an absolute world z) so volumes register
   }
   /** premultiplied 0..1 rgb (additive compositing turns alpha into intensity). */
   function pushColor(arr: number[], r: number, g: number, b: number, a: number): void {
@@ -276,9 +283,10 @@ export function threeBackend(opts: ThreeBackendOptions): ThreeBackend {
       const hWorld = _v.distanceTo(_v2);
       sprite.scale.set(wWorld || 1e-4, hWorld || 1e-4, 1);
       // position the sprite's CENTER; the engine anchors at the left edge / vertical middle, so nudge
-      // right by half the label width. The overlay owns its own z (same plane as line/rect).
+      // right by half the label width. z is the same offset off the projected plane as line/rect,
+      // so labels register with their chip plates under any projection (centered volumes included).
       projection.toWorld(x + entry.widthPx / 2, y, 0, 0, 0, _v);
-      sprite.position.set(_v.x, _v.y, z);
+      sprite.position.set(_v.x, _v.y, _v.z + z);
     },
     measureText(value: string): number {
       if (metrics) {

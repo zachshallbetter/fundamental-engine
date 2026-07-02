@@ -34,9 +34,9 @@ g.document ??= {
   }),
 };
 
-import { DynamicDrawUsage, Sprite, type BufferAttribute, type BufferGeometry, type LineSegments, type Group, type SpriteMaterial } from 'three';
+import { DynamicDrawUsage, Sprite, type BufferAttribute, type BufferGeometry, type LineSegments, type Mesh, type Group, type SpriteMaterial } from 'three';
 import { threeBackend } from './backend.ts';
-import { PlaneProjection } from './project.ts';
+import { PlaneProjection, VolumeProjection, type FieldProjection } from './project.ts';
 
 const stroke = { r: 255, g: 255, b: 255, alpha: 1 };
 const lineGeomOf = (b: ReturnType<typeof threeBackend>): BufferGeometry =>
@@ -115,6 +115,54 @@ test('clear() hides unused label sprites and the pool + textures are reused acro
   assert.equal(shown.length, 1, 'frame 2 shows one label; the second sprite is hidden, not removed');
   assert.equal(labels.children.length, poolSize, 'sprite pool is reused (no new sprites created)');
   assert.equal((shown[0]!.material as SpriteMaterial).map, texA, 'the cached texture is reused for the repeated label');
+});
+
+// ── overlay z registration (#949) ────────────────────────────────────────────────────────────────
+// The backend's `z` is an OFFSET off the projected field plane, not an absolute world z — the same
+// contract the native visuals (samplers.ts) hold. Draw one of everything (segments + polyline →
+// lines, rect → triangles, text → a label sprite) and pin where each vertex lands.
+
+const rectGeomOf = (b: ReturnType<typeof threeBackend>): BufferGeometry => (b.object.children[1] as Mesh).geometry;
+
+/** run every overlay draw path once and return the z of each live line/rect vertex + label sprite. */
+function overlayZs(projection: FieldProjection, z: number): number[] {
+  const backend = threeBackend({ projection, z });
+  backend.segments([0, 0, 10, 10], stroke);
+  backend.polyline([20, 20, 30, 30, 40, 40], stroke);
+  backend.rect(50, 50, 24, 13, 255, 255, 255, 1);
+  backend.text('42', 50, 56, 255, 255, 255, 1);
+  backend.clear(); // finalize the frame (flush syncs the GPU buffers)
+  const zs: number[] = [];
+  for (const geom of [lineGeomOf(backend), rectGeomOf(backend)]) {
+    const pos = geom.getAttribute('position');
+    for (let i = 0; i < geom.drawRange.count; i++) zs.push(pos.getZ(i));
+  }
+  for (const sprite of visibleSprites(labelGroupOf(backend))) zs.push(sprite.position.z);
+  assert.equal(zs.length, 2 + 4 + 6 + 1, 'every draw path contributed (segment + polyline + rect triangles + label)');
+  backend.dispose();
+  return zs;
+}
+
+test('overlay lines, rects and labels sit just OFF the projected field plane (offset, not absolute z)', () => {
+  // a centered volume puts the field plane (engine z = 0) at world z = -depth/2 · depthScale = -1.5;
+  // every overlay vertex must register against THAT plane, not the world origin.
+  const proj = new VolumeProjection({ width: 800, height: 600, scale: 0.01, depth: 300, centerZ: true });
+  const plane = -1.5 + 0.02; // projected plane + the z offset
+  for (const zv of overlayZs(proj, 0.02)) {
+    assert.ok(Math.abs(zv - plane) <= 1e-6, `overlay z ${zv} hugs the projected plane at ${plane}`);
+  }
+});
+
+test('default projections are unchanged — a plane at world 0 makes the offset read as the old absolute z', () => {
+  // PlaneProjection and an uncentered VolumeProjection both put the field plane at world-z 0, so the
+  // overlay must land at exactly z = 0.02 — pixel-identical to the pre-offset behaviour.
+  const flat = new PlaneProjection({ width: 800, height: 600, scale: 0.01 });
+  const volume = new VolumeProjection({ width: 800, height: 600, scale: 0.01, depth: 300 }); // centerZ: false
+  for (const proj of [flat, volume]) {
+    for (const zv of overlayZs(proj, 0.02)) {
+      assert.ok(Math.abs(zv - 0.02) <= 1e-6, `overlay z ${zv} is the plain overlay z under a default projection`);
+    }
+  }
 });
 
 test('dispose() releases the label sprite materials and cached textures', () => {
