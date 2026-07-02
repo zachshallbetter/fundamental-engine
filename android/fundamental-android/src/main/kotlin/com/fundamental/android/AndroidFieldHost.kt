@@ -64,23 +64,56 @@ class AndroidFieldHost(
             1f,
         ) == 0f
 
+    /**
+     * Explicit host-level pause SPI (#605 — the `UIKitFieldHost.isPaused` mirror), folded into
+     * [isHidden] so flipping it drives the engine's auto-pause through the same visibility seam the
+     * view-lifecycle events use. Android cannot observe every presentation from outside the view — a
+     * dialog or covering fragment leaves the window `VISIBLE`, ticking invisibly — so a presenter
+     * sets this instead. Callers holding a `FieldHandle` should prefer `pause()` / `resume()` on it.
+     */
+    var isPaused: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            fireVisibility()
+        }
+
     override val isHidden: Boolean
-        get() = view.visibility != View.VISIBLE || view.windowVisibility != View.VISIBLE
+        get() = isPaused || view.visibility != View.VISIBLE || view.windowVisibility != View.VISIBLE
 
     // ── FieldHost — loop ────────────────────────────────────────────────────────────────────────
 
-    override fun scheduleFrame(callback: (Double) -> Unit): Any {
-        // Choreographer is the Android display-sync seam (CADisplayLink equivalent). frameTimeNanos is
-        // converted to milliseconds-as-Double to match the contract's timestamp units.
-        val frameCallback = Choreographer.FrameCallback { frameTimeNanos ->
+    /**
+     * A repeating display-sync loop — the contract mirrors the Swift hosts' `CADisplayLink` (fires
+     * every frame until cancelled), but Choreographer callbacks are one-shot, so the token re-posts
+     * itself after each fire. Cancellation flips the flag AND removes any pending post, so a cancelled
+     * loop can neither fire nor linger on the Choreographer.
+     */
+    private class FrameLoop(
+        private val choreographer: Choreographer,
+        private val callback: (Double) -> Unit,
+    ) : Choreographer.FrameCallback {
+        var cancelled = false
+        override fun doFrame(frameTimeNanos: Long) {
+            if (cancelled) return
+            // frameTimeNanos → milliseconds-as-Double, the contract's timestamp units.
             callback(frameTimeNanos / 1_000_000.0)
+            if (!cancelled) choreographer.postFrameCallback(this)
         }
-        choreographer.postFrameCallback(frameCallback)
-        return frameCallback
+    }
+
+    override fun scheduleFrame(callback: (Double) -> Unit): Any {
+        // Choreographer is the Android display-sync seam (CADisplayLink equivalent).
+        val loop = FrameLoop(choreographer, callback)
+        choreographer.postFrameCallback(loop)
+        return loop
     }
 
     override fun cancelFrame(token: Any) {
-        (token as? Choreographer.FrameCallback)?.let { choreographer.removeFrameCallback(it) }
+        (token as? FrameLoop)?.let {
+            it.cancelled = true
+            choreographer.removeFrameCallback(it)
+        }
     }
 
     // ── FieldHost — events (each returns an unsubscribe closure) ─────────────────────────────────
@@ -105,14 +138,41 @@ class AndroidFieldHost(
     }
 
     override fun onVisibility(callback: () -> Unit): () -> Unit {
-        // Window attach/detach is the closest analog to UIKit's app active/background notifications:
-        // it is the moment the field should re-evaluate whether it is on screen.
-        val listener = object : View.OnAttachStateChangeListener {
-            override fun onViewAttachedToWindow(v: View) = callback()
-            override fun onViewDetachedFromWindow(v: View) = callback()
+        // Attach/detach is observable from outside the view; window/view visibility changes are NOT
+        // (View exposes them only as protected callbacks) — the owning view forwards those through
+        // fireVisibility() (FieldFieldView overrides onWindowVisibilityChanged / onVisibilityChanged,
+        // which is how activity stop/start reaches the engine), and [isPaused] covers presentations
+        // no callback reports. One shared attach listener fans out to every subscriber.
+        visibilityObservers.add(callback)
+        if (!attachListenerInstalled) {
+            view.addOnAttachStateChangeListener(attachListener)
+            attachListenerInstalled = true
         }
-        view.addOnAttachStateChangeListener(listener)
-        return { view.removeOnAttachStateChangeListener(listener) }
+        return {
+            visibilityObservers.remove(callback)
+            if (visibilityObservers.isEmpty() && attachListenerInstalled) {
+                view.removeOnAttachStateChangeListener(attachListener)
+                attachListenerInstalled = false
+            }
+        }
+    }
+
+    /**
+     * Deliver a visibility change to every subscriber — the seam the engine's auto-pause listens on
+     * (#605). Called by the shared attach listener, by [isPaused], and by the owning view's protected
+     * visibility overrides (window shown/hidden on activity stop/start, view shown/hidden), which
+     * only the view itself can observe. The engine re-reads [isHidden] and reconciles its loop.
+     */
+    fun fireVisibility() {
+        // snapshot — a subscriber may unsubscribe re-entrantly
+        visibilityObservers.toList().forEach { it() }
+    }
+
+    private val visibilityObservers: MutableList<() -> Unit> = ArrayList()
+    private var attachListenerInstalled = false
+    private val attachListener = object : View.OnAttachStateChangeListener {
+        override fun onViewAttachedToWindow(v: View) = fireVisibility()
+        override fun onViewDetachedFromWindow(v: View) = fireVisibility()
     }
 
     override fun onInput(callback: () -> Unit): () -> Unit {

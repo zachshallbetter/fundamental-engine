@@ -38,5 +38,7 @@ dependencies {
     implementation(composeBom)
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.ui:ui")
+    // LocalLifecycleOwner (its post-compose-1.7 home) — the lifecycle-driven auto-pause seam (#605 mirror).
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.core:core-ktx:1.13.1")
 }

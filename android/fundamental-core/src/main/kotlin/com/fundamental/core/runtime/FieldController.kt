@@ -25,6 +25,7 @@ import com.fundamental.core.engine.tearBoundByForces
 import com.fundamental.core.engine.SpillBody
 import com.fundamental.core.engine.attentionMuls
 import com.fundamental.core.engine.spillover
+import com.fundamental.core.engine.FieldHost
 import com.fundamental.core.engine.ForceRegistry
 import com.fundamental.core.engine.Formation
 import com.fundamental.core.engine.GridMode
@@ -137,6 +138,107 @@ class FieldController(
 
     /** Whether the policy permits body data to be exposed (JS #892) — policy tightens, never widens. */
     fun policyPermitsBodyData(): Boolean = policyPermitsBodyData(policy)
+
+    // ── loop lifecycle (pause / resume — the Swift #605 mirror) ──────────────────────────────────
+    // Two independent pause lanes, both gating the SAME host-scheduled loop:
+    //   userPaused — an explicit pause()/resume() pair, sticky (a visibility resume never overrides it);
+    //   hostPaused — presentation-driven (the host reported hidden through the visibility seam).
+    // The loop runs only while BOTH are false; syncLoop() is the single reconciliation point, so
+    // double-pause / double-resume are no-ops by construction. Simulation state is never touched.
+    // Mirrors FieldEngine.swift line-for-line; the one structural divergence is that this port's hosts
+    // may also drive [tick] directly (no display link to cancel there), so the same lanes gate [tick]
+    // itself — see the guard at its top.
+    private var host: FieldHost? = null
+    private var loopToken: Any? = null
+    private var userPaused = false
+    private var hostPaused = false
+    /** Set by [destroy] — a late [resume] can never resurrect a torn-down field's loop. */
+    private var destroyed = false
+    /** Previous frame time (ms) — drives the frame-rate-independent dt. Null = re-based: next frame runs at dt 1. */
+    private var lastTimestampMs: Double? = null
+    private var unsubscribeVisibility: (() -> Unit)? = null
+
+    /**
+     * Attach a [FieldHost] and start the host-scheduled frame loop — the Kotlin counterpart of the
+     * Swift `FieldEngine` taking its host at init. The controller then drives [tick] once per display
+     * frame through [FieldHost.scheduleFrame] (dt normalized to the 60 fps baseline, clamped 0.2..2,
+     * first frame 1, reduced-motion folded in) and mirrors the host's visibility seam into the
+     * presentation pause lane, so hiding the surface cancels the loop entirely and showing it
+     * reschedules — the Swift `visibilityChanged()` / the JS Page Visibility rAF pause. One attach per
+     * controller; hosts that drive [tick] directly (the Compose adapter, the lab) simply never attach.
+     */
+    fun attach(host: FieldHost) {
+        if (destroyed || this.host != null) return
+        this.host = host
+        unsubscribeVisibility = host.onVisibility {
+            hostPaused = host.isHidden
+            syncLoop()
+        }
+        syncLoop()
+    }
+
+    /**
+     * Explicit pause — cancel the host-scheduled loop, keep every bit of simulation state. Sticky: a
+     * host visibility resume never overrides it; only [resume] does. Idempotent. For a host that
+     * drives [tick] directly (no [attach]), the same lane makes [tick] a no-op instead.
+     */
+    fun pause() {
+        userPaused = true
+        syncLoop()
+    }
+
+    /** Explicit resume — restart a paused loop (unless the host still reports hidden). Idempotent. */
+    fun resume() {
+        userPaused = false
+        syncLoop()
+    }
+
+    /** Tear the loop down for good: cancel scheduling, drop the visibility subscription. Irreversible. */
+    fun destroy() {
+        destroyed = true
+        unsubscribeVisibility?.invoke()
+        unsubscribeVisibility = null
+        syncLoop()
+        clearFlow()
+    }
+
+    /**
+     * The single loop reconciliation point: run ⟺ not destroyed ∧ not user-paused ∧ not host-paused.
+     * Idempotence lives here — a redundant pause/resume finds the loop already in the right state.
+     * Mirrors FieldEngine.swift `syncLoop()`.
+     */
+    private fun syncLoop() {
+        val h = host ?: return
+        val shouldRun = !destroyed && !userPaused && !hostPaused
+        if (shouldRun) {
+            if (loopToken != null) return // already running
+            // No time-jump on resume: forget the pre-pause frame time so the first resumed frame
+            // integrates at dt = 1, exactly like the field's first-ever frame. (The 0.2..2 dt clamp
+            // would cap a stale gap anyway; this removes it entirely.)
+            lastTimestampMs = null
+            loopToken = h.scheduleFrame(::onFrame)
+        } else {
+            val token = loopToken ?: return
+            h.cancelFrame(token)
+            loopToken = null
+        }
+    }
+
+    /** One host-scheduled frame: fold the host signals, derive dt, advance the sim. */
+    private fun onFrame(timestampMs: Double) {
+        val h = host ?: return
+        // Per-tick fallback guard (mirror of Swift `guard !host.isHidden`): a host that reports hidden
+        // without firing the visibility seam still stops integrating. `lastTimestampMs` is left
+        // untouched, so the eventual visible frame clamps rather than integrating the hidden gap.
+        if (h.isHidden) return
+        reducedMotion = h.prefersReducedMotion
+        // Frame-rate-independent timestep (#434): the real frame interval normalized to a 60 fps
+        // baseline (≈1 at 60 fps, ≈0.5 at 120 fps), clamped so a long stall can't teleport matter.
+        val last = lastTimestampMs
+        val dtRaw = if (last == null) 1f else ((timestampMs - last) * 60.0 / 1000.0).toFloat()
+        lastTimestampMs = timestampMs
+        tick(dtRaw.coerceIn(0.2f, 2f))
+    }
 
     /** Active flow focus (a transient pull point), or null. Set via [flowTo] / cleared by [clearFlow]. */
     var flow: FlowFocus? = null
@@ -370,6 +472,10 @@ class FieldController(
 
     /** Advance the field one frame: ease the formation, track programmatic bodies, apply flow, step. */
     fun tick(dt: Float = 1f) {
+        // Loop-lifecycle guard (#605 mirror): a paused or destroyed field never advances. The
+        // host-scheduled loop is already cancelled by syncLoop(); a host that drives tick() directly
+        // (the Compose adapter, the lab) gets the same contract through this guard. State is retained.
+        if (destroyed || userPaused || hostPaused) return
         // Effective motion (JS #892): reduced-motion + policy fold into the step. At the unbounded
         // default (no policy, no reduced-motion) this is dt · 1 → byte-identical. Reduced-motion clamps
         // to 0 (frozen); a motion budget scales the step proportionally.

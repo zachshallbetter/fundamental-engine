@@ -5,27 +5,33 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.view.Choreographer
 import android.view.MotionEvent
 import android.view.View
 import com.fundamental.core.runtime.BodyHandle
 import com.fundamental.core.runtime.BodySpec
 import com.fundamental.core.runtime.FieldController
+import com.fundamental.core.runtime.FieldEvent
 import com.fundamental.core.runtime.FieldHandle
 import com.fundamental.core.runtime.PARTICLE_STRIDE
 import kotlin.math.max
 
 /**
- * The non-Compose Fundamental field surface — a custom [View] that owns a [FieldController], drives it
- * one frame per [Choreographer] tick, and renders the particle pool in [onDraw]. The Kotlin mirror of
- * Swift's imperative `FieldField` (the `FieldView`-less host), for apps not on Jetpack Compose.
+ * The non-Compose Fundamental field surface — a custom [View] that owns a [FieldController], lets the
+ * engine drive it one frame per display tick through [AndroidFieldHost] (the `Choreographer` under the
+ * hood), and renders the particle pool in [onDraw]. The Kotlin mirror of Swift's imperative
+ * `FieldField` (the `FieldView`-less host), for apps not on Jetpack Compose.
  *
- * Lifecycle: the frame loop starts in [onAttachedToWindow] and stops in [onDetachedFromWindow], so no
- * Choreographer callback leaks past detach. The controller is created lazily in [onSizeChanged] once
- * the view has real pixel dimensions, then resized on subsequent layout changes.
+ * Lifecycle (#605 mirror): the controller is created lazily in [onSizeChanged] once the view has real
+ * pixel dimensions (then resized on subsequent layout changes) and attached to [host] — from there the
+ * engine owns the loop. Presentation changes auto-pause it: attach/detach, window shown/hidden
+ * (activity stop/start), and view shown/hidden all flow through [AndroidFieldHost.fireVisibility], so
+ * the Choreographer callback is cancelled outright while the field is off screen (no leak past detach,
+ * no invisible ticking). `handle?.pause()` / `resume()` layer the sticky explicit lane on top;
+ * `host.isPaused` is the host-level SPI for presentations Android does not report (dialogs, covering
+ * fragments).
  *
  * Imperative API: [burst] / tap shoves matter; [addBody] registers a force source; [handle] exposes the
- * full [FieldHandle] facade for callers that want flow, seeding, edges, etc.
+ * full [FieldHandle] facade for callers that want flow, seeding, edges, pause/resume, etc.
  */
 class FieldFieldView @JvmOverloads constructor(
     context: Context,
@@ -43,13 +49,18 @@ class FieldFieldView @JvmOverloads constructor(
     var coolColor: Int = Color.rgb(0xFF, 0xE0, 0xC8)
 
     private var controller: FieldController? = null
+    private var fieldHandle: FieldHandle? = null
 
     /** The host seam (geometry, signals, frame sync, input) — kept for parity with UIKitFieldHost. */
     val host: AndroidFieldHost = AndroidFieldHost(this)
 
-    /** The full imperative field API once the controller exists (null before first layout). */
+    /**
+     * The full imperative field API once the controller exists (null before first layout). ONE
+     * persistent facade per view — pause state, event subscriptions, and the after-tick hook live on
+     * it for the view's whole life.
+     */
     val handle: FieldHandle?
-        get() = controller?.let { FieldHandle(it) }
+        get() = fieldHandle
 
     /** Direct controller access for hosts that want the lower-level API. Null before first layout. */
     val fieldController: FieldController?
@@ -59,31 +70,6 @@ class FieldFieldView @JvmOverloads constructor(
     // nothing in the hot path. The buffer is (re)sized when the controller / particleCount changes.
     private var pool: FloatArray = FloatArray(0)
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-    private var running = false
-    // Previous frame's nanos, for the frame-rate-independent timestep. 0 == no prior frame yet.
-    private var lastFrameNanos: Long = 0L
-    private val frameCallback = object : Choreographer.FrameCallback {
-        override fun doFrame(frameTimeNanos: Long) {
-            if (!running) return
-            // Frame-rate-independent timestep — mirror of FieldEngine.swift (~L258): normalize the real
-            // frame interval to a 60fps baseline (≈1 at 60fps, ≈0.5 at 120fps), clamp so a stall can't
-            // teleport matter, and zero it under reduced motion (which gates the integrator off).
-            val last = lastFrameNanos
-            val dtRaw = if (last == 0L) 1f else (frameTimeNanos - last) / 1e9f * 60f
-            lastFrameNanos = frameTimeNanos
-            val reduced = host.prefersReducedMotion
-            val dt = if (reduced) 0f else dtRaw.coerceIn(0.2f, 2f)
-            // Hidden guard (mirror `guard !host.isHidden`): skip integration while off-screen, but keep
-            // the loop alive so it resumes cleanly when shown again.
-            if (!host.isHidden) {
-                controller?.tick(dt)
-                invalidate()
-            }
-            // Re-post while attached; onDetachedFromWindow flips `running` and removes the callback.
-            if (running) Choreographer.getInstance().postFrameCallback(this)
-        }
-    }
 
     init {
         // Transparent background so the field composites over whatever is behind it.
@@ -95,35 +81,41 @@ class FieldFieldView @JvmOverloads constructor(
         if (w == 0 || h == 0) return
         val c = controller
         if (c == null) {
-            controller = FieldController(w.toFloat(), h.toFloat(), particleCount = particleCount)
+            val created = FieldController(w.toFloat(), h.toFloat(), particleCount = particleCount)
+            controller = created
             // Buffer sized to the actual pool count (PARTICLE_STRIDE floats each).
             pool = FloatArray(particleCount * PARTICLE_STRIDE)
+            val handle = FieldHandle(created)
+            fieldHandle = handle
+            handle.on(FieldEvent.TICK) { invalidate() }
+            // Hand the loop to the engine (#605): it schedules through host.scheduleFrame, computes
+            // the frame-rate-independent dt (reduced motion folded in), and the visibility seam +
+            // pause()/resume() cancel/reschedule the Choreographer callback through syncLoop().
+            handle.attach(host)
         } else {
             c.resize(w.toFloat(), h.toFloat())
         }
     }
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        startLoop()
+    // ── the visibility seam (#605) ──────────────────────────────────────────────────────────────
+    // Window and view visibility changes reach a View only through these protected callbacks, so the
+    // view forwards them to the host, which fans out to the engine's auto-pause. Window visibility is
+    // how activity stop/start arrives (the window of a stopped activity reads GONE); attach/detach is
+    // covered by the host's own attach-state listener.
+
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        super.onWindowVisibilityChanged(visibility)
+        // The base View constructor can deliver an early visibility callback before this class's
+        // initializers ran (Kotlin field-init order) — `host` reads null then despite its non-null
+        // type; skip, attach() reconciles the loop later anyway.
+        @Suppress("UNNECESSARY_SAFE_CALL")
+        host?.fireVisibility()
     }
 
-    override fun onDetachedFromWindow() {
-        stopLoop()
-        super.onDetachedFromWindow()
-    }
-
-    private fun startLoop() {
-        if (running) return
-        running = true
-        // Reset so the first frame after (re)attach uses dt=1 rather than a stale-interval blowup.
-        lastFrameNanos = 0L
-        Choreographer.getInstance().postFrameCallback(frameCallback)
-    }
-
-    private fun stopLoop() {
-        running = false
-        Choreographer.getInstance().removeFrameCallback(frameCallback)
+    override fun onVisibilityChanged(changedView: View, visibility: Int) {
+        super.onVisibilityChanged(changedView, visibility)
+        @Suppress("UNNECESSARY_SAFE_CALL")
+        host?.fireVisibility()
     }
 
     override fun onDraw(canvas: Canvas) {
