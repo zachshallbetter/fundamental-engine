@@ -77,8 +77,18 @@ Ported and tested:
   scoped by a point/rect/global region and an `include` filter. The result (`FieldQueryResult`) mirrors
   the JS shape 1:1 so a reading serializes identically across planes. JVM-tested (`FieldQueryTests`).
   The `influences` / `projections` / `lens` lanes are present-but-empty for now (the port has no impulse
-  accumulator, projection registry, or lens lane yet). The rest of the substrate READ API —
-  `snapshot` / `diff` / `replay` / `projections` — is a follow-up on both native planes.
+  accumulator, projection registry, or lens lane yet).
+- **Substrate READ API — `snapshot()`** (JS critical-path 03) — `FieldHandle.snapshot(opts)` captures the
+  field's STATE at a frame — a portable, serializable `FieldSnapshot`: bodies (identity + rect + position +
+  tokens + metrics), the active formation, field-level metrics (`particles` / `bodies` / `meanDensity`),
+  and relationships. This is *what the field was doing* (the basis for `diff`/`replay`), DISTINCT from the
+  perf-metrics `FieldPerfSnapshot`. Shape mirrors the JS `FieldSnapshot` 1:1. `createdAt` is the FIELD
+  clock (`env.t`, deterministic — not wall time); `id` is `snap-<frame>-<seq>`; `version` is the port's
+  `FIELD_VERSION`. Body `data` is WITHHELD by default (privacy-preserving) — included only when opted in
+  (`includeData` / a permissive `profile`) AND the runtime `FieldPolicy` permits it; profiles/flags resolve
+  TIGHTEST-wins. `influences` / `projections` are present-but-empty (no accumulator / projection registry
+  yet). JVM-tested (`FieldSnapshotTests`). The rest of the substrate READ API — `diff` / `replay` /
+  `projections` — is a follow-up on both native planes.
 - **The Jetpack Compose host** (`:fundamental-compose`) — `FieldView` (drives one frame per display
   frame via `withFrameNanos`, renders the pool on a Compose `Canvas`, tap-to-burst) and
   `Modifier.fieldBody(...)` (a composable becomes a body tracking its on-screen bounds), plus a

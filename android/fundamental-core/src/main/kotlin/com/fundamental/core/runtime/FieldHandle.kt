@@ -313,7 +313,7 @@ class FieldHandle(val controller: FieldController) {
         body.identity = spec.identity // supplied identity overrides derivation (JS #884)
         body.rect = spec.rect
         body.box = spec.rect()
-        controller.addBody(body)
+        controller.addBody(body, spec.data)
         fireEvent(FieldEvent.BODY_ADD, FieldEventPayload(FieldEvent.BODY_ADD, body = body))
         return BodyHandle(controller, body, spec.data)
     }
@@ -544,6 +544,92 @@ class FieldHandle(val controller: FieldController) {
             lens = null,
         )
     }
+
+    // ── substrate READ API: snapshot (JS critical-path 03) ─────────────────────────────
+    /**
+     * Capture the field's STATE at this frame — a portable, serializable [FieldSnapshot] (bodies, their
+     * metrics + identity, the active formation, field-level metrics, relationships). This is *what the
+     * field was doing*, the basis for `diff`/`replay` (later follow-ups); DISTINCT from the perf-metrics
+     * snapshot. Mirror of the JS `@fundamental-engine/core` `snapshot()` — same field names + shape so a
+     * capture is identical across planes.
+     *
+     * PRIVACY: each body's opaque `data` is WITHHELD by default — it is included only when [opts]
+     * (`includeData` / a permissive `profile`) opts in AND the runtime [FieldPolicy] permits body data.
+     * Relationships default in; `influences` / `projections` are present-but-empty in this port (no impulse
+     * accumulator / projection registry yet — the field names mirror JS so the shape stays identical).
+     *
+     * `createdAt` is the FIELD clock (`env.t`), not wall time — deterministic. `id` is `snap-<frame>-<seq>`
+     * with a per-field sequence. Read-only throughout: `snapshot()` never mutates field state.
+     */
+    fun snapshot(opts: FieldSnapshotOptions? = null): FieldSnapshot {
+        val flags = resolveSnapshotFlags(opts ?: FieldSnapshotOptions())
+        val includeData = flags.includeData && controller.policyPermitsBodyData()
+
+        val bodies = controller.bodies
+        val bodySnaps: List<FieldBodySnapshot> = bodies.map { b ->
+            val identity = controller.bodyIdentity(b)
+            val c = b.box.center
+            FieldBodySnapshot(
+                id = identity.id,
+                identity = identity,
+                // No body-authority lane in the port yet — fixed "anchored", the JS default.
+                authority = "anchored",
+                rect = FieldRect(c.x - b.box.hw, c.y - b.box.hh, b.box.hw * 2f, b.box.hh * 2f),
+                position = Vec3(c.x, c.y, 0f),
+                tokens = b.tokens.toList(),
+                metrics = buildMap {
+                    put("density", b.d)
+                    put("count", b.count)
+                    put("engaged", if (b.isEngaged) 1f else 0f)
+                    if (b.capacity > 0f) put("load", (b.accreted / b.capacity).coerceIn(0f, 1f))
+                },
+                // The port has no measured field-dimension lane yet — empty, matching the JS field name.
+                dimensions = emptyMap(),
+                // Privacy gate: caller opted in AND policy permits. Withheld by default.
+                data = if (includeData) controller.dataOf(b) else null,
+            )
+        }
+
+        val relationships: List<FieldRelationshipReading> = if (flags.includeRelationships) {
+            controller.readEdges().map { e ->
+                FieldRelationshipReading(
+                    from = e.from?.toString() ?: "",
+                    to = e.to?.toString() ?: "",
+                    type = e.type,
+                    strength = e.strength,
+                    memory = e.memory,
+                    active = e.active,
+                    causal = e.active,
+                )
+            }
+        } else emptyList()
+
+        val metrics: Map<String, Float> = buildMap {
+            put("particles", controller.particleCount.toFloat())
+            put("bodies", bodies.size.toFloat())
+            if (bodies.isNotEmpty()) {
+                put("meanDensity", bodies.sumOf { it.d.toDouble() }.toFloat() / bodies.size)
+            }
+        }
+
+        return FieldSnapshot(
+            id = "snap-${controller.env.frameN}-${snapSeq++}",
+            createdAt = controller.env.t,
+            frame = controller.env.frameN,
+            version = FIELD_VERSION,
+            formations = listOf(controller.formationName),
+            bodies = bodySnaps,
+            relationships = relationships,
+            metrics = metrics,
+            // influences: no impulse accumulator in the port yet — empty, matching the JS field name.
+            influences = emptyList(),
+            // No projection registry in the port yet — empty, matching the JS field name.
+            projections = emptyList(),
+        )
+    }
+
+    /** Per-field snapshot id sequence — feeds `snap-<frame>-<seq>`. */
+    private var snapSeq = 0
 
     // ── agent permissions (JS #894) ────────────────────────────────────────────────────
     /**

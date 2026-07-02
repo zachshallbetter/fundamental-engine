@@ -225,16 +225,28 @@ class FieldController(
     /** Heatmap density gradient at a point, up-slope toward denser matter. */
     fun sampleGradient(x: Float, y: Float): Vec3 = heatmap?.gradient(Vec3(x, y, 0f)) ?: Vec3.ZERO
 
+    /**
+     * The opaque `data` record carried by each programmatic body (the JS `b.data`). The engine [Body] has
+     * no data slot, so the handle stores it here at [addBody]; snapshots read it back via [dataOf] (gated
+     * by `includeData` + policy). Keyed by identity so it survives the body's life.
+     */
+    private val bodyData = HashMap<Body, Any?>()
+
     /** Register a force-source body. Marked visible so it acts immediately. */
-    fun addBody(body: Body): Body {
+    fun addBody(body: Body, data: Any? = null): Body {
         body.isVisible = true
         _bodies.add(body)
+        if (data != null) bodyData[body] = data
         return body
     }
+
+    /** The opaque `data` record carried by [body], or null. Read by [FieldHandle.snapshot] (privacy-gated). */
+    fun dataOf(body: Body): Any? = bodyData[body]
 
     fun removeBody(body: Body): Boolean {
         // removing either endpoint automatically drops the edge (Swift FieldEngine parity).
         _edges.removeAll { it.from === body || it.to === body }
+        bodyData.remove(body)
         return _bodies.remove(body)
     }
 
