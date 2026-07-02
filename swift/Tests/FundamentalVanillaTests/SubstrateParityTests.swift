@@ -234,4 +234,124 @@ struct SubstrateParityTests {
         #expect(res.bodies.allSatisfy { $0.activeFormations == ["lanes"] })
         field.destroy()
     }
+
+    // MARK: - Field Snapshot (substrate READ API — critical-path 03)
+
+    @Test("a snapshot captures ids, frame, version, formation, bodies + metrics")
+    func snapshotShape() {
+        let field = FieldField(host: HeadlessFieldHost())
+        field.setFormation("wells")
+        let hero = FieldBodyIdentity(id: "hero", namespace: "app", kind: "card")
+        _ = field.addBody(BodySpec(tokens: ["attract"], identity: hero,
+                                   rect: { Box(center: Vec3(10, 10, 0), halfExtents: Vec3(5, 5, 0)) }))
+        _ = field.addBody(BodySpec(tokens: ["gravity"], identity: FieldBodyIdentity(id: "sun"),
+                                   rect: { Box(center: Vec3(200, 200, 0), halfExtents: Vec3(8, 8, 0)) }))
+
+        let snap = field.snapshot() // nil ⇒ default options
+
+        // id format: `snap-<frame>-<seq>`; createdAt is the field clock; version is non-empty.
+        #expect(snap.id == "snap-\(snap.frame)-0")
+        #expect(snap.id.hasPrefix("snap-"))
+        #expect(snap.createdAt == 0)                       // field clock at capture (no ticks yet)
+        #expect(!snap.version.isEmpty)
+        #expect(snap.version == "0.9.2")                   // FIELD_VERSION mirror
+        #expect(snap.formations == ["wells"])              // active formation id(s)
+
+        // bodies carry ids + identity + metrics + position/rect + tokens.
+        #expect(snap.bodies.count == 2)
+        let ids = Set(snap.bodies.map { $0.id })
+        #expect(ids == ["hero", "sun"])
+        #expect(ids == Set(snap.bodies.map { $0.identity.id })) // top-level id equals identity.id
+        if let heroSnap = snap.bodies.first(where: { $0.id == "hero" }) {
+            #expect(heroSnap.metrics["density"] != nil)
+            #expect(heroSnap.metrics["count"] != nil)
+            #expect(heroSnap.metrics["engaged"] != nil)
+            #expect(heroSnap.tokens == ["attract"])
+            #expect(heroSnap.rect != nil)
+            #expect(heroSnap.position != nil)
+            #expect(heroSnap.authority == "anchored")       // JS default until a body-authority lane lands
+            #expect(heroSnap.dimensions.isEmpty)             // empty-for-now, JS field name kept
+        } else {
+            Issue.record("expected a 'hero' body snapshot")
+        }
+
+        // field-level metrics mirror query(): particle pool size + body count + mean density.
+        #expect(snap.metrics["particles"] == Float(field.particleCount()))
+        #expect(snap.metrics["bodies"] == 2)
+        #expect(snap.metrics["meanDensity"] != nil)
+        // present-but-empty lanes keep the JS shape identical across planes.
+        #expect(snap.influences.isEmpty)
+        #expect(snap.projections.isEmpty)
+        field.destroy()
+    }
+
+    @Test("snapshot ids increment per capture and relationships default in")
+    func snapshotSequenceAndRelationships() {
+        let field = FieldField(host: HeadlessFieldHost())
+        let a = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "a"),
+                                       rect: { Box(center: Vec3(10, 10, 0), halfExtents: Vec3(5, 5, 0)) }))
+        let b = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "b"),
+                                       rect: { Box(center: Vec3(40, 40, 0), halfExtents: Vec3(5, 5, 0)) }))
+        _ = field.addEdge(a, b, type: "relates", strength: 0.5, direction: .fromTo)
+
+        let first = field.snapshot()
+        let second = field.snapshot()
+        #expect(first.id == "snap-0-0")
+        #expect(second.id == "snap-0-1")            // per-field sequence increments
+
+        // relationships default in (identity-keyed endpoints).
+        #expect(first.relationships.count == 1)
+        #expect(first.relationships[0].from == "a")
+        #expect(first.relationships[0].to == "b")
+
+        // includeRelationships: false strips them.
+        let noRel = field.snapshot(FieldSnapshotOptions(includeRelationships: false))
+        #expect(noRel.relationships.isEmpty)
+        field.destroy()
+    }
+
+    @Test("body data is withheld by default and included only on explicit opt-in")
+    func snapshotDataOptIn() {
+        let field = FieldField(host: HeadlessFieldHost())
+        _ = field.addBody(BodySpec(tokens: ["attract"], data: "secret",
+                                   identity: FieldBodyIdentity(id: "carrier"),
+                                   rect: { Box(center: Vec3(10, 10, 0), halfExtents: Vec3(5, 5, 0)) }))
+
+        // default: data withheld (privacy-preserving).
+        let defaultSnap = field.snapshot()
+        #expect(defaultSnap.bodies.first?.data == nil)
+
+        // explicit includeData: true ⇒ present (no policy denial in force).
+        let opted = field.snapshot(FieldSnapshotOptions(includeData: true))
+        #expect(opted.bodies.first?.data as? String == "secret")
+        field.destroy()
+    }
+
+    @Test("a public profile strips body data even against an explicit includeData:true (TIGHTEST-wins)")
+    func snapshotPublicProfileStrips() {
+        let field = FieldField(host: HeadlessFieldHost())
+        _ = field.addBody(BodySpec(tokens: ["attract"], data: "secret",
+                                   identity: FieldBodyIdentity(id: "carrier"),
+                                   rect: { Box(center: Vec3(10, 10, 0), halfExtents: Vec3(5, 5, 0)) }))
+
+        // TIGHTEST wins: the public profile denies data (and relationships) regardless of includeData:true.
+        let snap = field.snapshot(FieldSnapshotOptions(includeData: true, profile: .public_))
+        #expect(snap.bodies.first?.data == nil)          // profile strips data
+        #expect(snap.relationships.isEmpty)              // public strips relationships too
+        field.destroy()
+    }
+
+    @Test("policy allowBodyDataInSnapshots:false vetoes data even with includeData:true")
+    func snapshotPolicyVetoesData() {
+        let field = FieldField(host: HeadlessFieldHost(),
+                               options: .init(policy: FieldPolicy(allowBodyDataInSnapshots: false)))
+        _ = field.addBody(BodySpec(tokens: ["attract"], data: "secret",
+                                   identity: FieldBodyIdentity(id: "carrier"),
+                                   rect: { Box(center: Vec3(10, 10, 0), halfExtents: Vec3(5, 5, 0)) }))
+
+        // The runtime policy is the second half of the gate: it withholds data even on explicit opt-in.
+        let snap = field.snapshot(FieldSnapshotOptions(includeData: true))
+        #expect(snap.bodies.first?.data == nil)
+        field.destroy()
+    }
 }
