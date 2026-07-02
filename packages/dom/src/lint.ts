@@ -31,7 +31,8 @@ export type LintCode =
   | 'feedback-reads-unwritten'
   | 'feedback-never-written'
   | 'feedback-lane-inert'
-  | 'compositing-fill-trap';
+  | 'compositing-fill-trap'
+  | 'motion-without-reduced-motion';
 
 export interface PlatformLintWarning {
   code: LintCode;
@@ -363,6 +364,123 @@ export function lintCompositingPerf(root: ParentNode): PlatformLintWarning[] {
   return out;
 }
 
+/**
+ * CSS shorthands/longhands that make a body *move* — the property families a body uses to express
+ * motion. A body driven only through, say, `opacity` or `color` is not motion (reduced-motion is about
+ * movement, not any change), so those are deliberately absent.
+ */
+const MOTION_PROPERTIES = [
+  'transform',
+  'translate',
+  'rotate',
+  'scale',
+  'animation',
+  'transition', // a `transition` that animates a motion property; narrowed below
+] as const;
+
+/** A rule "expresses motion" if it declares an animation, or transitions/sets a movement property. */
+function ruleExpressesMotion(cssText: string): boolean {
+  const css = cssText.toLowerCase();
+  // an animation (name + keyframes) always moves unless keyframes are static — treat as motion.
+  if (/\banimation(-name)?\s*:/.test(css) && !/\banimation(-name)?\s*:\s*none\b/.test(css)) return true;
+  // a transform / translate / rotate / scale set to anything but none/identity moves the body.
+  if (/\b(transform|translate|rotate|scale)\s*:/.test(css) && !/\btransform\s*:\s*none\b/.test(css)) return true;
+  // a transition that names a movement property (or `all`) animates motion when the value changes.
+  if (/\btransition[^;{}]*:/.test(css) && /(transform|translate|rotate|scale|\ball\b)/.test(css)) return true;
+  return false;
+}
+
+/** A body reads a feedback channel into a motion property → the field drives its movement. */
+function readsFeedbackIntoMotion(cssText: string): boolean {
+  if (!FEEDBACK_VAR_READS.some((v) => cssText.includes(v))) return false;
+  const css = cssText.toLowerCase();
+  return /\b(transform|translate|rotate|scale|top|left|right|bottom|margin|inset)\b/.test(css);
+}
+
+/** Strip pseudo-classes / pseudo-elements from a selector so it can be matched against a body. */
+function cleanSelector(part: string): string {
+  return part.trim().replace(/::?[\w-]+(\([^)]*\))?/g, '');
+}
+
+/**
+ * The accessibility sibling of the silent-contract lint (`lintFeedbackWritesUnread`): a body that
+ * **moves** — via a CSS animation, a transform/translate/rotate/scale, a transition on a movement
+ * property, or by reading a feedback channel (`var(--d…)`, `var(--field-…)`, `var(--load…)`) into a
+ * motion property — but has **no** `@media (prefers-reduced-motion: reduce)` companion rule that
+ * matches it. That is the a11y invariant this gate enforces: *reduced motion removes motion, not
+ * meaning* — a body that animates must offer a still form that keeps its meaning. Without the
+ * reduced-motion branch, a user who asked the OS to stop animations still gets the movement.
+ *
+ * "Has a reduced-motion equivalent" is determined structurally: some rule inside a
+ * `@media (prefers-reduced-motion: reduce)` block has a selector that matches the same body (after
+ * pseudo-class/element stripping). The author opted the body into a reduced-motion branch; the lint
+ * trusts that branch neutralizes the motion (it does not attempt to prove the branch is *correct* —
+ * that is the human AT-pass half of RC-8).
+ *
+ * **Dev-only, heuristic, browser-coupled** — like the feedback consumer lints, it walks the document's
+ * accessible stylesheets and no-ops where they are unreachable (SSR / tests / cross-origin), so it can
+ * only ever under-report, never false-positive. Scoped to `[data-body]` elements only. Bodies whose
+ * motion is expressed *inline* are also considered (an inline `animation`/`transform`/feedback-read),
+ * and are only cleared by a matching reduced-motion rule — inline styles can't carry a media query.
+ */
+export function lintReducedMotion(root: ParentNode): PlatformLintWarning[] {
+  const out: PlatformLintWarning[] = [];
+  if (typeof document === 'undefined') return out;
+
+  // Pass 1: collect motion-bearing selectors (outside reduced-motion) and reduced-motion selectors.
+  const motionSelectors: string[] = [];
+  const reducedSelectors: string[] = [];
+  const collect = (rules: CSSRuleList | undefined, underReduced: boolean) => {
+    for (const rule of Array.from(rules ?? [])) {
+      // a nested @media — recurse, flagging whether it is a reduced-motion block.
+      const media = (rule as CSSMediaRule).media?.mediaText;
+      if (media !== undefined) {
+        const isReduced = /prefers-reduced-motion\s*:\s*reduce/.test(media);
+        collect((rule as CSSMediaRule).cssRules, underReduced || isReduced);
+        continue;
+      }
+      const r = rule as CSSStyleRule;
+      if (!r.selectorText || !r.cssText) continue;
+      if (underReduced) {
+        reducedSelectors.push(r.selectorText);
+      } else if (ruleExpressesMotion(r.cssText) || readsFeedbackIntoMotion(r.cssText)) {
+        motionSelectors.push(r.selectorText);
+      }
+    }
+  };
+  for (const sheet of Array.from(document.styleSheets)) {
+    let rules: CSSRuleList | undefined;
+    try { rules = sheet.cssRules; } catch { continue; } // cross-origin sheet → unreadable, skip
+    collect(rules, false);
+  }
+
+  const matchesAny = (selectors: string[], el: Element): boolean =>
+    selectors.some((sel) =>
+      sel.split(',').some((part) => {
+        const clean = cleanSelector(part);
+        if (!clean) return false;
+        try { return el.matches(clean); } catch { return false; }
+      }),
+    );
+
+  // Pass 2: for each body, does it move (via CSS rule or inline) and lack a reduced-motion branch?
+  root.querySelectorAll('[data-body]').forEach((el) => {
+    const style = el.getAttribute('style') ?? '';
+    const movesInline = ruleExpressesMotion(style) || readsFeedbackIntoMotion(style);
+    const movesViaRule = matchesAny(motionSelectors, el);
+    if (!movesInline && !movesViaRule) return; // static body → nothing to guard
+    if (matchesAny(reducedSelectors, el)) return; // has a reduced-motion branch → honoured
+    out.push({
+      code: 'motion-without-reduced-motion',
+      severity: 'warning',
+      element: el,
+      message:
+        'a field body expresses motion (animation / transform / a feedback var driving movement) but no @media (prefers-reduced-motion: reduce) rule matches it — reduced motion must remove motion without removing meaning; add a reduced-motion branch that stills it',
+    });
+  });
+  return out;
+}
+
 /** Run every platform lint rule over a FieldPlatform and return the aggregated warnings. */
 export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): PlatformLintWarning[] {
   const root = opts.root ?? platform.root;
@@ -370,6 +488,7 @@ export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): Pl
   const warnings: PlatformLintWarning[] = [
     ...lintRelationTargets(root, resolve),
     ...lintCompositingPerf(root),
+    ...lintReducedMotion(root),
     ...lintSinkFeedback(root),
     ...lintFeedbackVarReads(root),
     ...lintFeedbackWritesUnread(root),
