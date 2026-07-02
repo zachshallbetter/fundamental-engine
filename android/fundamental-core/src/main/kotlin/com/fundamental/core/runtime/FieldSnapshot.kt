@@ -92,6 +92,156 @@ data class FieldSnapshot(
     val projections: List<Any> = emptyList(),
 )
 
+// ── Field Snapshot diffing (JS `diffFieldSnapshots`) ─────────────────────────────────────────────
+// `diff(a, b)` is a PURE comparison of two [FieldSnapshot]s — no live field state — so it is trivially
+// testable and usable outside a running field (CI assertions, stored bug reports, AI memory).
+// [FieldHandle.diff] delegates to [diffFieldSnapshots] here. Capture ([FieldHandle.snapshot]) lives on
+// the handle (it needs the live field); this module owns the comparison so the two halves stay
+// independent. Result SHAPE + field names + semantics mirror the JS `@fundamental-engine/core` 1:1.
+
+/**
+ * A change to one body between two snapshots (JS `BodyChange`). [kind] is `"added"`, `"removed"`, or
+ * `"changed"`. For `"changed"`, [metrics] holds the per-metric before/after for the metrics that differ.
+ */
+data class BodyChange(
+    val id: String,
+    /** `"added"` | `"removed"` | `"changed"`. */
+    val kind: String,
+    /** per-metric before/after for the metrics that changed (kind `"changed"`); null otherwise. */
+    val metrics: Map<String, MetricDelta>? = null,
+)
+
+/** A before/after pair for one metric value (the JS `{ from, to }` shape). */
+data class MetricDelta(val from: Float, val to: Float)
+
+/**
+ * A change to one relationship (edge) between two snapshots (JS `RelationshipChange`). The edge is keyed
+ * by `from`+`to`+`type`. [kind] is `"added"`, `"removed"`, or `"changed"`; for `"changed"`, [strength]
+ * and/or [active] carry the before/after for whichever differed.
+ */
+data class RelationshipChange(
+    val from: String,
+    val to: String,
+    val type: String,
+    /** `"added"` | `"removed"` | `"changed"`. */
+    val kind: String,
+    val strength: MetricDelta? = null,
+    val active: BoolDelta? = null,
+)
+
+/** A before/after pair for a boolean (JS `{ from, to }` over booleans — e.g. a relationship's `active`). */
+data class BoolDelta(val from: Boolean, val to: Boolean)
+
+/** A change to one field-level metric between two snapshots (JS `MetricChange`). */
+data class MetricChange(val key: String, val from: Float, val to: Float)
+
+/**
+ * A Field Formation that activated or deactivated between two snapshots (JS `FormationChange`). [kind] is
+ * `"activated"` (present in `b`, absent in `a`) or `"deactivated"` (absent in `b`, present in `a`).
+ */
+data class FormationChange(val id: String, val kind: String)
+
+/**
+ * The structured comparison of two [FieldSnapshot]s — what changed in the field, by lane (JS `FieldDiff`).
+ * [from]/[to] are the compared snapshots' ids. Order-independent within each lane; produced by the PURE
+ * [diffFieldSnapshots].
+ */
+data class FieldDiff(
+    /** the id of snapshot `a`. */
+    val from: String,
+    /** the id of snapshot `b`. */
+    val to: String,
+    val bodyChanges: List<BodyChange>,
+    val relationshipChanges: List<RelationshipChange>,
+    val metricChanges: List<MetricChange>,
+    val formationChanges: List<FormationChange>,
+)
+
+/** The composite key an edge is compared by (mirror of the JS `relKey`): `from` + `to` + `type`. */
+private fun relKey(r: FieldRelationshipReading): String = "${r.from} ${r.to} ${r.type}"
+
+/**
+ * Compare two field snapshots and report what changed, by lane (bodies, relationships, metrics,
+ * formations). PURE — reads only the two snapshot objects, never the live field, and mutates nothing.
+ * Order-independent within each lane. Mirror of the JS `diffFieldSnapshots(a, b)`.
+ *
+ * - **bodies:** keyed by `id`. A body only in `a` → `removed`; only in `b` → `added`; in both with any
+ *   differing metric value → `changed` (with per-metric before/after over the union of metric keys,
+ *   missing treated as `0`). A body with identical metrics yields no change.
+ * - **relationships:** keyed by `from`+`to`+`type`. Only in `a` → `removed`; only in `b` → `added`; in
+ *   both with a differing `strength` and/or `active` → `changed` (carrying the before/after that differed).
+ * - **metrics:** the union of field-level metric keys; any differing value (missing treated as `0`) →
+ *   a [MetricChange].
+ * - **formations:** set difference — in `b` not `a` → `activated`; in `a` not `b` → `deactivated`.
+ */
+fun diffFieldSnapshots(a: FieldSnapshot, b: FieldSnapshot): FieldDiff {
+    // ── bodies ────────────────────────────────────────────────────────────────────────────────
+    val bodyChanges = mutableListOf<BodyChange>()
+    val aBodies = a.bodies.associateBy { it.id }
+    val bBodies = b.bodies.associateBy { it.id }
+    for ((id, av) in aBodies) {
+        val bv = bBodies[id]
+        if (bv == null) {
+            bodyChanges.add(BodyChange(id, "removed"))
+            continue
+        }
+        val metrics = mutableMapOf<String, MetricDelta>()
+        val keys = av.metrics.keys + bv.metrics.keys
+        for (k in keys) {
+            val from = av.metrics[k] ?: 0f
+            val to = bv.metrics[k] ?: 0f
+            if (from != to) metrics[k] = MetricDelta(from, to)
+        }
+        if (metrics.isNotEmpty()) bodyChanges.add(BodyChange(id, "changed", metrics))
+    }
+    for (id in bBodies.keys) if (id !in aBodies) bodyChanges.add(BodyChange(id, "added"))
+
+    // ── relationships ─────────────────────────────────────────────────────────────────────────
+    val relationshipChanges = mutableListOf<RelationshipChange>()
+    val aRel = a.relationships.associateBy { relKey(it) }
+    val bRel = b.relationships.associateBy { relKey(it) }
+    for ((k, ar) in aRel) {
+        val br = bRel[k]
+        if (br == null) {
+            relationshipChanges.add(RelationshipChange(ar.from, ar.to, ar.type, "removed"))
+            continue
+        }
+        val strength = if (ar.strength != br.strength) MetricDelta(ar.strength, br.strength) else null
+        val active = if (ar.active != br.active) BoolDelta(ar.active, br.active) else null
+        if (strength != null || active != null) {
+            relationshipChanges.add(RelationshipChange(ar.from, ar.to, ar.type, "changed", strength, active))
+        }
+    }
+    for ((k, br) in bRel) {
+        if (k !in aRel) relationshipChanges.add(RelationshipChange(br.from, br.to, br.type, "added"))
+    }
+
+    // ── field-level metrics ───────────────────────────────────────────────────────────────────
+    val metricChanges = mutableListOf<MetricChange>()
+    val metricKeys = a.metrics.keys + b.metrics.keys
+    for (key in metricKeys) {
+        val from = a.metrics[key] ?: 0f
+        val to = b.metrics[key] ?: 0f
+        if (from != to) metricChanges.add(MetricChange(key, from, to))
+    }
+
+    // ── formations ────────────────────────────────────────────────────────────────────────────
+    val formationChanges = mutableListOf<FormationChange>()
+    val aForm = a.formations.toSet()
+    val bForm = b.formations.toSet()
+    for (id in bForm) if (id !in aForm) formationChanges.add(FormationChange(id, "activated"))
+    for (id in aForm) if (id !in bForm) formationChanges.add(FormationChange(id, "deactivated"))
+
+    return FieldDiff(
+        from = a.id,
+        to = b.id,
+        bodyChanges = bodyChanges,
+        relationshipChanges = relationshipChanges,
+        metricChanges = metricChanges,
+        formationChanges = formationChanges,
+    )
+}
+
 /**
  * The concrete inclusion flags a [FieldSnapshotOptions] resolves to — the JS `resolveSnapshotInclusion`
  * for the `snapshot()` call site. TIGHTEST-wins: a profile establishes a baseline, an explicit flag may
