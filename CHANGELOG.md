@@ -9,6 +9,27 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Fixed
 
+- **`@fundamental-engine/three`:** **`threeBackend`'s overlay `z` now offsets the projected field
+  plane instead of being an absolute world z (#949).** The backend pinned every overlay vertex —
+  lines/arrows (`segments`/`polyline`), the data-chip plates (`rect`), and the #921 label sprites
+  (`text`) — at `z` in world space, so overlay readings mis-registered under a
+  `VolumeProjection({ centerZ: true })`, whose field plane sits at `-depth/2 · depthScale`, not at
+  the world origin. Each draw path now projects the field point through the injected projection and
+  applies `z` as an offset off the projected plane — the same contract the native field visuals
+  (samplers) hold. `PlaneProjection` and an uncentered `VolumeProjection` put that plane at world-z
+  0, so default scenes are pixel-identical; tests pin the centered-volume registration and the
+  default-unchanged invariant across all three draw paths.
+
+- **`@fundamental-engine/three`:** **`threeBackend`'s line/rect vertex data actually reaches the GPU
+  again** — writing the registration tests above exposed that the #463 persistent-buffer refactor
+  never uploaded a single overlay vertex: `flush` wrote each frame into a kept `Float32Array`, but
+  the `Float32BufferAttribute` wrapping it **copies** its input at construction, so the attribute
+  held its own zeroed array and every in-place write landed in memory the GPU never saw (all line +
+  rect geometry silently drew degenerate points at the origin; the #921 label sprites, which don't
+  ride these buffers, were unaffected). The attributes are now plain `BufferAttribute`s, which hold
+  the typed array by reference — the write-in-place + `needsUpdate` design of #463 as intended. The
+  new registration tests double as the guard: they read the vertices back out of the attributes.
+
 - **`@fundamental-engine/core`:** **keyboard focus now engages a `[data-hot]` body at mouse
   parity (#665, a11y).** Engagement bound `focus`/`blur`, which do not bubble — so when a keyboard
   user tabbed to a focusable *descendant* of a `[data-hot]` container (a card's `<a>`, a row's
