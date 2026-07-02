@@ -18,8 +18,10 @@ and related with `addEdge`. A body carries meaning (semantic HTML stays the sour
 position; declaring it is what lets the field act on it and read it back. Identity is stable across the
 body's life, so a snapshot taken now still names the same body later.
 
-See [body-lifecycle.md](body-lifecycle.md) (declare → measure → participate → remove; DOM vs synthetic
-bodies) and [system-contracts.md](system-contracts.md) (the body/field/edge contracts).
+See [host-model.md](host-model.md) (the host adapter contract — `MinimalFieldHost`, the capability
+ladder, and how non-DOM / headless / native hosts stay first-class), [body-lifecycle.md](body-lifecycle.md)
+(declare → measure → participate → remove; DOM vs synthetic bodies), and
+[system-contracts.md](system-contracts.md) (the body/field/edge contracts).
 
 ## Influence
 
