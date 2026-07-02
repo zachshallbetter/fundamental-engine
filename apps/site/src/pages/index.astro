@@ -75,7 +75,7 @@ const chapters = [
 >
   <SiteNav current="home" />
   <div id="main" class="manual-shell">
-    <ManualHero kicker="Fundamental · a renderer-agnostic relational field engine">
+    <ManualHero kicker="Fundamental · a readable behavior layer for host objects">
       <h1 slot="title">Elements have <span
           class="hero-mass"
           data-hot
@@ -95,18 +95,17 @@ const chapters = [
           style="--cat:#ff9d5c;">.</span></h1>
       <p slot="standfirst" class="standfirst"
         data-body="attract pigment" data-shaped data-strength="0.5" data-range="260" data-color="#ffce6b" style="--cat:#ffce6b">
-        Importance is gravity. Signal is charge. Relation is binding. Change is decay. The
-        forces that order the physical world translate an interface — its elements and its
-        data alike — better than any system built for either. Fundamental returns what your
-        markup already carries as live <code>--field-*</code> variables you style with:
-        every element a body in one field, where what matters pulls, what’s related binds,
-        and what you attend to charges. The DOM is the first surface — not the only one:
-        the same zero-DOM core runs in a WebGL scene and natively on Apple platforms.
+        Fundamental is a readable behavior layer for host objects. It turns elements, records,
+        views, and relationships into bodies in a shared field — where importance pulls, signal
+        routes, relation binds, and change decays. The DOM is the first host, not the boundary:
+        the same renderer-agnostic core runs on the web, in WebGL, natively on Apple and Android,
+        and headlessly. You author semantic structure; the field returns measurement — live
+        <code>--field-*</code> variables you style with.
       </p>
       <p slot="thesis" class="thesis"
         data-body="attract swirl pigment" data-strength="0.45" data-range="280" data-spin="1.1" data-color="#f0628e" style="--cat:#f0628e">
-        <strong>Most UI frameworks let you declare importance. Fundamental is the first
-        that enforces it — physically.</strong> You can’t style everything as urgent.
+        <strong>You can label everything urgent. You cannot make everything heavy.</strong>
+        Priority becomes a force, not a flag — emphasize one thing, and the rest yield.
       </p>
       <Fragment slot="cta">
         {/* Resting mass: ungate the default attention-gated vessel (data-when="") and lead with a
@@ -238,7 +237,7 @@ const chapters = [
     <section class="lp lp-diff">
       <div class="wrap">
         <span class="concept-no">Why it’s different</span>
-        <h2>Most frameworks let you <em>declare</em> importance. Fundamental <em>enforces</em> it.</h2>
+        <h2>Most interfaces <em>store</em> meaning, then <em>fake</em> its effects.</h2>
         <p class="lp-lede">
           You can’t style everything as urgent — the attention budget is conserved.
           Express “these are related,” “the user has dwelled here,” or “this is unstable”
@@ -268,9 +267,9 @@ const chapters = [
             and maintain.
           </p>
           <ul>
-            <li><b>Priority you don’t store or sort.</b> Importance is a measurement the field reads each frame (<code>--field-density</code>), not state you keep in a store and re-sort on every change. <a href="#concept-material">See it work →</a></li>
+            <li><b>Priority you don’t store or sort.</b> Importance is a live field reading (<code>--d</code>, with <code>--field-density</code> as the field-namespaced alias), not state you keep in a store and re-sort on every change. <a href="#concept-material">See it work →</a></li>
             <li><b>“Everything is P1,” solved by a law.</b> Attention is one conserved budget — emphasize one thing and the rest necessarily yield. The normalization pass teams enforce with scoring schemes and meetings becomes something the runtime cannot violate. <a href="#concept-conserved">See it work →</a></li>
-            <li><b>Relationships you don’t model.</b> Connection emerges from proximity and conservation — threads, cross-boundary spill — instead of adjacency lists and graph traversal you maintain. <a href="#concept-threads">See it work →</a></li>
+            <li><b>Relationships you can read.</b> Declared associations become field-visible structure — a Field Formation decides when association becomes coupling, not adjacency lists and graph traversal you maintain by hand. <a href="#concept-threads">See it work →</a></li>
             <li><b>Staleness without timers.</b> Recency and decay are a force in the runtime, continuous, not a cron job or a computed column you babysit. <a href="/evidence/memory">See it work →</a></li>
             <li><b>One model, always current.</b> The field re-resolves every frame, so a priority shift doesn’t fire a sort-and-re-render pass — the readout is simply already current. <a href="#concept-layout">See it work →</a></li>
           </ul>
