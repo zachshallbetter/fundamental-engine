@@ -88,8 +88,8 @@ data class FieldSnapshot(
      * an impulse accumulator — the field name mirrors JS `influences` so the shape stays identical.
      */
     val influences: List<FieldInfluenceReading> = emptyList(),
-    /** the projections registered on the field at capture — metadata only. Empty until the port adds a registry. */
-    val projections: List<Any> = emptyList(),
+    /** the projections registered on the field at capture — metadata only. See [ProjectionRegistry]. */
+    val projections: List<FieldProjectionInfo> = emptyList(),
 )
 
 // ── Field Snapshot diffing (JS `diffFieldSnapshots`) ─────────────────────────────────────────────

@@ -78,8 +78,8 @@ Ported and tested:
   active formation, field-level metrics (`particles` / `bodies` / `meanDensity`), and relationships,
   scoped by a point/rect/global region and an `include` filter. The result (`FieldQueryResult`) mirrors
   the JS shape 1:1 so a reading serializes identically across planes. JVM-tested (`FieldQueryTests`).
-  The `influences` / `projections` / `lens` lanes are present-but-empty for now (the port has no impulse
-  accumulator, projection registry, or lens lane yet).
+  `projections` is now populated from the field's `ProjectionRegistry` (see below); `influences` / `lens`
+  remain present-but-empty for now (the port has no impulse accumulator or lens lane yet).
 - **Substrate READ API — `snapshot()`** (JS critical-path 03) — `FieldHandle.snapshot(opts)` captures the
   field's STATE at a frame — a portable, serializable `FieldSnapshot`: bodies (identity + rect + position +
   tokens + metrics), the active formation, field-level metrics (`particles` / `bodies` / `meanDensity`),
@@ -88,8 +88,8 @@ Ported and tested:
   clock (`env.t`, deterministic — not wall time); `id` is `snap-<frame>-<seq>`; `version` is the port's
   `FIELD_VERSION`. Body `data` is WITHHELD by default (privacy-preserving) — included only when opted in
   (`includeData` / a permissive `profile`) AND the runtime `FieldPolicy` permits it; profiles/flags resolve
-  TIGHTEST-wins. `influences` / `projections` are present-but-empty (no accumulator / projection registry
-  yet). JVM-tested (`FieldSnapshotTests`).
+  TIGHTEST-wins. `projections` is now populated from the field's `ProjectionRegistry` (see below); `influences`
+  remains present-but-empty (no accumulator yet). JVM-tested (`FieldSnapshotTests`).
 - **Substrate READ API — `diff()`** (JS critical-path 03) — `FieldHandle.diff(a, b)` is a PURE comparison
   of two `FieldSnapshot`s (no live field access, no mutation) reporting what changed, by lane: `bodyChanges`
   (added / removed / changed — "changed" = any per-metric before/after differs), `relationshipChanges`
@@ -108,8 +108,23 @@ Ported and tested:
   The `force` lane is **empty-for-now**: it is derived from each snapshot's `influences`, which this port
   leaves empty (no impulse accumulator yet, same as `query`/`snapshot`/`diff`) — the lane's logic is mirrored
   field-for-field and comes alive unchanged once an accumulator lands; the structural lanes are fully live.
-  JVM-tested (`CausalReplayTests`). The rest of the substrate READ API — `projections` — is a follow-up on both
-  native planes (it needs a port projection registry, a larger piece).
+  JVM-tested (`CausalReplayTests`).
+- **Substrate Projection Registry — `projections`** (JS critical-path 05) — `FieldHandle.projections` is the
+  field's `ProjectionRegistry`: register named `FieldProjection`s that map field STATE into an output surface,
+  read their metadata back through `query()` / `snapshot()`, and bind them to auto-apply once per write phase.
+  GOVERNANCE (kept from the JS core): *a projection reveals state; it MAY NOT mutate the field* — no forces,
+  no body/metric writes; enforced structurally (the registry only ever calls `apply(reading, target)`, never
+  the field). The registry mechanism mirrors the JS `ProjectionRegistry` 1:1 — `register` (returns an
+  unregister fn) / `unregister` / `get` / `list` (serializable `FieldProjectionInfo` metadata) / `apply` /
+  `bind` (auto-apply each write phase, returns an unbind fn). **Surfaces (Option A):** this port implements
+  the two PORTABLE surfaces — `agent-json` (`agentJsonProjection` / `agentJsonTarget`: serialize a reading for
+  an agent/tool) and a generic host `callback` (`callbackProjection` / `callbackTarget`: a `(reading) -> Unit`
+  a native view wires up). The web surfaces (`css` / `dom-attribute` / `svg`) are **web-first** — declared in
+  the `FieldProjectionSurface` enum for metadata parity but implemented in `@fundamental-engine/dom`, not on the
+  native plane. `query().projections` / `snapshot().projections` now report the registered projections'
+  metadata (the empty-for-now lane is closed for projections). JVM-tested (`ProjectionRegistryTests`),
+  including the JS "never mutates the field" guarantee (particle count identical with a projection registered,
+  applied, and bound). Follow-up: the Swift projection registry (the other native plane).
 - **The Jetpack Compose host** (`:fundamental-compose`) — `FieldView` (drives one frame per display
   frame via `withFrameNanos`, renders the pool on a Compose `Canvas`, tap-to-burst) and
   `Modifier.fieldBody(...)` (a composable becomes a body tracking its on-screen bounds), plus a
@@ -150,7 +165,7 @@ Ported and tested:
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
   headlessly (`EngineTests`) and gated by a deterministic `PerfRegressionTests` (1200 particles × 600
   frames: count conserved, all-finite, velocity/heat bounded); the driver has its own headless tests
-  (`FieldControllerTests`). **81 core tests total**, and the Compose host + sample app build against the
+  (`FieldControllerTests`). **139 core tests total**, and the Compose host + sample app build against the
   Android SDK and **run on-device** (verified on a Pixel 7 / API 35 emulator).
 
 Also ported:
