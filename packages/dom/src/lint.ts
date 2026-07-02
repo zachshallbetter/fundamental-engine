@@ -31,7 +31,8 @@ export type LintCode =
   | 'feedback-reads-unwritten'
   | 'feedback-never-written'
   | 'feedback-lane-inert'
-  | 'compositing-fill-trap';
+  | 'compositing-fill-trap'
+  | 'motion-without-reduced-motion';
 
 export interface PlatformLintWarning {
   code: LintCode;
@@ -363,6 +364,132 @@ export function lintCompositingPerf(root: ParentNode): PlatformLintWarning[] {
   return out;
 }
 
+/**
+ * Whether a declaration block expresses **independent** motion — movement the engine cannot gate under
+ * reduced motion, so the author must supply a `prefers-reduced-motion` branch. Two families count:
+ *
+ *   1. a CSS `animation` (keyframes run on the compositor timeline, unaffected by the field), and
+ *   2. a `transform`/`translate`/`rotate`/`scale`, or a `transition` on one of those (or `all`), whose
+ *      value is a **static author value** — NOT derived from a field feedback var.
+ *
+ * The critical exemption (architectural): this engine handles reduced motion at the ENGINE level — under
+ * `prefers-reduced-motion` the field freezes (dt=0), so the feedback channels (`--d`, `--field-*`,
+ * `--load`) stop updating and any body whose motion is DRIVEN by reading one of them stops moving. Such a
+ * body is already reduced-motion-safe and must NOT be flagged. So a motion property whose value reads a
+ * feedback var is treated as engine-gated (not independent). `opacity`/`color` are not movement and never
+ * count. Case-folded; operates on `cssText`/inline style text (no computed styles) to match the rest of lint.
+ */
+function expressesIndependentMotion(cssText: string): boolean {
+  const css = cssText.toLowerCase();
+  // 1. a CSS animation (name + @keyframes) runs independent of the field → always independent motion.
+  if (/\banimation(-name)?\s*:/.test(css) && !/\banimation(-name)?\s*:\s*none\b/.test(css)) return true;
+  // 2. a transform-family set / transitioned — but ONLY if its value is NOT a feedback var (else the
+  //    engine gates it under reduced motion). We check each transform-family declaration individually so a
+  //    feedback-driven transform in the same block doesn't get mis-read as static.
+  for (const m of css.matchAll(/\b(transform|translate|rotate|scale)\s*:\s*([^;}]*)/g)) {
+    const value = m[2] ?? '';
+    if (/\bnone\b/.test(value)) continue; // transform:none is identity → no motion
+    if (FEEDBACK_VAR_READS.some((v) => value.includes(v))) continue; // feedback-driven → engine-gated
+    return true; // a static author transform → independent motion
+  }
+  // a `transition` that animates a movement property (or `all`) with a static author value is independent.
+  // (A transition merely eases changes; if the changing property is itself feedback-driven, the engine
+  //  freeze stills it — so a transition is only independent when paired with a static transform above,
+  //  which the loop already caught. A bare `transition: transform …` with no static transform in the same
+  //  block does nothing on its own, so it is not counted here.)
+  return false;
+}
+
+/** Strip pseudo-classes / pseudo-elements from a selector so it can be matched against a body. */
+function cleanSelector(part: string): string {
+  return part.trim().replace(/::?[\w-]+(\([^)]*\))?/g, '');
+}
+
+/**
+ * The accessibility sibling of the silent-contract lint (`lintFeedbackWritesUnread`): a `[data-body]`
+ * that expresses **independent** motion — a CSS `@keyframes` animation, or a static (non-feedback-driven)
+ * `transform`/`translate`/`rotate`/`scale` — but has **no** `@media (prefers-reduced-motion: reduce)`
+ * companion rule that matches it. That is the a11y invariant this gate enforces: *reduced motion removes
+ * motion, not meaning* — a body that moves on its own must offer a still form. Without the reduced-motion
+ * branch, a user who asked the OS to stop animations still gets the movement.
+ *
+ * **Feedback-var-driven motion is deliberately exempt.** This engine gates motion at the ENGINE level:
+ * under `prefers-reduced-motion` the field freezes (dt=0), so `--d`/`--field-*`/`--load` stop updating and
+ * any body driven by them stops moving — it is already reduced-motion-safe and does NOT need a per-body
+ * `@media` rule. Flagging those would be architecturally wrong (and would flood the site's own hundreds of
+ * feedback-driven bodies). So only genuinely independent motion, which the engine cannot gate, is flagged.
+ *
+ * "Has a reduced-motion equivalent" is determined structurally: some rule inside a
+ * `@media (prefers-reduced-motion: reduce)` block has a selector that matches the same body (after
+ * pseudo-class/element stripping). The author opted the body into a reduced-motion branch; the lint
+ * trusts that branch neutralizes the motion (it does not attempt to prove the branch is *correct* —
+ * that is the human AT-pass half of RC-8).
+ *
+ * **Dev-only, heuristic, browser-coupled** — like the feedback consumer lints, it walks the document's
+ * accessible stylesheets and no-ops where they are unreachable (SSR / tests / cross-origin), so it can
+ * only ever under-report, never false-positive. Scoped to `[data-body]` elements only. Bodies whose
+ * independent motion is expressed *inline* are also considered, and are only cleared by a matching
+ * reduced-motion rule — inline styles can't carry a media query.
+ */
+export function lintReducedMotion(root: ParentNode): PlatformLintWarning[] {
+  const out: PlatformLintWarning[] = [];
+  if (typeof document === 'undefined') return out;
+
+  // Pass 1: collect motion-bearing selectors (outside reduced-motion) and reduced-motion selectors.
+  const motionSelectors: string[] = [];
+  const reducedSelectors: string[] = [];
+  const collect = (rules: CSSRuleList | undefined, underReduced: boolean) => {
+    for (const rule of Array.from(rules ?? [])) {
+      // a nested @media — recurse, flagging whether it is a reduced-motion block.
+      const media = (rule as CSSMediaRule).media?.mediaText;
+      if (media !== undefined) {
+        const isReduced = /prefers-reduced-motion\s*:\s*reduce/.test(media);
+        collect((rule as CSSMediaRule).cssRules, underReduced || isReduced);
+        continue;
+      }
+      const r = rule as CSSStyleRule;
+      if (!r.selectorText || !r.cssText) continue;
+      if (underReduced) {
+        reducedSelectors.push(r.selectorText);
+      } else if (expressesIndependentMotion(r.cssText)) {
+        motionSelectors.push(r.selectorText);
+      }
+    }
+  };
+  for (const sheet of Array.from(document.styleSheets)) {
+    let rules: CSSRuleList | undefined;
+    try { rules = sheet.cssRules; } catch { continue; } // cross-origin sheet → unreadable, skip
+    collect(rules, false);
+  }
+
+  const matchesAny = (selectors: string[], el: Element): boolean =>
+    selectors.some((sel) =>
+      sel.split(',').some((part) => {
+        const clean = cleanSelector(part);
+        if (!clean) return false;
+        try { return el.matches(clean); } catch { return false; }
+      }),
+    );
+
+  // Pass 2: for each body, does it move INDEPENDENTLY (via CSS rule or inline) and lack a reduced-motion
+  // branch? Feedback-var-driven motion is already engine-gated, so it never reaches here.
+  root.querySelectorAll('[data-body]').forEach((el) => {
+    const style = el.getAttribute('style') ?? '';
+    const movesInline = expressesIndependentMotion(style);
+    const movesViaRule = matchesAny(motionSelectors, el);
+    if (!movesInline && !movesViaRule) return; // static / engine-gated body → nothing to guard
+    if (matchesAny(reducedSelectors, el)) return; // has a reduced-motion branch → honoured
+    out.push({
+      code: 'motion-without-reduced-motion',
+      severity: 'warning',
+      element: el,
+      message:
+        'a field body expresses independent motion (a CSS animation, or a static transform not driven by a field feedback var) but no @media (prefers-reduced-motion: reduce) rule matches it — reduced motion must remove motion without removing meaning; add a reduced-motion branch that stills it',
+    });
+  });
+  return out;
+}
+
 /** Run every platform lint rule over a FieldPlatform and return the aggregated warnings. */
 export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): PlatformLintWarning[] {
   const root = opts.root ?? platform.root;
@@ -370,6 +497,7 @@ export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): Pl
   const warnings: PlatformLintWarning[] = [
     ...lintRelationTargets(root, resolve),
     ...lintCompositingPerf(root),
+    ...lintReducedMotion(root),
     ...lintSinkFeedback(root),
     ...lintFeedbackVarReads(root),
     ...lintFeedbackWritesUnread(root),
