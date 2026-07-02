@@ -85,6 +85,14 @@ Ported and tested:
   multiply), cross-body `screen` attenuation, conserved-attention multiplier, the carrier-wave current
   (linear + circular), formation currents (drift / spread / convergence), the `c` velocity cap,
   friction/heat decay, wander, mortal aging, toroidal wrap, and the source pass.
+- **Integrator modes** (`Env.integrator` / the `FieldController`+`createField` `integrator` option —
+  the JS `FieldOptions.integrator`, doc 04 §Step 3 + #659/#959): `LEGACY` (the default — byte-identical
+  semi-implicit Euler), `FIXED` (dt-scaled per-step decays, `FRICTION^dt`), and the opt-in second-order
+  `VELOCITY_VERLET` — position full-step BEFORE the force pass (`x += v·dt + ½·a·dt²`), a′ read as the
+  pass's net Δv/dt, velocity half-step average, with kinematic velocity-REPLACING forces treated as
+  discontinuities (never averaged; stored acceleration resets). Non-symplectic by design (the decays sit
+  outside the scheme): it buys positional accuracy, not conservation — count stays the invariant. Pinned
+  by `IntegratorVerletTests`, the JS `integrator-verlet.test.ts` suite test-for-test.
 - **Supporting subsystems** — real scalar grids (`ScalarGridImpl`: diffuse / wave / memory stepping),
   the `SpatialHash` + `FieldStore` neighbour index, carrier waves (`Currents`), `Geometry` (pole-pair
   dipoles, box SDF, `netField`), `Formations` (presets + easing + accretion target), the `when`
@@ -208,7 +216,7 @@ Ported and tested:
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
   headlessly (`EngineTests`) and gated by a deterministic `PerfRegressionTests` (1200 particles × 600
   frames: count conserved, all-finite, velocity/heat bounded); the driver has its own headless tests
-  (`FieldControllerTests`). **153 core tests total**, and the Compose host + sample app build against the
+  (`FieldControllerTests`). **160 core tests total**, and the Compose host + sample app build against the
   Android SDK and **run on-device** (verified on a Pixel 7 / API 35 emulator).
 
 Also ported:

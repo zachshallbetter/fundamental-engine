@@ -13,6 +13,27 @@ import simd
 // Direct port of packages/core/src/core/integrator.ts, lifted to 3D. The carrier-wave
 // drift (§2.3, currents.ts) is not yet ported — `step` runs the bodies-and-formations
 // field; waves slot in where the JS reads `input.waves`.
+//
+// INTEGRATION SCHEMES (`Env.integrator`, the JS #958 mirror): the default `.legacy` is semi-implicit
+// Euler (forces update v, then `x += v·dt`, then a per-frame decay); `.fixed` keeps the same order
+// but dt-scales the decays (doc 04 §Step 3). `.velocityVerlet` (#659) is the opt-in second-order
+// scheme, in the stored-acceleration form:
+//
+//   x(t+dt) = x(t) + v(t)·dt + ½·a(t)·dt²      (position full-step, BEFORE the force pass)
+//   a′      = Δv/dt from the force pass          (forces evaluated at x(t+dt))
+//   v(t+dt) = v(t) + ½·(a(t) + a′)·dt           (velocity half-step average)
+//
+// Approximations, deliberate and documented (physics caveat canon): (1) the engine's force model is
+// impulse-based and velocity-dependent (drag-like forces read the CURRENT v), so a′ is taken as the
+// pass's net Δv/dt rather than re-evaluating forces at the averaged velocity — the standard
+// stored-acceleration treatment; (2) the per-step FRICTION/HEAT_DECAY decays stay outside the scheme
+// (dt-scaled, like `.fixed`), which alone makes it NON-symplectic — this buys positional accuracy, it
+// does NOT make energy/momentum conserved (they are non-conserved by design; particle COUNT remains
+// the invariant); (3) a *kinematic* (velocity-REPLACING) force — jet/wall/lens/gate/warp — is a
+// discontinuity, not an acceleration: when one fires, the replaced velocity stands un-averaged and
+// the stored acceleration resets, so the next position step doesn't extrapolate across the break;
+// (4) a pair force's equal-and-opposite leg on the NEIGHBOUR (collide/link) folds into that
+// neighbour's own v(t) or Δv whenever its turn comes — the same class of caveat the JS header carries.
 
 public let FRICTION: Float = 0.95
 public let HEAT_DECAY: Float = 0.972
@@ -67,6 +88,15 @@ private func classified(_ b: Body) -> ClassifiedTokens {
 @inline(__always)
 private func applyForce(_ f: any Force, _ b: Body, _ p: Particle, _ env: Env, _ inv: Float) {
     if inv == 1 || f.isKinematic {
+        // velocity-Verlet (#659): a kinematic force that actually changes velocity marks the
+        // particle's pass as a discontinuity (env.kinTouch) — the half-step average is skipped.
+        // One boolean test on the default path; the capture only runs under the opt-in mode.
+        if f.isKinematic && env.integrator == .velocityVerlet {
+            let before = p.velocity
+            f.apply(body: b, particle: p, env: env)
+            if p.velocity != before { env.kinTouch = true }
+            return
+        }
         f.apply(body: b, particle: p, env: env)
         return
     }
@@ -83,6 +113,14 @@ public func step(_ input: StepInput) {
     let conditions = input.conditions
     let dt = env.dt
     if dt == 0 { return }
+    // the opt-in second-order scheme (#659) — see the header doc for the math + approximations.
+    let verlet = env.integrator == .velocityVerlet
+    // Under `.fixed` / `.velocityVerlet` the per-step decays scale with dt (`FRICTION^dt`, doc 04
+    // §Step 3) so they are frame-rate independent; `pow(x, 1) == x`, so the dt = 1 default path is
+    // byte-identical. Hoisted (loop-invariant) — the JS computes the same value per particle.
+    let dtScaledDecays = env.integrator == .fixed || verlet
+    let fr: Float = dtScaledDecays ? pow(FRICTION, dt) : FRICTION
+    let heatDecay: Float = dtScaledDecays ? pow(HEAT_DECAY, dt) : HEAT_DECAY
     let W = env.volume.x
     let H = env.volume.y
     let D = env.volume.z
@@ -116,7 +154,20 @@ public func step(_ input: StepInput) {
         // captured matter is held inside a sink core, drifting to it (§6.9).
         if let cap = p.cap {
             p.position += (cap.center - p.position) * 0.18
+            // held matter has no acceleration of its own — drop any stored Verlet lane so a later
+            // release doesn't extrapolate a stale a(t). Only ever non-nil under the opt-in mode.
+            if p.accel != nil { p.accel = .zero }
             continue
+        }
+
+        // velocity-Verlet (#659): the position FULL-STEP runs first, from last step's velocity and
+        // stored acceleration — x(t+dt) = x(t) + v(t)·dt + ½·a(t)·dt² — so the force pass below
+        // evaluates a′ at x(t+dt). v0 keeps v(t) for the half-step average after the pass.
+        var v0 = Vec3.zero
+        if verlet {
+            p.position += p.velocity * dt + (p.accel ?? .zero) * (0.5 * dt * dt)
+            v0 = p.velocity
+            env.kinTouch = false
         }
 
         // wave current (§2.3): near a wave line, drift along its slope like debris.
@@ -306,6 +357,22 @@ public func step(_ input: StepInput) {
             }
         }
 
+        // velocity-Verlet second half (#659): fold this step's impulse into the half-step average.
+        if verlet {
+            // the pass's net Δv is a′·dt — every force above evaluated at the updated position.
+            let dv = p.velocity - v0
+            if env.kinTouch {
+                // a kinematic (velocity-REPLACING) force fired: a discontinuity, not an acceleration.
+                // The replaced velocity stands as-is; the stored acceleration resets so the next
+                // position step doesn't extrapolate across the break.
+                p.accel = .zero
+            } else {
+                // v(t+dt) = v(t) + ½·(a(t) + a′)·dt — ½·a(t)·dt from the stored lane, ½·Δv for a′.
+                p.velocity = v0 + ((p.accel ?? .zero) * dt + dv) * 0.5
+                p.accel = dv / dt
+            }
+        }
+
         // global safety cap (§20.10): no token or composite may drive a free particle past c.
         let cap = env.c
         let sp2 = simd_length_squared(p.velocity)
@@ -313,9 +380,10 @@ public func step(_ input: StepInput) {
             p.velocity *= cap / sqrt(sp2)
         }
 
-        // integrate, then damp (§2.2).
-        p.position += p.velocity * dt
-        p.velocity *= FRICTION
+        // integrate, then damp (§2.2). Velocity-Verlet already took its position full-step before
+        // the force pass; its decays (like `.fixed`'s) are dt-scaled — see `fr` above.
+        if !verlet { p.position += p.velocity * dt }
+        p.velocity *= fr
 
         // wander (after damping, so it stays lively): a periodic brownian jitter every
         // 40 frames, plus a smooth curl-noise eddy (§7). The curl stays planar; the
@@ -333,7 +401,7 @@ public func step(_ input: StepInput) {
             p.velocity.y += sin(cn) * 0.013 * form.wander
         }
 
-        p.heat *= HEAT_DECAY
+        p.heat *= heatDecay
 
         // mortal matter ages (the class-[S] sink): spawned particles carry a finite `age`
         // and despawn at ≤ 0. Immortal base-field matter (age nil) is untouched.

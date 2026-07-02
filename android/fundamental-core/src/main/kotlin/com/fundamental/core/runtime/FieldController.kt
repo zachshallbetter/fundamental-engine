@@ -29,6 +29,7 @@ import com.fundamental.core.engine.FieldHost
 import com.fundamental.core.engine.ForceRegistry
 import com.fundamental.core.engine.Formation
 import com.fundamental.core.engine.GridMode
+import com.fundamental.core.engine.IntegratorMode
 import com.fundamental.core.engine.Particle
 import com.fundamental.core.engine.Registry
 import com.fundamental.core.engine.ScalarGrid
@@ -63,6 +64,11 @@ class FieldController(
     particleCount: Int = 300,
     /** Seed for reproducible runs (tests); null = nondeterministic. */
     seed: Long? = null,
+    /**
+     * The integration scheme (the JS `FieldOptions.integrator`, doc 04 §Step 3 / #659). Opt-in:
+     * [IntegratorMode.LEGACY] (the default) is the shipped engine, byte-identical.
+     */
+    integrator: IntegratorMode = IntegratorMode.LEGACY,
 ) {
     val store = FieldStore()
     val forces: ForceRegistry = Registry.standardForces()
@@ -286,6 +292,7 @@ class FieldController(
     init {
         env.volume = Vec3(w, h, d)
         env.dt = 1f
+        env.integrator = integrator
         env.neighbors = { p, r -> store.neighbors(p, r) }
         env.spawn = { store.add(it) }
         env.grid = { name -> grids.getOrPut(name) { ScalarGridImpl(w, h, modeForName(name)) } }

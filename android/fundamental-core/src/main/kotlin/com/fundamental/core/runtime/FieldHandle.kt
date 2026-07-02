@@ -7,6 +7,7 @@ import com.fundamental.core.engine.EnergyReport
 import com.fundamental.core.engine.FieldBodyIdentity
 import com.fundamental.core.engine.FieldHost
 import com.fundamental.core.engine.FieldPolicy
+import com.fundamental.core.engine.IntegratorMode
 import com.fundamental.core.engine.Particle
 import com.fundamental.core.engine.ScalarGrid
 import com.fundamental.core.engine.WaveStyle
@@ -802,8 +803,13 @@ fun createField(
     identify: ((Body) -> FieldBodyIdentity?)? = null,
     /** Initial runtime [FieldPolicy] (JS #892) — what this host/session/user/app permits. Additive. */
     policy: FieldPolicy = FieldPolicy.UNBOUNDED,
+    /**
+     * The integration scheme (the JS `FieldOptions.integrator`, doc 04 §Step 3 / #659). Opt-in:
+     * [IntegratorMode.LEGACY] (the default) is the shipped engine, byte-identical.
+     */
+    integrator: IntegratorMode = IntegratorMode.LEGACY,
 ): FieldHandle = FieldHandle(
-    FieldController(width, height, depth, particleCount, seed).also {
+    FieldController(width, height, depth, particleCount, seed, integrator).also {
         it.identify = identify
         it.setPolicy(policy)
     },
@@ -822,9 +828,11 @@ fun createField(
     seed: Long? = null,
     identify: ((Body) -> FieldBodyIdentity?)? = null,
     policy: FieldPolicy = FieldPolicy.UNBOUNDED,
+    /** The integration scheme (the JS `FieldOptions.integrator`); LEGACY (default) = the shipped engine. */
+    integrator: IntegratorMode = IntegratorMode.LEGACY,
 ): FieldHandle {
     val volume = host.volume
-    val controller = FieldController(volume.width, volume.height, volume.depth, particleCount, seed).also {
+    val controller = FieldController(volume.width, volume.height, volume.depth, particleCount, seed, integrator).also {
         it.identify = identify
         it.setPolicy(policy)
     }

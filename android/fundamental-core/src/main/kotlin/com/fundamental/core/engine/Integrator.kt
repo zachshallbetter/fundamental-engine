@@ -6,6 +6,7 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -17,6 +18,27 @@ import kotlin.random.Random
 // (§7), the body forces (§4), then integrate and damp. First-class mass (§21.3) scales each additive
 // force by 1/m; velocity-replacing (kinematic) forces are left untouched. Reduced motion (dt = 0)
 // freezes the sim (§18).
+//
+// INTEGRATION SCHEMES (`Env.integrator`, the JS #958 mirror): the default LEGACY is semi-implicit
+// Euler (forces update v, then `x += v·dt`, then a per-frame decay); FIXED keeps the same order but
+// dt-scales the decays (doc 04 §Step 3). VELOCITY_VERLET (#659) is the opt-in second-order scheme,
+// in the stored-acceleration form:
+//
+//   x(t+dt) = x(t) + v(t)·dt + ½·a(t)·dt²      (position full-step, BEFORE the force pass)
+//   a′      = Δv/dt from the force pass          (forces evaluated at x(t+dt))
+//   v(t+dt) = v(t) + ½·(a(t) + a′)·dt           (velocity half-step average)
+//
+// Approximations, deliberate and documented (physics caveat canon): (1) the engine's force model is
+// impulse-based and velocity-dependent (drag-like forces read the CURRENT v), so a′ is taken as the
+// pass's net Δv/dt rather than re-evaluating forces at the averaged velocity — the standard
+// stored-acceleration treatment; (2) the per-step FRICTION/HEAT_DECAY decays stay outside the scheme
+// (dt-scaled, like FIXED), which alone makes it NON-symplectic — this buys positional accuracy, it
+// does NOT make energy/momentum conserved (they are non-conserved by design; particle COUNT remains
+// the invariant); (3) a *kinematic* (velocity-REPLACING) force — jet/wall/lens/gate/warp — is a
+// discontinuity, not an acceleration: when one fires, the replaced velocity stands un-averaged and
+// the stored acceleration resets, so the next position step doesn't extrapolate across the break;
+// (4) a pair force's equal-and-opposite leg on the NEIGHBOUR (collide/link) folds into that
+// neighbour's own v(t) or Δv whenever its turn comes — the same class of caveat the JS header carries.
 
 const val FRICTION: Float = 0.95f
 const val HEAT_DECAY: Float = 0.972f
@@ -57,6 +79,15 @@ private fun classified(b: Body): ClassifiedTokens {
  */
 private fun applyForce(f: Force, b: Body, p: Particle, env: Env, inv: Float) {
     if (inv == 1f || f.isKinematic) {
+        // velocity-Verlet (#659): a kinematic force that actually changes velocity marks the
+        // particle's pass as a discontinuity (env.kinTouch) — the half-step average is skipped.
+        // One boolean test on the default path; the capture only runs under the opt-in mode.
+        if (f.isKinematic && env.integrator == IntegratorMode.VELOCITY_VERLET) {
+            val before = p.velocity
+            f.apply(b, p, env)
+            if (p.velocity != before) env.kinTouch = true
+            return
+        }
         f.apply(b, p, env)
         return
     }
@@ -74,6 +105,14 @@ fun step(input: StepInput) {
     val conditions = input.conditions
     val dt = env.dt
     if (dt == 0f) return
+    // the opt-in second-order scheme (#659) — see the header doc for the math + approximations.
+    val verlet = env.integrator == IntegratorMode.VELOCITY_VERLET
+    // Under FIXED / VELOCITY_VERLET the per-step decays scale with dt (`FRICTION^dt`, doc 04 §Step 3)
+    // so they are frame-rate independent; `pow(x, 1) == x`, so the dt = 1 default path is
+    // byte-identical. Hoisted (loop-invariant) — the JS computes the same value per particle.
+    val dtScaledDecays = env.integrator == IntegratorMode.FIXED || verlet
+    val fr = if (dtScaledDecays) FRICTION.pow(dt) else FRICTION
+    val heatDecay = if (dtScaledDecays) HEAT_DECAY.pow(dt) else HEAT_DECAY
     val w = env.volume.x
     val h = env.volume.y
     val d3 = env.volume.z
@@ -109,7 +148,20 @@ fun step(input: StepInput) {
         val cap = p.cap
         if (cap != null) {
             p.position += (cap.center - p.position) * 0.18f
+            // held matter has no acceleration of its own — drop any stored Verlet lane so a later
+            // release doesn't extrapolate a stale a(t). Only ever non-null under the opt-in mode.
+            if (p.accel != null) p.accel = Vec3.ZERO
             continue
+        }
+
+        // velocity-Verlet (#659): the position FULL-STEP runs first, from last step's velocity and
+        // stored acceleration — x(t+dt) = x(t) + v(t)·dt + ½·a(t)·dt² — so the force pass below
+        // evaluates a′ at x(t+dt). v0 keeps v(t) for the half-step average after the pass.
+        var v0 = Vec3.ZERO
+        if (verlet) {
+            p.position += p.velocity * dt + (p.accel ?: Vec3.ZERO) * (0.5f * dt * dt)
+            v0 = p.velocity
+            env.kinTouch = false
         }
 
         // wave current (§2.3): near a wave line, drift along its slope like debris.
@@ -268,14 +320,31 @@ fun step(input: StepInput) {
             }
         }
 
+        // velocity-Verlet second half (#659): fold this step's impulse into the half-step average.
+        if (verlet) {
+            // the pass's net Δv is a′·dt — every force above evaluated at the updated position.
+            val dv = p.velocity - v0
+            if (env.kinTouch) {
+                // a kinematic (velocity-REPLACING) force fired: a discontinuity, not an acceleration.
+                // The replaced velocity stands as-is; the stored acceleration resets so the next
+                // position step doesn't extrapolate across the break.
+                p.accel = Vec3.ZERO
+            } else {
+                // v(t+dt) = v(t) + ½·(a(t) + a′)·dt — ½·a(t)·dt from the stored lane, ½·Δv for a′.
+                p.velocity = v0 + ((p.accel ?: Vec3.ZERO) * dt + dv) * 0.5f
+                p.accel = dv / dt
+            }
+        }
+
         // global safety cap (§20.10): no token or composite may drive a particle past c.
         val capC = env.c
         val sp2 = p.velocity.lengthSquared()
         if (sp2 > capC * capC) p.velocity *= capC / sqrt(sp2)
 
-        // integrate, then damp (§2.2).
-        p.position += p.velocity * dt
-        p.velocity *= FRICTION
+        // integrate, then damp (§2.2). Velocity-Verlet already took its position full-step before
+        // the force pass; its decays (like FIXED's) are dt-scaled — see `fr` above.
+        if (!verlet) p.position += p.velocity * dt
+        p.velocity *= fr
 
         // wander (after damping): a periodic brownian jitter every 40 frames + a curl eddy (§7).
         if (env.frameN % 40 == 0 && form.wander > 0f) {
@@ -295,7 +364,7 @@ fun step(input: StepInput) {
             )
         }
 
-        p.heat *= HEAT_DECAY
+        p.heat *= heatDecay
 
         // mortal matter ages (the class-[S] sink); immortal base-field matter (age null) is untouched.
         val age = p.age

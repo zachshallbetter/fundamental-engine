@@ -144,6 +144,15 @@ Ported and tested — the full engine:
   screen → resonate), cross-body screen attenuation, conserved attention, first-class
   mass, the `c` velocity cap, friction/heat decay, wander, mortal age, toroidal wrap,
   the source pass.
+- **Integrator modes** (`Env.integrator` / `FieldOptions.integrator` — the JS mirror, doc 04
+  §Step 3 + #659/#959): `.legacy` (the default — byte-identical semi-implicit Euler), `.fixed`
+  (dt-scaled per-step decays, `FRICTION^dt`), and the opt-in second-order `.velocityVerlet` —
+  position full-step BEFORE the force pass (`x += v·dt + ½·a·dt²`), a′ read as the pass's net
+  Δv/dt, velocity half-step average, with kinematic velocity-REPLACING forces treated as
+  discontinuities (never averaged; stored acceleration resets). Non-symplectic by design (the
+  decays sit outside the scheme): it buys positional accuracy, not conservation — count stays
+  the invariant. Pinned by `IntegratorVerletTests`, the JS `integrator-verlet.test.ts` suite
+  test-for-test.
 - **All 33 forces.** The canonical nine (§6: attract, jet, tether, wall, stream, repel,
   viscosity, swirl, sink); the natural primitives (§20.10: gravity, charge, magnetism,
   thermal, collide, diffuse, propagate, memory — the grid-backed three run against real
@@ -319,7 +328,7 @@ swift run -c release FieldLabSnapshots --bench         # sim vs draw ms per conf
 ```sh
 cd swift
 swift build                  # macOS
-swift test                   # 129 tests: unit + headless integration + cross-plane conformance + perf gate
+swift test                   # 217 tests: unit + headless integration + cross-plane conformance + perf gate
 
 # cross-platform checks
 swift build --triple arm64-apple-ios17.0-simulator \

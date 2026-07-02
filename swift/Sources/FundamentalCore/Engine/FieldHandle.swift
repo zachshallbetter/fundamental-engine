@@ -104,6 +104,9 @@ public struct FieldOptions {
     /// it live with `FieldHandle.setPolicy`. `nil` = no policy (unbounded, byte-identical to a pre-policy
     /// field). Mirrors JS `FieldOptions.policy`.
     public var policy: FieldPolicy?
+    /// The integration scheme (doc 04 §Step 3 / #659) — mirrors JS `FieldOptions.integrator`. Opt-in:
+    /// `.legacy` (the default) is the shipped engine, byte-identical. See ``IntegratorMode``.
+    public var integrator: IntegratorMode
 
     public init(
         accent: String? = nil,
@@ -127,7 +130,8 @@ public struct FieldOptions {
         qualityTier: Int = 0,
         feedbackSink: FeedbackSink? = nil,
         identify: ((AnyObject) -> FieldBodyIdentity?)? = nil,
-        policy: FieldPolicy? = nil
+        policy: FieldPolicy? = nil,
+        integrator: IntegratorMode = .legacy
     ) {
         self.accent = accent
         self.density = density
@@ -151,6 +155,7 @@ public struct FieldOptions {
         self.feedbackSink = feedbackSink
         self.identify = identify
         self.policy = policy
+        self.integrator = integrator
     }
 }
 
