@@ -303,7 +303,7 @@ html[data-field='on'] .hero-antimass:hover {
   text-decoration: underline;
 }
 
-/* §2 — the inbox preview card (static; links out to the live /evidence/inbox) */
+/* §2 — the inbox proof card (a real reading, #973; links out to the live /evidence/inbox) */
 .lp-inbox {
   margin: 1.8rem 0 1.4rem;
   max-width: 640px;
@@ -326,6 +326,13 @@ html[data-field='on'] .hero-antimass:hover {
   border-bottom: 1px solid var(--line);
 }
 .lp-ask {
+  /* Provenance (#973): --u is the urgency weight AS DISPLAYED — the composition of the two honest
+     lanes (invisible-fields §2). --u0 is the authored urgency (the data lane; the same number the
+     body declares as data-strength), --d is the ENGINE-WRITTEN live reading (gathered local
+     density on this data-feedback body). Live, an ask brightens as the field gathers at it and
+     dims as attention drains to a neighbour; before the engine's reading arrives — or with the
+     field off, when --d never registers — the fallback holds the pure authored look. */
+  --u: calc(var(--u0, 0.4) * 0.55 + var(--d, var(--u0, 0.4)) * 0.45);
   display: grid;
   grid-template-columns: 2.2rem 1fr auto;
   align-items: center;
@@ -340,7 +347,8 @@ html[data-field='on'] .hero-antimass:hover {
   height: 0.5rem;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--accent), transparent);
-  opacity: var(--u, 0.4);
+  /* floored so an honest zero reading still leaves a legible trace of the bar */
+  opacity: calc(0.12 + var(--u, 0.4) * 0.88);
 }
 .lp-ask .lp-title {
   font-size: calc(0.86rem + var(--u, 0.4) * 0.22rem);
@@ -356,6 +364,14 @@ html[data-field='on'] .hero-antimass:hover {
   font-size: 0.66rem;
   color: var(--text-4);
   white-space: nowrap;
+}
+/* Reduced motion freezes the integrator (env.dt = 0), so matter never gathers and the live
+   reading honestly sits near zero — hold the authored urgency instead. The hierarchy stays
+   typographic weight either way; nothing here moves. */
+@media (prefers-reduced-motion: reduce) {
+  .lp-ask {
+    --u: var(--u0, 0.4);
+  }
 }
 
 /* mental-model diagram */
