@@ -127,6 +127,18 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   no new public surface; a client-only page whose field boots before any body buffers nothing and
   behaves exactly as before.
 
+- **`@fundamental-engine/dom`:** **reduced-motion platform lint (`lintReducedMotion`, RC-8 / #325).** A
+  new dev-only lint rule (`motion-without-reduced-motion`) flags the accessibility sibling of the
+  silent-contract gap: a `[data-body]` that expresses motion — a CSS `animation`, a
+  `transform`/`translate`/`rotate`/`scale`, a `transition` on a movement property, or a feedback var
+  (`var(--d…)`/`var(--field-…)`/`var(--load…)`) driving a motion property — with **no**
+  `@media (prefers-reduced-motion: reduce)` rule that matches it. The invariant it guards is *reduced
+  motion removes motion, not meaning*. Like the other stylesheet-walking lints it is heuristic and
+  browser-coupled: it no-ops where stylesheets are unreachable (SSR / tests / cross-origin), so it can
+  only under-report, never false-positive; opacity/colour changes are deliberately not treated as
+  motion. Runs automatically inside `lintPlatform`. (This is the lint half of RC-8; the real
+  assistive-tech pass remains a separate manual step.)
+
 - **`@fundamental-engine/core`:** **opt-in charge-gated `fieldflow` (#711).** A new body flag
   `data-charge-gated` restricts the `fieldflow` force to *charged* matter (`charge ≠ 0`), modelling
   magnetized plasma tied to the field line so it composes with `charge`; neutral matter drifts free.
