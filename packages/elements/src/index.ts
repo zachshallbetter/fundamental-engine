@@ -2,6 +2,12 @@ import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type 
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
+import {
+  installPreRegistrationQueue,
+  flushPreRegistrationQueue,
+  markFieldActive,
+  markFieldInactive,
+} from './preregistration-queue.ts';
 
 // Experimental platform runtime (Phase D). Re-exported so apps can opt in globally.
 export { usePlatformRuntime, isPlatformRuntimeDefault, shouldUsePlatformRuntime, startPlatformRuntime } from './platform-runtime.ts';
@@ -143,6 +149,9 @@ export class FieldField extends HTMLElementBase {
   /** element-level visibility: pages can hide the field (display:none) — skip draw work then. */
   private visibilityObserver?: IntersectionObserver;
   private fieldVisible = true;
+  /** SSR pre-registration queue bookkeeping: true while this element counts as a live field, so a
+   *  rebuild (start() after a destroy) does not double-count the active-field tally (#683). */
+  private fieldActiveMarked = false;
   /** experimental platform runtime (Phase D); present only when the flag is on. */
   platformRuntime?: PlatformRuntime;
 
@@ -158,6 +167,11 @@ export class FieldField extends HTMLElementBase {
 
   constructor() {
     super();
+    // SSR pre-registration queue (shadow-dom.md §31.10): install the capturing document listeners now,
+    // in the FIRST field element's constructor, so early `field:register-body` events from bodies that
+    // upgrade before this field boots are buffered instead of lost. Idempotent + SSR-guarded (no-op
+    // without `document`). The field drains the queue in start() once its own listeners are wired.
+    installPreRegistrationQueue();
     const root = this.attachShadow({ mode: 'open' });
     const style = document.createElement('style');
     style.textContent =
@@ -563,6 +577,13 @@ export class FieldField extends HTMLElementBase {
     this.visibilityObserver = undefined;
     this.field?.destroy();
     this.field = undefined;
+    // SSR pre-registration queue (§31.10): this field is no longer live — release its active-field
+    // mark so the queue resumes buffering if no field remains (a body that (re)connects during a
+    // field-less window is then captured for the next field that boots).
+    if (this.fieldActiveMarked) {
+      markFieldInactive();
+      this.fieldActiveMarked = false;
+    }
     // Field Surfaces: remove the light-DOM overlay surface this element owns.
     this.overlayCanvas?.remove();
     this.overlayCanvas = undefined;
@@ -685,6 +706,16 @@ export class FieldField extends HTMLElementBase {
     if (!this.fieldVisible) this.field.setVisible(false);
     // take the overlay canvas out of the compositing tree unless a reading is actually active.
     syncOverlaySurface(this.overlayCanvas, this.overlay);
+    // SSR pre-registration queue (§31.10): the field's body-event listeners are now wired (via the
+    // host inside createBrowserField). Mark it live so later registrations skip the queue, then drain
+    // any events buffered before boot — they replay onto their source elements and register through
+    // the normal idempotent path. Mark ONCE per element (a rebuild re-runs start() but must not
+    // re-increment the active-field tally); the drain is safe to run every time (no-op when empty).
+    if (!this.fieldActiveMarked) {
+      markFieldActive();
+      this.fieldActiveMarked = true;
+    }
+    flushPreRegistrationQueue();
   }
 }
 

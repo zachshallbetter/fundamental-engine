@@ -499,6 +499,16 @@
             },
             {
               "kind": "field",
+              "name": "fieldActiveMarked",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false",
+              "description": "SSR pre-registration queue bookkeeping: true while this element counts as a live field, so a\nrebuild (start() after a destroy) does not double-count the active-field tally (#683)."
+            },
+            {
+              "kind": "field",
               "name": "platformRuntime",
               "type": {
                 "text": "PlatformRuntime | undefined"
@@ -1986,6 +1996,20 @@
               },
               "privacy": "private",
               "default": "true",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "fieldActiveMarked",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false",
+              "description": "SSR pre-registration queue bookkeeping: true while this element counts as a live field, so a\nrebuild (start() after a destroy) does not double-count the active-field tally (#683).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -3852,6 +3876,140 @@
           "declaration": {
             "name": "startPlatformRuntime",
             "module": "src/platform-runtime.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/preregistration-queue.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "installPreRegistrationQueue",
+          "return": {
+            "type": {
+              "text": "void"
+            }
+          },
+          "description": "Install the capturing document listeners — idempotent, SSR-guarded. Called from the custom\nelement's constructor so it runs on the client before the element upgrades its peers, and never on\nthe server (no `document`). Capturing (`{ capture: true }`) so the queue sees the event on the way\ndown, independent of any later-added bubble-phase field listener."
+        },
+        {
+          "kind": "function",
+          "name": "markFieldActive",
+          "return": {
+            "type": {
+              "text": "void"
+            }
+          },
+          "description": "Mark that a field has become live. The first live field is what makes subsequent registration\nevents skip the queue and reach the field directly. Paired with markFieldInactive."
+        },
+        {
+          "kind": "function",
+          "name": "markFieldInactive",
+          "return": {
+            "type": {
+              "text": "void"
+            }
+          },
+          "description": "Mark that a live field has torn down. When the last field goes away the queue resumes buffering, so\nan element that (re)connects during a field-less window is captured for the next field that boots."
+        },
+        {
+          "kind": "function",
+          "name": "flushPreRegistrationQueue",
+          "return": {
+            "type": {
+              "text": "void"
+            }
+          },
+          "description": "Replay every buffered registration event on its source element, then clear the buffer. Called by a\nfield immediately after it wires its body-event listeners, so the events bubble (composed) to the\ndocument and the field registers them through its normal, idempotent path. Safe to call with an\nempty queue (the common client-only case) — it does nothing."
+        },
+        {
+          "kind": "function",
+          "name": "pendingRegistrationCount",
+          "return": {
+            "type": {
+              "text": "number"
+            }
+          },
+          "description": "Test-only: the number of events currently buffered (0 once drained)."
+        },
+        {
+          "kind": "function",
+          "name": "resetPreRegistrationQueue",
+          "return": {
+            "type": {
+              "text": "void"
+            }
+          },
+          "description": "Test-only: reset all module state (queue, active-field count, install flag) between tests."
+        },
+        {
+          "kind": "function",
+          "name": "isBuffering",
+          "return": {
+            "type": {
+              "text": "boolean"
+            }
+          },
+          "description": "Whether the queue is currently buffering (no field live). Test/introspection helper."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "installPreRegistrationQueue",
+          "declaration": {
+            "name": "installPreRegistrationQueue",
+            "module": "src/preregistration-queue.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "markFieldActive",
+          "declaration": {
+            "name": "markFieldActive",
+            "module": "src/preregistration-queue.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "markFieldInactive",
+          "declaration": {
+            "name": "markFieldInactive",
+            "module": "src/preregistration-queue.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "flushPreRegistrationQueue",
+          "declaration": {
+            "name": "flushPreRegistrationQueue",
+            "module": "src/preregistration-queue.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "pendingRegistrationCount",
+          "declaration": {
+            "name": "pendingRegistrationCount",
+            "module": "src/preregistration-queue.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "resetPreRegistrationQueue",
+          "declaration": {
+            "name": "resetPreRegistrationQueue",
+            "module": "src/preregistration-queue.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "isBuffering",
+          "declaration": {
+            "name": "isBuffering",
+            "module": "src/preregistration-queue.ts"
           }
         }
       ]
