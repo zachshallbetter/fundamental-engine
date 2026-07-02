@@ -134,6 +134,29 @@ struct PauseResumeTests {
         field.destroy()
     }
 
+    @Test("attach while hidden does not schedule an idle loop")
+    func attachWhileHiddenDoesNotScheduleAnIdleLoop() {
+        // A field born hidden (surface not yet attached / off screen) must not burn display-link
+        // registrations or guard-skipped callbacks: init seeds the presentation lane from
+        // host.isHidden, so nothing schedules until the first visibility resume. (The Kotlin
+        // FieldController.attach() pins the same contract — #957/#960.)
+        let host = HeadlessFieldHost()
+        host.hidden = true
+        let field = FieldField(host: host)
+        var ticks = 0
+        field.on(.tick) { _ in ticks += 1 }
+        #expect(host.scheduleCount == 0)
+        host.fire(at: 0) // nothing was scheduled — nothing to fire
+        #expect(ticks == 0)
+
+        host.hidden = false
+        host.fireVisibility() // the surface came on screen — NOW the loop starts
+        #expect(host.scheduleCount == 1)
+        host.fire(at: 1.0 / 60)
+        #expect(ticks == 1)
+        field.destroy()
+    }
+
     @Test("resume after destroy stays dead")
     func resumeAfterDestroy() {
         let host = HeadlessFieldHost()
