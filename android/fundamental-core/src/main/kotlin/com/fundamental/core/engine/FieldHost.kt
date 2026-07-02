@@ -71,7 +71,12 @@ interface MinimalFieldHost {
     fun worldBox(view: Any): Box?
 
     // ── time / loop ─────────────────────────────────────────────────────────
-    /** Schedule a display-sync callback; returns a cancellation token. */
+    /**
+     * Schedule a REPEATING display-sync callback (timestamp in ms); returns a cancellation token.
+     * Like the Swift hosts' `CADisplayLink`, the callback fires every display frame until the token is
+     * passed to [cancelFrame] — the engine's loop lifecycle (attach / pause / resume, #605) schedules
+     * once and cancels once. A Choreographer-backed host re-posts its one-shot callback internally.
+     */
     fun scheduleFrame(callback: (Double) -> Unit): Any
     fun cancelFrame(token: Any)
 }

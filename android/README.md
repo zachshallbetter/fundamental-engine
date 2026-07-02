@@ -24,6 +24,33 @@ they diverge it is a bug.
 
 | `:fundamental-android`  | `@fundamental-engine/vanilla` | `UIKitFieldHost`       | The imperative `View`/`Canvas` host for non-Compose apps: `FieldFieldView` (a custom `android.view.View` that owns a `FieldController`, drives it from the `Choreographer`, and draws the pool in `onDraw`) + `AndroidFieldHost` (the `FieldHost` impl — volume/visibility/reduced-motion, `Choreographer` frame loop, `worldBox` via `getLocationOnScreen`). |
 
+## Usage
+
+### View host (imperative)
+
+```kotlin
+// managed surface — mirrors Swift `FieldField(in:)`
+val fieldView = FieldFieldView(context)       // owns the controller + the host-scheduled loop
+fieldView.handle?.setFormation("wells")
+fieldView.burst(200f, 300f)                   // or tap — the view handles it
+fieldView.handle?.pause()                     // stop the Choreographer loop (state retained) —
+fieldView.handle?.resume()                    //   e.g. around a covering dialog / fragment
+// activity stop/start, view detach, and View.GONE auto-pause through the visibility seam.
+
+// custom host — mirrors Swift `FieldField(host:)`
+val field = createField(AndroidFieldHost(view))
+field.pause(); field.resume()                 // sticky: a visibility resume never overrides it
+```
+
+### Compose
+
+```kotlin
+FieldView(accent = Color(0xFF4DA3FF)) {
+    Text("hello", Modifier.fieldBody(tokens = listOf("attract"), strength = 1.2f))
+}
+// the tick loop follows the composition's lifecycle: ON_STOP cancels it, ON_START relaunches it.
+```
+
 ## The conformance rule
 
 The JS engine is 2D because the DOM and Canvas are; this port (like Swift) is **3D-native** — every
@@ -73,6 +100,22 @@ Ported and tested:
   `sample(x, y)` force-probe (JS #816 — the net force vector a free particle would feel at a point, via
   the shared `forceAt` streamlines probe), `energy`, `particleCount`, and `readParticles` (stride-5 wire
   format). JVM-tested.
+- **Loop lifecycle — `pause()` / `resume()` + presentation-aware auto-pause** (the Swift #605/#950
+  mirror) — `FieldHandle.pause()` cancels the host-scheduled frame loop outright (simulation state fully
+  retained); `resume()` restarts it. Both idempotent; an explicit pause is *sticky* — a host visibility
+  resume never overrides it — and the controller re-bases its frame clock on resume so a long pause can
+  never integrate as elapsed time (the first resumed frame runs at `dt = 1`). Two lanes (user + host)
+  reconcile at a single `syncLoop()`, exactly as in `FieldEngine.swift`; a destroyed field can never be
+  resurrected. The loop itself is the new host-scheduled seam: `createField(host)` /
+  `FieldHandle.attach(host)` drives `tick()` through `FieldHost.scheduleFrame`/`cancelFrame` (a repeating
+  display-sync loop, the `CADisplayLink` contract; `AndroidFieldHost` re-posts its one-shot
+  `Choreographer` callback), and hosts that drive `tick()` directly get the same contract from the
+  paused/destroyed guard on `tick()` itself. The hosts wire the seam automatically: `FieldFieldView`
+  forwards window/view visibility (activity stop/start, detach, `View.GONE`) through
+  `AndroidFieldHost.fireVisibility()` — plus an explicit `isPaused` host SPI, the `UIKitFieldHost`
+  mirror, for presentations Android doesn't report — and the Compose `FieldView` cancels its
+  `withFrameNanos` loop on lifecycle `ON_STOP` and relaunches it on `ON_START` with a fresh frame clock.
+  JVM-tested at the host seam (`PauseResumeTests`, the Swift suite test-for-test).
 - **Substrate READ API — `query()`** (JS #837 / critical-path 02) — `FieldHandle.query(q)` answers a
   structured, read-only question over the live field: bodies (identity + rect + tokens + metrics), the
   active formation, field-level metrics (`particles` / `bodies` / `meanDensity`), and relationships,
@@ -165,7 +208,7 @@ Ported and tested:
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
   headlessly (`EngineTests`) and gated by a deterministic `PerfRegressionTests` (1200 particles × 600
   frames: count conserved, all-finite, velocity/heat bounded); the driver has its own headless tests
-  (`FieldControllerTests`). **139 core tests total**, and the Compose host + sample app build against the
+  (`FieldControllerTests`). **153 core tests total**, and the Compose host + sample app build against the
   Android SDK and **run on-device** (verified on a Pixel 7 / API 35 emulator).
 
 Also ported:
@@ -195,7 +238,7 @@ main. Remaining follow-ups are matter-render extras (metaballs / voronoi modes) 
 
 ```sh
 cd android
-./gradlew :fundamental-core:test       # engine + cross-plane conformance (81 tests; 120 golden cases)
+./gradlew :fundamental-core:test       # engine + cross-plane conformance (153 tests; 120 golden cases)
 ./gradlew :fundamental-compose:assembleDebug :sample:assembleDebug   # the Android host + sample app
 
 # run the sample on a device/emulator

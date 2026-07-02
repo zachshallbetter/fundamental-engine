@@ -31,6 +31,9 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import android.provider.Settings
 import com.fundamental.core.engine.Body
 import com.fundamental.core.math.Vec3
@@ -88,6 +91,27 @@ fun FieldView(
         Settings.Global.ANIMATOR_DURATION_SCALE,
         1f,
     ) == 0f
+
+    // Presentation-aware auto-pause (#605 mirror) — the Compose analog of the View host's visibility
+    // seam. The composition's lifecycle drives the tick loop below: ON_STOP (activity backgrounded /
+    // covered) disposes the LaunchedEffect, so frame scheduling actually stops — not merely
+    // guard-skipped ticks; ON_START relaunches it with a fresh `lastNanos`, so the first resumed frame
+    // integrates at dt = 1 (no time-jump after a long background stretch). For an explicit sticky
+    // pause, wrap the controller in a `FieldHandle` and call `pause()` — its lane gates `tick()`
+    // directly, host-independent.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var lifecycleRunning by remember { mutableStateOf(true) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> lifecycleRunning = true
+                Lifecycle.Event.ON_STOP -> lifecycleRunning = false
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     // Persistent buffer for TRAILS: matter is drawn into it each frame and the frame is faded, not
     // cleared, so trails accumulate. Recreated when the size or mode changes; null for other modes.
@@ -179,21 +203,24 @@ fun FieldView(
 
         val c = controller
         if (c != null) {
-            LaunchedEffect(c, prefersReducedMotion) {
-                // Frame-rate-independent timestep — mirror of FieldEngine.swift (~L258): normalize the
-                // real frame interval to a 60fps baseline, clamp so a stall can't teleport matter, and
-                // zero it under reduced motion (which gates the integrator off). First frame uses dt=1.
-                // Note: unlike the View host there's no cheap hidden-guard here; a backgrounded
-                // composition simply stops receiving frames, so the reduced-motion + clamp is the guard.
-                var lastNanos = 0L
-                while (true) {
-                    withFrameNanos { now ->
-                        val dtRaw = if (lastNanos == 0L) 1f else (now - lastNanos) / 1e9f * 60f
-                        lastNanos = now
-                        val dt = if (prefersReducedMotion) 0f else dtRaw.coerceIn(0.2f, 2f)
-                        c.tick(dt)
+            // The loop exists only while the lifecycle is started (#605): flipping `lifecycleRunning`
+            // false disposes the effect (scheduling cancelled), true relaunches it (fresh clock).
+            if (lifecycleRunning) {
+                LaunchedEffect(c, prefersReducedMotion) {
+                    // Frame-rate-independent timestep — mirror of FieldEngine.swift (~L258): normalize
+                    // the real frame interval to a 60fps baseline, clamp so a stall can't teleport
+                    // matter, and zero it under reduced motion (which gates the integrator off). First
+                    // frame uses dt=1 — including the first frame after a lifecycle resume.
+                    var lastNanos = 0L
+                    while (true) {
+                        withFrameNanos { now ->
+                            val dtRaw = if (lastNanos == 0L) 1f else (now - lastNanos) / 1e9f * 60f
+                            lastNanos = now
+                            val dt = if (prefersReducedMotion) 0f else dtRaw.coerceIn(0.2f, 2f)
+                            c.tick(dt)
+                        }
+                        frame++
                     }
-                    frame++
                 }
             }
             CompositionLocalProvider(LocalFieldController provides c) { content() }

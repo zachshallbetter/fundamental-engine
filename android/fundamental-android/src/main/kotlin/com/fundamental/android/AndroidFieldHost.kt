@@ -64,23 +64,81 @@ class AndroidFieldHost(
             1f,
         ) == 0f
 
+    /**
+     * Explicit host-level pause SPI (#605 — the `UIKitFieldHost.isPaused` mirror), folded into
+     * [isHidden] so flipping it drives the engine's auto-pause through the same visibility seam the
+     * view-lifecycle events use. Android cannot observe every presentation from outside the view — a
+     * dialog or covering fragment leaves the window `VISIBLE`, ticking invisibly — so a presenter
+     * sets this instead. Callers holding a `FieldHandle` should prefer `pause()` / `resume()` on it.
+     */
+    var isPaused: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            fireVisibility()
+        }
+
     override val isHidden: Boolean
-        get() = view.visibility != View.VISIBLE || view.windowVisibility != View.VISIBLE
+        get() = isPaused || detachedFromWindow ||
+            view.visibility != View.VISIBLE || windowVisibility != View.VISIBLE
+
+    // The window visibility as last DELIVERED to the owning view (see [windowVisibilityChanged]), or a
+    // live read when nothing forwards. The cache matters on the detach path: View synthesizes
+    // `onWindowVisibilityChanged(GONE)` and dispatches the attach-state listeners BEFORE nulling
+    // `mAttachInfo`, so `getWindowVisibility()` still reads the OLD (visible) value inside those
+    // callbacks — a live re-read there would miss the hide entirely.
+    private var deliveredWindowVisibility: Int? = null
+    private val windowVisibility: Int
+        get() = deliveredWindowVisibility ?: view.windowVisibility
+
+    // Set by the shared attach listener BEFORE observers are notified — same detach-dispatch staleness
+    // as above, for hosts wrapping arbitrary views where nothing forwards the protected callbacks.
+    private var detachedFromWindow = false
+
+    /**
+     * The owning view's `onWindowVisibilityChanged` forwarder (FieldFieldView calls this): caches the
+     * DELIVERED visibility — authoritative even inside the detach dispatch, where a live
+     * `getWindowVisibility()` read is stale — then fires the seam. View re-delivers the real window
+     * visibility on every attach and window change, so the cache tracks truth from then on.
+     */
+    fun windowVisibilityChanged(visibility: Int) {
+        deliveredWindowVisibility = visibility
+        fireVisibility()
+    }
 
     // ── FieldHost — loop ────────────────────────────────────────────────────────────────────────
 
-    override fun scheduleFrame(callback: (Double) -> Unit): Any {
-        // Choreographer is the Android display-sync seam (CADisplayLink equivalent). frameTimeNanos is
-        // converted to milliseconds-as-Double to match the contract's timestamp units.
-        val frameCallback = Choreographer.FrameCallback { frameTimeNanos ->
+    /**
+     * A repeating display-sync loop — the contract mirrors the Swift hosts' `CADisplayLink` (fires
+     * every frame until cancelled), but Choreographer callbacks are one-shot, so the token re-posts
+     * itself after each fire. Cancellation flips the flag AND removes any pending post, so a cancelled
+     * loop can neither fire nor linger on the Choreographer.
+     */
+    private class FrameLoop(
+        private val choreographer: Choreographer,
+        private val callback: (Double) -> Unit,
+    ) : Choreographer.FrameCallback {
+        var cancelled = false
+        override fun doFrame(frameTimeNanos: Long) {
+            if (cancelled) return
+            // frameTimeNanos → milliseconds-as-Double, the contract's timestamp units.
             callback(frameTimeNanos / 1_000_000.0)
+            if (!cancelled) choreographer.postFrameCallback(this)
         }
-        choreographer.postFrameCallback(frameCallback)
-        return frameCallback
+    }
+
+    override fun scheduleFrame(callback: (Double) -> Unit): Any {
+        // Choreographer is the Android display-sync seam (CADisplayLink equivalent).
+        val loop = FrameLoop(choreographer, callback)
+        choreographer.postFrameCallback(loop)
+        return loop
     }
 
     override fun cancelFrame(token: Any) {
-        (token as? Choreographer.FrameCallback)?.let { choreographer.removeFrameCallback(it) }
+        (token as? FrameLoop)?.let {
+            it.cancelled = true
+            choreographer.removeFrameCallback(it)
+        }
     }
 
     // ── FieldHost — events (each returns an unsubscribe closure) ─────────────────────────────────
@@ -105,14 +163,53 @@ class AndroidFieldHost(
     }
 
     override fun onVisibility(callback: () -> Unit): () -> Unit {
-        // Window attach/detach is the closest analog to UIKit's app active/background notifications:
-        // it is the moment the field should re-evaluate whether it is on screen.
-        val listener = object : View.OnAttachStateChangeListener {
-            override fun onViewAttachedToWindow(v: View) = callback()
-            override fun onViewDetachedFromWindow(v: View) = callback()
+        // Attach/detach is observable from outside the view; window/view visibility changes are NOT
+        // (View exposes them only as protected callbacks) — the owning view forwards those through
+        // fireVisibility() (FieldFieldView overrides onWindowVisibilityChanged / onVisibilityChanged,
+        // which is how activity stop/start reaches the engine), and [isPaused] covers presentations
+        // no callback reports. One shared attach listener fans out to every subscriber.
+        visibilityObservers.add(callback)
+        if (!attachListenerInstalled) {
+            view.addOnAttachStateChangeListener(attachListener)
+            attachListenerInstalled = true
+            // Re-sync the detach flag (accurate outside the dispatch window) — it may be stale if the
+            // view attached/detached while no listener was installed.
+            detachedFromWindow = !view.isAttachedToWindow
         }
-        view.addOnAttachStateChangeListener(listener)
-        return { view.removeOnAttachStateChangeListener(listener) }
+        return {
+            visibilityObservers.remove(callback)
+            if (visibilityObservers.isEmpty() && attachListenerInstalled) {
+                view.removeOnAttachStateChangeListener(attachListener)
+                attachListenerInstalled = false
+            }
+        }
+    }
+
+    /**
+     * Deliver a visibility change to every subscriber — the seam the engine's auto-pause listens on
+     * (#605). Called by the shared attach listener, by [isPaused], and by the owning view's protected
+     * visibility overrides (window shown/hidden on activity stop/start, view shown/hidden), which
+     * only the view itself can observe. The engine re-reads [isHidden] and reconciles its loop.
+     */
+    fun fireVisibility() {
+        // snapshot — a subscriber may unsubscribe re-entrantly
+        visibilityObservers.toList().forEach { it() }
+    }
+
+    private val visibilityObservers: MutableList<() -> Unit> = ArrayList()
+    private var attachListenerInstalled = false
+    private val attachListener = object : View.OnAttachStateChangeListener {
+        override fun onViewAttachedToWindow(v: View) {
+            detachedFromWindow = false
+            fireVisibility()
+        }
+
+        override fun onViewDetachedFromWindow(v: View) {
+            // Mark BEFORE notifying: inside this callback `getWindowVisibility()` still reads the old
+            // (visible) value, so subscribers re-reading isHidden need the explicit flag to see hidden.
+            detachedFromWindow = true
+            fireVisibility()
+        }
     }
 
     override fun onInput(callback: () -> Unit): () -> Unit {

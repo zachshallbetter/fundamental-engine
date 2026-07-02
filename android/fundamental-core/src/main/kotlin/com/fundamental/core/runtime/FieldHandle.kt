@@ -5,6 +5,7 @@ import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.Box
 import com.fundamental.core.engine.EnergyReport
 import com.fundamental.core.engine.FieldBodyIdentity
+import com.fundamental.core.engine.FieldHost
 import com.fundamental.core.engine.FieldPolicy
 import com.fundamental.core.engine.Particle
 import com.fundamental.core.engine.ScalarGrid
@@ -751,7 +752,40 @@ class FieldHandle(val controller: FieldController) {
     }
 
     fun tick(dt: Float = 1f) = controller.tick(dt)
-    fun destroy() { controller.clearFlow() }
+
+    // ── loop lifecycle (pause / resume — the Swift #605 mirror) ─────────────────────────
+    /**
+     * Attach a [FieldHost] and start the host-scheduled frame loop — after this the host drives
+     * [tick] once per display frame (Choreographer on Android), and its visibility seam auto-pauses
+     * the loop while the surface is off screen. Delegates to [FieldController.attach]; the
+     * host-flavored [createField] does this for you.
+     */
+    fun attach(host: FieldHost) = controller.attach(host)
+
+    /**
+     * Pause the frame loop — the host's scheduled loop is cancelled and every bit of simulation state
+     * (pool, waves, grids, feedback, edges) is retained, ready to resume. Idempotent: pausing a
+     * paused field is a no-op. DISTINCT from `setVisible(false)` (which skips *drawing* while the
+     * sim keeps ticking) and from [destroy] (teardown). An explicit `pause()` is *sticky*: the
+     * presentation-aware hosts auto-pause/resume through the visibility seam (activity stop/start,
+     * view detach or hide), but a visibility resume never overrides an explicit pause. This is the
+     * caller-facing control for presentations the host cannot observe — a dialog or fragment covering
+     * the surface leaves the window `VISIBLE`, so the presenter pauses the field itself. Mirrors the
+     * Swift `FieldHandle.pause()` (#605); the web analog is the automatic Page Visibility pause
+     * (`browserHost`'s `hidden()` + `onVisibility` → rAF cancelled). For a host that drives [tick]
+     * directly (the Compose adapter), the same lane makes [tick] a no-op instead.
+     */
+    fun pause() = controller.pause()
+
+    /**
+     * Resume a paused frame loop. Idempotent: resuming a running field is a no-op. The engine
+     * re-bases its frame clock so the first resumed frame runs at `dt = 1` — a long pause can
+     * never integrate as elapsed time (no teleporting matter). Mirrors Swift `resume()` (#605).
+     */
+    fun resume() = controller.resume()
+
+    /** Tear the field down: the loop is cancelled for good — a late [resume] can never resurrect it. */
+    fun destroy() = controller.destroy()
 }
 
 /** Create a field handle over a fresh controller — the Kotlin `createField`. */
@@ -774,3 +808,27 @@ fun createField(
         it.setPolicy(policy)
     },
 )
+
+/**
+ * Create a field over a [FieldHost] and start its host-scheduled frame loop — the host-flavored door,
+ * the Kotlin counterpart of the Swift `FieldField(host:)`. The pool is sized from the host's current
+ * [FieldHost.volume]; the host then drives one [FieldHandle.tick] per display frame, and its visibility
+ * seam auto-pauses the loop (the sticky explicit [FieldHandle.pause] / [FieldHandle.resume] lane layers
+ * on top — #605 mirror).
+ */
+fun createField(
+    host: FieldHost,
+    particleCount: Int = 300,
+    seed: Long? = null,
+    identify: ((Body) -> FieldBodyIdentity?)? = null,
+    policy: FieldPolicy = FieldPolicy.UNBOUNDED,
+): FieldHandle {
+    val volume = host.volume
+    val controller = FieldController(volume.width, volume.height, volume.depth, particleCount, seed).also {
+        it.identify = identify
+        it.setPolicy(policy)
+    }
+    // Handle first (it wires the after-tick hook), then attach — the loop's first frame sees a fully
+    // wired field.
+    return FieldHandle(controller).also { it.attach(host) }
+}
