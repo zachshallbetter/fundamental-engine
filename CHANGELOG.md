@@ -127,6 +127,23 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   no new public surface; a client-only page whose field boots before any body buffers nothing and
   behaves exactly as before.
 
+- **`@fundamental-engine/dom`:** **reduced-motion platform lint (`lintReducedMotion`, RC-8 / #325).** A
+  new dev-only lint rule (`motion-without-reduced-motion`) flags the accessibility sibling of the
+  silent-contract gap: a `[data-body]` that expresses **independent** motion — a CSS `animation`, or a
+  static (non-feedback-driven) `transform`/`translate`/`rotate`/`scale` — with **no**
+  `@media (prefers-reduced-motion: reduce)` rule that matches it. The invariant it guards is *reduced
+  motion removes motion, not meaning*. **Feedback-var-driven motion is deliberately exempt:** this engine
+  gates motion at the engine level — under `prefers-reduced-motion` the simulation freezes (dt=0; the
+  integrator early-returns), so ambient, sim-driven change in `--d`/`--field-*`/`--load` stops, while the
+  feedback lane stays live for direct engagement (pointer/focus); what remains is a discrete interaction
+  response, not autonomous motion — those bodies are reduced-motion-safe and are not flagged. Like the
+  other stylesheet-walking lints it is heuristic and browser-coupled: it no-ops where stylesheets are
+  unreachable (SSR / tests / cross-origin), so it can only under-report, never false-positive;
+  opacity/colour changes are not treated as motion, and the transform-family match is
+  property-name-anchored so typography (`text-transform: uppercase`) is not mistaken for movement. Runs
+  automatically inside `lintPlatform`. (This is the lint half of RC-8; the real assistive-tech pass
+  remains a separate manual step.)
+
 - **`@fundamental-engine/core`:** **opt-in charge-gated `fieldflow` (#711).** A new body flag
   `data-charge-gated` restricts the `fieldflow` force to *charged* matter (`charge ≠ 0`), modelling
   magnetized plasma tied to the field line so it composes with `charge`; neutral matter drifts free.

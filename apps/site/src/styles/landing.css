@@ -207,6 +207,12 @@ html[data-field='on'] .hero-antimass:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
+/* reduced motion removes motion, not meaning: the hover lift goes, the shadow response stays */
+@media (prefers-reduced-motion: reduce) {
+  .lp-pkg:hover {
+    transform: none;
+  }
+}
 .lp-pkg > * {
   position: relative;
   z-index: 1;
