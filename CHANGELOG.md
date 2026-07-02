@@ -7,6 +7,18 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Changed
+
+- **`@fundamental-engine/core`:** **the RC-6 contract-coverage guard now guards body attributes**
+  (`packages/core/src/contract-coverage.test.ts`, #323). The meta-test already asserted every public
+  `FieldOptions` key and the readable metric surface are exercised by a test; it now adds the third leg
+  of the RC-6 predicate — every documented body `data-*` attribute must be referenced by a test. The
+  documented set is derived from the same `apps/site/src/lib/docs-api.ts` `ATTRS[]` surface `check:docs`
+  treats as authoritative (so the two can't drift), and the attribute leg scans the package test corpus
+  recursively (attribute coverage lives in sub-directory tests). Closed the coverage gaps this exposed
+  with minimal `parseBodyParams`/`bodyFromElement` tests for `data-fmin`/`data-fmax`/`data-opsz`,
+  `data-scale`, `data-charge-gated`, and `data-color`. Test-only; no runtime change.
+
 ### Deprecated
 
 - **`@fundamental-engine/core` + `@fundamental-engine/platform`:** **documented sunset + dev-only

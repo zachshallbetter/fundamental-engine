@@ -168,6 +168,44 @@ test('parses data-screen-min for screen quiet zones (default 0)', () => {
   assert.equal(parseBodyParams(attrs({ body: 'screen', 'screen-min': '0.3' })).screenMin, 0.3);
 });
 
+// ── attribute coverage for the RC-6 contract-coverage guard ──────────────────────────────
+// These documented body attributes flow through parseBodyParams but had no test naming them;
+// added to close the RC-6 attribute-coverage gap (see contract-coverage.test.ts).
+
+test('parses the variable-font axes data-fmin / data-fmax (default 0) and data-opsz (default "")', () => {
+  const dflt = parseBodyParams(attrs({ body: 'attract' }));
+  assert.equal(dflt.fmin, 0);
+  assert.equal(dflt.fmax, 0);
+  assert.equal(dflt.opsz, '');
+  const b = parseBodyParams(attrs({ body: 'attract', feedback: '', fmin: '300', fmax: '800', opsz: '48' }));
+  assert.equal(b.fmin, 300);
+  assert.equal(b.fmax, 800);
+  assert.equal(b.opsz, '48'); // carried as a raw string — the axis value CSS drives alongside weight
+});
+
+test('parses the warp exit scale data-scale into warpScale (default 1)', () => {
+  assert.equal(parseBodyParams(attrs({ body: 'warp' })).warpScale, 1);
+  assert.equal(parseBodyParams(attrs({ body: 'warp', pair: '#exit', scale: '1.5' })).warpScale, 1.5);
+});
+
+test('parses the fieldflow gate flag data-charge-gated (off by default) (#711)', () => {
+  assert.equal(parseBodyParams(attrs({ body: 'fieldflow' })).chargeGated, false);
+  assert.equal(parseBodyParams(attrs({ body: 'fieldflow', 'charge-gated': '' })).chargeGated, true);
+});
+
+test('data-color becomes the body pigment tint (via bodyFromElement / el.dataset.color)', async () => {
+  const { bodyFromElement } = await import('./scanner.ts');
+  const el = (dataset: Record<string, string>) =>
+    ({
+      dataset,
+      getAttribute: (n: string) => (n.startsWith('data-') ? dataset[n.slice(5)] ?? null : null),
+      hasAttribute: (n: string) => n.startsWith('data-') && n.slice(5) in dataset,
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 10, height: 10 }) as DOMRect,
+    }) as unknown as HTMLElement;
+  assert.equal(bodyFromElement(el({ body: 'attract', color: '#ff8800' })).tint, '#ff8800');
+  assert.equal(bodyFromElement(el({ body: 'attract' })).tint, undefined); // absent ⇒ no tint
+});
+
 test('guardSourceBudget: an unbudgeted [S] body warns (dev) and gets the safe defaults', async () => {
   const { guardSourceBudget } = await import('./scanner.ts');
   const { SOURCE_DEFAULT_LIFE, SOURCE_DEFAULT_CAP } = await import('../config/forces.config.ts');
