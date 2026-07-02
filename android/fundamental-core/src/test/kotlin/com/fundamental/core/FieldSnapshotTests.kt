@@ -9,6 +9,7 @@ import com.fundamental.core.runtime.SnapshotProfile
 import com.fundamental.core.runtime.createField
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -84,6 +85,28 @@ class FieldSnapshotTests {
         assertTrue(pub.bodies.all { it.data == null })
         // ids + shape still present under the tightest profile
         assertEquals(2, pub.bodies.size)
+    }
+
+    @Test
+    fun relationshipEndpointsAreIdentityIds() {
+        val f = createField(800f, 600f, particleCount = 100, seed = 3)
+        val left = f.addBody(BodySpec(tokens = listOf("attract"), data = "left-payload", rect = { Box(center = Vec3(200f, 300f, 0f)) }))
+        val right = f.addBody(BodySpec(tokens = listOf("gravity"), data = "right-payload", rect = { Box(center = Vec3(600f, 300f, 0f)) }))
+        f.addEdge(left, right, type = "supports")
+        repeat(5) { f.tick() }
+
+        val snap = f.snapshot()
+        assertEquals(1, snap.relationships.size)
+        val rel = snap.relationships.first()
+        // endpoints are the bodies' first-class identity ids (JS bodyId / Swift resolveIdentity parity)…
+        assertEquals(left.identity.id, rel.from)
+        assertEquals(right.identity.id, rel.to)
+        // …and join against the snapshot bodies lane's ids (same key space)
+        assertTrue(snap.bodies.any { it.id == rel.from })
+        assertTrue(snap.bodies.any { it.id == rel.to })
+        // …not the endpoints' stringified opaque data
+        assertNotEquals("left-payload", rel.from)
+        assertNotEquals("right-payload", rel.to)
     }
 
     @Test

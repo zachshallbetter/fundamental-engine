@@ -388,6 +388,26 @@ class FieldHandle(val controller: FieldController) {
     /** A live snapshot of all programmatic edges — the relationship read-out for a consumer. */
     fun readEdges(): List<EdgeRecord> = controller.readEdges()
 
+    /**
+     * Map the live edges into identity-keyed [FieldRelationshipReading]s — the shared read behind
+     * [query] and [snapshot] (diff/replay inherit it through the snapshots they compare). Endpoints
+     * are the bodies' first-class identity ids (the JS `bodyId(e.from)` / Swift
+     * `resolveIdentity(from).id`), NOT the edge's opaque carried `data` — so a reading keys the same
+     * across planes and joins against the `bodies` lane's `id`s.
+     */
+    private fun relationshipReadings(): List<FieldRelationshipReading> =
+        controller.liveEdges().map { e ->
+            FieldRelationshipReading(
+                from = controller.bodyIdentity(e.from).id,
+                to = controller.bodyIdentity(e.to).id,
+                type = e.type,
+                strength = e.strength,
+                memory = e.memory,
+                active = e.active,
+                causal = e.active,
+            )
+        }
+
     // ── observability ────────────────────────────────────────────────────────────────
     fun particleCount(): Int = controller.particleCount
     fun energy(): EnergyReport = energyReport(controller.particles)
@@ -513,17 +533,7 @@ class FieldHandle(val controller: FieldController) {
         } else emptyMap()
 
         val relationships: List<FieldRelationshipReading> = if (want.contains(FieldQueryInclude.RELATIONSHIPS)) {
-            controller.readEdges().map { e ->
-                FieldRelationshipReading(
-                    from = e.from?.toString() ?: "",
-                    to = e.to?.toString() ?: "",
-                    type = e.type,
-                    strength = e.strength,
-                    memory = e.memory,
-                    active = e.active,
-                    causal = e.active,
-                )
-            }
+            relationshipReadings()
         } else emptyList()
 
         // Influences: per-force attribution at the query point. The port has no impulse accumulator yet,
@@ -591,17 +601,7 @@ class FieldHandle(val controller: FieldController) {
         }
 
         val relationships: List<FieldRelationshipReading> = if (flags.includeRelationships) {
-            controller.readEdges().map { e ->
-                FieldRelationshipReading(
-                    from = e.from?.toString() ?: "",
-                    to = e.to?.toString() ?: "",
-                    type = e.type,
-                    strength = e.strength,
-                    memory = e.memory,
-                    active = e.active,
-                    causal = e.active,
-                )
-            }
+            relationshipReadings()
         } else emptyList()
 
         val metrics: Map<String, Float> = buildMap {

@@ -1,6 +1,7 @@
 package com.fundamental.core
 
 import com.fundamental.core.engine.Box
+import com.fundamental.core.engine.FieldBodyIdentity
 import com.fundamental.core.math.Vec3
 import com.fundamental.core.runtime.BodySpec
 import com.fundamental.core.runtime.FieldQuery
@@ -9,6 +10,7 @@ import com.fundamental.core.runtime.FieldQueryInclude
 import com.fundamental.core.runtime.createField
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -77,5 +79,28 @@ class FieldQueryTests {
         assertTrue(res.bodies.isEmpty())
         assertTrue(res.relationships.isEmpty())
         assertTrue(res.metrics.isNotEmpty())
+    }
+
+    @Test
+    fun relationshipEndpointsAreIdentityIds() {
+        val f = createField(800f, 600f, particleCount = 100, seed = 3)
+        // one supplied identity, one engine-derived — both must key the reading (JS bodyId / Swift resolveIdentity)
+        val left = f.addBody(BodySpec(tokens = listOf("attract"), data = "left-data", identity = FieldBodyIdentity(id = "nav.left"), rect = { Box(center = Vec3(200f, 300f, 0f)) }))
+        val right = f.addBody(BodySpec(tokens = listOf("gravity"), data = "right-data", rect = { Box(center = Vec3(600f, 300f, 0f)) }))
+        f.addEdge(left, right, type = "supports")
+        repeat(5) { f.tick() }
+
+        val res = f.query()
+        assertEquals(1, res.relationships.size)
+        val rel = res.relationships.first()
+        // endpoints are the bodies' first-class identity ids…
+        assertEquals("nav.left", rel.from)
+        assertEquals(right.identity.id, rel.to)
+        // …and join against the bodies lane's ids (same key space)
+        assertTrue(res.bodies.any { it.id == rel.from })
+        assertTrue(res.bodies.any { it.id == rel.to })
+        // …not the endpoints' stringified opaque data
+        assertNotEquals("left-data", rel.from)
+        assertNotEquals("right-data", rel.to)
     }
 }
