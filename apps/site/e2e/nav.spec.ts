@@ -67,11 +67,11 @@ test.describe("site nav · Wayfinding Field (signals-only)", () => {
   });
 });
 
-test.describe("home rail · Wayfinding Current (signals-only)", () => {
+test.describe("manual rail · Wayfinding Current (signals-only)", () => {
   test("the in-view chapter accretes --field-memory — the 'where have I been' wake", async ({
     page,
   }) => {
-    await page.goto("/"); // the chapter rail is desktop-only; Desktop Chrome/Safari show it
+    await page.goto("/engine-tour"); // the chapter rail moved off the homepage with the manual; desktop-only
     const active = page.locator(".chapter-rail a.active");
     await expect(active).toHaveCount(1);
     // the active rail link is marked engaged (data-field-attention="1"), so the recipe's metric

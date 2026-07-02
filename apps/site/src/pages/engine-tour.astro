@@ -1,0 +1,1212 @@
+---
+import Base from "../layouts/Base.astro";
+import SiteNav from "../components/SiteNav.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import ChapterRail from "../components/ChapterRail.astro";
+import ChapterHeader from "../components/ChapterHeader.astro";
+import Concept from "../components/Concept.astro";
+import ManualFoot from "../components/ManualFoot.astro";
+import Button from "../components/ui/Button.astro";
+import NaturalFieldsSection from "../components/home/NaturalFieldsSection.astro";
+import InvisibleFieldsStrip from "../components/home/InvisibleFieldsStrip.astro";
+import ManualForceRow from "../components/home/ManualForceRow.astro";
+import PresetRow from "../components/home/PresetRow.astro";
+import { MANUAL_FORCES, MANUAL_PRESETS, NATURAL_FIELDS, FORCE_FIELD, type ManualEntry, type ManualPreset } from "@fundamental-engine/core";
+import { RENDER_MODES, OVERLAY_MODES } from "../lib/docs-api.ts";
+import contours from "../data/contours.json";
+import "../styles/manual.css";
+import "../styles/force-glyphs.css";
+import "../styles/landing.css";
+
+// The executable manual — the full chapter-based force-by-force walkthrough, moved off the homepage
+// (which now proves the substrate and links here). Same shared manual chrome (ChapterRail, ChapterHeader,
+// Concept, ManualFoot) + catalog rows (components/home/) + the page orchestrator (manual-page.ts). Each
+// numbered concept is unique prose declared via <Concept>, its live demo in the stage slot.
+const PRESET_COLORS: Record<string, string> = {
+  blackhole: "#fbbf24",
+  whitehole: "#e0f2fe",
+  star: "#6366f1",
+  quasar: "#fbbf24",
+  galaxy: "#a78bfa",
+  nebula: "#38bdf8",
+  tornado: "#2dd4bf",
+  fountain: "#7dd3fc",
+};
+// Chapter II groups by the four FUNDAMENTAL FIELDS, pulling expressions across families (strong/weak
+// live in the extended family). NATURAL_FIELDS carries each field's label/translation/summary + its
+// token list (derived live from FORCE_FIELD), so this can't drift from the catalog.
+const byToken = new Map(MANUAL_FORCES.map((f) => [f.token, f]));
+const fieldGroups = NATURAL_FIELDS.map((nf) => ({
+  ...nf,
+  forces: nf.expressions.map((t) => byToken.get(t)).filter((f): f is ManualEntry => !!f),
+}));
+// natural-family tokens with no fundamental-field parent (derived forces + the memory metric) — kept
+// in a residual group so nothing drops off the page.
+const derived = MANUAL_FORCES.filter((f) => f.family === "natural" && !FORCE_FIELD[f.token]);
+// the extended chapter excludes forces now shown under a fundamental field, to avoid duplication.
+const extended = MANUAL_FORCES.filter((f) => f.family === "extended" && !FORCE_FIELD[f.token]);
+let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), then every
+// chapter after it increments this in render order (Natural, Forces, Extended, Presets, …).
+
+const chapters = [
+  { id: "ch-substrate", no: "I", label: "Substrate" },
+  { id: "ch-natural", no: "II", label: "Natural" },
+  { id: "ch-forces", no: "III", label: "Forces" },
+  { id: "ch-extended", no: "IV", label: "Extended" },
+  { id: "ch-presets", no: "V", label: "Presets" },
+  { id: "ch-conditions", no: "VI", label: "Conditions" },
+  { id: "ch-system", no: "VII", label: "System" },
+  { id: "ch-gallery", no: "VIII", label: "Gallery" },
+];
+---
+
+<Base
+  title="The executable manual — Fundamental"
+  description="The full engine, force by force: a live, executable manual of every force, preset, and system behaviour, each demo running on the real relational field engine. The de-stuffed homepage links here."
+>
+  <SiteNav current="engine-tour" />
+
+  <div id="main" class="manual-shell">
+    <section class="lp lp-engine-gate" id="engine">
+      <div class="wrap">
+        <span class="concept-no">The executable manual</span>
+        <h1>The full engine, live — force by force.</h1>
+        <p class="lp-lede">
+          The complete, executable manual: {MANUAL_FORCES.length} forces, the presets, and the
+          system behaviour, each demo running on the real engine. Every section below is a live field.
+          Prefer to poke at it directly? <a href="/lab">Open the Lab →</a>
+        </p>
+        <Button href="/lab" variant="primary">Open the Lab →</Button>
+      </div>
+    </section>
+
+    <ChapterRail chapters={chapters} />
+
+    <!-- I · Substrate -->
+    <ChapterHeader no="I" id="ch-substrate" title="Substrate">What the field is made of — and how it locks to the page. See the <a href="/docs/platform">platform layer</a>.</ChapterHeader>
+
+    <aside class="atom-note">
+      <p>
+        And it's made of <strong>this project</strong>. Every particle drifting behind the page
+        carries a real piece of Fundamental — <b>133 atoms</b>: 36 forces, 64 recipes, 8 presets, 10
+        metrics, the truth modes, the natural fields, the packages. The ones that know more about
+        themselves are heavier and bigger. <strong>Hover the field to inspect any dot.</strong>
+      </p>
+    </aside>
+
+    <Concept stageHidden>
+      <span class="concept-no">01 — Synchronization</span>
+          <h2>The platform maps semantic elements into field coordinates.</h2>
+          <p>
+            The runtime measures registered bodies through the
+            <strong>host / platform boundary</strong> and maps each element’s box
+            into the field — so the field and the page describe the same space.
+          </p>
+          <p class="note">
+            Because it re-measures as the page changes, the field stays locked to
+            the visible boxes through scroll, resize, and reflow.
+          </p>
+          <div class="formula">
+            <span class="c">measure:</span> rect(el) <span class="c">→</span>
+            <span class="v">field(x, y)</span>
+          </div>
+      <Fragment slot="stage">
+        <span class="stage-label">DOM → field</span>
+          <svg class="diagram" viewBox="0 0 420 300" fill="none">
+            <rect x="60" y="70" width="180" height="90" rx="10" class="dim"
+            ></rect>
+            <text x="70" y="60" class="lbl">measure(el)</text>
+            <circle cx="150" cy="115" r="3" class="accf"></circle>
+            <line
+              x1="150"
+              y1="115"
+              x2="340"
+              y2="210"
+              class="acc"
+              stroke-dasharray="3 4"></line>
+            <circle cx="340" cy="210" r="4" class="accf"></circle>
+            <text x="300" y="240" class="lbl">field (x, y)</text>
+          </svg>
+      </Fragment>
+    </Concept>
+
+    <Concept reverse stageHidden>
+      <span class="concept-no">02 — Mass &amp; damping</span>
+          <h2>Particles are point-masses in a medium.</h2>
+          <p>
+            Each particle carries a velocity and a nominal mass — m = 1 by
+            default. Every frame its velocity is multiplied by a friction
+            factor — momentum bleeds off instead of accumulating.
+          </p>
+          <div class="formula">
+            <span class="v">v</span><span class="c">ₜ₊₁</span> = <span class="v"
+              >v</span
+            ><span class="c">ₜ</span> · <span class="v">f</span>
+            <span class="c">(f ≈ 0.95)</span> · <span class="c">m ∝ size</span>
+          </div>
+          <p class="note">
+            Damping is why the field settles into calm swarms rather than
+            scattering. The formula shows the opt-in mode — <span class="c">mass: true</span>
+            — where m scales with size; default particles run at nominal mass m = 1.
+          </p>
+      <Fragment slot="stage">
+        <span class="stage-label">momentum decay</span>
+          <svg class="diagram" viewBox="0 0 420 300" fill="none">
+            <circle cx="80" cy="150" r="10" class="accf" opacity="0.9"></circle>
+            <line x1="95" y1="150" x2="175" y2="150" class="acc"></line>
+            <circle cx="210" cy="150" r="7" class="accf" opacity="0.7"></circle>
+            <line x1="222" y1="150" x2="272" y2="150" class="acc"></line>
+            <circle cx="305" cy="150" r="5" class="accf" opacity="0.5"></circle>
+            <circle cx="378" cy="150" r="3.5" class="accf" opacity="0.35"
+            ></circle>
+            <text x="60" y="210" class="lbl"
+              >velocity bleeds off each frame</text
+            >
+          </svg>
+      </Fragment>
+    </Concept>
+
+    <Concept stageHidden>
+      <span class="concept-no">03 — Currents</span>
+          <h2>The waves are a flow field.</h2>
+          <p>
+            Near a wave line, particles pick up a drag vector along the slope of
+            the curve — the derivative of the sine — so they drift like debris
+            carried down a river.
+          </p>
+          <div class="formula">
+            slope(x) = cos(x · <span class="v">freq</span> + φ) · freq · amp · <span
+              class="v">vₓ</span
+            > += slope · influence
+          </div>
+          <p class="note">
+            It’s why the resting field feels alive without any input.
+          </p>
+      <Fragment slot="stage">
+        <span class="stage-label">wave slope → drift</span>
+          <svg class="diagram" viewBox="0 0 420 300" fill="none">
+            <path
+              d="M20 170 Q110 90 200 170 T380 170"
+              class="acc"
+              stroke-width="1.5"></path>
+            <circle cx="200" cy="170" r="4" class="accf"></circle>
+            <line
+              x1="200"
+              y1="170"
+              x2="270"
+              y2="140"
+              class="acc"
+              stroke-dasharray="3 4"></line>
+            <text x="150" y="230" class="lbl"
+              >tangent drift along the curve</text
+            >
+          </svg>
+      </Fragment>
+    </Concept>
+
+    <!-- Below the substrate: play the four fields live, then meet a body that holds matter.
+         The interactive lead-in to the natural-field translations + the Body Interaction Model. -->
+    <NaturalFieldsSection
+      translationKicker="Live — the four fields"
+      bodyKicker="Live — a body as a vessel"
+    />
+
+    <!-- II · Natural-field translations -->
+    <ChapterHeader no="II" id="ch-natural" title="Natural-field translations">Every interface already has priority, polarity, binding, and
+          transformation. Fundamental translates the four forces of nature into
+          those relations — gravity becomes priority, electromagnetism becomes
+          polarity and signal, strong becomes binding, weak becomes
+          transformation. The runtime tokens below are engine expressions of that
+          grammar (true 1/d², Lorentz, Langevin, diffusion, waves) —
+          translations, not additional fundamental fields. See the
+          <a href="/docs/natural-fields">Natural Fields</a> model.</ChapterHeader>
+    {
+      fieldGroups.map((g) => (
+        <>
+          <h3 class="field-group-label">
+            <span class="fgl-title">{g.title}</span>
+            <span class="fgl-trans">{g.translation}</span>
+          </h3>
+          {g.forces.map((f, i) => {
+            n += 1;
+            return <ManualForceRow f={f} num={n} reverse={i % 2 === 1} />;
+          })}
+        </>
+      ))
+    }
+    {derived.length > 0 && (
+      <>
+        <h3 class="field-group-label">
+          <span class="fgl-title">Derived &amp; supporting</span>
+          <span class="fgl-trans">behaviors that compose from the four</span>
+        </h3>
+        {derived.map((f: ManualEntry, i) => {
+          n += 1;
+          return <ManualForceRow f={f} num={n} reverse={i % 2 === 1} />;
+        })}
+      </>
+    )}
+
+    <!-- III · Forces (canonical nine) -->
+    <ChapterHeader no="III" id="ch-forces" title="Forces">What a single body can do to the matter around it — designed UI verbs,
+          stable and bounded. A designed verb is not a natural field: an attractor
+          is not gravity, a repeller is not charge. See the full <a href="/docs/api/forces">force catalog</a>.</ChapterHeader>
+
+    <Concept reverse data-form="wells">
+      <span class="concept-no"
+            ><i class="fg fg-attract" style="--fc:#4da3ff"></i>{String((n += 1)).padStart(2, "0")} — Attraction</span
+          >
+          <h2>A body can pull the field into orbit.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-attract"><code>attract</code> in the force catalog →</a>
+          <p>
+            An <strong>attractor</strong> defines a gravity well. The pull grows as
+            distance falls, and a tangential component bends incoming particles into
+            stable spirals.
+          </p>
+          <div class="formula">
+            F = (1 − <span class="v">d</span> / d<span class="c">max</span>)² · <span
+              class="v">S</span
+            >
+          </div>
+          <p class="note">
+            Drag the attractor — the force is bound to the element, not the
+            cursor.
+          </p>
+          <button class="agitate" data-agitate="#c-attract"
+            >↯ Agitate the field</button
+          >
+      <Fragment slot="stage">
+        <span class="stage-label">attractor — drag me</span>
+          <span
+            class="body-chip"
+            id="c-attract"
+            data-drag
+            data-body="attract"
+            data-strength="1"
+            data-range="300"
+            style="--cc:#4da3ff; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-attract"></i>attractor</span
+          >
+          <span class="hintline"
+            >force follows the element across the field</span
+          >
+      </Fragment>
+    </Concept>
+
+    <Concept data-form="scatter">
+      <span class="concept-no"
+            ><i class="fg fg-repel" style="--fc:#ff9d5c"></i>{String((n += 1)).padStart(2, "0")} — Repulsion</span
+          >
+          <h2>A body can push the field away.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-repel"><code>repel</code> in the force catalog →</a>
+          <p>
+            A <strong>repeller</strong> is an inverted well — the force points <strong
+              >outward</strong
+            >, carving a clean void the rest of the field flows around.
+          </p>
+          <div class="formula">
+            F = −(1 − <span class="v">d</span> / d<span class="c">max</span>)² · <span
+              class="v">S</span
+            >
+          </div>
+          <p class="note">
+            Drag the repeller and watch a clearing open around it.
+          </p>
+          <button class="agitate" data-agitate="#c-repel"
+            >↯ Agitate the field</button
+          >
+      <Fragment slot="stage">
+        <span class="stage-label">repeller — drag me</span>
+          <span
+            class="body-chip"
+            id="c-repel"
+            data-drag
+            data-body="repel"
+            data-strength="1.1"
+            data-range="300"
+            style="--cc:#ff9d5c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-repel"></i>repel</span
+          >
+          <span class="hintline"
+            >force points outward — a void opens in the field</span
+          >
+      </Fragment>
+    </Concept>
+
+    <Concept reverse>
+      <span class="concept-no"
+            ><i class="fg fg-wall" style="--fc:#c4b5fd"></i>{String((n += 1)).padStart(2, "0")} — Reflection</span
+          >
+          <h2>A body can be a wall.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-wall"><code>wall</code> in the force catalog →</a>
+          <p>
+            A <strong>wall</strong> is an axis-aligned box. A crossing particle has
+            its perpendicular velocity reversed and scaled by elasticity, then is
+            projected back out — a hard hit throws a <strong>spark</strong>.
+          </p>
+          <div class="formula">
+            <span class="c">vertical edge:</span>
+            <span class="v">vₓ</span> ← −Cᵣ · <span class="v">vₓ</span>
+          </div>
+          <p class="note">
+            Drag the wall into the drifting particles to deflect them.
+          </p>
+      <Fragment slot="stage">
+        <span class="stage-label">wall — drag me</span>
+          <div
+            class="body-wall"
+            data-drag
+            data-body="wall"
+            style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+          >
+            wall
+          </div>
+          <span class="hintline">particles bounce off the bounding box</span>
+      </Fragment>
+    </Concept>
+
+    <Concept data-form="wells">
+      <span class="concept-no"
+            ><i class="fg fg-swirl" style="--fc:#2dd4bf"></i>{String((n += 1)).padStart(2, "0")} — Swirl</span
+          >
+          <h2>A body can spin the field.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-swirl"><code>swirl</code> in the force catalog →</a>
+          <p>
+            A <strong>swirl</strong> applies a dominantly <strong
+              >tangential</strong
+            > force — a swirl, not a drain. The inward pull is light (the swirl dominates
+            it roughly eightfold), so matter wheels around the body instead of falling
+            in. A tight inward spiral is a preset (<code>whirlpool</code>),
+            never the canonical verb.
+          </p>
+          <div class="formula">
+            <span class="v">v</span> += (−<span class="v">d̂_y</span>, <span
+              class="v">d̂_x</span
+            >) · <span class="v">S</span> · spin <span class="c">+</span>
+            <span class="v">d̂</span> · <span class="v">S</span> · <span
+              class="c">0.12</span
+            >
+          </div>
+          <p class="note">
+            Drag the swirl into the swarm — particles orbit rather than fall in.
+          </p>
+          <button class="agitate" data-agitate="#c-swirl"
+            >↯ Agitate the field</button
+          >
+      <Fragment slot="stage">
+        <span class="stage-label">swirl — drag me</span>
+          <span
+            class="body-chip"
+            id="c-swirl"
+            data-drag
+            data-body="swirl"
+            data-spin="1"
+            data-strength="1"
+            data-range="320"
+            style="--cc:#2dd4bf; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-swirl"></i>swirl</span
+          >
+          <span class="hintline"
+            >tangential force — the field circles, never collapses</span
+          >
+      </Fragment>
+    </Concept>
+
+    <Concept reverse data-form="lanes">
+      <span class="concept-no"
+            ><i class="fg fg-stream" style="--fc:#7dd3fc"></i>{String((n += 1)).padStart(2, "0")} — Stream</span
+          >
+          <h2>A body can blow a current.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-stream"><code>stream</code> in the force catalog →</a>
+          <p>
+            A <strong>stream</strong> emits a constant force along a heading — a fan,
+            a jet, a prevailing wind. The swarm combs into parallel flow.
+          </p>
+          <div class="formula">
+            <span class="v">v</span> += (cos θ, sin θ) · <span class="v">S</span
+            > · (1 − <span class="v">d</span>/d<span class="c">max</span>)
+          </div>
+          <p class="note">
+            Drag the jet and watch matter streak into lanes downwind.
+          </p>
+          <button class="agitate" data-agitate="#c-stream"
+            >↯ Agitate the field</button
+          >
+      <Fragment slot="stage">
+        <span class="stage-label">stream — drag me</span>
+          <span
+            class="body-chip"
+            id="c-stream"
+            data-drag
+            data-body="stream"
+            data-angle="0"
+            data-strength="1"
+            data-range="340"
+            style="--cc:#7dd3fc; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-stream"></i>stream</span
+          >
+          <span class="hintline"
+            >directional current — particles comb downwind</span
+          >
+      </Fragment>
+    </Concept>
+
+    <Concept data-form="wells">
+      <span class="concept-no"
+            ><i class="fg fg-tether" style="--fc:#86e57f"></i>{String((n += 1)).padStart(2, "0")} — Tether</span
+          >
+          <h2>A body can tether the field at a fixed distance.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-tether"><code>tether</code> in the force catalog →</a>
+          <p>
+            A <strong>tether</strong> has a <strong>rest length</strong>. Matter
+            that crowds in is pushed out; matter that strays is reeled in — the
+            swarm settles into an orbiting shell.
+          </p>
+          <div class="formula">
+            <span class="v">v</span> += û · (<span class="v">d</span> − <span
+              class="v">r</span
+            ><span class="c">est</span>) · <span class="v">k</span>
+          </div>
+          <p class="note">
+            Drag the tether — matter springs back to its radius.
+          </p>
+          <button class="agitate" data-agitate="#c-tether"
+            >↯ Agitate the field</button
+          >
+      <Fragment slot="stage">
+        <span class="stage-label">tether — drag me</span>
+          <span
+            class="body-chip"
+            id="c-tether"
+            data-drag
+            data-body="tether"
+            data-strength="1"
+            data-range="260"
+            style="--cc:#86e57f; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-tether"></i>tether</span
+          >
+          <span class="hintline"
+            >a tether — matter holds a shell at the rest radius</span
+          >
+      </Fragment>
+    </Concept>
+
+    <Concept reverse data-form="lanes">
+      <span class="concept-no"
+            ><i class="fg fg-viscosity" style="--fc:#8da2c0"></i>{String((n += 1)).padStart(2, "0")} — Viscosity</span
+          >
+          <h2>A body can thicken the medium.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-viscosity"><code>viscosity</code> in the force catalog →</a>
+          <p>
+            A <strong>viscosity</strong> body neither pulls nor pushes — it <strong
+              >bleeds momentum</strong
+            >, as if the field turned to honey. Paired with an attractor it
+            turns a slingshot into a settled orbit.
+          </p>
+          <div class="formula">
+            <span class="v">v</span> ← <span class="v">v</span> · (1 − <span
+              class="v">k</span
+            >), <span class="c">k ∝ (1 − d/d_max)·S</span>
+          </div>
+          <p class="note">Agitate, then watch the rush die inside the zone.</p>
+          <button class="agitate" data-agitate="#c-drag"
+            >↯ Agitate the field</button
+          >
+      <Fragment slot="stage">
+        <span class="stage-label">viscosity — move me</span>
+          <span
+            class="body-chip"
+            id="c-drag"
+            data-drag
+            data-body="viscosity"
+            data-strength="1"
+            data-range="300"
+            style="--cc:#8da2c0; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-viscosity"></i>viscosity</span
+          >
+          <span class="hintline"
+            >a viscous zone — momentum bleeds off, the swarm settles</span
+          >
+      </Fragment>
+    </Concept>
+
+    <Concept data-form="accretion">
+      <span class="concept-no"
+            ><i class="fg fg-sink" style="--fc:#ff6e9c"></i>{String((n += 1)).padStart(2, "0")} — Accretion &amp;
+            release</span
+          >
+          <h2>A body can hold matter — and give it back.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-sink"><code>sink</code> in the force catalog →</a>
+          <p>
+            A <strong>sink</strong> captures particles at its core. They aren’t deleted
+            — they’re
+            <strong>held inside</strong>, and the element inflates as it fills.
+            When it saturates it goes supernova: the exact particles are <strong
+              >released radially</strong
+            >.
+          </p>
+          <div class="formula">
+            <span class="c">scale =</span> 1 + (<span class="v">accreted</span> /
+            <span class="v">capacity</span>) · 0.45 · <span class="v"
+              >captured = released</span
+            >
+          </div>
+          <p class="note">
+            Nothing is conjured from thin air, and nothing vanishes. Matter
+            changes hands.
+          </p>
+      <Fragment slot="stage">
+        <span class="stage-label">sink — fills, then pops</span>
+          <div
+            class="body-core"
+            data-drag
+            data-body="sink attract"
+            data-absorb="64"
+            data-max="8"
+            data-feedback
+            data-strength="0.8"
+            data-range="180"
+            style="--cc:#ff9d5c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+          >
+            core
+          </div>
+          <div class="meter" style="--cc:#ff9d5c;"><i></i></div>
+          <span class="hintline"
+            >matter accumulates, then releases on supernova</span
+          >
+      </Fragment>
+    </Concept>
+
+    <Concept reverse data-form="lanes">
+      <span class="concept-no"
+            ><i class="fg fg-jet" style="--fc:#a78bfa"></i>{String((n += 1)).padStart(2, "0")} — Emission</span
+          >
+          <h2>A body can be a fountain.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-jet"><code>jet</code> in the force catalog →</a>
+          <p>
+            A <strong>jet</strong> draws surrounding matter into its nozzle and relaunches
+            it as a hot jet — the field is <strong
+              >recycled into a stream</strong
+            >, nothing conjured.
+          </p>
+          <div class="formula">
+            <span class="c">feed:</span>
+            <span class="v">v</span> += d̂ · S · <span class="c">at nozzle:</span
+            >
+            <span class="v">v</span> = (cos θ, sin θ) · spd
+          </div>
+          <p class="note">
+            Agitate to feed it, then watch the jet stream off along its heading.
+          </p>
+          <button class="agitate" data-agitate="#c-jet"
+            >↯ Feed the fountain</button
+          >
+      <Fragment slot="stage">
+        <span class="stage-label">jet — move me · jets →</span>
+          <span
+            class="body-chip"
+            id="c-jet"
+            data-drag
+            data-body="jet"
+            data-angle="0"
+            data-strength="1"
+            data-range="300"
+            style="--cc:#a78bfa; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-jet"></i>jet</span
+          >
+          <span class="hintline"
+            >a fountain — matter is drawn in and jetted back out</span
+          >
+      </Fragment>
+    </Concept>
+
+    <!-- IV · Designed-extended -->
+    <ChapterHeader no="IV" id="ch-extended" title="Designed-extended">Further designed forces, and the modifiers that wrap a sibling. See the full <a href="/docs/api/forces">force catalog</a>.</ChapterHeader>
+    {
+      extended.map((f: ManualEntry, i) => {
+        n += 1;
+        return <ManualForceRow f={f} num={n} reverse={i % 2 === 1} />;
+      })
+    }
+
+    <!-- V · Presets -->
+    <ChapterHeader no="V" id="ch-presets" title="Presets">Cosmology as composition — named arrangements of the primitives. See the <a href="/docs/api/presets">preset reference</a>.</ChapterHeader>
+    {
+      MANUAL_PRESETS.map((p: ManualPreset, i) => {
+        n += 1;
+        const color = PRESET_COLORS[p.name] ?? "#4da3ff";
+        return <PresetRow p={p} num={n} color={color} reverse={i % 2 === 1} />;
+      })
+    }
+
+    <!-- VI · Conditions -->
+    <ChapterHeader no="VI" id="ch-conditions" title="Conditions">When a force decides to act, and on which matter. See <a href="/docs/authoring">authoring &amp; conditions</a>.</ChapterHeader>
+    <Concept data-form="scatter">
+      <span class="concept-no"
+            >{String((n += 1)).padStart(2, "0")} — Conditional</span
+          >
+          <h2>A force can choose what it touches.</h2>
+          <p>
+            Any body can carry a <strong>condition</strong> — gated on being engaged,
+            or on a particle’s
+            <strong>speed</strong> or <strong>heat</strong>. A selective force
+            reads every free agent and acts only on those that match.
+          </p>
+          <div class="formula">
+            <span class="c">when</span> = active · fast · slow · hot · cool · scrolling
+          </div>
+          <p class="note">
+            The catcher below only grips <strong>hot</strong> particles. Heat the
+            field and the excited matter is pulled in while the calm passes through.
+          </p>
+          <button class="agitate" data-agitate="#c-cond"
+            >↯ Heat the field</button
+          >
+      <Fragment slot="stage">
+        <span class="stage-label">conditional — catches heat only</span>
+          <span
+            class="body-chip"
+            id="c-cond"
+            data-drag
+            data-body="attract"
+            data-when="hot"
+            data-strength="1.2"
+            data-range="320"
+            style="--cc:#ff6e9c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-attract"></i>when&nbsp;hot</span
+          >
+          <span class="hintline"
+            >selective attractor — grips excited matter, ignores the calm</span
+          >
+      </Fragment>
+    </Concept>
+
+    <!-- VII · System -->
+    <ChapterHeader no="VII" id="ch-system" title="System">What emerges when the parts interact. See the <a href="/docs/concepts">concepts</a> and <a href="/docs/reading-field">reading the field</a>.</ChapterHeader>
+    <Concept reverse>
+      <span class="concept-no"
+            >{String((n += 1)).padStart(2, "0")} — Reciprocity</span
+          >
+          <h2>The field changes the element back.</h2>
+          <p>
+            The element bends the field — and the field’s <strong
+              >local density</strong
+            > bends the element in return. As particles gather on a word, it gains
+            weight, brightness, and lift.
+          </p>
+          <div class="formula">
+            --field-density = density(body) <span class="c">→</span>
+            <span class="v">weight</span>, glow, rise
+          </div>
+          <p class="note">
+            Hover the word — it pulls the field, the field piles up, and the
+            pile makes the word heavier. A closed loop. (<code>--d</code> is the canonical raw
+            density channel; <code>--field-density</code> is its field-namespaced form.)
+          </p>
+      <Fragment slot="stage">
+        <span class="stage-label">density → weight</span>
+          <span
+            class="live-demo"
+            data-hot
+            data-color="#a78bfa"
+            data-feedback
+            data-body="attract"
+            data-strength="1"
+            data-range="300"
+            style="--cat:#a78bfa;">density</span
+          >
+          <span class="hintline"
+            >gathered particles raise the element’s weight</span
+          >
+      </Fragment>
+    </Concept>
+    <Concept reverse data-attention-demo id="concept-conserved">
+      <span class="concept-no"
+            >{String((n += 1)).padStart(2, "0")} — Conserved attention</span
+          >
+          <h2>The page can’t emphasize two things at once.</h2>
+          <p>
+            There is one finite budget of force for the whole page. Engage a
+            word and it pulls force off every other — so as one gathers matter
+            and grows heavier, the rest give theirs up. Focus isn’t styled; it’s <strong
+              >conserved</strong
+            >.
+          </p>
+          <div class="formula">
+            Σ Sᵢ · effortᵢ = <span class="v">constant</span>
+          </div>
+          <p class="note">
+            Hover one word — watch the others surrender their weight to it.
+          </p>
+      <Fragment slot="stage">
+        <span class="stage-label">one budget, redistributed</span>
+          <div class="attn-set">
+            <span
+              class="attn-word"
+              data-hot
+              data-feedback
+              data-body="attract"
+              data-strength="1.5"
+              data-range="240"
+              data-color="#4da3ff"
+              style="--cat:#4da3ff;">focus</span
+            >
+            <span
+              class="attn-word"
+              data-hot
+              data-feedback
+              data-body="attract"
+              data-strength="1.5"
+              data-range="240"
+              data-color="#2dd4bf"
+              style="--cat:#2dd4bf;">depth</span
+            >
+            <span
+              class="attn-word"
+              data-hot
+              data-feedback
+              data-body="attract"
+              data-strength="1.5"
+              data-range="240"
+              data-color="#ff9d5c"
+              style="--cat:#ff9d5c;">weight</span
+            >
+          </div>
+          <span class="hintline"
+            >one finite budget — engaging one starves the rest</span
+          >
+      </Fragment>
+    </Concept>
+    <Concept id="concept-threads">
+      <span class="concept-no"
+            >{String((n += 1)).padStart(2, "0")} — Threads</span
+          >
+          <h2>Engaging one body wires the set.</h2>
+          <p>
+            Engage an element in a group and the field draws living threads
+            between it and its siblings. A list stops being a list and shows
+            itself as a <strong>connected system</strong>.
+          </p>
+          <p class="note">Hover any line.</p>
+      <Fragment slot="stage">
+        <span class="stage-label">a connected set</span>
+          <div class="thread-set" data-index data-threads>
+            <span
+              class="ti"
+              data-hot
+              data-color="#4da3ff"
+              data-body="attract"
+              data-strength="0.5"
+              data-range="220"
+              style="--cat:#4da3ff;">Product</span
+            >
+            <span
+              class="ti"
+              data-hot
+              data-color="#2dd4bf"
+              data-body="attract"
+              data-strength="0.5"
+              data-range="220"
+              style="--cat:#2dd4bf;">System</span
+            >
+            <span
+              class="ti"
+              data-hot
+              data-color="#a78bfa"
+              data-body="attract"
+              data-strength="0.5"
+              data-range="220"
+              style="--cat:#a78bfa;">Interface</span
+            >
+            <span
+              class="ti"
+              data-hot
+              data-color="#ff9d5c"
+              data-body="attract"
+              data-strength="0.5"
+              data-range="220"
+              style="--cat:#ff9d5c;">Material</span
+            >
+          </div>
+          <span class="hintline"
+            >threads connect the engaged body to its set</span
+          >
+      </Fragment>
+    </Concept>
+    <Concept reverse data-causality-demo>
+      <span class="concept-no"
+            >{String((n += 1)).padStart(2, "0")} — Cross-boundary causality</span
+          >
+          <h2>Density doesn’t stop at the edge.</h2>
+          <p>
+            When a body saturates, the excess <strong
+              >spills to its neighbours</strong
+            > — weighted by nearness, and conserved. Engage one tile and the ones
+            beside it light up on their own. The wiring between elements appears because
+            matter actually flows between them.
+          </p>
+          <div class="formula">
+            Φᵢⱼ = κ · excessᵢ · <span class="v">wᵢⱼ</span> ⁄ Σ wᵢₖ
+          </div>
+          <p class="note">
+            Hover the middle tile — watch its neighbours catch, the far ones
+            faintly.
+          </p>
+      <Fragment slot="stage">
+        <span class="stage-label">spill → neighbours light</span>
+          <div class="causal-set">
+            <span
+              class="causal-node"
+              data-hot
+              data-feedback
+              data-body="attract"
+              data-strength="1.4"
+              data-range="200"
+              data-color="#a78bfa"
+              style="--cat:#a78bfa;"></span>
+            <span
+              class="causal-node"
+              data-hot
+              data-feedback
+              data-body="attract"
+              data-strength="1.4"
+              data-range="200"
+              data-color="#7dd3fc"
+              style="--cat:#7dd3fc;"></span>
+            <span
+              class="causal-node"
+              data-hot
+              data-feedback
+              data-body="attract"
+              data-strength="1.4"
+              data-range="200"
+              data-color="#4da3ff"
+              style="--cat:#4da3ff;"></span>
+            <span
+              class="causal-node"
+              data-hot
+              data-feedback
+              data-body="attract"
+              data-strength="1.4"
+              data-range="200"
+              data-color="#2dd4bf"
+              style="--cat:#2dd4bf;"></span>
+            <span
+              class="causal-node"
+              data-hot
+              data-feedback
+              data-body="attract"
+              data-strength="1.4"
+              data-range="200"
+              data-color="#86e57f"
+              style="--cat:#86e57f;"></span>
+          </div>
+          <span class="hintline"
+            >engage one — the excess spills to whoever’s near</span
+          >
+      </Fragment>
+    </Concept>
+    <Concept reverse id="formations" stageHidden>
+      <span class="concept-no"
+            >{String((n += 1)).padStart(2, "0")} — Formations</span
+          >
+          <h2>The whole field can change its mind.</h2>
+          <p>
+            Forces act locally. A <strong>formation</strong> acts on every particle
+            at once — a single global bias. As you scrolled, each chapter quietly
+            switched it.
+          </p>
+          <p class="note" id="form-desc">
+            Ambient — calm brownian drift, the resting state.
+          </p>
+          <div class="form-pills" id="formPills">
+            <button class="form-pill on" data-form="ambient">Ambient</button>
+            <button class="form-pill" data-form="wells">Wells</button>
+            <button class="form-pill" data-form="lanes">Lanes</button>
+            <button class="form-pill" data-form="scatter">Scatter</button>
+            <button class="form-pill" data-form="accretion">Accretion</button>
+          </div>
+      <Fragment slot="stage">
+        <span class="stage-label">formation — tap to reconfigure</span>
+          <div class="form-readout"><span id="form-name">ambient</span></div>
+          <span class="hintline"
+            >a global bias on every particle — watch the field behind everything</span
+          >
+      </Fragment>
+    </Concept>
+
+    <Concept reverse data-form="wells" id="concept-material">
+      <span class="concept-no"
+            >{String((n += 1)).padStart(2, "0")} — Material typography</span
+          >
+          <h2>Type is a readout of mass.</h2>
+          <p>
+            The word is a <strong>body</strong>. It pulls the field, matter
+            pools beneath it, and its whole appearance — weight, optical size,
+            tracking, bloom, color — is a live readout of how much has
+            gathered. One value, <code>--field-density</code>, drives every axis
+            at once.
+          </p>
+          <div class="formula">
+            --field-density <span class="c">→</span>
+            <span class="v">wght · opsz · tracking · bloom · color</span>
+          </div>
+          <p class="note">
+            Disturb it — the burst scatters the pile, the type goes light and
+            pale, then it thickens back as the field resettles under its own
+            pull. Type as a material, not a style.
+          </p>
+          <button class="agitate" data-agitate="#mat-word"
+            >↯ Disturb the type</button
+          >
+      <Fragment slot="stage">
+        <span class="stage-label">density → every type axis</span>
+          <span
+            class="material-word"
+            id="mat-word"
+            data-hot
+            data-feedback
+            data-body="attract"
+            data-strength="1.2"
+            data-range="300"
+            data-color="#f0abfc"
+            style="--cc:#f0abfc; --cat:#f0abfc;">material</span
+          >
+          <span class="hintline"
+            >weight, optical size, tracking, glow and color are one density</span
+          >
+      </Fragment>
+    </Concept>
+
+    <Concept data-form="scatter" id="concept-layout">
+      <span class="concept-no"
+            >{String((n += 1)).padStart(2, "0")} — Self-laying-out</span
+          >
+          <h2>The page arranges itself.</h2>
+          <p>
+            These nodes aren’t pinned by CSS. Each one <strong
+              >pushes off the others</strong
+            > and drifts away from crowded field, settling into an equilibrium — and
+            re-settling when the field is disturbed or the window resizes. Layout
+            as a physical process, not fixed coordinates.
+          </p>
+          <div class="formula">
+            F = anchor <span class="c">+</span> repel <span class="c">+</span>
+            <span class="v">density pressure</span>
+          </div>
+          <p class="note">
+            Drag the attractor through them, or resize the window — the
+            constellation scatters and re-settles like a physical object.
+          </p>
+          <button class="agitate" data-agitate="#layout-seed"
+            >↯ Disturb the layout</button
+          >
+      <Fragment slot="stage">
+        <span class="stage-label">elements find their own positions</span>
+          <span
+            id="layout-seed"
+            data-drag
+            data-body="attract"
+            data-strength="0.9"
+            data-range="260"
+            class="layout-seed"
+            style="--cc:#7dd3fc; position:absolute; left:50%; top:42%; transform:translate(-50%,-50%);"
+            >field</span
+          >
+          <div class="layout-cluster">
+            <span class="layout-node" data-move="layout" style="--cn:#4da3ff;"
+              >Product</span
+            >
+            <span class="layout-node" data-move="layout" style="--cn:#2dd4bf;"
+              >System</span
+            >
+            <span class="layout-node" data-move="layout" style="--cn:#a78bfa;"
+              >Interface</span
+            >
+            <span class="layout-node" data-move="layout" style="--cn:#ff9d5c;"
+              >Material</span
+            >
+            <span class="layout-node" data-move="layout" style="--cn:#f0abfc;"
+              >Motion</span
+            >
+          </div>
+          <span class="hintline"
+            >anchor + mutual repulsion + density pressure → equilibrium</span
+          >
+      </Fragment>
+    </Concept>
+
+    <!-- VIII · Gallery — a working bench exploring more of what the field can do (curate later). -->
+    <ChapterHeader no="VIII" id="ch-gallery" title="Gallery"
+      >Live examples that explore more of what the field can do — a working bench, to curate. Browse the <a href="/docs/showcase">showcase</a> and <a href="/docs/recipes">recipes</a>.</ChapterHeader
+    >
+
+    <Concept reverse>
+      <span class="concept-no">Gallery · the contract, live <em class="truth truth-hybrid">hybrid</em></span>
+      <h2>data-* in, --field-* out — the actual number.</h2>
+      <p>
+        This word is a body — <code>data-body="attract"</code> with <code>data-feedback</code> on.
+        The engine measures the density of matter gathered on it and writes it back as
+        <code>--field-density</code>, the same variable you'd style with. Drag it into the swarm and
+        watch the value — and its weight — climb.
+      </p>
+      <p class="note"><code>--field-density</code> is read straight off the element's computed style each frame — no tricks.</p>
+      <Fragment slot="stage">
+        <div class="readout-stage">
+          <span class="stage-label">--field-density, off the live element</span>
+          <span
+            class="readout-body"
+            id="gal-readout"
+            data-readout
+            data-drag
+            data-body="attract"
+            data-feedback
+            data-strength="1"
+            data-range="300"
+            style="--cat:#60a5fa; --d:0; position:absolute; left:50%; top:42%; transform:translate(-50%,-50%);"
+          >density</span>
+          <div class="readout-chip"><code>--field-density</code> = <b data-readout-value>0.00</b></div>
+          <span class="hintline">drag it through the dots — the number is the gathered density</span>
+        </div>
+      </Fragment>
+    </Concept>
+
+    <Concept>
+      <span class="concept-no">Gallery · Field Surfaces <em class="truth truth-diagnostic">diagnostic</em></span>
+      <h2>One field, every reading.</h2>
+      <p>
+        The same particles, the same physics — only the reading changes. The <b>matter</b> row is the
+        underlay switch (<code>field.setRender</code>): one way of drawing the substance at a time.
+        The <b>readings</b> row is the overlay (<code>field.setOverlay</code>): line-drawn diagnostics
+        in front of the content — and they are <b>additive</b>. Stack a deformation grid over traced
+        paths over a temperature contour and read the field three ways at once.
+      </p>
+      <p class="note">
+        Scoped to this panel: the modes play across the whole-page field while it is in view, then
+        restore to <code>dots</code> / <code>off</code>.
+      </p>
+      <Fragment slot="stage">
+        <div class="rendertour" data-rendertour>
+          <span class="stage-label">matter · field.setRender(mode) — one at a time</span>
+          <div class="rt-modes" role="group" aria-label="Pick the matter mode (underlay — exclusive)">
+            {RENDER_MODES.map((m, i) => (
+              <button type="button" data-render={m.name} data-def={m.desc} aria-pressed={i === 0 ? "true" : "false"}>{m.name}</button>
+            ))}
+          </div>
+          <span class="stage-label">readings · field.setOverlay([&hellip;]) — stack as many as you like</span>
+          <div class="rt-modes rt-readings" role="group" aria-label="Toggle overlay readings (in front — additive)">
+            {OVERLAY_MODES.map((m) => (
+              <button type="button" data-overlay-mode={m.name} data-def={m.desc} aria-pressed="false">{m.name}</button>
+            ))}
+          </div>
+          <p class="rt-caption" data-rt-caption aria-live="polite">{RENDER_MODES[0]!.name} — {RENDER_MODES[0]!.desc}</p>
+          <span class="hintline">plays across the whole page field behind the content while in view</span>
+        </div>
+      </Fragment>
+    </Concept>
+
+    <Concept>
+      <span class="concept-no">Gallery · Contour Charge <em class="truth truth-hybrid">hybrid</em></span>
+      <h2>Charge it with attention.</h2>
+      <p>
+        The <code>contour-charge</code> recipe: the word below is a real text body —
+        <code>sink attract</code>, gated on engagement — wearing its generated glyph outlines as a
+        bound representation. Hold your pointer on it and it pulls matter in, captures it, and the
+        contour rings thicken and glow as <code>--load</code> rises. Take your attention away and it
+        <b>discharges</b> — the engine releases exactly the matter it held, in a burst.
+      </p>
+      <p class="note">
+        The vessel charges only while attended (<code>data-when="active"</code>); release fires on the
+        falling edge of attention. Conserved end to end — the same particles return to the field.
+      </p>
+      <Fragment slot="stage">
+        <div class="chargetour" data-chargetour>
+          <span class="stage-label">recipe: contour-charge · sink attract ?active</span>
+          <div class="charge-stage">
+            <h3
+              class="charge-source"
+              id="charge-title"
+              data-body="sink attract"
+              data-when="active"
+              data-hot
+              data-absorb="110"
+              data-max="20"
+              data-strength="0.9"
+              data-range="300"
+              data-feedback
+            >
+              <span class="sr-only">Charge</span>
+            </h3>
+            <svg
+              class="charge-rings"
+              data-field-visual-for="charge-title"
+              data-field-visual-role="representation"
+              aria-hidden="true"
+              focusable="false"
+              viewBox={contours.entries.charge.viewBox}
+            >
+              <path class="cring cring-3" d={contours.entries.charge.d}></path>
+              <path class="cring cring-2" d={contours.entries.charge.d}></path>
+              <path class="cring cring-1" d={contours.entries.charge.d}></path>
+            </svg>
+          </div>
+          <span class="hintline">dwell to charge it — look away (pointer off) and it lets go</span>
+        </div>
+      </Fragment>
+    </Concept>
+
+    <Concept>
+      <span class="concept-no">Gallery · data as participants <em class="truth truth-semantic">semantic</em></span>
+      <h2>Records become bodies; relevance becomes gravity.</h2>
+      <p>
+        These rows aren’t markup — they’re <strong>data</strong>, bound to the field with
+        <code>bindData(records, mapper, &#123; recipe: "search-relevance-field" &#125;)</code>. Each
+        record becomes a body whose pull scales with its relevance; the field (behind the list) reads
+        the data and the rows organize around it. Re-rank, and the bodies re-settle.
+      </p>
+      <p class="note">The same call powers a real search surface — data drives the field, the field renders the data.</p>
+      <div class="binddata">
+        <div class="bd-list" data-bd-list aria-label="Bound records"></div>
+        <button class="agitate" type="button" data-bd-rerank>↯ re-rank</button>
+      </div>
+    </Concept>
+
+    <Concept reverse>
+      <span class="concept-no">Gallery · applied — navigation has gravity <em class="truth truth-designed">designed</em></span>
+      <h2>The active item pulls focus.</h2>
+      <p>
+        A plain nav, but every item is a body. The current one runs hot — it gathers matter, so its
+        <code>--field-density</code> stays high and it reads heaviest. Hover another and it pulls the
+        weight over. Emphasis isn’t a class you toggle; it’s where the field is densest.
+      </p>
+      <p class="note">An ordinary pattern, made reciprocal — the same trick behind priority, search, and reading surfaces.</p>
+      <Fragment slot="stage">
+        <div class="navfield">
+          <nav class="navrow" aria-label="Demo navigation">
+            <span class="navitem" tabindex="0" data-hot data-feedback data-body="attract" data-strength="1.6" data-range="200" style="--cat:#4da3ff;">Home</span>
+            <span class="navitem" tabindex="0" data-hot data-feedback data-body="attract" data-strength="1" data-range="200" style="--cat:#4da3ff;">Docs</span>
+            <span class="navitem" tabindex="0" data-hot data-feedback data-body="attract" data-strength="1" data-range="200" style="--cat:#4da3ff;">Lab</span>
+            <span class="navitem" tabindex="0" data-hot data-feedback data-body="attract" data-strength="1" data-range="200" style="--cat:#4da3ff;">Writings</span>
+          </nav>
+          <span class="hintline">hover an item — the weight follows the matter</span>
+        </div>
+      </Fragment>
+    </Concept>
+
+    <!-- The invisible-fields family — twelve real-data examples where the field never shows
+         a particle. One bounded strip; the roster lives in lib/invisible-fields.ts. -->
+    <InvisibleFieldsStrip />
+
+    <ManualFoot>
+      <Fragment slot="actions">
+        <Button href="/lab" variant="primary">Open the Lab →</Button>
+        <Button href="/docs">Read the docs →</Button>
+      </Fragment>
+    </ManualFoot>
+  </div>
+  <SiteFooter />
+</Base>
+
+<script>
+  import "../components/manual-page.ts";
+</script>
