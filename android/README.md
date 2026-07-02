@@ -208,7 +208,7 @@ Ported and tested:
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
   headlessly (`EngineTests`) and gated by a deterministic `PerfRegressionTests` (1200 particles × 600
   frames: count conserved, all-finite, velocity/heat bounded); the driver has its own headless tests
-  (`FieldControllerTests`). **152 core tests total**, and the Compose host + sample app build against the
+  (`FieldControllerTests`). **153 core tests total**, and the Compose host + sample app build against the
   Android SDK and **run on-device** (verified on a Pixel 7 / API 35 emulator).
 
 Also ported:
@@ -238,7 +238,7 @@ main. Remaining follow-ups are matter-render extras (metaballs / voronoi modes) 
 
 ```sh
 cd android
-./gradlew :fundamental-core:test       # engine + cross-plane conformance (152 tests; 120 golden cases)
+./gradlew :fundamental-core:test       # engine + cross-plane conformance (153 tests; 120 golden cases)
 ./gradlew :fundamental-compose:assembleDebug :sample:assembleDebug   # the Android host + sample app
 
 # run the sample on a device/emulator

@@ -105,11 +105,13 @@ class FieldFieldView @JvmOverloads constructor(
 
     override fun onWindowVisibilityChanged(visibility: Int) {
         super.onWindowVisibilityChanged(visibility)
-        // The base View constructor can deliver an early visibility callback before this class's
-        // initializers ran (Kotlin field-init order) — `host` reads null then despite its non-null
-        // type; skip, attach() reconciles the loop later anyway.
+        // Forward the DELIVERED value — during the detach dispatch a live getWindowVisibility() read
+        // is stale (still visible), so the host caches what View actually reported. The base View
+        // constructor can deliver an early visibility callback before this class's initializers ran
+        // (Kotlin field-init order) — `host` reads null then despite its non-null type; skip,
+        // attach() reconciles the loop later anyway.
         @Suppress("UNNECESSARY_SAFE_CALL")
-        host?.fireVisibility()
+        host?.windowVisibilityChanged(visibility)
     }
 
     override fun onVisibilityChanged(changedView: View, visibility: Int) {

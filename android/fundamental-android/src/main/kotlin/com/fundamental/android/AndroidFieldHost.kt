@@ -79,7 +79,32 @@ class AndroidFieldHost(
         }
 
     override val isHidden: Boolean
-        get() = isPaused || view.visibility != View.VISIBLE || view.windowVisibility != View.VISIBLE
+        get() = isPaused || detachedFromWindow ||
+            view.visibility != View.VISIBLE || windowVisibility != View.VISIBLE
+
+    // The window visibility as last DELIVERED to the owning view (see [windowVisibilityChanged]), or a
+    // live read when nothing forwards. The cache matters on the detach path: View synthesizes
+    // `onWindowVisibilityChanged(GONE)` and dispatches the attach-state listeners BEFORE nulling
+    // `mAttachInfo`, so `getWindowVisibility()` still reads the OLD (visible) value inside those
+    // callbacks — a live re-read there would miss the hide entirely.
+    private var deliveredWindowVisibility: Int? = null
+    private val windowVisibility: Int
+        get() = deliveredWindowVisibility ?: view.windowVisibility
+
+    // Set by the shared attach listener BEFORE observers are notified — same detach-dispatch staleness
+    // as above, for hosts wrapping arbitrary views where nothing forwards the protected callbacks.
+    private var detachedFromWindow = false
+
+    /**
+     * The owning view's `onWindowVisibilityChanged` forwarder (FieldFieldView calls this): caches the
+     * DELIVERED visibility — authoritative even inside the detach dispatch, where a live
+     * `getWindowVisibility()` read is stale — then fires the seam. View re-delivers the real window
+     * visibility on every attach and window change, so the cache tracks truth from then on.
+     */
+    fun windowVisibilityChanged(visibility: Int) {
+        deliveredWindowVisibility = visibility
+        fireVisibility()
+    }
 
     // ── FieldHost — loop ────────────────────────────────────────────────────────────────────────
 
@@ -147,6 +172,9 @@ class AndroidFieldHost(
         if (!attachListenerInstalled) {
             view.addOnAttachStateChangeListener(attachListener)
             attachListenerInstalled = true
+            // Re-sync the detach flag (accurate outside the dispatch window) — it may be stale if the
+            // view attached/detached while no listener was installed.
+            detachedFromWindow = !view.isAttachedToWindow
         }
         return {
             visibilityObservers.remove(callback)
@@ -171,8 +199,17 @@ class AndroidFieldHost(
     private val visibilityObservers: MutableList<() -> Unit> = ArrayList()
     private var attachListenerInstalled = false
     private val attachListener = object : View.OnAttachStateChangeListener {
-        override fun onViewAttachedToWindow(v: View) = fireVisibility()
-        override fun onViewDetachedFromWindow(v: View) = fireVisibility()
+        override fun onViewAttachedToWindow(v: View) {
+            detachedFromWindow = false
+            fireVisibility()
+        }
+
+        override fun onViewDetachedFromWindow(v: View) {
+            // Mark BEFORE notifying: inside this callback `getWindowVisibility()` still reads the old
+            // (visible) value, so subscribers re-reading isHidden need the explicit flag to see hidden.
+            detachedFromWindow = true
+            fireVisibility()
+        }
     }
 
     override fun onInput(callback: () -> Unit): () -> Unit {

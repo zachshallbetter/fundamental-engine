@@ -192,6 +192,26 @@ class PauseResumeTests {
     }
 
     @Test
+    fun attachWhileHiddenDoesNotScheduleAnIdleLoop() {
+        // A field born hidden (surface not yet attached / off screen) must not burn display-sync
+        // callbacks: attach() seeds the presentation lane from host.isHidden, so nothing schedules
+        // until the first visibility resume.
+        val host = HeadlessFieldHost()
+        host.hidden = true
+        val field = createField(host, seed = 7L)
+        var ticks = 0
+        field.on(FieldEvent.TICK) { ticks++ }
+        assertEquals(0, host.scheduleCount)
+
+        host.hidden = false
+        host.fireVisibility() // the surface came on screen — NOW the loop starts
+        assertEquals(1, host.scheduleCount)
+        host.fire(0.0)
+        assertEquals(1, ticks)
+        field.destroy()
+    }
+
+    @Test
     fun resumeAfterDestroyStaysDead() {
         val host = HeadlessFieldHost()
         val field = createField(host, seed = 7L)
