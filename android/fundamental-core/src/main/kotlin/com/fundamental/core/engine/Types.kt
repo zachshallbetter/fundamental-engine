@@ -55,6 +55,14 @@ class Particle(
 
     /** Opaque data record bound by `FieldHandle.seed`. */
     var atom: AtomPayload? = null
+
+    /**
+     * Stored acceleration a(t) from the previous step's force pass — the velocity-Verlet lane
+     * (JS `Particle.ax/ay/az`, #659). Null until the opt-in [IntegratorMode.VELOCITY_VERLET]
+     * integrator materializes it (the same only-when-engaged discipline as the JS optional z lane);
+     * the default engine never touches it.
+     */
+    var accel: Vec3? = null
 }
 
 /**
@@ -206,6 +214,19 @@ class NoopGrid : ScalarGrid {
 }
 
 /**
+ * The integration scheme for the field (the JS `IntegratorMode`, doc 04 §Step 3 + #659).
+ *
+ * [LEGACY] (the default) is the shipped engine: semi-implicit Euler — forces update v, then
+ * `x += v·dt`, then a per-frame decay. [FIXED] keeps the same order but dt-scales the per-step
+ * `FRICTION`/`HEAT_DECAY` decays (`FRICTION^dt`) so they are frame-rate independent.
+ * [VELOCITY_VERLET] is the opt-in second-order scheme: the position full-step runs BEFORE the
+ * force pass and the velocity takes the half-step average — see the integrator header for the
+ * exact math and the documented approximations. Opt-in only: at the defaults the engine is
+ * byte-identical to the pre-mode port.
+ */
+enum class IntegratorMode { LEGACY, FIXED, VELOCITY_VERLET }
+
+/**
  * The shared per-frame environment handed to every force. A class because the integrator updates
  * `vector`/`dist` per body–particle pair in the hot loop (as the JS engine mutates `env.dx/dy/dist`).
  */
@@ -239,6 +260,17 @@ class Env {
 
     /** Recent scroll speed (eased); 0 when inactive. */
     var scrollV: Float = 0f
+
+    /** The integration scheme (doc 04 §Step 3 / #659). [IntegratorMode.LEGACY] = the shipped engine. */
+    var integrator: IntegratorMode = IntegratorMode.LEGACY
+
+    /**
+     * velocity-Verlet scratch (#659): set true when a kinematic (velocity-REPLACING) force actually
+     * changed the current particle's velocity during this force pass. Reset by the integrator at the
+     * top of each particle's pass; read after it — a marked pass is a kinematic DISCONTINUITY, so the
+     * half-step average is skipped and the stored acceleration resets. Mirrors the JS `Env.kinTouch`.
+     */
+    var kinTouch: Boolean = false
 
     // ── services (closures filled by the engine; safe no-ops by default) ──────────────
     var spark: (at: Vec3, power: Float, color: String?) -> Unit = { _, _, _ -> }

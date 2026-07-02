@@ -207,6 +207,8 @@ final class FieldEngine: FieldHandle {
 
         env.form = formTarget
         env.dt = effectiveMotion() <= 0 ? 0 : 1
+        // the integration scheme (doc 04 §Step 3 / #659) — the JS `FieldOptions.integrator` mirror.
+        env.integrator = options.integrator
         wireEnvServices()
         build()
         // Seed the presentation lane from the host's CURRENT state — a field born hidden (created
