@@ -69,8 +69,10 @@ Ported and tested:
 - **The public `FieldHandle` API** (`createField`, the Kotlin `FieldField`) — programmatic bodies with
   live `BodyHandle`s (`set` / `remove` / `load` / `drain`), `burst`, `flowTo`/`clearFlow` (the Flow
   focus), data atoms (`seed` / `atomAt`), open scalar channels (`addField` / `sampleField`), the BMI
-  toggles (`setAttention` / `setCausality` / `setHeatmap`) + `sampleScalar` / `sampleGradient`, `energy`,
-  `particleCount`, and `readParticles` (stride-5 wire format). JVM-tested.
+  toggles (`setAttention` / `setCausality` / `setHeatmap`) + `sampleScalar` / `sampleGradient`, the
+  `sample(x, y)` force-probe (JS #816 — the net force vector a free particle would feel at a point, via
+  the shared `forceAt` streamlines probe), `energy`, `particleCount`, and `readParticles` (stride-5 wire
+  format). JVM-tested.
 - **Substrate READ API — `query()`** (JS #837 / critical-path 02) — `FieldHandle.query(q)` answers a
   structured, read-only question over the live field: bodies (identity + rect + tokens + metrics), the
   active formation, field-level metrics (`particles` / `bodies` / `meanDensity`), and relationships,

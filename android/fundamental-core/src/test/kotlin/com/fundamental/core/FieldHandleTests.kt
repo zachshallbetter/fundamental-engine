@@ -134,6 +134,25 @@ class FieldHandleTests {
     }
 
     @Test
+    fun sampleReportsNetForceTowardANearbyAttractorAndZeroFarAway() {
+        // #816 force-probe: sample() returns the net force a free particle would feel at a point.
+        val f = createField(1000f, 1000f, particleCount = 10, seed = 8)
+        // an attractor at (100, 100) with ample range
+        f.addBody(BodySpec(tokens = listOf("attract"), strength = 2f, range = 400f, rect = { Box(center = Vec3(100f, 100f, 0f)) }))
+        f.scan() // sample the body rect into its box
+
+        // probe a point below-right of the body — the force should pull back toward it (up-left)
+        val force = f.sample(140f, 140f)
+        assertTrue(force.x < 0f, "pulled toward the body (which sits at lower x)")
+        assertTrue(force.y < 0f, "pulled toward the body (which sits at lower y)")
+        assertTrue(force.length() > 0f, "a nearby probe feels a non-zero force")
+
+        // a point far outside range feels ~nothing
+        val far = f.sample(900f, 900f)
+        assertEquals(0f, far.length(), "a probe outside range feels no force")
+    }
+
+    @Test
     fun readParticlesWritesStrideFive() {
         val f = createField(300f, 300f, particleCount = 10, seed = 8)
         val out = FloatArray(10 * PARTICLE_STRIDE)
