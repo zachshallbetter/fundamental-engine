@@ -65,6 +65,18 @@ import "../styles/landing.css";
         <span><b>For</b> &nbsp;design engineers · AI-product builders · component-library authors</span>
         <span><b>Maturity</b> &nbsp;0.x preview — a substrate to build on, no external users yet</span>
       </div>
+      <Fragment slot="flow">
+        {/* The substrate, made visible — a live reading of THIS page's field (density/bodies/particles
+            from field.query()) plus the read/reveal/govern facts. No particle swarm required. */}
+        <div class="field-readout" aria-label="Live reading of this page's field">
+          <span class="fr"><b>density</b> <i data-fr="density">·</i></span>
+          <span class="fr"><b>bodies</b> <i data-fr="bodies">·</i></span>
+          <span class="fr"><b>particles</b> <i data-fr="particles">·</i></span>
+          <span class="fr fr-static"><b>query</b> <i>readable</i></span>
+          <span class="fr fr-static"><b>projection</b> <i>css · json</i></span>
+          <span class="fr fr-static"><b>policy</b> <i>limited</i></span>
+        </div>
+      </Fragment>
     </ManualHero>
 
     <section class="lp lp-apply" id="proof">
@@ -325,6 +337,38 @@ import "../styles/landing.css";
   import "../components/manual-page.ts";
 </script>
 
+<script>
+  // The hero "field reading" strip — reads THIS page's field live via field.query() and streams
+  // density/bodies/particles into the chips. Updated ~4×/sec (calm, not flickering). Static chips
+  // (query/projection/policy) state the substrate facts. Rebinds on SPA nav; torn down on swap.
+  type FieldEl = Element & { query?: (q?: unknown) => { metrics: Record<string, number> } };
+  function initFieldReadout() {
+    const el = document.querySelector(".field-readout") as HTMLElement | null;
+    const field = document.querySelector("field-root") as FieldEl | null;
+    if (!el || !field || el.dataset.bound) return;
+    if (typeof field.query !== "function") { window.setTimeout(initFieldReadout, 150); return; }
+    el.dataset.bound = "1";
+    const set = (k: string, v: string) => {
+      const t = el.querySelector(`[data-fr="${k}"]`);
+      if (t) t.textContent = v;
+    };
+    let raf = 0, n = 0;
+    const tick = () => {
+      if (n++ % 15 === 0) {
+        const m = field.query!({ include: ["metrics"] } as unknown).metrics ?? {};
+        set("density", (m.meanDensity ?? 0).toFixed(2));
+        set("bodies", String(m.bodies ?? 0));
+        set("particles", String(m.particles ?? 0));
+      }
+      raf = window.requestAnimationFrame(tick);
+    };
+    tick();
+    document.addEventListener("astro:before-swap", () => window.cancelAnimationFrame(raf), { once: true });
+  }
+  initFieldReadout();
+  document.addEventListener("astro:page-load", initFieldReadout);
+</script>
+
 
 <style>
   /* P3 new-section layouts — calm + list-based; the full art-direction pass is P4. */
@@ -338,4 +382,14 @@ import "../styles/landing.css";
   .lp-explore-grid a b { display: block; margin-bottom: 0.2rem; }
   .lp-explore-grid a span { display: block; opacity: 0.7; font-size: 0.9rem; line-height: 1.45; }
   @media (max-width: 640px) { .lp-verbs li { grid-template-columns: 1fr; gap: 0.15rem; } }
+
+  /* P4 — the "field reading" motif: a live, calm read-out of this page's own field. */
+  .field-readout {
+    display: flex; flex-wrap: wrap; gap: 0.35rem 1.6rem; margin-top: 2.4rem;
+    font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.72rem; letter-spacing: 0.01em;
+  }
+  .field-readout .fr { display: inline-flex; gap: 0.45rem; align-items: baseline; padding: 0.3rem 0; }
+  .field-readout .fr b { color: var(--text-3, #8a8a99); font-weight: 400; letter-spacing: 0.05em; }
+  .field-readout .fr i { font-style: normal; color: var(--accent, #4da3ff); font-variant-numeric: tabular-nums; }
+  .field-readout .fr-static i { color: var(--text-2, #b0b0bd); }
 </style>
