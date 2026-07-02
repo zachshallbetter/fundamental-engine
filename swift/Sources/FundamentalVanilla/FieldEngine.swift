@@ -20,6 +20,11 @@ final class FieldEngine: FieldHandle {
     private var options: FieldOptions
     private let registry: Registry
 
+    // The substrate PROJECTION REGISTRY (JS critical-path 05) — register named projections that reveal
+    // field state on an output surface (agent-json / callback / web). READ-ONLY w.r.t. the field: bound
+    // projections auto-apply once per write phase (see the `tick` after-force phase), never moving matter.
+    let projections = ProjectionRegistry()
+
     // Runtime FIELD POLICY (substrate — JS #892): what THIS host/session/user/app PERMITS (runtime),
     // distinct from governance (static lint). Replaced live via `setPolicy`. Default: no policy →
     // unbounded, byte-identical to the pre-policy engine.
@@ -431,6 +436,10 @@ final class FieldEngine: FieldHandle {
         // fire tick event + evaluate agent consumers after the force step.
         fire(FieldEventPayload(event: .tick))
         tickAgents()
+
+        // write phase: auto-apply every bound projection (JS `applyBoundProjections`). READ-ONLY — it reads
+        // the bound sources and writes to their targets; it never moves matter (the no-mutation guarantee).
+        projections.applyBoundProjections()
 
         // flow focus: pull free matter toward the target (gain 0.6, the JS particle gain).
         if let flow {
@@ -992,8 +1001,8 @@ final class FieldEngine: FieldHandle {
             metrics: metrics,
             relationships: relationships,
             influences: influences,
-            // No projection registry in the port yet — empty, matching the JS field name.
-            projections: [],
+            // The projections registered on the field (metadata only) — JS `query().projections`.
+            projections: projections.list(),
             lens: nil
         )
     }
@@ -1063,8 +1072,8 @@ final class FieldEngine: FieldHandle {
             metrics: metrics,
             // influences: no impulse accumulator in the port yet — empty, matching the JS field name.
             influences: [],
-            // No projection registry in the port yet — empty, matching the JS field name.
-            projections: []
+            // The projections registered on the field at capture (metadata only) — JS `snapshot().projections`.
+            projections: projections.list()
         )
         snapSeq += 1
         return snap

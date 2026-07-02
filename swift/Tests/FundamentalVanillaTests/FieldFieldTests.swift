@@ -225,7 +225,7 @@ final class HeadlessFieldHost: FieldHost {
     var scrollHeight: Float { 0 }
     var prefersReducedMotion: Bool { false }
     var isHidden: Bool { false }
-    var projection: any FieldProjection { FlatProjection() }
+    var projection: any HostProjection { FlatProjection() }
 
     private(set) var cancelCalled = false
     private var frameCallback: ((TimeInterval) -> Void)?

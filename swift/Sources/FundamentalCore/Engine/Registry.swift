@@ -63,7 +63,7 @@ public struct RenderFrame {
     public let bodies: [Body]
     public let accent: RGB
     public let mode: RenderMode
-    public let projection: any FieldProjection
+    public let projection: any HostProjection
     public let volume: FieldVolume
     /// Elapsed sim time (s) — waves and overlays are time-varying.
     public let time: Float
@@ -94,7 +94,7 @@ public struct RenderFrame {
     public let particleGlow: Float
 
     public init(particles: [Particle], bodies: [Body], accent: RGB, mode: RenderMode,
-                projection: any FieldProjection, volume: FieldVolume,
+                projection: any HostProjection, volume: FieldVolume,
                 time: Float = 0, waves: [Wave] = [], waveStyle: WaveStyle = .linear,
                 waveCenter: Vec3? = nil, bound: [BoundParticle] = [],
                 sparks: [Spark] = [], heatmap: Heatmap? = nil, overlays: [OverlayMode] = [],

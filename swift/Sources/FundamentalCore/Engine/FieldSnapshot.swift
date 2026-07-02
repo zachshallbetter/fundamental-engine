@@ -100,14 +100,14 @@ public struct FieldSnapshot: Sendable {
     /// Per-body force attribution at capture (only when `includeInfluences`). Empty until the port exposes
     /// an impulse accumulator — the field name mirrors JS `influences` so the shape stays identical.
     public var influences: [FieldInfluenceReading]
-    /// The projections registered on the field at capture — metadata only. Empty until the port adds a
-    /// registry — same as the Kotlin port.
-    public var projections: [String]
+    /// The projections registered on the field at capture — metadata only. Mirrors JS
+    /// `snapshot().projections` / the Kotlin port; populated from the field's ``ProjectionRegistry``.
+    public var projections: [FieldProjectionInfo]
 
     public init(id: String, createdAt: Float, frame: Int, version: String, formations: [String],
                 bodies: [FieldBodySnapshot], relationships: [FieldRelationshipReading],
                 metrics: [String: Float], influences: [FieldInfluenceReading] = [],
-                projections: [String] = []) {
+                projections: [FieldProjectionInfo] = []) {
         self.id = id; self.createdAt = createdAt; self.frame = frame; self.version = version
         self.formations = formations; self.bodies = bodies; self.relationships = relationships
         self.metrics = metrics; self.influences = influences; self.projections = projections

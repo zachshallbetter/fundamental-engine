@@ -139,15 +139,15 @@ public struct FieldQueryResult: Sendable {
     /// Per-force attributions at the query point. Empty until the port exposes an impulse accumulator —
     /// same as the Kotlin port (the field name mirrors JS `influences` so the shape stays identical).
     public var influences: [FieldInfluenceReading]
-    /// The projections registered on the field (metadata only). Empty until the port adds a projection
-    /// registry — same as the Kotlin port.
-    public var projections: [String]
+    /// The projections registered on the field (metadata only) — mirrors JS `query().projections` /
+    /// the Kotlin port. Populated from the field's ``ProjectionRegistry`` via `list()`.
+    public var projections: [FieldProjectionInfo]
     /// The lens id this reading was scoped through, when a lens was supplied. `nil` — no lens lane yet.
     public var lens: String?
     public init(query: FieldQuery, frame: Int, time: Float, region: FieldRect?,
                 bodies: [FieldBodyReading], metrics: [String: Float],
                 relationships: [FieldRelationshipReading], influences: [FieldInfluenceReading],
-                projections: [String], lens: String? = nil) {
+                projections: [FieldProjectionInfo], lens: String? = nil) {
         self.query = query; self.frame = frame; self.time = time; self.region = region
         self.bodies = bodies; self.metrics = metrics; self.relationships = relationships
         self.influences = influences; self.projections = projections; self.lens = lens

@@ -182,6 +182,10 @@ public final class FieldField: FieldHandle {
 
     public func setVisible(_ on: Bool)                    { handle.setVisible(on) }
 
+    /// The field's PROJECTION REGISTRY (substrate — JS critical-path 05). Register named projections that
+    /// reveal field state on an output surface (agent-json / callback / web). See ``FieldHandle/projections``.
+    public var projections: ProjectionRegistry            { handle.projections }
+
     /// The field's current runtime ``FieldPolicy`` (substrate — JS #892).
     public var policy: FieldPolicy                        { handle.policy }
     /// Replace the runtime ``FieldPolicy`` live (substrate — JS #892).

@@ -489,6 +489,19 @@ public protocol FieldHandle: AnyObject {
     /// can lower motion but never raise it above what reduced-motion allows). Mirrors JS `setPolicy`.
     func setPolicy(_ policy: FieldPolicy)
 
+    // ── projection registry  (substrate — JS critical-path 05) ─────────────
+    /// The field's PROJECTION REGISTRY (JS `FieldHandle.projections`) — register named ``FieldProjection``s
+    /// that map field STATE onto an output surface, and read their metadata back through `query()` /
+    /// `snapshot()`. GOVERNANCE: a projection reveals state; it MAY NOT mutate the field (no forces, no body
+    /// or metric writes) — enforced by the registry only ever calling `apply(reading, target)`, never the
+    /// field. Bound projections auto-apply once per write phase (after feedback) via the after-tick hook.
+    ///
+    /// Portable surfaces on this native plane: `agent-json` (``agentJsonProjection(id:channels:label:accessibilityEquivalent:)``
+    /// / ``agentJsonTarget()``) and a generic host `callback` (``callbackProjection(id:channels:label:accessibilityEquivalent:)``
+    /// / ``callbackTarget(_:)``). The web surfaces (css / dom-attribute / svg) are web-first and live in
+    /// `@fundamental-engine/dom`. Mirrors the JS `ProjectionRegistry` + the Kotlin `:fundamental-core` port.
+    var projections: ProjectionRegistry { get }
+
     // ── agent permissions  (substrate — JS #894) ───────────────────────────
     /// Derive a READ-ONLY ``AgentFieldView`` scoped to a set of ``AgentCapability``s — the safe surface a
     /// Software Agent reads the field through. The returned view has NO mutation methods (enforced by its

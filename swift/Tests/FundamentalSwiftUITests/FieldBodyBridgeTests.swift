@@ -97,7 +97,7 @@ final class TestFieldHost: FieldHost {
     var scrollHeight: Float = 0
     var prefersReducedMotion = false
     var isHidden = false
-    var projection: any FieldProjection = FlatProjection()
+    var projection: any HostProjection = FlatProjection()
 
     private var frameCallback: ((TimeInterval) -> Void)?
 
