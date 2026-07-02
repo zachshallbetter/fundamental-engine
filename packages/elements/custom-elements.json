@@ -664,7 +664,7 @@
               "type": {
                 "text": "IntegratorMode | undefined"
               },
-              "description": "`integrator` — the integration scheme (substrate doc 04 §Step 3); `'fixed'` opts into the\nframe-rate-independent integrator, anything else (incl. absent) is the default `'legacy'`.",
+              "description": "`integrator` — the integration scheme (substrate doc 04 §Step 3); `'fixed'` opts into the\nframe-rate-independent integrator, `'velocity-verlet'` into the second-order Verlet scheme\n(#659); anything else (incl. absent) is the default `'legacy'`.",
               "readonly": true
             },
             {
@@ -2230,7 +2230,7 @@
               "type": {
                 "text": "IntegratorMode | undefined"
               },
-              "description": "`integrator` — the integration scheme (substrate doc 04 §Step 3); `'fixed'` opts into the\nframe-rate-independent integrator, anything else (incl. absent) is the default `'legacy'`.",
+              "description": "`integrator` — the integration scheme (substrate doc 04 §Step 3); `'fixed'` opts into the\nframe-rate-independent integrator, `'velocity-verlet'` into the second-order Verlet scheme\n(#659); anything else (incl. absent) is the default `'legacy'`.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",

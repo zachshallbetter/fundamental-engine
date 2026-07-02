@@ -92,6 +92,16 @@ export interface Particle {
    */
   orient?: number;
   spin?: number;
+  /**
+   * OPTIONAL ACCELERATION LANE (velocity-Verlet, #659): the previous step's acceleration
+   * a(t) = Δv/dt, stored so the next position full-step can take `x += v·dt + ½·a·dt²` and the
+   * velocity half-step can average `½·(a + a′)·dt`. Only the `'velocity-verlet'` integrator ever
+   * writes these; undefined ⇒ 0 ⇒ the default engine never materializes them (the z-lane
+   * discipline — byte-identical when unused).
+   */
+  ax?: number;
+  ay?: number;
+  az?: number;
   /** inertial mass — 1 = nominal (§21). */
   m: number;
   /** ∈ [0,1]; drives color (toward accent), size, and glow (§2.2). */
@@ -418,12 +428,23 @@ export interface Env {
    * semi-implicit Euler with per-frame decay (the default — unchanged). `'fixed'` is the opt-in
    * fixed-timestep integrator: additive force impulses and the `FRICTION`/`HEAT_DECAY` decays scale
    * with `dt`, so motion is frame-rate independent. At `dt === 1` (the reference rate, and every
-   * golden/conformance run) the two are byte-identical, so opting in never moves the golden. */
+   * golden/conformance run) the two are byte-identical, so opting in never moves the golden.
+   * `'velocity-verlet'` (#659) is the opt-in second-order scheme: the position full-step uses the
+   * previous step's stored acceleration, the force pass evaluates a′ at the updated position, and
+   * the velocity takes the half-step average — see the integrator for the exact math and the
+   * velocity-dependence / kinematic-force approximations. It changes trajectories BY DESIGN once
+   * opted into; the default path never engages it. */
   integrator?: IntegratorMode;
+  /** INTERNAL (velocity-Verlet only): set by the central `applyForce` when a *kinematic*
+   * (velocity-REPLACING) force actually changed the current particle's velocity, and reset by the
+   * integrator at the top of each particle's force pass. A reflection / relaunch / teleport is a
+   * discontinuity, not an acceleration — the Verlet half-step average is skipped for that particle
+   * that step. Never touched on the `'legacy'`/`'fixed'` paths. */
+  kinTouch?: boolean;
 }
 
 /** The integration scheme for the field (see {@link Env.integrator}). */
-export type IntegratorMode = 'legacy' | 'fixed';
+export type IntegratorMode = 'legacy' | 'fixed' | 'velocity-verlet';
 
 /**
  * A single force's contribution to one agent in one step, in one channel (substrate doc 04).
@@ -633,8 +654,10 @@ export interface FieldOptions {
    */
   depth?: number;
   /** the integration scheme (substrate doc 04 §Step 3); default `'legacy'`. `'fixed'` opts into the
-   *  frame-rate-independent fixed-timestep integrator (additive impulses and decay scale with `dt`).
-   *  Identical to legacy at the reference frame rate — see {@link Env.integrator}. */
+   *  frame-rate-independent fixed-timestep integrator (additive impulses and decay scale with `dt`);
+   *  identical to legacy at the reference frame rate. `'velocity-verlet'` (#659) opts into the
+   *  second-order velocity-Verlet scheme (higher positional accuracy; trajectories differ by
+   *  design). See {@link Env.integrator}. */
   integrator?: IntegratorMode;
   /** draw the background Currents (§24); default true. Set false for the bare
    *  free-particle field with no carrier waves. */

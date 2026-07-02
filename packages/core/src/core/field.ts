@@ -386,8 +386,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // optional z volume (z-axis.md): 0 — the default — is the flat field, byte-identical
     // to the 2D engine; > 0 opens a shallow depth the matter drifts through, opt-in.
     depth: opts.depth && opts.depth > 0 ? opts.depth : 0,
-    // the integration scheme (substrate doc 04 §Step 3); 'legacy' (default) is the shipped engine.
-    integrator: (opts.integrator === 'fixed' ? 'fixed' : 'legacy') as IntegratorMode,
+    // the integration scheme (substrate doc 04 §Step 3, #659); 'legacy' (default) is the shipped engine.
+    integrator: (opts.integrator === 'fixed' || opts.integrator === 'velocity-verlet'
+      ? opts.integrator
+      : 'legacy') as IntegratorMode,
     // ONE write path (#228, Phase 5): every feedback write goes through a sink. The platform
     // supplies one (D3, FeedbackRegistry via <field-root>); without it the engine installs the
     // internal default sink, whose writes are byte-identical to the historical direct writes.
@@ -708,7 +710,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     W: 0,
     H: 0,
     D: cfg.depth, // the optional z volume (z-axis.md); 0 = the flat field
-    integrator: cfg.integrator, // 'legacy' (default) | 'fixed' (doc 04 §Step 3)
+    integrator: cfg.integrator, // 'legacy' (default) | 'fixed' (doc 04 §Step 3) | 'velocity-verlet' (#659)
     t: 0,
     frameN: 0,
     dt: reduceMotion ? 0 : 1,
