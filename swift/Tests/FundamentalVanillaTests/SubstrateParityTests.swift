@@ -131,4 +131,107 @@ struct SubstrateParityTests {
         #expect(view.readEdges().isEmpty) // budget pins the read surface shut
         field.destroy()
     }
+
+    // MARK: - #837 Field Query (substrate READ API — critical-path 02)
+
+    @Test("a global query returns every body with ids + metrics and field metrics")
+    func globalQuery() {
+        let field = FieldField(host: HeadlessFieldHost())
+        let hero = FieldBodyIdentity(id: "hero", namespace: "app", kind: "card")
+        _ = field.addBody(BodySpec(tokens: ["attract"], identity: hero,
+                                   rect: { Box(center: Vec3(10, 10, 0), halfExtents: Vec3(5, 5, 0)) }))
+        _ = field.addBody(BodySpec(tokens: ["gravity"],
+                                   rect: { Box(center: Vec3(200, 200, 0), halfExtents: Vec3(8, 8, 0)) }))
+
+        let res = field.query() // nil ⇒ global, default include set
+
+        #expect(res.region == nil)                    // global query has no resolved region
+        #expect(res.bodies.count == 2)
+        // ids are the resolved first-class identity ids; a supplied identity wins.
+        let ids = Set(res.bodies.map { $0.id })
+        #expect(ids.contains("hero"))
+        #expect(ids == Set(res.bodies.map { $0.identity.id })) // top-level id equals identity.id
+        // each body carries its measured metrics (density/count/engaged) + its box + tokens.
+        if let heroReading = res.bodies.first(where: { $0.id == "hero" }) {
+            #expect(heroReading.metrics["density"] != nil)
+            #expect(heroReading.metrics["count"] != nil)
+            #expect(heroReading.metrics["engaged"] != nil)
+            #expect(heroReading.tokens == ["attract"])
+            #expect(heroReading.rect != nil)
+            #expect(heroReading.authority == "anchored")     // JS default until a body-authority lane lands
+            #expect(heroReading.activeFormations == ["ambient"])
+            #expect(heroReading.dimensions.isEmpty)           // empty-for-now, JS field name kept
+        } else {
+            Issue.record("expected a 'hero' body reading")
+        }
+        // field-level metrics: particle pool size + body count + mean density.
+        #expect(res.metrics["particles"] == Float(field.particleCount()))
+        #expect(res.metrics["bodies"] == 2)
+        #expect(res.metrics["meanDensity"] != nil)
+        // present-but-empty lanes keep the JS shape identical across planes.
+        #expect(res.influences.isEmpty)
+        #expect(res.projections.isEmpty)
+        #expect(res.lens == nil)
+        field.destroy()
+    }
+
+    @Test("a point query scopes bodies + resolves a region, and default includes influences")
+    func pointQueryScopes() {
+        let field = FieldField(host: HeadlessFieldHost())
+        _ = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "near"),
+                                   rect: { Box(center: Vec3(50, 50, 0), halfExtents: Vec3(5, 5, 0)) }))
+        _ = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "far"),
+                                   rect: { Box(center: Vec3(400, 400, 0), halfExtents: Vec3(5, 5, 0)) }))
+
+        // A tight point query around (50,50): only the near body falls inside the radius.
+        let res = field.query(FieldQuery(at: .point(x: 50, y: 50, radius: 60)))
+
+        #expect(res.region == FieldRect(x: -10, y: -10, width: 120, height: 120)) // point → centred rect
+        #expect(res.bodies.map { $0.id } == ["near"])   // far body is outside the radius
+        #expect(res.metrics["bodies"] == 1)             // metric counts only matched bodies
+        // a local (point/rect) query's default include set adds `influences` (empty in this port).
+        #expect(res.influences.isEmpty)
+        field.destroy()
+    }
+
+    @Test("a rect query filters bodies to the region and honors the include filter")
+    func rectQueryAndInclude() {
+        let field = FieldField(host: HeadlessFieldHost())
+        _ = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "inside"),
+                                   rect: { Box(center: Vec3(20, 20, 0), halfExtents: Vec3(5, 5, 0)) }))
+        _ = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "outside"),
+                                   rect: { Box(center: Vec3(250, 250, 0), halfExtents: Vec3(5, 5, 0)) }))
+
+        // include: bodies only ⇒ metrics/relationships are not computed.
+        let res = field.query(FieldQuery(at: .rect(x: 0, y: 0, width: 100, height: 100),
+                                         include: [.bodies]))
+
+        #expect(res.region == FieldRect(x: 0, y: 0, width: 100, height: 100))
+        #expect(res.bodies.map { $0.id } == ["inside"]) // only the body whose centre is in the rect
+        #expect(res.metrics.isEmpty)                    // metrics not requested
+        #expect(res.relationships.isEmpty)              // relationships not requested
+        field.destroy()
+    }
+
+    @Test("relationships report identity-keyed endpoints and honor setFormation")
+    func relationshipsAndFormation() {
+        let field = FieldField(host: HeadlessFieldHost())
+        field.setFormation("lanes")
+        let a = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "a"),
+                                       rect: { Box(center: Vec3(10, 10, 0), halfExtents: Vec3(5, 5, 0)) }))
+        let b = field.addBody(BodySpec(tokens: ["attract"], identity: FieldBodyIdentity(id: "b"),
+                                       rect: { Box(center: Vec3(40, 40, 0), halfExtents: Vec3(5, 5, 0)) }))
+        _ = field.addEdge(a, b, type: "relates", strength: 0.5, direction: .fromTo)
+
+        let res = field.query() // global
+        #expect(res.relationships.count == 1)
+        let edge = res.relationships[0]
+        #expect(edge.from == "a")        // endpoints are the bodies' first-class identity ids
+        #expect(edge.to == "b")
+        #expect(edge.type == "relates")
+        #expect(edge.causal == edge.active) // causal today mirrors active
+        // the active formation flows into each body's activeFormations.
+        #expect(res.bodies.allSatisfy { $0.activeFormations == ["lanes"] })
+        field.destroy()
+    }
 }

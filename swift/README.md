@@ -174,6 +174,15 @@ Ported and tested — the full engine:
 - **Recipes** (authoring §5): schema + validation + the compiler, with the locked
   64-recipe catalog embedded from the canonical `recipes.json` (4 tiers × 16, never
   hand-retyped) — every recipe validates against the standard registry in the tests.
+- **Substrate READ API — `query()`** (JS #837 / critical-path 02): `FieldHandle.query(_:)` answers a
+  structured, read-only question over the live field — bodies (identity + rect + tokens + metrics:
+  density/count/engaged/load), the active formation, field-level metrics (`particles`/`bodies`/
+  `meanDensity`), and relationships (identity-keyed endpoints) — scoped by a point/rect/global region and
+  an `include` filter. The result (`FieldQueryResult`) mirrors the JS shape 1:1 so a reading serializes
+  identically across planes; tested (`SubstrateParityTests`). The `influences`/`projections`/`lens` lanes
+  are present-but-empty for now (no impulse accumulator, projection registry, or lens lane in the port
+  yet). The rest of the substrate READ API — `snapshot`/`diff`/`replay`/`projections` — is a follow-up on
+  both native planes.
 - **Vanilla surface** (§13): the full FieldHandle.
 
 Not yet ported (the platform-adjacent tranche — most is DOM-specific and maps to
