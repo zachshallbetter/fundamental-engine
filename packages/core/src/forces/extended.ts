@@ -548,8 +548,10 @@ export const pigment: Force = {
  * magnitude. Because it follows the *net* field (not just this body's), matter routes along
  * the lines that link two poles, so the channelling *between* bodies emerges from the geometry.
  * `strength` is the gain; the `(1 − d/r)` falloff localizes it (range 0 ⇒ a global field-follow,
- * the `magnetic` formation). Acts on neutral matter too — it is field transport of the medium,
- * not the charge-gated Lorentz force.
+ * the `magnetic` formation). By default it acts on neutral matter too — it is field transport of the
+ * medium, not the charge-gated Lorentz force. **Opt-in `data-charge-gated` (#711)** flips it to the
+ * *magnetized-plasma* reading: only *charged* matter (`charge ≠ 0`) is tied to the field line, so
+ * neutral matter drifts free and the flow composes with `charge`. The default (unset) is unchanged.
  */
 const FIELDFLOW_STEER = 0.5; // fraction of velocity turned onto the line per frame (× gain)
 const FIELDFLOW_ACCEL = 0.12; // streaming acceleration along the line (× gain)
@@ -558,6 +560,9 @@ export const fieldflow: Force = {
   label: 'Field Flow',
   apply(b, p, e) {
     if (b.range > 0 && e.dist >= b.range) return; // range 0 ⇒ global
+    // Opt-in charge gate (#711): the magnetized-plasma reading follows only charged matter; neutral
+    // matter drifts free. Default (unset) advects ALL matter — the neutral-medium transport, unchanged.
+    if (b.chargeGated && (p.charge ?? 0) === 0) return;
     const F = e.fieldAt?.(p.x, p.y); // the net field every body's field() radiates here
     if (!F) return;
     const mag = Math.hypot(F.x, F.y);
