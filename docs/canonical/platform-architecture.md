@@ -254,23 +254,13 @@ capabilities that environment can offer; the engine needs nothing else.
 Alongside **API-surface parity** (the frozen public surface exists on every plane) and **mathematical
 conformance** (the shared cross-plane golden at `depth: 0`), a host is checked for **host conformance**:
 *does this environment adapter supply the capabilities the field expects, and degrade cleanly where it
-does not?* The checklist:
-
-| Question | Capability | Absent ⇒ |
-|---|---|---|
-| Provides geometry? | `root` + `viewport()` | **required** — a host without it is not a host |
-| Ticks time? | `raf` / `cancelRaf` | **required** |
-| Reports scroll? | `scrollY` / `scrollHeight` | scroll readouts read 0 |
-| Accepts a heatmap canvas? | `createCanvas` | heatmap draw modes throw; `render: 'none'` unaffected |
-| Honors reduced motion? | `reducedMotion` | motion always allowed |
-| Auto-pauses when hidden? | `hidden` / `onVisibility` | the loop never auto-pauses |
-| Emits events? | `onResize` / `onScroll` / `onInput` / `onBodyEvent` | no resize/scroll/input signals |
-| Relays DOM body events? | `onBodyEvent` | programmatic bodies only (`addBody`) |
-| Preserves an a11y equivalent? | host-specific | the embedder wires ARIA/semantics on its plane |
-
-`hostCapabilities(host)` is the machine-readable form of this checklist; the graceful-degradation floor
-is pinned by `packages/core/src/core/minimal-host.test.ts` (a field runs against a host with **none** of
-the optional capabilities).
+does not?* The canonical checklist lives in
+[host-model.md → Host conformance checklist](host-model.md#host-conformance-checklist) — the
+question-form capability table (geometry and time **required**, every other rung degrading gracefully)
+plus the contract disciplines (coordinate mapping, body identity, lifecycle, teardown, accessibility).
+`hostCapabilities(host)` is its machine-readable form; the graceful-degradation floor is pinned by
+`packages/core/src/core/minimal-host.test.ts` (a field runs against a host with **none** of the
+optional capabilities).
 
 **The boundary holds.** `FieldHost` is pure types in core (zero DOM); the implementations live in the
 environment packages (`@fundamental-engine/dom`, `@fundamental-engine/three`), so the `core ↛ dom ↛
