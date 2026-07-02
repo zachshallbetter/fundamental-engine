@@ -275,12 +275,19 @@ class FieldController(
         )
     }
 
-    /** Snapshot all live edges (purging any whose endpoint left the field). */
-    fun readEdges(): List<EdgeRecord> {
+    /**
+     * The live edges with their [Body] endpoints (purging any whose endpoint left the field) — the
+     * shared read behind [readEdges] and [FieldHandle]'s identity-keyed relationship readings
+     * (`query()` / `snapshot()`), which need the endpoint bodies to resolve [bodyIdentity].
+     */
+    internal fun liveEdges(): List<Edge> {
         _edges.removeAll { it.from !in _bodies || it.to !in _bodies }
-        return _edges.map {
-            EdgeRecord(it.fromData, it.toData, it.type, it.strength, it.memory, it.active, it.direction)
-        }
+        return _edges.toList()
+    }
+
+    /** Snapshot all live edges (purging any whose endpoint left the field). */
+    fun readEdges(): List<EdgeRecord> = liveEdges().map {
+        EdgeRecord(it.fromData, it.toData, it.type, it.strength, it.memory, it.active, it.direction)
     }
 
     /** Ease toward a named global formation (ambient / wells / lanes / scatter / accretion). */
