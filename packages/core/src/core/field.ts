@@ -1267,6 +1267,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
   // engagement: hover/focus a [data-hot] element → it activates (b.on, lighting
   // the spine + on-state forces) and overrides the accent with its data-color (§9).
+  // Keyboard parity (a11y, #665): a [data-hot] body is often a container (card, row, <li>,
+  // <aside>) whose focusable content is a CHILD (<a>/<button>). Pointer engagement uses
+  // `pointerenter`, which fires when the cursor enters the container's box — so a mouse user
+  // engages it. But focus does NOT bubble, so `focus`/`blur` on the container would never fire
+  // when a keyboard user tabbed to a descendant, and the body stayed dark for keyboard-only
+  // users. We bind the bubbling `focusin`/`focusout` instead, so tabbing into (or out of) any
+  // focusable descendant engages the body exactly the way hover does — the RC-8 principle that
+  // keyboard users get the same field reactions as the mouse.
   function bindEngagement(): void {
     // Reconcile across rescans (mirrors the emitter prune above): a persistent field outlives the
     // [data-hot] elements swapped under it (Astro nav, dynamic content), so drop engagements whose
@@ -1278,8 +1286,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         if (e.el.isConnected) return true;
         e.el.removeEventListener('pointerenter', e.enter);
         e.el.removeEventListener('pointerleave', e.leave);
-        e.el.removeEventListener('focus', e.enter);
-        e.el.removeEventListener('blur', e.leave);
+        e.el.removeEventListener('focusin', e.enter);
+        e.el.removeEventListener('focusout', e.leave);
         delete e.el.dataset.fxEngaged;
         return false;
       });
@@ -1304,8 +1312,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       };
       el.addEventListener('pointerenter', enter);
       el.addEventListener('pointerleave', leave);
-      el.addEventListener('focus', enter);
-      el.addEventListener('blur', leave);
+      // focusin/focusout (not focus/blur) so focus on a focusable DESCENDANT of a [data-hot]
+      // container engages the body — keyboard parity with pointerenter (#665). These bubble;
+      // focus/blur do not.
+      el.addEventListener('focusin', enter);
+      el.addEventListener('focusout', leave);
       engaged.push({ el, enter, leave });
     });
   }
@@ -3309,8 +3320,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       for (const e of engaged) {
         e.el.removeEventListener('pointerenter', e.enter);
         e.el.removeEventListener('pointerleave', e.leave);
-        e.el.removeEventListener('focus', e.enter);
-        e.el.removeEventListener('blur', e.leave);
+        e.el.removeEventListener('focusin', e.enter);
+        e.el.removeEventListener('focusout', e.leave);
         delete e.el.dataset.fxEngaged;
       }
       engaged = [];

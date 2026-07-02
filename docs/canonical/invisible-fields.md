@@ -97,7 +97,12 @@ Two attributes make engagement programmable; both are shipped and verified:
 - **`data-hot`** (engine) — the engine's scanner wires hover/focus listeners on `[data-hot]`
   elements at scan time; engaging one activates its body (`b.on`), bends the wave spine to it,
   and gathers matter — its `--d` rises toward 1 and eases back on release. The attribute must be
-  present **at scan time** (ship it in markup; a rescan picks up late additions).
+  present **at scan time** (ship it in markup; a rescan picks up late additions). **Keyboard
+  parity (a11y):** engagement is bound with the *bubbling* `focusin`/`focusout` (not `focus`/`blur`),
+  so a keyboard user tabbing to a `[data-hot]` container — or to any focusable descendant inside it
+  (a card's `<a>`, a row's `<button>`) — engages the body exactly the way a mouse hover does. Because
+  engagement only sets state and the integrator (which reduced-motion already freezes) drives the
+  motion, focus engagement is reduced-motion-safe by the same path hover is.
 - **`data-active`** (metric pipeline) — the recipe pipeline's `engaged` input is
   `el.matches(':hover, :focus, :focus-within') || el.hasAttribute('data-active')`. Setting
   `data-active` programmatically is the sanctioned way to tell the field "this element is in
