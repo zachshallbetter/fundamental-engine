@@ -115,6 +115,18 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   saturating cell cannot share, starve, or resize a neighbour. Additive and backward-compatible —
   cells without the new attributes behave exactly as before.
 
+- **`@fundamental-engine/elements`:** **SSR pre-registration queue for shadow hosts (#683).** On a
+  server-rendered page, custom-element bodies can upgrade — and dispatch their composed
+  `field:register-body` events — *before* `<field-root>` boots and wires its listeners; that one-shot
+  event had no listener yet, so the body was silently lost and rendered as inert HTML. The package now
+  installs a capturing document listener at first-field construction (SSR-guarded — a no-op without
+  `document`) that **buffers** early register/unregister/update events, keyed by element (last write
+  wins, so an `unregister` supersedes a pending `register` — no stale body). When a field boots it
+  drains the queue, replaying the buffered events on their source elements so the field registers them
+  through its normal, idempotent path (shadow-dom.md §31.10). Purely additive lifecycle plumbing —
+  no new public surface; a client-only page whose field boots before any body buffers nothing and
+  behaves exactly as before.
+
 - **`@fundamental-engine/core`:** **opt-in charge-gated `fieldflow` (#711).** A new body flag
   `data-charge-gated` restricts the `fieldflow` force to *charged* matter (`charge ≠ 0`), modelling
   magnetized plasma tied to the field line so it composes with `charge`; neutral matter drifts free.

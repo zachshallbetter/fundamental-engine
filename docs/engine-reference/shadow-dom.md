@@ -1150,22 +1150,30 @@ Components that connected before the field exists can retry registration.
 
 ### 10. Add a registration queue for early components
 
-During SSR/hydration, elements may register before the root field is ready.
+**Shipped (`@fundamental-engine/elements`, `preregistration-queue.ts`, #683).** During SSR/hydration,
+elements may register before the root field is ready — on a server-rendered page the custom elements
+already exist in the DOM and upgrade in document order, so a body earlier than `<field-root>` (or whose
+definition loads first) dispatches its composed `field:register-body` **before** the field wires its
+listeners. That one-shot event has no listener yet, so it is lost and the body renders inert.
 
-Use a lightweight queue:
+The queue closes that gap. Importing the elements package installs a **capturing document listener** at
+the first field element's construction (SSR-guarded — a no-op without `document`, so importing on the
+server never throws). While no field is live it **buffers** each register / unregister / update event,
+keyed by element:
 
 ```ts
-const pendingBodies = new Set<RegisterBodyInput>();
+const pending = new Map<HTMLElement, { type: string; detail: RegisterBodyDetail }>();
 ```
 
-When the field initializes:
+Dedupe by element — **last write wins** — so an `unregister` supersedes a pending `register` and no
+stale body is replayed. When a field boots it marks itself live (subsequent events then reach it
+directly, bypassing the queue) and **drains** the queue: each buffered event is **replayed on its
+source element**, bubbling (composed) to the document where the field's now-wired, idempotent listeners
+register it through the normal path (the element-keyed `ShadowRegistry`, the coalesced rescan). A
+disconnected element is skipped on drain. Component mount order no longer has to be perfect.
 
-* drain pending bodies
-* dedupe by element/body ID
-* resolve scope
-* register
-
-This avoids requiring component order to be perfect.
+The queue is internal lifecycle plumbing — no new public surface. A client-only page whose field boots
+before any body buffers nothing and behaves exactly as before.
 
 ### 11. Add “shadow-safe scanner fallback”
 
