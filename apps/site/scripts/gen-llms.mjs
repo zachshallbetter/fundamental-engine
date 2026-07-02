@@ -401,19 +401,22 @@ const exampleLines = EXAMPLES.map((e) => line(e.name, `${SITE_URL}${e.href}`, e.
 
 const llms = `# Fundamental
 
-> Fundamental is a platform-native relational field runtime, created by Zach Shallbetter (zachshallbetter.com). The core (\`@fundamental-engine/core\`)
-> computes renderer-agnostic field behavior; host adapters bind that field to real platforms.
-> \`@fundamental-engine/dom\` is the web host adapter, binding field behavior to the DOM through
-> measurement, state, feedback, relationships, visual bindings, overlays, linting, and scheduling
-> (\`@fundamental-engine/elements\` and \`@fundamental-engine/react\` are authoring surfaces on top of it).
+> Fundamental is an **inspectable relational substrate for software behavior** — a readable behavior
+> layer for host objects, created by Zach Shallbetter (zachshallbetter.com). The core
+> (\`@fundamental-engine/core\`) computes renderer-agnostic field behavior; host adapters bind that field
+> to real platforms. The **DOM is the first host, not the boundary**: the same core runs on the web, in
+> WebGL, natively on Apple and Android, and headlessly. \`@fundamental-engine/dom\` is the web host adapter
+> (measurement, state, feedback, relationships, visual bindings, overlays, linting, scheduling);
+> \`@fundamental-engine/elements\` and \`@fundamental-engine/react\` are authoring surfaces on top of it.
 > Canvas is one render surface, not the whole system: a field is **signals-first** — by default it draws
 > nothing and exposes structured signals, metrics, feedback, queries, snapshots, and projections.
 
 Every element can become a body in an invisible physics field via the \`data-body\` attribute:
 bodies bend the field, and the field's local density bends them back (reciprocity, returned as
-the canonical \`--d\` density channel, whose expressive long form is \`--field-density\`). The public 0.x API surface is frozen and
-additive-only, enforced in CI from \`scripts/api-surface.data.mjs\` — the docs' provenance stamps
-render from the same file. Generated ${DATE} by apps/site/scripts/gen-llms.mjs.
+the canonical \`--d\` density channel, whose expressive long form is \`--field-density\`). The **stable 0.x
+API baseline** (the frozen entries in \`scripts/api-surface.data.mjs\`, enforced in CI) is fixed; the
+experimental **substrate API** (\`query\`/\`snapshot\`/\`diff\`/\`replay\`/\`forAgent\` + projections) is added
+freely on top of it. Generated ${DATE} by apps/site/scripts/gen-llms.mjs.
 
 ## Start here — don't guess
 
