@@ -781,7 +781,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   function spawnSpark(x: number, y: number, power: number, color?: string): void {
     if (reduceMotion || sparks.length > 260) return;
     const c: RGB = color ? hexToRgb(color) : [255, 122, 69]; // WARM default (§20.8)
-    const n = sparkCount(power);
+    const n = sparkCount(power, rng); // count through the injected rng too (#371) — directions already are
     for (let k = 0; k < n; k++) {
       const a = rng() * 6.28318;
       const s = 0.8 + rng() * (power > 0 ? power : 1) * 1.7;

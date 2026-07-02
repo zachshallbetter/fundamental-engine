@@ -213,16 +213,17 @@ export const thermal: Force = {
     const falloff = 1 - e.dist / b.range; // localized: hotter nearer the source
     const sigma = thermalSigma(b.strength * falloff);
     if (sigma === 0) return;
-    // Box–Muller: (u1, u2) → one isotropic N(0,1) pair, scaled by σ.
-    const u1 = Math.random() || 1e-9; // avoid log(0)
+    // Box–Muller: (u1, u2) → one isotropic N(0,1) pair, scaled by σ — drawn from the
+    // injected rng (#371) so a seeded thermal run is reproducible.
+    const u1 = (e.rng ?? Math.random)() || 1e-9; // avoid log(0)
     const mag = sigma * Math.sqrt(-2 * Math.log(u1));
-    const ang = 2 * Math.PI * Math.random();
+    const ang = 2 * Math.PI * (e.rng ?? Math.random)();
     p.vx += mag * Math.cos(ang);
     p.vy += mag * Math.sin(ang);
     // in a depth > 0 volume the kick is isotropic in 3D — a third gaussian leg (z-axis.md).
     if (e.D) {
-      const u2 = Math.random() || 1e-9;
-      p.vz = (p.vz ?? 0) + sigma * Math.sqrt(-2 * Math.log(u2)) * Math.cos(2 * Math.PI * Math.random());
+      const u2 = (e.rng ?? Math.random)() || 1e-9;
+      p.vz = (p.vz ?? 0) + sigma * Math.sqrt(-2 * Math.log(u2)) * Math.cos(2 * Math.PI * (e.rng ?? Math.random)());
     }
     if (b.on) p.heat = Math.max(p.heat, falloff * 0.4);
     clampToC(p, e.c);
