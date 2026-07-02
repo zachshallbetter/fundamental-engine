@@ -7,8 +7,10 @@ import FundamentalCore
 //
 // The point is to verify the *rendered output* of each mode without a device or human eye — the gap
 // that previously forced renderer-parity work (soft-glow particles #417, 3D streamline tubes / vector
-// grid #392) to "needs human eyes." A full pixel-exact golden flakes: the engine's wander is unseeded
-// and CoreGraphics rasterization differs across machines. So the model reduces a headless render to a
+// grid #392) to "needs human eyes." A full pixel-exact golden flakes: these scenes run the production
+// default — the UNSEEDED rng (the engine's randomness is seedable since the #974 determinism seam,
+// via `FieldOptions.rng` / `seededRng`, but the Lab exercises the default) — and CoreGraphics
+// rasterization differs across machines. So the model reduces a headless render to a
 // COARSE perceptual signature (downsampled luminance + lit fraction + centroid) and gates STRUCTURE:
 //
 //   1. every matter mode draws coherent, bounded content in the right place (non-blank, not blown out);
@@ -17,8 +19,8 @@ import FundamentalCore
 // #417's signature assertion (the glow is present — `dotsGlowIsSoft`) sits on top of this, with the
 // exact bloom/orbital-cloud geometry pinned deterministically in SoftGlowRenderTests; #392 adds its
 // own (the tubes occupy the field) when it lands. If `signatureIsStable` ever fails, the coarse
-// aggregate isn't stable enough and the engine needs a seeded RNG seam before golden diffing —
-// that's the honest tripwire.
+// aggregate isn't stable enough for unseeded golden diffing — the seeded seam (#974) is the escape
+// hatch: pin a `seededRng` scene and diff exactly.
 
 @Suite("VisualSnapshot")
 struct VisualSnapshotTests {
@@ -47,7 +49,10 @@ struct VisualSnapshotTests {
 
     @Test("the coarse signature is stable run-to-run despite unseeded wander")
     func signatureIsStable() throws {
-        // dots is the densest, most wander-sensitive mode — the strictest stability check.
+        // dots is the densest, most wander-sensitive mode — the strictest stability check. The two
+        // runs are deliberately UNSEEDED (the production default; a seeded `FieldOptions.rng` would
+        // make them bit-identical, #974): the point is that the coarse signature holds across runs
+        // whose exact particle paths genuinely differ.
         var scene = LabScenes.mass
         scene.render = .dots
         let a = try Snapshotter.signature(scene: scene, options: opts())

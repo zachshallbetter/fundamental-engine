@@ -338,6 +338,12 @@ public final class Env {
     /// half-step average is skipped and the stored acceleration resets. Mirrors the JS `Env.kinTouch`.
     public var kinTouch: Bool = false
 
+    /// The engine's random source (the JS `Env.rng` / #371 mirror) — forces and the integrator draw
+    /// every jitter, emission cone, and Box–Muller uniform from here, so a seeded generator makes a
+    /// run reproducible (the determinism seam, #974). Defaults to the platform generator (unseeded =
+    /// nondeterministic); the engine injects `FieldOptions.rng` when supplied (see ``seededRng(_:)``).
+    public var rng: () -> Float = { Float.random(in: 0..<1) }
+
     // ── services (closures filled by the engine) ──────────────────────────
     public var spark: (_ at: Vec3, _ power: Float, _ color: String?) -> Void = { _, _, _ in }
     public var supernova: (_ body: Body) -> Void = { _ in }

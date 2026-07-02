@@ -14,7 +14,6 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sin
-import kotlin.random.Random
 
 // Designed extended forces (§20.3) — the Kotlin port of
 // swift/Sources/FundamentalCore/Forces/ExtendedForces.swift. Like the canonical nine these are designed
@@ -246,8 +245,8 @@ class MorphForce : Force {
         if (jit > 0f) {
             val v = particle.velocity
             particle.velocity = Vec3(
-                v.x + (Random.nextFloat() - 0.5f) * jit,
-                v.y + (Random.nextFloat() - 0.5f) * jit,
+                v.x + (env.rng() - 0.5f) * jit,
+                v.y + (env.rng() - 0.5f) * jit,
                 v.z,
             )
         }
@@ -273,9 +272,9 @@ class SpawnForce : Force {
         body.emitAcc = body.emitAcc!! - n.toFloat()
         while (n > 0) {
             n--
-            val j = (Random.nextFloat() - 0.5f) * 0.6f // soft emission cone
+            val j = (env.rng() - 0.5f) * 0.6f // soft emission cone
             val h = body.heading.rotatedAboutZ(j)
-            val speed = 2f + Random.nextFloat() * 2f
+            val speed = 2f + env.rng() * 2f
             val sp = Particle(position = body.center, velocity = h * speed, heat = 0.6f)
             sp.age = life
             env.spawn(sp)

@@ -55,6 +55,10 @@ final class FieldEngine: FieldHandle {
     }
     private let store: FieldStore
     private let env: Env
+    /// The engine's random source (the JS `opts.rng ?? Math.random` composition, #371 / #974):
+    /// `options.rng` when supplied (a seeded generator → a reproducible run), else the platform
+    /// generator. Shared with the force pass via `Env.rng`.
+    private let rng: () -> Float
     private var loopToken: AnyObject?
 
     // Loop lifecycle (#605). Two independent pause lanes, both gating the SAME display link:
@@ -201,6 +205,10 @@ final class FieldEngine: FieldHandle {
         self.registry = registry
         self.store = FieldStore()
         self.env = Env()
+        // the injected random source (#371 / #974): every random draw in the engine — pool seeding,
+        // spark counts + angles, wave-bound riders, force jitter, the integrator's wander — flows
+        // through this one closure, so a seeded generator (`seededRng`) makes a run reproducible.
+        self.rng = options.rng ?? { Float.random(in: 0..<1) }
         self.accent = hexToRgb(options.accent ?? "#4da3ff")
         // DECLARED ambient bias (Wallpaper Rule, JS #978): the resting swirl (`orbit`) and drift
         // (`wander`), formerly hardcoded (0.1 / 1.0) in the ambient preset. Defaulting to those values
@@ -218,6 +226,7 @@ final class FieldEngine: FieldHandle {
 
         env.form = formTarget
         env.dt = effectiveMotion() <= 0 ? 0 : 1
+        env.rng = rng // the determinism seam (#974) — forces + integrator draw from the same source
         // the integration scheme (doc 04 §Step 3 / #659) — the JS `FieldOptions.integrator` mirror.
         env.integrator = options.integrator
         wireEnvServices()
@@ -268,7 +277,7 @@ final class FieldEngine: FieldHandle {
             guard let self else { return }
             // release exactly what was captured — radial, from the core (§6.9). Held matter
             // is conserved: released particles stay in the pool.
-            let released = Set(releaseCaptured(self.store.particles, from: b).map(ObjectIdentifier.init))
+            let released = Set(releaseCaptured(self.store.particles, from: b, rng: self.rng).map(ObjectIdentifier.init))
             // the blast shoves nearby *free* matter outward (but not what it just released).
             for q in self.store.particles where !released.contains(ObjectIdentifier(q)) {
                 let d3 = q.position - b.center
@@ -290,10 +299,10 @@ final class FieldEngine: FieldHandle {
     private func spawnSpark(at: Vec3, power: Float, color: String?) {
         if effectiveMotion() <= 0 || sparks.count > 260 { return }
         let c: RGB = color.map(hexToRgb) ?? WARM
-        let n = sparkCount(power: power)
+        let n = sparkCount(power: power, rand: rng)
         for _ in 0..<n {
-            let a = Float.random(in: 0..<6.28318)
-            let s = 0.8 + Float.random(in: 0..<1) * (power > 0 ? power : 1) * 1.7
+            let a = rng() * 6.28318
+            let s = 0.8 + rng() * (power > 0 ? power : 1) * 1.7
             sparks.append(Spark(position: at, velocity: Vec3(cos(a) * s, sin(a) * s, 0), life: 1, color: c))
         }
     }
@@ -312,7 +321,7 @@ final class FieldEngine: FieldHandle {
 
         if options.waves {
             waves = buildWaves(palette: [accent, COOL, WARM])
-            bound = buildBound(waveCount: waves.count, density: density) { Float.random(in: 0..<1) }
+            bound = buildBound(waveCount: waves.count, density: density, rand: rng)
             boundTarget = bound.count
         } else {
             waves = []
@@ -327,24 +336,24 @@ final class FieldEngine: FieldHandle {
 
     private func newParticle(at position: Vec3? = nil) -> Particle {
         let vol = host.volume
-        let size = (0.7 + Float.random(in: 0..<1) * 1.8) * options.particleSize
+        let size = (0.7 + rng() * 1.8) * options.particleSize
         let p = Particle(
             position: position ?? Vec3(
-                Float.random(in: 0..<1) * vol.width,
-                Float.random(in: 0..<1) * vol.height,
-                vol.depth > 0 ? Float.random(in: 0..<1) * vol.depth : 0
+                rng() * vol.width,
+                rng() * vol.height,
+                vol.depth > 0 ? rng() * vol.depth : 0
             ),
             velocity: Vec3(
-                (Float.random(in: 0..<1) - 0.5) * 0.25,
-                (Float.random(in: 0..<1) - 0.5) * 0.18,
-                vol.depth > 0 ? (Float.random(in: 0..<1) - 0.5) * 0.18 : 0
+                (rng() - 0.5) * 0.25,
+                (rng() - 0.5) * 0.18,
+                vol.depth > 0 ? (rng() - 0.5) * 0.18 : 0
             ),
             mass: 1,
             heat: 0,
             size: size,
-            gx: Float.random(in: 0..<1),
-            gy: Float.random(in: 0..<1),
-            gz: Float.random(in: 0..<1)
+            gx: rng(),
+            gy: rng(),
+            gz: rng()
         )
         if options.firstClassMass { p.mass = size }
         return p
@@ -536,7 +545,7 @@ final class FieldEngine: FieldHandle {
             tearBoundByForces(bound: &bound, waves: waves, bodies: bodies, forces: registry.forces,
                               W: vol.width, H: vol.height, time: env.t) { self.env.spawn($0) }
             healWaves(store: store, bound: &bound, boundTarget: boundTarget, waves: waves,
-                      W: vol.width, H: vol.height, time: env.t) { Float.random(in: 0..<1) }
+                      W: vol.width, H: vol.height, time: env.t, rand: rng)
         }
 
         // advance the scalar grids (diffuse blur / wave leapfrog / memory decay).

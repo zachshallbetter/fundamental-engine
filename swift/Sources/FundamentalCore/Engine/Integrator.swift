@@ -408,9 +408,9 @@ public func step(_ input: StepInput) {
         // brownian kick gains a z component in a volumetric field.
         if env.frameN % 40 == 0 && form.wander > 0 {
             let wsc = 0.05 * form.wander
-            p.velocity.x += (Float.random(in: 0..<1) - 0.5) * wsc
-            p.velocity.y += (Float.random(in: 0..<1) - 0.5) * wsc
-            if D > 0 { p.velocity.z += (Float.random(in: 0..<1) - 0.5) * wsc }
+            p.velocity.x += (env.rng() - 0.5) * wsc
+            p.velocity.y += (env.rng() - 0.5) * wsc
+            if D > 0 { p.velocity.z += (env.rng() - 0.5) * wsc }
         }
         if form.wander > 0.05 {
             let cn = (sin(p.position.x * 0.0032 + env.t * 0.12)

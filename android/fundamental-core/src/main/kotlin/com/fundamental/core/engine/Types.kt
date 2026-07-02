@@ -2,6 +2,7 @@ package com.fundamental.core.engine
 
 import com.fundamental.core.math.Vec3
 import java.lang.ref.WeakReference
+import kotlin.random.Random
 
 // The core contracts — the Kotlin port of swift/Sources/FundamentalCore/Engine/Types.swift, trimmed
 // to what the foundation slice needs. `Particle`/`Body`/`Env` are classes (reference semantics) on
@@ -301,6 +302,15 @@ class Env {
      * half-step average is skipped and the stored acceleration resets. Mirrors the JS `Env.kinTouch`.
      */
     var kinTouch: Boolean = false
+
+    /**
+     * The engine's random source (the JS `Env.rng` / #371 mirror) — forces and the integrator draw
+     * every jitter, emission cone, and Box–Muller uniform from here, so a seeded generator makes a
+     * run reproducible (the determinism seam, #974). Defaults to the platform generator (unseeded =
+     * nondeterministic); [com.fundamental.core.runtime.FieldController] injects its seeded generator
+     * when constructed with a `seed`.
+     */
+    var rng: () -> Float = { Random.nextFloat() }
 
     // ── services (closures filled by the engine; safe no-ops by default) ──────────────
     var spark: (at: Vec3, power: Float, color: String?) -> Unit = { _, _, _ -> }

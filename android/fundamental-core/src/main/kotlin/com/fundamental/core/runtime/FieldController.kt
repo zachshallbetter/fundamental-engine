@@ -62,7 +62,12 @@ class FieldController(
     height: Float,
     depth: Float = 0f,
     particleCount: Int = 300,
-    /** Seed for reproducible runs (tests); null = nondeterministic. */
+    /**
+     * Seed for reproducible runs; null = nondeterministic. The seeded generator is injected as
+     * [Env.rng] (the JS `FieldOptions.rng` / #371 mirror), so it covers ALL engine randomness —
+     * pool seeding, the integrator's brownian wander, force jitter (thermal / jet / morph / spawn),
+     * spark counts + directions, and supernova release angles (the determinism seam, #974).
+     */
     seed: Long? = null,
     /**
      * The integration scheme (the JS `FieldOptions.integrator`, doc 04 §Step 3 / #659). Opt-in:
@@ -278,8 +283,9 @@ class FieldController(
     var heatmapEnabled: Boolean = false
     private var heatmap: Heatmap? = null
 
-    /** Micro-reaction sparks (§23) — emitted by forces via `env.spark`, drawn by the host. */
-    val sparks = SparkPool()
+    /** Micro-reaction sparks (§23) — emitted by forces via `env.spark`, drawn by the host. Draws its
+     *  counts + directions from the controller's rng, so a seeded run's sparks replay too (#974). */
+    val sparks = SparkPool { rng.nextFloat() }
 
     // ── carrier waves + the bound↔free reservoir (§2.3 / §2.4 / §24) ─────────────────────────────
     /** The ambient resting structure: five standing currents (decorative; off by default). */
@@ -306,6 +312,9 @@ class FieldController(
         env.volume = Vec3(w, h, d)
         env.dt = 1f
         env.integrator = integrator
+        // the determinism seam (#974): every random draw in the engine — integrator wander, force
+        // jitter, spark emission — flows through Env.rng, so a seeded controller run is reproducible.
+        env.rng = { rng.nextFloat() }
         env.neighbors = { p, r -> store.neighbors(p, r) }
         env.spawn = { store.add(it) }
         env.grid = { name -> grids.getOrPut(name) { ScalarGridImpl(w, h, modeForName(name)) } }

@@ -9,7 +9,6 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
-import kotlin.random.Random
 
 // The integrator (§2.2, §7) — the Kotlin port of swift/Sources/FundamentalCore/Engine/Integrator.swift
 // (itself a direct port of packages/core/src/core/integrator.ts, lifted to 3D).
@@ -370,9 +369,9 @@ fun step(input: StepInput) {
         if (env.frameN % 40 == 0 && form.wander > 0f) {
             val wsc = 0.05f * form.wander
             p.velocity = Vec3(
-                p.velocity.x + (Random.nextFloat() - 0.5f) * wsc,
-                p.velocity.y + (Random.nextFloat() - 0.5f) * wsc,
-                if (d3 > 0f) p.velocity.z + (Random.nextFloat() - 0.5f) * wsc else p.velocity.z,
+                p.velocity.x + (env.rng() - 0.5f) * wsc,
+                p.velocity.y + (env.rng() - 0.5f) * wsc,
+                if (d3 > 0f) p.velocity.z + (env.rng() - 0.5f) * wsc else p.velocity.z,
             )
         }
         if (form.wander > 0.05f) {

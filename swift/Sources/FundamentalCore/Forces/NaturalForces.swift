@@ -164,14 +164,14 @@ public struct ThermalForce: Force {
         let sigma = thermalSigma(b.strength * falloff)
         if sigma == 0 { return }
         // Box–Muller: (u1, u2) → one isotropic N(0,1) pair, scaled by σ.
-        let u1 = max(Float.random(in: 0..<1), 1e-9) // avoid log(0)
+        let u1 = max(e.rng(), 1e-9) // avoid log(0)
         let mag = sigma * sqrt(-2 * log(u1))
-        let ang = 2 * Float.pi * Float.random(in: 0..<1)
+        let ang = 2 * Float.pi * e.rng()
         p.velocity.x += mag * cos(ang)
         p.velocity.y += mag * sin(ang)
         if e.volume.z > 0 {
-            let u2 = max(Float.random(in: 0..<1), 1e-9)
-            p.velocity.z += sigma * sqrt(-2 * log(u2)) * cos(2 * Float.pi * Float.random(in: 0..<1))
+            let u2 = max(e.rng(), 1e-9)
+            p.velocity.z += sigma * sqrt(-2 * log(u2)) * cos(2 * Float.pi * e.rng())
         }
         if b.isEngaged { p.heat = max(p.heat, falloff * 0.4) }
         clampToC(p, e.c)

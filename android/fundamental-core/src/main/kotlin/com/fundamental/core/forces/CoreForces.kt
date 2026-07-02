@@ -9,7 +9,6 @@ import com.fundamental.core.math.Vec3
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
-import kotlin.random.Random
 
 // The canonical nine forces (§6) — the Kotlin port of
 // swift/Sources/FundamentalCore/Forces/CoreForces.swift. `env.vector` points from the particle toward
@@ -135,7 +134,7 @@ class JetForce : Force {
         if (env.dist >= range) return
         if (env.dist < 24f) {
             // at the nozzle: relaunch as a hot jet, with a cone of spread (about the plane axis).
-            val sp = (Random.nextFloat() - 0.5f) * 0.8f
+            val sp = (env.rng() - 0.5f) * 0.8f
             val h = body.heading.rotatedAboutZ(sp)
             val spd = 2.4f + body.strength * 2.6f
             particle.velocity = h * spd

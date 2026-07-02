@@ -153,6 +153,13 @@ Ported and tested — the full engine:
   decays sit outside the scheme): it buys positional accuracy, not conservation — count stays
   the invariant. Pinned by `IntegratorVerletTests`, the JS `integrator-verlet.test.ts` suite
   test-for-test.
+- **The determinism seam** (`Env.rng` / `FieldOptions.rng` — the JS #371 mirror; #974): ALL engine
+  randomness — pool seeding, the integrator's brownian wander, force jitter (thermal / jet / morph /
+  spawn), spark counts + directions, wave-bound riders, supernova release angles — flows through one
+  injectable `() -> Float`. Unseeded (the default) is the platform generator, unchanged; pass
+  `seededRng(seed)` (the mulberry32 mirror of the JS `record/rng.ts`) and a run reproduces
+  bit-for-bit. Pinned by `DeterminismTests` (the core seam) + the whole-run fingerprint suite in
+  `FundamentalVanillaTests`.
 - **All 33 forces.** The canonical nine (§6: attract, jet, tether, wall, stream, repel,
   viscosity, swirl, sink); the natural primitives (§20.10: gravity, charge, magnetism,
   thermal, collide, diffuse, propagate, memory — the grid-backed three run against real
