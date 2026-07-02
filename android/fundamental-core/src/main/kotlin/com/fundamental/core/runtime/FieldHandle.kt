@@ -394,19 +394,26 @@ class FieldHandle(val controller: FieldController) {
      * are the bodies' first-class identity ids (the JS `bodyId(e.from)` / Swift
      * `resolveIdentity(from).id`), NOT the edge's opaque carried `data` — so a reading keys the same
      * across planes and joins against the `bodies` lane's `id`s.
+     *
+     * [inRegion] is the LOCAL-query region filter: when non-null, only edges with at least one
+     * endpoint in the region are read — the JS `!local || inRegion(e.from) || inRegion(e.to)` /
+     * Swift `if local, !(inRegion(from) || inRegion(to))`. Null (the default) reads every edge:
+     * [snapshot] is a global capture and never region-filters (mirrors the JS `snapshot()`).
      */
-    private fun relationshipReadings(): List<FieldRelationshipReading> =
-        controller.liveEdges().map { e ->
-            FieldRelationshipReading(
-                from = controller.bodyIdentity(e.from).id,
-                to = controller.bodyIdentity(e.to).id,
-                type = e.type,
-                strength = e.strength,
-                memory = e.memory,
-                active = e.active,
-                causal = e.active,
-            )
-        }
+    private fun relationshipReadings(inRegion: ((Body) -> Boolean)? = null): List<FieldRelationshipReading> =
+        controller.liveEdges()
+            .filter { e -> inRegion == null || inRegion(e.from) || inRegion(e.to) }
+            .map { e ->
+                FieldRelationshipReading(
+                    from = controller.bodyIdentity(e.from).id,
+                    to = controller.bodyIdentity(e.to).id,
+                    type = e.type,
+                    strength = e.strength,
+                    memory = e.memory,
+                    active = e.active,
+                    causal = e.active,
+                )
+            }
 
     // ── observability ────────────────────────────────────────────────────────────────
     fun particleCount(): Int = controller.particleCount
@@ -533,7 +540,8 @@ class FieldHandle(val controller: FieldController) {
         } else emptyMap()
 
         val relationships: List<FieldRelationshipReading> = if (want.contains(FieldQueryInclude.RELATIONSHIPS)) {
-            relationshipReadings()
+            // A local query keeps only edges touching the region (JS: `inRegion(from) || inRegion(to)`).
+            relationshipReadings(if (local) inRegion else null)
         } else emptyList()
 
         // Influences: per-force attribution at the query point. The port has no impulse accumulator yet,

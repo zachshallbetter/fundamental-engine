@@ -103,4 +103,29 @@ class FieldQueryTests {
         assertNotEquals("left-data", rel.from)
         assertNotEquals("right-data", rel.to)
     }
+
+    @Test
+    fun localQueryRegionFiltersRelationships() {
+        // JS/Swift parity: a LOCAL query keeps only edges with at least one endpoint in the region
+        // (JS `!local || inRegion(e.from) || inRegion(e.to)`); global query + snapshot read every edge.
+        val f = createField(800f, 600f, particleCount = 100, seed = 3)
+        val a = f.addBody(BodySpec(tokens = listOf("attract"), identity = FieldBodyIdentity(id = "a"), rect = { Box(center = Vec3(100f, 300f, 0f)) }))
+        val b = f.addBody(BodySpec(tokens = listOf("attract"), identity = FieldBodyIdentity(id = "b"), rect = { Box(center = Vec3(200f, 300f, 0f)) }))
+        val c = f.addBody(BodySpec(tokens = listOf("gravity"), identity = FieldBodyIdentity(id = "c"), rect = { Box(center = Vec3(600f, 300f, 0f)) }))
+        val d = f.addBody(BodySpec(tokens = listOf("gravity"), identity = FieldBodyIdentity(id = "d"), rect = { Box(center = Vec3(700f, 300f, 0f)) }))
+        f.addEdge(a, b, type = "in-in")   // both endpoints inside the region
+        f.addEdge(b, c, type = "in-out")  // one endpoint inside — still touches the region
+        f.addEdge(c, d, type = "out-out") // no endpoint inside — dropped from a local query
+        repeat(5) { f.tick() }
+
+        // local query around (150,300): a + b are in region (dist 50 ≤ r 100), c + d are not
+        val local = f.query(FieldQuery(at = FieldQueryAt.Point(x = 150f, y = 300f, radius = 100f)))
+        assertEquals(setOf("in-in", "in-out"), local.relationships.map { it.type }.toSet())
+
+        // global query is unchanged — every edge is read
+        assertEquals(3, f.query().relationships.size)
+
+        // snapshot is a GLOBAL capture — never region-filtered (mirrors JS `snapshot()`)
+        assertEquals(3, f.snapshot().relationships.size)
+    }
 }
