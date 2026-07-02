@@ -640,6 +640,17 @@ class FieldHandle(val controller: FieldController) {
      */
     fun diff(a: FieldSnapshot, b: FieldSnapshot): FieldDiff = diffFieldSnapshots(a, b)
 
+    /**
+     * Explain HOW the field changed from snapshot [a] to snapshot [b] — an ordered, narrated sequence of
+     * causes (formations → relationships → body measurements → metric moves → forces) — the substrate
+     * READ-API `replay` primitive (JS `FieldHandle.replay`). PURE: like [diff], it reads only the two
+     * snapshot objects, never touches this field's live state, and mutates nothing (pass any two captures).
+     * [ReplayOptions.focus] scopes the replay to one body id. Delegates to the standalone
+     * [replayFieldSnapshots], which composes [diffFieldSnapshots].
+     */
+    fun replay(a: FieldSnapshot, b: FieldSnapshot, opts: ReplayOptions = ReplayOptions()): CausalReplay =
+        replayFieldSnapshots(a, b, opts)
+
     // ── agent permissions (JS #894) ────────────────────────────────────────────────────
     /**
      * A capability-scoped, READ-ONLY [AgentFieldView] over this field — the surface a Software Agent uses

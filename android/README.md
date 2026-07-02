@@ -97,8 +97,19 @@ Ported and tested:
   `metricChanges` (field-level metric before/after), and `formationChanges` (activated / deactivated).
   The `FieldDiff` + `BodyChange` / `RelationshipChange` / `MetricChange` / `FormationChange` shapes mirror
   the JS `@fundamental-engine/core` 1:1. The standalone `diffFieldSnapshots(a, b)` is also exported. JVM-tested
-  (`FieldDiffTests`). The rest of the substrate READ API — `replay` / `projections` — is a follow-up on both
-  native planes.
+  (`FieldDiffTests`).
+- **Substrate READ API — `replay()`** (JS critical-path 03 phase 2) — `FieldHandle.replay(a, b, opts)`
+  explains HOW the field changed between two snapshots: an ordered, narrated `CausalReplay` of `CausalReplayStep`s
+  derived PURELY from the diff (no live field access, no mutation). Steps run in the canonical lane order —
+  formations → relationships → body measurements (entered / left) → metric moves → forces — each stamped with
+  `b`'s frame/time and carrying the structured before/after on `contribution`. `ReplayOptions.focus` scopes the
+  replay to one body id. The `CausalReplay` / `CausalReplayStep` / `ReplayOptions` / `CausalCause` shapes mirror
+  the JS `@fundamental-engine/core` 1:1; the standalone `replayFieldSnapshots(a, b, opts)` is also exported.
+  The `force` lane is **empty-for-now**: it is derived from each snapshot's `influences`, which this port
+  leaves empty (no impulse accumulator yet, same as `query`/`snapshot`/`diff`) — the lane's logic is mirrored
+  field-for-field and comes alive unchanged once an accumulator lands; the structural lanes are fully live.
+  JVM-tested (`CausalReplayTests`). The rest of the substrate READ API — `projections` — is a follow-up on both
+  native planes (it needs a port projection registry, a larger piece).
 - **The Jetpack Compose host** (`:fundamental-compose`) — `FieldView` (drives one frame per display
   frame via `withFrameNanos`, renders the pool on a Compose `Canvas`, tap-to-burst) and
   `Modifier.fieldBody(...)` (a composable becomes a body tracking its on-screen bounds), plus a
