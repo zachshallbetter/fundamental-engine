@@ -13,6 +13,23 @@ import "../styles/landing.css";
 // executable manual lives on /engine-tour (moved off-home in the restructure); this page keeps the
 // hero, install, hosts, the real-interface proof, the why-different doctrine, the AI wedge, and a
 // compressed engine-tour card. Interaction runtime is still wired by manual-page.ts (bottom).
+
+// The inbox proof is a REAL reading (#973). Each ask is a declared body on the page field
+// (<field-root> in Base.astro — the "one fixed attention budget" the copy names): urgency maps to
+// mass (data-strength = urgency, data-range widens with it), and the engine writes the gathered
+// local density back as --d on the data-feedback rows. The CSS composes the two honest lanes the
+// invisible-fields canon names (§2): --u0, the authored urgency (the data lane — the same number
+// that feeds data-strength; the --w of /evidence/inbox), and --d, the field's live reading — so
+// the weight you see brightens as attention gathers and dims as it drains (hover one ask via
+// data-hot and the others yield). With the field off, --d never registers and the rows hold the
+// pure authored look. No contained field and no script: --d is the page engine's lane, and a
+// second field would fight it for the same var.
+const ASKS = [
+  { title: 'Production outage — auth tokens expiring early', meta: '2h · 48▲', urgency: 1 },
+  { title: 'Why does my migration deadlock under load?', meta: '9h · 21▲', urgency: 0.72 },
+  { title: 'Best way to debounce a resize observer?', meta: '1d · 7▲', urgency: 0.46 },
+  { title: 'Preferred naming for boolean props?', meta: '4d · 2▲', urgency: 0.24 },
+];
 ---
 
 <Base
@@ -91,10 +108,17 @@ import "../styles/landing.css";
         </p>
         <div class="lp-inbox" aria-hidden="true">
           <div class="lp-inbox-head"><span>Inbox · attention is conserved</span><span>urgency → mass</span></div>
-          <div class="lp-ask" style="--u:1;"><span class="lp-bar"></span><span class="lp-title">Production outage — auth tokens expiring early</span><span class="lp-meta">2h · 48▲</span></div>
-          <div class="lp-ask" style="--u:0.72;"><span class="lp-bar"></span><span class="lp-title">Why does my migration deadlock under load?</span><span class="lp-meta">9h · 21▲</span></div>
-          <div class="lp-ask" style="--u:0.46;"><span class="lp-bar"></span><span class="lp-title">Best way to debounce a resize observer?</span><span class="lp-meta">1d · 7▲</span></div>
-          <div class="lp-ask" style="--u:0.24;"><span class="lp-bar"></span><span class="lp-title">Preferred naming for boolean props?</span><span class="lp-meta">4d · 2▲</span></div>
+          {ASKS.map((a) => (
+            <div
+              class="lp-ask"
+              data-body="attract"
+              data-feedback
+              data-hot
+              data-strength={a.urgency.toFixed(2)}
+              data-range={String(Math.round(120 + a.urgency * 80))}
+              style={`--u0:${a.urgency};`}
+            ><span class="lp-bar"></span><span class="lp-title">{a.title}</span><span class="lp-meta">{a.meta}</span></div>
+          ))}
         </div>
         <Button href="/evidence/inbox" variant="primary">Open this example →</Button>
       </div>

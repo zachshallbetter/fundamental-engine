@@ -310,6 +310,46 @@ for (const route of ["/", "/engine-tour", "/eli5"] as const) {
       await expect(card).toBeHidden();
     });
 
+    test("the inbox proof is a real reading — the engine writes --d back to the data-feedback asks (#973)", async ({
+      page,
+    }) => {
+      // gathering is simulation-time-bound (same pacing rationale as the accretion test): under
+      // full-suite contention the rAF slows and the dots take longer in WALL time to collect.
+      test.slow();
+      await skipUnless(page, ".lp-inbox .lp-ask", "inbox proof");
+      const rows = page.locator(".lp-inbox .lp-ask");
+      await expect(rows).toHaveCount(4);
+      // every ask is a DECLARED body on the page field: data-body + data-feedback, urgency → mass
+      for (let i = 0; i < 4; i++) {
+        await expect(rows.nth(i)).toHaveAttribute("data-body", "attract");
+        await expect(rows.nth(i)).toHaveAttribute("data-feedback", "");
+        expect(parseFloat((await rows.nth(i).getAttribute("data-strength")) ?? "0")).toBeGreaterThan(0);
+      }
+      // the hardcoded mock is gone: no authored inline --u anywhere on the rows
+      expect(
+        await rows.evaluateAll((els) => els.some((el) => (el as HTMLElement).style.getPropertyValue("--u"))),
+      ).toBe(false);
+      // readiness gate (the chromium cold-start pattern): the engine's deferred boot must have
+      // seeded a real pool before any gathering can happen — same gate the boot test uses.
+      await expect
+        .poll(
+          async () =>
+            page.evaluate(() => (document.querySelector("field-root") as any)?.particleCount?.() ?? 0),
+          { timeout: 30000 },
+        )
+        .toBeGreaterThan(50);
+      // scroll the proof into view; the engine gathers matter at the asks and writes the reading
+      // back INLINE as --d (engine-written provenance — the authored --u0 never appears there)
+      await rows.first().scrollIntoViewIfNeeded();
+      const d = (i: number) =>
+        rows.nth(i).evaluate((el) => parseFloat((el as HTMLElement).style.getPropertyValue("--d")) || 0);
+      await expect.poll(() => d(0), { timeout: 60000 }).toBeGreaterThan(0.05);
+      // …and the hierarchy is the FIELD's: the urgent ask (mass 1.0) outweighs the idle one (0.24)
+      await expect
+        .poll(async () => (await d(0)) - (await d(3)), { timeout: 30000 })
+        .toBeGreaterThan(0.02);
+    });
+
     test("formation pills retune the whole field and the readout follows", async ({ page }) => {
       await skipUnless(page, '.form-pill[data-form="wells"]', "formation pills");
       const pill = page.locator('.form-pill[data-form="wells"]');
