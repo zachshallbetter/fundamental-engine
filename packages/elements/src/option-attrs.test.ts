@@ -78,3 +78,16 @@ test('integrator accepts both opt-in modes and rejects everything else (#659)', 
   assert.equal(integratorFor(null), undefined, 'absent ⇒ undefined (legacy default)');
   assert.equal(integratorFor('nonsense'), undefined, 'unknown value ⇒ undefined (legacy default)');
 });
+
+// Same pure-getter pattern for the waves attribute (#979, doc-06 Step 0): the Currents are OPT-IN.
+// Absent ⇒ off (the bare field, mirroring the core `waves` default); present (and not "false") ⇒ on.
+const wavesGet = Object.getOwnPropertyDescriptor(FieldField.prototype, 'waves')!.get!;
+const wavesFor = (attr: string | null): boolean =>
+  wavesGet.call({ hasAttribute: () => attr !== null, getAttribute: () => attr });
+
+test('waves defaults OFF when the attribute is absent — the Currents are opt-in (#979)', () => {
+  assert.equal(wavesFor(null), false, 'no waves attribute ⇒ the bare field, no Currents');
+  assert.equal(wavesFor(''), true, 'bare boolean attribute presence ⇒ waves on');
+  assert.equal(wavesFor('true'), true, 'waves="true" ⇒ on');
+  assert.equal(wavesFor('false'), false, 'waves="false" stays an explicit opt-out');
+});

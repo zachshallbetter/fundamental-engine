@@ -47,6 +47,17 @@ class WavesTests {
     }
 
     @Test
+    fun bareFieldBuildsNoWaves() {
+        // Signals-first defaults (#979 / doc-06 Step 0, cross-plane): a bare field has NO carrier
+        // waves and draws nothing — the Currents (setWaves(true)) and a render mode are explicit
+        // opt-ins, matching the JS `waves`/`render` defaults and the Swift FieldOptions defaults.
+        val f = createField(800f, 600f, particleCount = 400, seed = 21)
+        assertTrue(!f.controller.wavesEnabled, "waves are opt-in — a bare field has none")
+        assertTrue(f.controller.waves.isEmpty() && f.controller.bound.isEmpty(), "no wave layers, no bound shimmer")
+        assertEquals(com.fundamental.core.runtime.RenderMode.NONE, f.renderMode, "signals-first: render defaults to NONE")
+    }
+
+    @Test
     fun reservoirConservesTotalMatter() {
         val f = createField(800f, 600f, particleCount = 400, seed = 21)
         f.setWaves(true)

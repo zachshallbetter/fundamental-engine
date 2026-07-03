@@ -12,7 +12,7 @@ export const OPTIONS: OptionRow[] = [
   { name: 'host', type: 'FieldHost', def: 'required', desc: 'The environment seam (viewport, scroll, rAF, canvas). createField throws without it — pass browserHost() from @fundamental-engine/dom, or use @fundamental-engine/vanilla / the web component, which wire it for you.' },
   { name: 'accent', type: 'string', def: "palette's first stop", desc: 'The travelling accent color (a hex string).' },
   { name: 'density', type: 'number', def: '1', desc: 'Particle-count multiplier.' },
-  { name: 'waves', type: 'boolean', def: 'true', desc: 'Draw the background Currents (the wave layers).' },
+  { name: 'waves', type: 'boolean', def: 'false', desc: 'Draw the background Currents (the wave layers + bound shimmer). Opt-in (#979): a bare field has no carrier waves; pass true for the ambient resting structure.' },
   { name: 'waveStyle', type: "'linear' | 'circular'", def: "'linear'", desc: 'The wave current pattern. linear draws parallel horizontal waves; circular draws concentric orbits circling around the waveCenter or the star body. <field-root wave-style>.' },
   { name: 'waveCenter', type: "Vec2 | (() => Vec2) | null", def: 'null', desc: 'The center coordinate (or coordinate-provider fn) for circular waves. Defaults to the first body tagged with star or vortex, or the center of the field. <field-root wave-center> (space-separated, e.g. "200 300").' },
   { name: 'background', type: "'opaque' | 'transparent'", def: "'opaque'", desc: "Substrate background. 'transparent' clears to transparent instead of painting the near-black substrate, so the underlay composites over light content (an image, a 3D scene, a light page) — trails fade to transparent rather than to black. Also a <field-root background> attribute and live via setBackground." },
@@ -188,7 +188,7 @@ export const OVERLAY_MODES: { name: string; desc: string }[] = [
 export const FIELD_ROOT_ATTRS: { name: string; option: string; desc: string }[] = [
   { name: 'accent', option: 'accent', desc: 'Travelling accent color hex. Mirrors the accent createField option.' },
   { name: 'density', option: 'density', desc: 'Particle-count multiplier. Mirrors the density createField option.' },
-  { name: 'waves', option: 'waves', desc: 'Draw background Currents. Mirrors the waves option (boolean attribute — presence = true).' },
+  { name: 'waves', option: 'waves', desc: 'Draw background Currents. Mirrors the waves option (opt-in boolean attribute, #979 — presence = on, absence = off).' },
   { name: 'depth', option: 'depth', desc: 'Optional z volume for a shallow 3D effect. Mirrors the depth createField option.' },
   { name: 'integrator', option: 'integrator', desc: "Integration scheme: 'fixed' opts into the partially frame-rate-corrected integrator (dt-scales the decays, not force impulses — doc-04 §Step 3), 'velocity-verlet' into the second-order Verlet scheme (#659); default 'legacy'. Mirrors the integrator createField option. Experimental." },
   { name: 'render', option: 'render', desc: 'Underlay render mode (none / dots / trails / links / metaballs / voronoi / streamlines / flow). Mirrors the render createField option.' },

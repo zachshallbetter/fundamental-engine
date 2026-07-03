@@ -361,7 +361,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     accent: opts.accent ?? resolvePalette(opts.palette)[0] ?? PALETTE[0] ?? '#4da3ff',
     density: opts.density && opts.density > 0 ? opts.density : 1,
     render: opts.render ?? 'none', // signals-first default (#538): a bare field runs the sim + feedback but draws nothing until asked. Pass render:'dots' for the particle surface.
-    waves: opts.waves ?? true, // draw the background Currents (§24); opt-out for the bare field
+    waves: opts.waves ?? false, // the background Currents (§24) are OPT-IN (#979, doc-06 Step 0): a bare field has no carrier waves; pass waves:true for the ambient resting structure.
     waveStyle: opts.waveStyle ?? 'linear',
     waveCenter: opts.waveCenter ?? null,
     background: opts.background ?? 'opaque', // 'transparent' → clear to transparent, underlay over light content
@@ -834,7 +834,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const n = Math.round(130 * cfg.density);
     for (let i = 0; i < n; i++) store.add(newParticle());
     applySeed();
-    // the Currents (§24) are opt-out: with waves off, the field is just the free particles.
+    // the Currents (§24) are OPT-IN (#979): by default the field is just the free particles.
     waves = cfg.waves ? buildWaves(cfg.waveBaseline) : [];
     bound = cfg.waves ? buildBound(waves.length, cfg.density, rng) : [];
     boundTarget = bound.length;

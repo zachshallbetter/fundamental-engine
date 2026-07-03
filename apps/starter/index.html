@@ -9,11 +9,13 @@
   <body>
     <!--
       One background field for the whole page. render="dots" draws the particle surface behind the
-      content (the engine default is now signals-only, 'none' — #538 — so a visible field opts in).
-      <field-root> scans the document for [data-body] elements, turning each into a body in the field.
-      Importing "@fundamental-engine/elements" in src/main.ts is what upgrades this tag — that single import is the field.
+      content (the engine default is now signals-only, 'none' — #538 — so a visible field opts in),
+      and waves opts into the background Currents (also off by default — #979 — the ambient look is
+      declared, never assumed). <field-root> scans the document for [data-body] elements, turning
+      each into a body in the field. Importing "@fundamental-engine/elements" in src/main.ts is what
+      upgrades this tag — that single import is the field.
     -->
-    <field-root render="dots"></field-root>
+    <field-root render="dots" waves></field-root>
 
     <main>
       <header class="intro">
