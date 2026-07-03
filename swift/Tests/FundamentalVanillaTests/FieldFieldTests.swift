@@ -187,6 +187,102 @@ struct FieldFieldTests {
         field.destroy()
     }
 
+    // MARK: - FieldHandle parity methods (#817 on / #818 readParticleIds / #819 readParticleChannels / #820 registerOverlay)
+
+    @Test("readParticleIds — distinct, stable ids parallel to readParticles; count reported on truncation")
+    func readParticleIdsSeam() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        let n = field.particleCount() // 130 base pool
+        var ids = [Int](repeating: -1, count: n)
+        #expect(field.readParticleIds(into: &ids) == n)
+        #expect(Set(ids).count == n) // every particle carries a distinct id
+
+        // ids are assigned at pool creation and survive ticks (stable identity).
+        let before = ids
+        for i in 0..<30 { host.fire(at: TimeInterval(i) / 60) }
+        var after = [Int](repeating: -1, count: n)
+        _ = field.readParticleIds(into: &after)
+        #expect(before == after)
+
+        // a smaller buffer truncates but still reports the true count.
+        var small = [Int](repeating: 0, count: 10)
+        #expect(field.readParticleIds(into: &small) == n)
+        field.destroy()
+    }
+
+    @Test("readParticleChannels — packs named-grid samples at each particle, stride = names.count")
+    func readParticleChannelsSeam() {
+        let field = FieldField(host: HeadlessFieldHost())
+        let n = field.particleCount()
+
+        // deposit a known constant into two grids at every particle position, then sample it back.
+        var pos = [Float](repeating: 0, count: n * 5)
+        _ = field.readParticles(into: &pos)
+        let a = field.grid("a"); let b = field.grid("b")
+        for i in 0..<n {
+            let p = Vec3(pos[i * 5], pos[i * 5 + 1], pos[i * 5 + 2])
+            a.deposit(at: p, amount: 1); b.deposit(at: p, amount: 2)
+        }
+
+        let names = ["a", "b"]
+        var out = [Float](repeating: -1, count: n * names.count)
+        #expect(field.readParticleChannels(names, into: &out) == n)
+        for i in 0..<n {
+            #expect(out[i * 2] > 0)              // channel a sampled non-zero where matter deposited
+            #expect(out[i * 2 + 1] >= out[i * 2]) // channel b deposited 2× ≥ channel a
+        }
+
+        // a buffer too small for the next full stride stops early but reports the count.
+        var small = [Float](repeating: 0, count: 3 * names.count)
+        #expect(field.readParticleChannels(names, into: &small) == n)
+        field.destroy()
+    }
+
+    @Test("on(.tick) fires each frame; cancel() removes the listener")
+    func onTickSeam() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        var ticks = 0
+        let sub = field.on(.tick) { _ in ticks += 1 }
+        for i in 0..<4 { host.fire(at: TimeInterval(i) / 60) }
+        #expect(ticks == 4)
+        sub.cancel()
+        for i in 4..<7 { host.fire(at: TimeInterval(i) / 60) }
+        #expect(ticks == 4) // cancelled — no further deliveries
+        field.destroy()
+    }
+
+    @Test("on(.bodyAdd) delivers the added body payload")
+    func onBodyAddSeam() {
+        let field = FieldField(host: HeadlessFieldHost())
+        var got: FieldEventPayload?
+        _ = field.on(.bodyAdd) { got = $0 }
+        let h = field.addBody(BodySpec(tokens: ["attract"]) {
+            Box(center: Vec3(187, 406, 0), halfExtents: Vec3(8, 8, 0))
+        })
+        #expect(got != nil)
+        #expect(got?.event == .bodyAdd)
+        #expect(got?.body === (h.bodyRef() as AnyObject?)) // the payload carries the added body
+        field.destroy()
+    }
+
+    @Test("registerOverlay — held in the registry, invoked on a host draw pass, removable")
+    func registerOverlaySeam() {
+        let field = FieldField(host: HeadlessFieldHost())
+        let renderer = CountingOverlay()
+        field.registerOverlay("diag", renderer)
+        #expect(field.overlayRegistry["diag"] === renderer)
+
+        // simulate one host draw pass over the registry.
+        for r in field.overlayRegistry.values { r.render(in: field) }
+        #expect(renderer.count == 1)
+
+        field.removeOverlay("diag")
+        #expect(field.overlayRegistry.isEmpty)
+        field.destroy()
+    }
+
     @Test("destroy cancels the frame loop")
     func destroyCancels() {
         let host = HeadlessFieldHost()
@@ -206,6 +302,14 @@ struct FieldFieldTests {
         #expect(field.energy().kinetic > 0)
         field.destroy()
     }
+}
+
+// MARK: - Test overlay renderer
+
+/// A minimal OverlayRenderer for the registerOverlay seam test — counts host draw passes.
+final class CountingOverlay: OverlayRenderer {
+    private(set) var count = 0
+    func render(in handle: any FieldHandle) { count += 1 }
 }
 
 // MARK: - HeadlessFieldHost
