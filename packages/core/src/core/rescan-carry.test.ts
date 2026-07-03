@@ -213,3 +213,78 @@ test('preset expansion carries per virtual body, keyed (el, per-element index) �
     field.destroy();
   }
 });
+
+test('anonymous body keeps its synthetic body-N id across a rescan that shifts sibling count (#970)', () => {
+  // A body with no DOM id gets a synthetic `body-N` (N = a per-field seq). Before #970 the id lived
+  // only on the rebuilt Body object, so ANY rescan minted a FRESH id for the same element — the id
+  // churned, breaking every consumer that keys on it (snapshot/diff/replay, captures, edges). The
+  // fix carries `identity` in the scan() reconciliation, keyed by (element, per-element index), so
+  // the SAME element keeps its id even when its scan index shifts under an add/remove.
+  const anon = virtualBody('', { 'data-body': 'attract', 'data-strength': '1.2', 'data-range': '400' }, { x: 500, y: 400, w: 40, h: 40 });
+  const bodyEls: unknown[] = [anon];
+  const { host } = drivableHost(bodyEls);
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none', rng: seeded(71) });
+  try {
+    field.scan();
+    // query() keys the body → mints + caches its synthetic id. Capture it.
+    const before = field.query().bodies[0]?.id;
+    assert.ok(before && before.startsWith('body-'), `the anonymous body got a synthetic id (${before})`);
+
+    // insert a NEW element BEFORE it → the anonymous body's scan index shifts (0 → 1). Pre-fix, the
+    // rebuilt body had no cached identity and drew the next seq value, so its id changed.
+    const sibling = virtualBody('', { 'data-body': 'wall', 'data-strength': '0.4', 'data-range': '60' }, { x: 80, y: 80, w: 20, h: 20 });
+    bodyEls.unshift(sibling);
+    field.rescan();
+
+    // find the SAME element's reading (match by rect centre — it's the only attract body).
+    const after = field.query().bodies.find((b) => b.tokens.includes('attract'))?.id;
+    assert.equal(after, before, `the same element kept its synthetic id across the rescan (before=${before}, after=${after})`);
+    // and the genuinely new element got a DISTINCT synthetic id (no accidental reuse/collision).
+    const siblingId = field.query().bodies.find((b) => b.tokens.includes('wall'))?.id;
+    assert.notEqual(siblingId, before, `the new element got its own id (${siblingId}), not the persisting one`);
+  } finally {
+    field.destroy();
+  }
+});
+
+test('dynamic-authority body keeps its position + velocity across a rescan — no teleport to authored slot (#970)', () => {
+  // A `data-authority="dynamic"` body's position/velocity are engine-owned (bx/by/bvx/bvy), not
+  // DOM-derived. makeBody leaves them undefined, so pre-#970 a rescan re-adopted the freshly-measured
+  // DOM centre and zeroed velocity — a drifting body teleported back to its authored slot when ANY
+  // body was added/removed. The fix carries the kinematic state in the scan() reconciliation.
+  // A strong off-centre attractor drags the dynamic body away from its authored (500,400) slot.
+  const mover = virtualBody('mover', { 'data-body': 'wall', 'data-authority': 'dynamic', 'data-strength': '0.2', 'data-range': '40' }, { x: 500, y: 400, w: 40, h: 40 });
+  const puller = virtualBody('puller', { 'data-body': 'attract', 'data-strength': '3', 'data-range': '900' }, { x: 200, y: 200, w: 40, h: 40 });
+  const bodyEls: unknown[] = [mover, puller];
+  const { host, step } = drivableHost(bodyEls);
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none', rng: seeded(83) });
+  try {
+    field.scan();
+    // let the dynamic body drift well away from its authored centre and pick up velocity.
+    let pos = { x: 500, y: 400 };
+    for (let i = 0; i < 400; i++) {
+      step(1);
+      const r = reading(field, 'mover')?.rect;
+      if (r) pos = { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    }
+    const drift = Math.hypot(pos.x - 500, pos.y - 400);
+    assert.ok(drift > 20, `the dynamic body drifted away from its authored slot before the rescan (drift=${drift.toFixed(1)}px)`);
+
+    // rescan mid-flight (a sibling arrives). Pre-fix this rebuilt bx/by at the authored rect (500,400)
+    // and zeroed velocity — an instant teleport back. The carry keeps it where it was.
+    bodyEls.push(virtualBody('late', { 'data-body': 'wall', 'data-strength': '0.4', 'data-range': '60' }, { x: 80, y: 80, w: 20, h: 20 }));
+    field.rescan();
+    // measureBodies runs inside scan() and transiently writes the DOM rect (500,400) to cx/cy, but
+    // the next moveDynamicBodies() re-asserts the carried bx/by as authoritative — so one frame after
+    // the rescan the body is back on its trajectory, NOT snapped home. Observe the SETTLED position.
+    step(1);
+    const r3 = reading(field, 'mover')?.rect;
+    const settled = r3 ? { x: r3.x + r3.width / 2, y: r3.y + r3.height / 2 } : pos;
+    const backToAuthored = Math.hypot(settled.x - 500, settled.y - 400);
+    const jump = Math.hypot(settled.x - pos.x, settled.y - pos.y);
+    assert.ok(backToAuthored > drift * 0.5, `the body kept its drifted position (still ${backToAuthored.toFixed(1)}px from the authored slot, was ${drift.toFixed(1)}px) — no teleport home`);
+    assert.ok(jump < drift * 0.5, `the rescan did not snap the body back toward its authored slot (post-rescan jump ${jump.toFixed(1)}px << accumulated drift ${drift.toFixed(1)}px)`);
+  } finally {
+    field.destroy();
+  }
+});
