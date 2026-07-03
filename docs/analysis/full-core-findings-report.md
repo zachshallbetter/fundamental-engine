@@ -385,3 +385,26 @@ Static review of `packages/vanilla` runtime/mount surfaces, host-resolution beha
 1. Add a focused contract-sync test that compares `FieldField` method surface against `FieldHandle` keys to catch delegation drift automatically.
 2. Expand behavior-level tests for vanilla-specific contained mode (`bounds`) and managed canvas positioning/cleanup interactions.
 3. Document the browser-vs-headless split more prominently in `README.md` with explicit decision guidance (`FieldField`/`mountField` vs `createField` with custom/headless host).
+
+## packages/create notes (added)
+### Scope
+Quick structural review of `packages/create` as the scaffolding CLI package.
+
+### Current state
+1. It is correctly wired as a CLI package.
+   - `bin` points to `dist/index.js`.
+   - Entry has a Node shebang and handles args + interactive prompts.
+2. Template system and scaffold flow are present and coherent for vanilla/react/web-component starters.
+
+### Suggested hardening follow-ups
+1. Add CLI smoke coverage for non-interactive invocation paths (`dir`, `--template`) to reduce release risk.
+2. Add explicit `--help`/`--version` handling for standard CLI UX consistency.
+3. Expand scaffold edge-case tests for existing non-empty targets and error surfacing paths.
+
+### Evidence index (packages/create)
+1. CLI wiring and executable entry
+   - `packages/create/package.json:19`
+   - `packages/create/src/index.ts:1`
+2. Argument parsing and interactive prompt flow
+   - `packages/create/src/index.ts:10`
+   - `packages/create/src/index.ts:22`
