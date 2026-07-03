@@ -159,6 +159,25 @@ test('a feedback body accumulates local density into b.count (§8)', () => {
   assert.ok(body.count > 0); // particle within range·0.5 contributed
 });
 
+test('a frozen step (dt = 0, reduced motion) drains b.count instead of leaving it stale (#967)', () => {
+  const store = new FieldStore();
+  store.add(makeP({ x: 100, y: 100 })); // on the body centre → contributes density
+  const body = {
+    tokens: ['attract'], vis: true, when: '', on: false, feedback: true,
+    cx: 100, cy: 100, range: 200, count: 0, d: 0,
+  } as unknown as Body;
+  // live tick: the body accumulates local density.
+  step({ store, bodies: [body], env: makeEnv(), forces: {}, conditions: {} });
+  assert.ok(body.count > 0, 'live step accumulates a non-zero count');
+  const live = body.count;
+  // motion freezes (reduced-motion / maxMotionBudget 0 → dt = 0). The integrator early-returns,
+  // but the density bookkeeping must still drain: writeFeedback() runs every frame regardless, so a
+  // stale count would keep `--d` elevated forever from a sim that is no longer running.
+  step({ store, bodies: [body], env: makeEnv({ dt: 0 }), forces: {}, conditions: {} });
+  assert.equal(body.count, 0, 'a dt=0 step re-zeros the count (does not hold the last live value)');
+  assert.notEqual(live, body.count, 'the frozen count is not the stale live value');
+});
+
 test('modifier pass: resonate scales the sibling strength, then restores it (§20.3)', () => {
   let seen = -1;
   const probe: Force = { token: 'probe', label: 'P', apply: (b) => void (seen = b.strength) };

@@ -198,16 +198,13 @@ export function makeAccumulator(): FieldImpulseAccumulator {
   return { linear: { x: 0, y: 0, z: 0 }, attribution: [] };
 }
 
-export function step(input: StepInput): void {
-  const { store, bodies, env, forces, conditions, waves, separation } = input;
-  const dt = env.dt;
-  if (dt === 0) return;
-  // the opt-in second-order scheme (#659) — see the header doc for the math + approximations.
-  const verlet = env.integrator === 'velocity-verlet';
-  const { W, H, form } = env;
-  // expose the net structure field so field-following forces (`fieldflow`) can read the
-  // superposition of every body's field() — the same vector the streamlines view draws.
-  env.fieldAt = (x, y) => netField(bodies, forces, x, y);
+/**
+ * Zero the per-frame density + thermodynamic accumulators on every body. Runs at the top of
+ * every step — including the frozen (`dt === 0`) path (#967) — so `b.count` never carries a
+ * stale value into `writeFeedback()`. The subsequent particle pass re-accumulates when the sim
+ * is live; when frozen, the counts stay at 0 and `--d` drains to the engagement-only baseline.
+ */
+function resetDensity(bodies: readonly Body[]): void {
   for (const b of bodies) {
     b.count = 0;
     // thermodynamic accumulators (workover v0.3 §"Metrics") share the density window/cadence.
@@ -221,6 +218,30 @@ export function step(input: StepInput): void {
       th.sh = 0;
     }
   }
+}
+
+export function step(input: StepInput): void {
+  const { store, bodies, env, forces, conditions, waves, separation } = input;
+  const dt = env.dt;
+  if (dt === 0) {
+    // Motion is frozen (reduced-motion / maxMotionBudget 0): skip integration, but the
+    // density/thermo bookkeeping MUST still drain. `writeFeedback()` runs unconditionally
+    // every frame, easing `b.d` toward `feedbackTarget(b.count, b.on)`. If we returned before
+    // zeroing the counts, `b.count` would hold its last live value forever — `--d`/`--field-density`
+    // (and the font-weight channel) would report particle presence from a sim that is no longer
+    // running (#967). The doctrine is "motion freezes; the signals stay honest": engagement
+    // (`b.on`, dt-independent) still reads truthfully, so `b.d` eases to `feedbackTarget(0, b.on)`
+    // — the engagement-only baseline — instead of lying about frozen density.
+    resetDensity(bodies);
+    return;
+  }
+  // the opt-in second-order scheme (#659) — see the header doc for the math + approximations.
+  const verlet = env.integrator === 'velocity-verlet';
+  const { W, H, form } = env;
+  // expose the net structure field so field-following forces (`fieldflow`) can read the
+  // superposition of every body's field() — the same vector the streamlines view draws.
+  env.fieldAt = (x, y) => netField(bodies, forces, x, y);
+  resetDensity(bodies);
   // visible `screen` bodies (workover v0.3): each damps OTHER bodies' forces on matter inside
   // its range (quiet zones / text shielding). No screens on the page (the common case) ⇒ this
   // stays null and the whole pass is skipped — zero cost and zero behavior change.

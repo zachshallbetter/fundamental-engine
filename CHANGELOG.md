@@ -71,6 +71,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   (samplers) hold. `PlaneProjection` and an uncentered `VolumeProjection` put that plane at world-z
   0, so default scenes are pixel-identical; tests pin the centered-volume registration and the
   default-unchanged invariant across all three draw paths.
+- **`@fundamental-engine/core`:** **reduced-motion no longer leaves body density stale (#967).**
+  Under `prefers-reduced-motion` (or `maxMotionBudget`/`budgets.motion` = 0) the sim freezes with
+  `env.dt = 0` and the integrator's `step()` early-returns — but it returned *before* the per-pass
+  `b.count = 0` reset, so the density counts held their last live value while `writeFeedback()` kept
+  running every frame, easing `--d`/`--field-density` (and the font-weight channel) toward a stale,
+  permanently-elevated count. A frozen field reported particle presence from a simulation that was
+  no longer running. The count/thermo reset is now hoisted into a shared `resetDensity()` that runs
+  on both the live and the `dt === 0` paths, so a frozen body's `b.count` re-zeros and `b.d` eases
+  down to `feedbackTarget(0, b.on)` — the engagement-only baseline. Engagement (`b.on`, which is
+  dt-independent) still reads truthfully: motion freezes, but the signals stay honest. Fixed in all
+  three planes (JS core + Swift + Kotlin, which shared the same integrator-seam ordering bug).
 
 - **`@fundamental-engine/three`:** **`threeBackend`'s line/rect vertex data actually reaches the GPU
   again** — writing the registration tests above exposed that the #463 persistent-buffer refactor
