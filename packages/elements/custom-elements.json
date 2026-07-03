@@ -548,7 +548,7 @@
               "type": {
                 "text": "boolean"
               },
-              "description": "draw the background Currents (§24).",
+              "description": "draw the background Currents (§24). OPT-IN (#979, mirrors the core default): the attribute\nmust be PRESENT (and not `\"false\"`) to build the waves — same semantics as `attention` /\n`causality` / `mass`. Absent = the bare field, no carrier waves.",
               "readonly": true
             },
             {
@@ -2072,7 +2072,7 @@
               "type": {
                 "text": "boolean"
               },
-              "description": "draw the background Currents (§24).",
+              "description": "draw the background Currents (§24). OPT-IN (#979, mirrors the core default): the attribute\nmust be PRESENT (and not `\"false\"`) to build the waves — same semantics as `attention` /\n`causality` / `mass`. Absent = the bare field, no carrier waves.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",

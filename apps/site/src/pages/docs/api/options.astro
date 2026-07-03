@@ -25,8 +25,8 @@ const cfgAttention = `// focus one thing at a time — one finite strength budge
 // so engaging a body starves the others
 createField(canvas, { attention: true });`;
 
-const cfgLowPower = `// a large or low-power surface — half the particles, no wave layer
-createField(canvas, { density: 0.5, waves: false });`;
+const cfgLowPower = `// a large or low-power surface — half the particles (waves are already off by default)
+createField(canvas, { density: 0.5 });`;
 
 const cfgMass = `// first-class mass — particle mass ∝ size, bodies accelerate by a = F/m
 createField(canvas, { mass: true });`;

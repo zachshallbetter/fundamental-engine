@@ -32,7 +32,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * (canonical) and `<field-field>`.
  * @attr {string} accent - Accent color (hex) the field draws particles and overlay in.
  * @attr {number} density - Particle-density multiplier (default `1`; `0.5` halves the count).
- * @attr {number} waves - Intensity of the resting wave currents (the ambient drift).
+ * @attr {boolean} waves - Draw the background Currents (the resting wave layers + bound shimmer). OPT-IN (#979): absent = off (the bare field); present (and not `"false"`) = on.
  * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `none`. The DEFAULT is `none` (#538) — the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn. Set `render="dots"` for the particle surface.
  * @attr {string} overlay - Overlay readings (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines` | `grid` | `temperature` | `energy` | `path` | `data` — or a space-separated stack (readings are additive, drawn in order).
  * @attr {string} palette - Named color palette for the field.
@@ -192,9 +192,11 @@ export class FieldField extends HTMLElementBase {
     return Number.isFinite(v) && v > 0 ? v : 1;
   }
 
-  /** draw the background Currents (§24). */
+  /** draw the background Currents (§24). OPT-IN (#979, mirrors the core default): the attribute
+   *  must be PRESENT (and not `"false"`) to build the waves — same semantics as `attention` /
+   *  `causality` / `mass`. Absent = the bare field, no carrier waves. */
   get waves(): boolean {
-    return this.getAttribute('waves') !== 'false';
+    return this.hasAttribute('waves') && this.getAttribute('waves') !== 'false';
   }
 
   /** render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,

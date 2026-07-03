@@ -33,6 +33,38 @@ struct FieldFieldTests {
         field.destroy()
     }
 
+    // Waves default OFF (#979, doc-06 Step 0) — the Currents are explicit opt-in on every plane.
+    // The bound shimmer is not in particleCount() (the other half of the particle ledger), so the
+    // one public seam that moves matter between pools observes it: burst tears bound matter free.
+    @Test("a bare field builds NO waves — burst finds no bound matter to tear (#979)")
+    func bareFieldHasNoWaves() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host) // no options: the flipped default
+        let before = field.particleCount()
+        for x in stride(from: Float(40), through: 340, by: 60) {   // sweep the 375×812 volume
+            for y in stride(from: Float(160), through: 720, by: 90) { // wave band 0.24…0.85 of H
+                field.burst(at: Vec3(x, y, 0))
+            }
+        }
+        #expect(field.particleCount() == before, "a bare field must have no bound reservoir")
+        field.destroy()
+    }
+
+    @Test("waves: true opts back in — the bound reservoir exists and burst tears it free (#979)")
+    func wavesOptInBuildsReservoir() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host, options: .init(waves: true))
+        let before = field.particleCount()
+        #expect(before == 130, "waves must not change the free-particle seed count")
+        for x in stride(from: Float(40), through: 340, by: 60) {
+            for y in stride(from: Float(160), through: 720, by: 90) {
+                field.burst(at: Vec3(x, y, 0))
+            }
+        }
+        #expect(field.particleCount() > before, "waves:true built no tearable bound reservoir")
+        field.destroy()
+    }
+
     @Test("energy reports the live pool")
     func energyCount() {
         let field = FieldField(host: HeadlessFieldHost())

@@ -73,6 +73,21 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Changed
 
+- **`@fundamental-engine/core` + `@fundamental-engine/elements`:** **the Currents (`waves`) default
+  to OFF — explicit opt-in on every plane (#979, doc-06 Step 0).** **Behavior change:** a bare field
+  no longer builds or draws the background carrier waves (the five wave layers + the bound shimmer
+  reservoir). `createField`'s `waves` option now defaults to `false`, and the `<field-root waves>`
+  attribute becomes a true opt-in boolean (absent = off; present and not `"false"` = on — the same
+  semantics as `attention`/`causality`/`mass`; previously absence meant ON). Opt back in with
+  `waves: true` / the `waves` attribute — the opted-in field is unchanged. This is the signals-first
+  companion to the `render: 'none'` flip (#538): hardcoded ambient structure painted identically
+  over every host is wallpaper, not substrate — the resting look is now declared where it is wanted
+  (the starter pins `waves`; the site's `<field-root>` already declared `waves="false"`). The Swift
+  port takes the same flip **plus** the `render: .dots → .none_` default it had retained from
+  pre-#538 (`FieldOptions` in `FieldHandle.swift`); the Kotlin port already had both defaults off
+  (`wavesEnabled = false`, `RenderMode.NONE`) and gains a pin test. The cross-plane conformance
+  golden never passes waves and is byte-unchanged.
+
 - **`@fundamental-engine/core`:** **the RC-6 contract-coverage guard now guards body attributes**
   (`packages/core/src/contract-coverage.test.ts`, #323). The meta-test already asserted every public
   `FieldOptions` key and the readable metric surface are exercised by a test; it now adds the third leg

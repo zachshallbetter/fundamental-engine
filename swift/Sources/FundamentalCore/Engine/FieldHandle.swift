@@ -65,9 +65,13 @@ public struct FieldOptions {
     public var accent: String?
     public var palette: [String]?
     public var density: Float?
+    /// Build the background Currents (carrier waves + the bound shimmer reservoir). Default `false`
+    /// (opt-in, JS #979 parity) — a bare field has no carrier waves.
     public var waves: Bool
     public var waveStyle: WaveStyle
     public var waveCenter: WaveCenter?
+    /// Underlay render mode. Default `.none_` (signals-first, JS #538 parity): the sim + feedback run
+    /// but nothing is drawn. Pass `.dots` for the particle surface.
     public var render: RenderMode
     public var firstClassMass: Bool
     public var attention: Bool
@@ -112,10 +116,10 @@ public struct FieldOptions {
         accent: String? = nil,
         palette: [String]? = nil,
         density: Float? = nil,
-        waves: Bool = true,
+        waves: Bool = false,
         waveStyle: WaveStyle = .linear,
         waveCenter: WaveCenter? = nil,
-        render: RenderMode = .dots,
+        render: RenderMode = .none_,
         firstClassMass: Bool = false,
         attention: Bool = false,
         causality: Bool = false,

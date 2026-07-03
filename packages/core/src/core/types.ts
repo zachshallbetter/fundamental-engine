@@ -659,8 +659,9 @@ export interface FieldOptions {
    *  second-order velocity-Verlet scheme (higher positional accuracy; trajectories differ by
    *  design). See {@link Env.integrator}. */
   integrator?: IntegratorMode;
-  /** draw the background Currents (§24); default true. Set false for the bare
-   *  free-particle field with no carrier waves. */
+  /** draw the background Currents (§24); default **false** (opt-in, #979 — the signals-first
+   *  companion to `render: 'none'`). A bare field has no carrier waves; set true for the ambient
+   *  resting structure + the bound shimmer reservoir. */
   waves?: boolean;
   /** wave layout style: `'linear'` (default horizontal lines) or `'circular'` (concentric orbits around a center). */
   waveStyle?: 'linear' | 'circular';
