@@ -660,6 +660,7 @@
         "causality",
         "density",
         "depth",
+        "depthFocal",
         "dprCap",
         "feedbackSink",
         "firstClassMass",
@@ -667,7 +668,9 @@
         "gradientWarm",
         "gridIntensity",
         "gridWarp",
+        "heatCenter",
         "heatmap",
+        "heatmapFade",
         "host",
         "identify",
         "integrator",
@@ -684,6 +687,7 @@
         "policy",
         "qualityTier",
         "reaction",
+        "redshiftObserver",
         "render",
         "rng",
         "separation",
@@ -694,7 +698,7 @@
         "waves"
       ],
       "counts": {
-        "js": 35,
+        "js": 39,
         "swift": 26,
         "kotlin": 0
       },
@@ -708,13 +712,16 @@
           "causality",
           "density",
           "depth",
+          "depthFocal",
           "dprCap",
           "feedbackSink",
           "gradientCool",
           "gradientWarm",
           "gridIntensity",
           "gridWarp",
+          "heatCenter",
           "heatmap",
+          "heatmapFade",
           "host",
           "identify",
           "integrator",
@@ -727,6 +734,7 @@
           "palette",
           "policy",
           "reaction",
+          "redshiftObserver",
           "render",
           "rng",
           "separation",
@@ -816,6 +824,12 @@
           "kotlin": false
         },
         {
+          "symbol": "depthFocal",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
           "symbol": "dprCap",
           "js": true,
           "swift": true,
@@ -858,9 +872,21 @@
           "kotlin": false
         },
         {
+          "symbol": "heatCenter",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
           "symbol": "heatmap",
           "js": true,
           "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "heatmapFade",
+          "js": true,
+          "swift": false,
           "kotlin": false
         },
         {
@@ -955,6 +981,12 @@
         },
         {
           "symbol": "reaction",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "redshiftObserver",
           "js": true,
           "swift": false,
           "kotlin": false

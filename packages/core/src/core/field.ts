@@ -412,6 +412,21 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // optional z volume (z-axis.md): 0 — the default — is the flat field, byte-identical
     // to the 2D engine; > 0 opens a shallow depth the matter drifts through, opt-in.
     depth: opts.depth && opts.depth > 0 ? opts.depth : 0,
+    // DECLARED render reference points (Wallpaper Rule, #975): four content-independent constants
+    // formerly painted into the draw path, now dials whose defaults reproduce the historical values
+    // (so every render mode stays byte-identical by default).
+    // heat vignette center — viewport fractions, formerly (W/2, H·0.4). Resolved to px per frame.
+    heatCenterX: opts.heatCenter && Number.isFinite(opts.heatCenter.x) ? opts.heatCenter.x : 0.5,
+    heatCenterY: opts.heatCenter && Number.isFinite(opts.heatCenter.y) ? opts.heatCenter.y : 0.4,
+    // redshift observer — viewport fractions, formerly (W/2, H/2). Resolved to px per frame.
+    redshiftObserverX: opts.redshiftObserver && Number.isFinite(opts.redshiftObserver.x) ? opts.redshiftObserver.x : 0.5,
+    redshiftObserverY: opts.redshiftObserver && Number.isFinite(opts.redshiftObserver.y) ? opts.redshiftObserver.y : 0.5,
+    // depth-camera focal length in CSS px, formerly the hardcoded FOCAL = 480.
+    depthFocal: opts.depthFocal != null && opts.depthFocal > 0 ? opts.depthFocal : 480,
+    // heatmap scroll-fade curve (in viewports), formerly the hardcoded (1.15 - scrollY/H)/0.85 —
+    // full above start·H, gone by (start+span)·H. Defaults reproduce start=0.3, span=0.85.
+    heatmapFadeStart: opts.heatmapFade && Number.isFinite(opts.heatmapFade.start) ? opts.heatmapFade.start : 0.3,
+    heatmapFadeSpan: opts.heatmapFade && Number.isFinite(opts.heatmapFade.span) && opts.heatmapFade.span > 0 ? opts.heatmapFade.span : 0.85,
     // the integration scheme (substrate doc 04 §Step 3, #659); 'legacy' (default) is the shipped engine.
     integrator: (opts.integrator === 'fixed' || opts.integrator === 'velocity-verlet'
       ? opts.integrator
@@ -1813,7 +1828,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // MONOTONIC function of scroll POSITION — full through the top of the page, gone by ~1.15 viewports
     // — so it never flickers; and below the hero the whole layer is skipped (the #409 at-rest upscale
     // cost the heatmap is otherwise paying every frame for a glow you can't focus on mid-page).
-    const hmFade = H > 0 ? clamp((1.15 - lastScrollY / H) / 0.85, 0, 1) : 1;
+    // DECLARED scroll-fade curve (#975): full above start·H, gone by (start+span)·H — formerly the
+    // hardcoded (1.15 - scrollY/H)/0.85 (start=0.3, span=0.85 reproduce it, so it stays byte-identical).
+    const hmFade = H > 0 ? clamp((cfg.heatmapFadeStart + cfg.heatmapFadeSpan - lastScrollY / H) / cfg.heatmapFadeSpan, 0, 1) : 1;
     if (hmFade <= 0.01) return;
     const cell = heatmap.cell;
     const cols = Math.max(1, Math.ceil(W / cell));
@@ -1885,10 +1902,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       ctx!.fillRect(0, 0, W, H);
     }
     drawWaves();
-    // The heatmap is a continuous ambient layer — NOT coupled to scroll. It draws every frame
-    // whenever enabled. (An earlier scroll-suppression made it pop/fade out while scrolling, which
-    // read as choppy; the perf intent is served instead by the compute throttle — the texel grid is
-    // recomputed only every 3rd frame — so the per-frame cost is just the cached bilinear upscale.)
+    // The heatmap is an ambient layer that fades out with scroll POSITION (the DECLARED `heatmapFade`
+    // curve above), not with scroll SPEED. An earlier speed-based suppression made it pop/fade in/out
+    // while scrolling, which read as choppy; the position fade is monotonic so it never flickers, and
+    // the per-frame cost is just the cached bilinear upscale (the texel grid recomputes every 3rd
+    // frame). Below the fade window the whole layer is skipped.
     if (heatmap && qualityTier < 2) drawHeatmap(); // #413: drop the heaviest ambient layer at tier 2+
     drawBound();
 
@@ -1907,8 +1925,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       cfg.render !== 'depth';
     ctx!.globalCompositeOperation = 'lighter';
     const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
-    const cx = W / 2;
-    const cy = H * 0.4;
+    // DECLARED heat-vignette center (#975): viewport fractions → px, formerly the hardcoded (W/2, H·0.4).
+    const cx = W * cfg.heatCenterX;
+    const cy = H * cfg.heatCenterY;
     const maxD = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) || 1;
     // Tag-tint: every body carrying a colour stains the swarm toward its tint by proximity — a
     // pervasive, render-time companion to the overlap-only `pigment` force, so a particle near a
@@ -2137,8 +2156,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // accretion-disk" look: matter falling around a sink wears its infall.
     if (cfg.render === 'redshift') {
       ctx!.globalCompositeOperation = 'lighter';
-      const ox = W / 2;
-      const oy = H / 2;
+      // DECLARED observer (#975): viewport fractions → px, formerly the hardcoded (W/2, H/2).
+      const ox = W * cfg.redshiftObserverX;
+      const oy = H * cfg.redshiftObserverY;
       for (const p of store.particles) {
         if (p.cap) continue;
         let well = 0;
@@ -2207,8 +2227,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (!depthIdx || depthIdx.length !== n) depthIdx = new Array<number>(n);
       for (let i = 0; i < n; i++) depthIdx[i] = i;
       depthIdx.sort((a, b) => Math.abs(parts[b]!.z ?? 0) - Math.abs(parts[a]!.z ?? 0)); // far first
-      const FOCAL = 480; // px — perspective focal length (z volumes are a few hundred px)
-      const ox = W / 2;
+      const FOCAL = cfg.depthFocal; // DECLARED (#975): px focal length, formerly hardcoded 480.
+      const ox = W / 2; // projection center = viewport center (perspective principal point).
       const oy = H / 2;
       for (let i = 0; i < n; i++) {
         const p = parts[depthIdx[i]!]!;
