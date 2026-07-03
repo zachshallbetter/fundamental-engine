@@ -43,7 +43,7 @@ standalone per-force demo pool).
 ## 5. "I'll poll the particles to read the field state."
 
 **Read the signals, not the particles.** The field's output is the `--field-*` CSS variables on
-`[data-feedback]` bodies and the discrete event bus (`field.on('absorb' | 'release' | 'settle', …)`).
+`[data-feedback]` bodies and the discrete event bus (`field.on('absorb' | 'release' | 'enter' | 'exit' | 'met', …)`).
 For sampled scalars use `field.sampleScalar(x, y)` / `sampleGradient(x, y)` (these need
 `heatmap: true` — they warn in dev if it is off). `readParticles()` exists for renderers, not for reading
 state.

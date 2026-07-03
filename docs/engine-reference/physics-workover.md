@@ -156,6 +156,12 @@ bounded heat, and a stable particle count unless a budgeted [S] source is active
 
 ## Type contracts to add
 
+> **Planned / draft — NOT in the runtime today.** These `IntegratorMode`/`MediumMode`/`DragMode`/
+> `MediumConfig` shapes are the v0.4+ target design, not shipped types. As of today the engine has no
+> medium/drag mode system (§"Phase 0 audit": *"No `PhysicsMode`, `IntegratorMode`, or `MediumMode` type
+> system"*); the shipped `integrator` option is `'legacy' | 'fixed' | 'velocity-verlet'` (see
+> [`../canonical/substrate-api.md`](../canonical/substrate-api.md)). Do not import these.
+
 ```ts
 type IntegratorMode = 'legacy-euler' | 'semi-implicit-euler-dt' | 'velocity-verlet';
 type MediumMode = 'designed-damping' | 'vacuum' | 'linear-drag' | 'quadratic-drag' | 'mixed-drag';

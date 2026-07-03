@@ -367,8 +367,12 @@ momentum-recoil from a body's own emission, torque, and conservation are later r
 ## Integrator modes — `createField({ integrator: 'fixed' })`
 
 The integration scheme. `'legacy'` (default) is the shipped semi-implicit Euler with per-frame decay.
-`'fixed'` opts into a frame-rate-independent integrator: additive force impulses and the
-`FRICTION`/`HEAT_DECAY` decays scale with `dt`, so motion is consistent across frame rates.
+`'fixed'` opts into a **partially** frame-rate-corrected integrator: the per-step decays
+(`FRICTION`/`HEAT_DECAY`) scale with `dt`, so damping is consistent across frame rates. By design it
+does **not** yet dt-scale force impulses — the single-particle rescale trick is unsound for forces that
+also mutate a neighbour in the same pass (`collide`/`link` apply an equal-and-opposite impulse the path
+can't see), so frame-rate-correct impulses wait for the force-contract change where every contribution
+flows through the accumulator (see `packages/core/src/core/integrator.ts` `applyForce`, doc-04 §Step 3).
 
 ```ts
 type IntegratorMode = 'legacy' | 'fixed';
