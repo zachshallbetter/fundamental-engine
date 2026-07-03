@@ -16,6 +16,14 @@ export interface Point {
 export class SpatialHash<T extends Point> {
   private readonly cell: number;
   private readonly bins = new Map<number, T[]>();
+  /**
+   * Bin arrays retired by `clear()` — held for reuse so a `rebuild()` that re-populates the same
+   * (or a similar) set of cells does not allocate a fresh array per cell every frame. The index is
+   * rebuilt each frame (field-store `reindex`), so without this the GC churns one array per non-empty
+   * cell per frame at high particle counts. Query behaviour is unchanged: a bin is only ever exposed
+   * once it holds live items, and `clear()` empties every live bin before any are handed out.
+   */
+  private readonly freeBins: T[][] = [];
 
   constructor(cellSize = 64) {
     this.cell = cellSize > 0 ? cellSize : 64;
@@ -27,6 +35,12 @@ export class SpatialHash<T extends Point> {
   }
 
   clear(): void {
+    // Retain the arrays: empty each live bin (length = 0 keeps the backing store) and move it to the
+    // free-list, then drop the map entries. Next rebuild pulls from the free-list before allocating.
+    for (const bin of this.bins.values()) {
+      bin.length = 0;
+      this.freeBins.push(bin);
+    }
     this.bins.clear();
   }
 
@@ -36,8 +50,17 @@ export class SpatialHash<T extends Point> {
       Math.floor(item.y / this.cell)
     );
     const bin = this.bins.get(k);
-    if (bin) bin.push(item);
-    else this.bins.set(k, [item]);
+    if (bin) {
+      bin.push(item);
+    } else {
+      const fresh = this.freeBins.pop();
+      if (fresh) {
+        fresh.push(item);
+        this.bins.set(k, fresh);
+      } else {
+        this.bins.set(k, [item]);
+      }
+    }
   }
 
   rebuild(items: readonly T[]): void {

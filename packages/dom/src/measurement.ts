@@ -52,6 +52,13 @@ function visibilityRatio(r: FieldRect, vp: Viewport): number {
 export class MeasurementRegistry {
   private readonly entries = new Map<Element, Entry>();
   private snapshot: readonly FieldMeasurement[] = [];
+  /**
+   * Identity-keyed index into the current `snapshot`, rebuilt each `measure()`. Turns `for(element)`
+   * from an O(N) linear scan of the snapshot array (which forces called per-element → O(M×N)/frame)
+   * into an O(1) Map lookup. Reset before `measure()` populates it, so `for()` on a since-pruned
+   * element correctly returns undefined.
+   */
+  private byElement = new Map<Element, FieldMeasurement>();
   private guard: ((op: string) => void) | null = null;
 
   /**
@@ -89,6 +96,8 @@ export class MeasurementRegistry {
     this.guard?.('measure'); // read-phase discipline: reading layout off-phase thrashes
     const vp = viewport ?? defaultViewport();
     const out: FieldMeasurement[] = [];
+    const index = this.byElement;
+    index.clear();
     for (const [el, e] of this.entries) {
       if (!el.isConnected) {
         this.entries.delete(el);
@@ -96,14 +105,16 @@ export class MeasurementRegistry {
       }
       const rect = toFieldRect(e.getRect ? e.getRect() : el.getBoundingClientRect());
       const ratio = visibilityRatio(rect, vp);
-      out.push({
+      const m: FieldMeasurement = {
         element: el,
         rect,
         visible: ratio > 0,
         visibilityRatio: ratio,
         coordinateSpace: e.coordinateSpace ?? 'viewport',
         timestamp: now,
-      });
+      };
+      out.push(m);
+      index.set(el, m);
     }
     this.snapshot = out;
     return out;
@@ -114,9 +125,9 @@ export class MeasurementRegistry {
     return this.snapshot;
   }
 
-  /** The latest measurement for one element, if present. */
+  /** The latest measurement for one element, if present. O(1) via the identity index. */
   for(element: Element): FieldMeasurement | undefined {
-    return this.snapshot.find((m) => m.element === element);
+    return this.byElement.get(element);
   }
 }
 
