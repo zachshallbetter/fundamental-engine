@@ -120,6 +120,28 @@ This section isolates findings that come directly from `packages/core/src` imple
 4. Add targeted integrator conformance tests that pin fixed vs verlet caveats.
 5. Add doc-truth CI checks specifically for integrator/mode/type contract drift.
 
+### Evidence index (core concerns)
+1. `core/field.ts` concentration / central orchestration surface
+   - `packages/core/src/core/field.ts:315` (`createField requires opts.host` path in central constructor)
+   - `packages/core/src/core/field.ts:2459` (main frame loop cadence + orchestration)
+   - `packages/core/src/core/field.ts:430` (event coalescer wiring in same module)
+   - `packages/core/src/core/field.ts:3323` (destroy/lifecycle cleanup in same module)
+2. Determinism seam inconsistency
+   - `packages/core/src/forces/natural.ts:217` (`Math.random` usage in thermal pathway)
+   - `packages/core/src/conformance/run.ts:235` (global `Math.random` patching in conformance harness)
+   - `packages/core/src/core/determinism.test.ts:74` (determinism assertions context)
+3. Spatial hash allocation churn
+   - `packages/core/src/core/spatial-hash.ts:40` (`this.bins.set(k, [item])`)
+   - `packages/core/src/core/field-store.ts:43` (`reindex()` per-frame rebuild entrypoint)
+4. Integrator semantics (fixed mode caveat)
+   - `packages/core/src/core/integrator.ts:158` (explicit note: fixed mode does not dt-scale all force impulses)
+   - `packages/core/src/core/integrator.ts:581` (dt-scaled decays/wander handling context in runtime path)
+   - `packages/core/src/core/types.ts:447` (`IntegratorMode` runtime type contract)
+5. Docs/runtime vocabulary drift evidence
+   - Runtime: `packages/core/src/core/types.ts:447`
+   - Docs: `docs/canonical/substrate-api.md:374`
+   - Docs draft terms: `docs/engine-reference/physics-workover.md:202`
+
 ## Claim-validation results (from follow-up analysis)
 ### Set A (patterns + alignment gaps)
 - DOM isolation enforcement claim: Accurate

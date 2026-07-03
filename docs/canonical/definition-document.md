@@ -14,6 +14,7 @@
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Visualization and diagnostics |
 | [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring and recipes |
 | [`testing-and-conformance.md`](testing-and-conformance.md) | Testing and conformance |
+| [`wallpaper-rule.md`](wallpaper-rule.md) | The substrate-not-wallpaper rule made operational |
 
 ## 1. Definition
 
