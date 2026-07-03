@@ -36,6 +36,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Fixed
 
+- **`@fundamental-engine/core`:** **the last two unseeded randomness sites now flow through the
+  injected rng (#976).** The `thermal` force's four Box–Muller draws (`forces/natural.ts`) and the
+  spark-burst COUNT (`sparkCount` in `field.ts`'s `spawnSpark` — the directions were already
+  seeded) drew raw `Math.random`, so a seeded field with a thermal body was non-reproducible and
+  any discharge shifted the shared rng stream by a run-varying number of draws, diverging every
+  draw after it. Both now use the #371 `(e.rng ?? Math.random)` pattern; a field-level determinism
+  test pins a seeded thermal + discharge run to a bit-identical fingerprint across runs. Default
+  (unseeded) behavior is unchanged; the conformance harness's global-swap seeding still applies
+  through the fallback.
+
 - **`@fundamental-engine/three`:** **`threeBackend`'s overlay `z` now offsets the projected field
   plane instead of being an absolute world z (#949).** The backend pinned every overlay vertex —
   lines/arrows (`segments`/`polyline`), the data-chip plates (`rect`), and the #921 label sprites
