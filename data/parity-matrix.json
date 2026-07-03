@@ -653,6 +653,8 @@
       "label": "Field options (JS/Swift struct; Kotlin uses setters)",
       "union": [
         "accent",
+        "ambientOrbit",
+        "ambientWander",
         "attention",
         "background",
         "causality",
@@ -692,13 +694,15 @@
         "waves"
       ],
       "counts": {
-        "js": 33,
-        "swift": 23,
+        "js": 35,
+        "swift": 25,
         "kotlin": 0
       },
       "planes": {
         "js": [
           "accent",
+          "ambientOrbit",
+          "ambientWander",
           "attention",
           "background",
           "causality",
@@ -734,6 +738,8 @@
         ],
         "swift": [
           "accent",
+          "ambientOrbit",
+          "ambientWander",
           "attention",
           "background",
           "causality",
@@ -762,6 +768,18 @@
       "support": [
         {
           "symbol": "accent",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "ambientOrbit",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "ambientWander",
           "js": true,
           "swift": true,
           "kotlin": false
