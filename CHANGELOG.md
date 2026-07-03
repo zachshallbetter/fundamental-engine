@@ -31,6 +31,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   - **`@fundamental-engine/create`:** template deps are pinned to a bounded range (`^0.9.2`) instead
     of `latest`; the CLI now handles `--help`/`-h` and `--version`/`-v`; added non-interactive CLI
     smoke tests.
+### Removed
+
+- **The migration-alias surface, per the 1.0 removal checklist (#939):** the `forces:*` event alias
+  (use the canonical `field:*` events), the `--mass` CSS variable (use `--load`), and the deprecated
+  `@fundamental-engine/platform` alias package (import `@fundamental-engine/dom` directly). The
+  publishable set is now six packages. Dev-console deprecation warnings shipped one cycle ahead (#930);
+  the migration table is `docs/migration-0.x-to-1.0.md`.
 
 ### Docs
 

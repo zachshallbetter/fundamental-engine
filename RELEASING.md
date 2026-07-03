@@ -39,7 +39,7 @@ contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
 1. **Green `main`.** CI (typecheck · test · build · checks) must be passing.
 2. **Update the CHANGELOG.** Add a versioned, dated heading (`## [x.y.z] — YYYY-MM-DD`) following
    [Keep a Changelog](https://keepachangelog.com).
-3. **Bump all seven packages together** (keep them at the same version):
+3. **Bump all six packages together** (keep them at the same version):
    ```sh
    pnpm --filter "@fundamental-engine/*" exec npm version <patch|minor|major> --no-git-tag-version
    ```
