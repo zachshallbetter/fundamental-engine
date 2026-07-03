@@ -187,3 +187,201 @@ This section isolates findings that come directly from `packages/core/src` imple
 ## Overall assessment
 The core architecture is strong at seams, extensibility, and runtime observability, with thoughtful attention to host abstraction and interaction parity.
 Main concerns are concentrated in maintainability hotspots (`field.ts` size), determinism consistency, and documentation/runtime drift in advanced physics/integrator concepts.
+
+## packages/dom review (added)
+### Scope
+Static review + deeper follow-up of `packages/dom/src`, including host adapters, platform registries/scheduler, lint/perf subsystems, recipe application path, and worker bridge.
+
+### High-confidence strengths
+1. Strong architectural separation from core (platform/DOM concerns stay in `@fundamental-engine/dom`).
+   - `packages/dom/src/index.ts`
+   - `packages/dom/src/platform.ts`
+2. Clear frame-phase discipline with explicit read/write boundaries.
+   - `packages/dom/src/schedule.ts`
+   - `packages/dom/src/measurement.ts` (phase guard hook)
+3. Registry lifecycle hygiene is actively designed (prune/unregister paths, cadence sweep).
+   - `packages/dom/src/state.ts`
+   - `packages/dom/src/feedback.ts`
+   - `packages/dom/src/relationships.ts`
+   - `packages/dom/src/overlays.ts`
+   - `packages/dom/src/platform.ts`
+4. Lint and perf tooling are substantive, not superficial.
+   - `packages/dom/src/lint.ts`
+   - `packages/dom/src/perf.ts`
+5. Test suite depth is strong in core DOM-platform mechanics.
+   - Full run: 159 tests passed, 0 failed (`cd packages/dom && node --test`).
+
+### Deeper-pass concerns
+1. Worker bridge pathing is build-sensitive.
+   - `packages/dom/src/worker/offthread-bridge.ts` creates worker via `new URL('./render-worker.js', import.meta.url)`.
+   - Source file is `render-worker.ts`; this is likely correct post-build but can be fragile across source-run/test/bundler contexts.
+2. Offthread frame payload currently allocates per tick.
+   - `packages/dom/src/worker/offthread-bridge.ts` posts `buf.slice(...)` each frame.
+   - Existing `pending` guard helps, but this still introduces recurring allocation pressure in high-throughput cases.
+3. `x-ray` uses weakly typed optional capability access.
+   - `packages/dom/src/x-ray.ts` accesses `(field as any).sample` and `(field as any).energy`.
+   - Functional, but reduces contract clarity and type safety.
+4. `applyRecipe` has grown into a broad orchestration module.
+   - Validation, compile, annotation, metric compute/state updates, reduced-motion rendering, field-driving, inspect and teardown are co-located.
+   - `packages/dom/src/apply-recipe.ts`
+5. Test coverage appears lighter for some adapter/runtime edges than for core registries.
+   - No direct `browser-host` or `x-ray` test files were found in `packages/dom/src` (file-name scan).
+
+### Evidence index (packages/dom)
+1. Scheduler/read-write spine + phase guard
+   - `packages/dom/src/schedule.ts:24`
+   - `packages/dom/src/measurement.ts:62`
+   - `packages/dom/src/platform.ts:55`
+2. Lifecycle prune cadence
+   - `packages/dom/src/platform.ts:69`
+3. Worker bridge sensitivity and allocation behavior
+   - `packages/dom/src/worker/offthread-bridge.ts:33` (worker URL to `render-worker.js`)
+   - `packages/dom/src/worker/offthread-bridge.ts:57` (per-frame `buf.slice(...)`)
+4. Weakly typed `x-ray` capability probes
+   - `packages/dom/src/x-ray.ts:32`
+   - `packages/dom/src/x-ray.ts:33`
+5. `applyRecipe` orchestration concentration
+   - `packages/dom/src/apply-recipe.ts:118`
+   - `packages/dom/src/apply-recipe.ts:196`
+   - `packages/dom/src/apply-recipe.ts:331`
+
+### Suggested follow-ups (packages/dom)
+1. Harden offthread worker URL strategy for source/build parity and toolchain portability.
+2. Reduce per-frame worker payload allocation (transferable/ring-buffer approach).
+3. Replace `x-ray` `any` probes with explicit optional-capability type guards.
+4. Split `applyRecipe` into narrower modules (metrics pipeline, reduced-motion surface, field-drive, lifecycle).
+5. Add focused tests for `browser-host` listener lifecycle and `x-ray` mount/teardown behavior.
+
+## packages/elements review (added)
+### Scope
+Static review of `packages/elements/src` plus test/contract coverage inspection for `<field-root>`, platform-runtime integration, SSR pre-registration queue, and `<field-cell>` local demo runtime.
+
+### High-confidence strengths
+1. `<field-root>` has a broad, well-forwarded handle surface with explicit reflection/round-trip protections.
+   - Option forwarding is centralized in one declarative table and pinned by drift-guard tests.
+   - Imperative setters reflect to attributes with a reflection guard to avoid double-apply loops.
+2. SSR/hydration ordering is handled explicitly via pre-registration buffering and replay.
+   - Early body register/unregister events are captured before field listeners are live, then replayed after startup.
+3. Platform-runtime path is structured and test-backed, not ad hoc.
+   - Measurement sync, shadow body registration, feedback routing, and relationship discovery cadence are all isolated as pure helpers with focused tests.
+4. Lifecycle hygiene is strong.
+   - `disconnectedCallback` tears down observers, field handle, overlay surface, and runtime in one path.
+   - Overlay canvas creation is lazy/idempotent and removed at teardown.
+5. Coverage on critical integration contracts is strong.
+   - Test suite includes surface forwarding, lifecycle teardown, option/observed-attr drift guards, platform-runtime branch behavior, feedback channel mapping, shadow registration, relationship cadence, and SSR queue semantics.
+   - Package test run result: 77 passed, 0 failed.
+
+### Deeper-pass concerns
+1. `src/index.ts` is becoming a concentration point.
+   - It owns attributes parsing, runtime branching, lifecycle, proxy API, reflection mechanics, overlay-surface management, and custom-element registration in one file.
+2. Platform runtime is default-on while legacy engine remains active, increasing moving parts and potential coordination overhead.
+   - Runtime starts alongside legacy field, runs its own scheduler/governor loop, and wires document-level shadow registration listeners.
+3. Pre-registration queue correctness depends on module-global state and boot/teardown ordering.
+   - The design is deliberate and tested, but global counters/flags (`activeFields`, `installed`) increase coupling risk if future lifecycle paths diverge.
+4. `<field-cell>` intentionally diverges from core simulation guarantees.
+   - It is a separate lightweight poster engine with local `Math.random` pool init and simplified force model; useful by design, but behavior is not comparable to core deterministic/replay expectations.
+
+### Evidence index (packages/elements)
+1. Centralized options + observed-attr drift control
+   - `packages/elements/src/index.ts:73`
+   - `packages/elements/src/index.ts:115`
+   - `packages/elements/src/option-attrs.test.ts:15`
+   - `packages/elements/src/option-attrs.test.ts:40`
+2. Reflection guard + live attribute/imperative parity
+   - `packages/elements/src/index.ts:337`
+   - `packages/elements/src/index.ts:426`
+   - `packages/elements/src/field-root-surface.test.ts:44`
+   - `packages/elements/src/field-root-surface.test.ts:87`
+3. Lifecycle teardown completeness
+   - `packages/elements/src/index.ts:575`
+   - `packages/elements/src/lifecycle.test.ts:27`
+4. Lazy overlay surface lifecycle
+   - `packages/elements/src/index.ts:637`
+   - `packages/elements/src/index.ts:668`
+   - `packages/elements/src/field-root-surface.test.ts:163`
+5. Platform-runtime default path + runtime responsibilities
+   - `packages/elements/src/platform-runtime.ts:83`
+   - `packages/elements/src/platform-runtime.ts:113`
+   - `packages/elements/src/platform-runtime.ts:180`
+   - `packages/elements/src/platform-runtime.feedback.test.ts:36`
+6. Relationship cadence and shadow registration helpers
+   - `packages/elements/src/platform-runtime.ts:62`
+   - `packages/elements/src/platform-runtime.ts:121`
+   - `packages/elements/src/platform-runtime.shadow.test.ts:25`
+   - `packages/elements/src/platform-runtime.relationships.test.ts:10`
+7. SSR pre-registration queue global-state design
+   - `packages/elements/src/preregistration-queue.ts:77`
+   - `packages/elements/src/preregistration-queue.ts:89`
+   - `packages/elements/src/preregistration-queue.ts:107`
+   - `packages/elements/src/preregistration-queue.test.ts:81`
+8. `<field-cell>` independent demo runtime and simplified force model
+   - `packages/elements/src/field-cell.ts:43`
+   - `packages/elements/src/field-cell.ts:244`
+   - `packages/elements/src/cell-force.ts:1`
+   - `packages/elements/src/field-cell-budget.test.ts:60`
+
+### Suggested follow-ups (packages/elements)
+1. Split `src/index.ts` into narrower modules (attribute parsing/options, lifecycle/runtime boot, handle proxy surface, overlay surface utilities).
+2. Add an integration test that exercises `start()` rebuild paths across multiple construction-time attribute changes to detect lifecycle/order regressions early.
+3. Add explicit multi-instance tests for pre-registration queue + active field counting to lock down behavior when multiple `<field-root>` instances connect/disconnect in varying orders.
+4. Define and document a clear boundary statement for `<field-cell>` vs core runtime guarantees (determinism/replay/physics parity) to avoid assumption drift.
+
+## packages/vanilla review (added)
+### Scope
+Static review of `packages/vanilla` runtime/mount surfaces, host-resolution behavior, headless path, substrate API delegation, and packaging/build distribution seams.
+
+### High-confidence strengths
+1. Clean framework-free boundary with no side effects.
+   - Package exports field/mount/create APIs without custom-element registration and marks `sideEffects: false`.
+2. Host resolution is explicit and pragmatic.
+   - `createField` resolves `host` in clear priority (`opts.host` → `bounds`/contained host → browser host), preserving a one-call API while enabling custom/contained modes.
+3. `FieldField` strongly mirrors `FieldHandle`.
+   - The class delegates a broad surface (query/snapshot/diff/replay/projections/policy/agents/bodies/edges/channels) while cleanly handling managed-vs-owned canvas lifecycle.
+4. Browser/SSR guardrails are explicit.
+   - `assertBrowser()` provides early failure with actionable messaging instead of cryptic server crashes.
+5. Headless and substrate contracts are exercised directly in tests.
+   - Coverage includes DOM-managed mount, signals-only mode, explicit host override, headless host ticking, substrate API delegation, projection registry operations, and version export consistency.
+   - Package test run result: 53 passed, 0 failed.
+6. Distribution ergonomics are strong for non-bundler consumers.
+   - Standalone script emits bundled ESM and global IIFE artifacts for drop-in usage.
+
+### Deeper-pass concerns
+1. Delegation boilerplate is large and maintenance-sensitive.
+   - `FieldField` manually forwards many methods; contract evolution can create drift risk if new `FieldHandle` members are added without synchronized forwarding/tests.
+2. Test suite is primarily API-shape/does-not-throw oriented.
+   - Good for surface stability, but lighter on behavior-level assertions for nuanced runtime outcomes in vanilla-specific flows.
+3. `assertBrowser` is only used by managed mount/class paths.
+   - Lower-level `createField` remains intentionally permissive for headless/custom hosts, but this split can be misunderstood by consumers expecting uniform browser-only behavior.
+
+### Evidence index (packages/vanilla)
+1. Side-effect-free package boundary and exports
+   - `packages/vanilla/package.json:27`
+   - `packages/vanilla/src/index.ts:13`
+2. Host resolution priority (`host` → `bounds` → browser)
+   - `packages/vanilla/src/create-field.ts:33`
+   - `packages/vanilla/src/create-field.ts:35`
+3. Class-level delegation and managed-canvas lifecycle
+   - `packages/vanilla/src/field.ts:43`
+   - `packages/vanilla/src/field.ts:49`
+   - `packages/vanilla/src/field.ts:50`
+   - `packages/vanilla/src/field.ts:250`
+4. Browser guard and imperative mount lifecycle
+   - `packages/vanilla/src/mount.ts:26`
+   - `packages/vanilla/src/mount.ts:63`
+   - `packages/vanilla/src/mount.ts:68`
+5. Headless/non-visual support path
+   - `packages/vanilla/src/headless.test.ts:9`
+   - `packages/vanilla/src/headless.test.ts:45`
+6. Substrate API delegation coverage
+   - `packages/vanilla/src/substrate-api.test.ts:98`
+   - `packages/vanilla/src/substrate-api.test.ts:156`
+   - `packages/vanilla/src/substrate-api.test.ts:197`
+   - `packages/vanilla/src/substrate-api.test.ts:266`
+7. Standalone build distribution outputs
+   - `packages/vanilla/scripts/build-standalone.mjs:43`
+   - `packages/vanilla/scripts/build-standalone.mjs:63`
+
+### Suggested follow-ups (packages/vanilla)
+1. Add a focused contract-sync test that compares `FieldField` method surface against `FieldHandle` keys to catch delegation drift automatically.
+2. Expand behavior-level tests for vanilla-specific contained mode (`bounds`) and managed canvas positioning/cleanup interactions.
+3. Document the browser-vs-headless split more prominently in `README.md` with explicit decision guidance (`FieldField`/`mountField` vs `createField` with custom/headless host).

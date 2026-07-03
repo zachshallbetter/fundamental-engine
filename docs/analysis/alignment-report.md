@@ -253,7 +253,74 @@ const verb =
 
 ---
 
-## 6. Recommendations & Actions
+## 6. File-by-File DOM System Analysis
+
+A deep, line-by-line review of the DOM host participation layer (`packages/dom/src`) reveals how DOM integration, event scheduling, layout throttling, and performance adaptation are coordinated, along with potential performance and memory retention trade-offs.
+
+### 6.1 Layout Throttling & Snapshot Lookup: [measurement.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/dom/src/measurement.ts)
+* **Mechanics**: Implements the `MeasurementRegistry`, which reads and caches DOM element geometries once per frame in `measure()` via `getBoundingClientRect()`. 
+* **Design Invariant**: Correctly shields layout reads by invoking the scheduler's phase guard:
+  ```typescript
+  this.guard?.('measure');
+  ```
+  Pruning is self-healing: elements disconnected from the document tree are deleted in-loop (`if (!el.isConnected) { this.entries.delete(el); continue; }`).
+* **Performance Gap**: The snapshot coordinate lookup helper uses a linear array search:
+  ```typescript
+  for(element: Element): FieldMeasurement | undefined {
+    return this.snapshot.find((m) => m.element === element);
+  }
+  ```
+  When $M$ bodies in the core engine query their respective DOM measurements each frame, this results in an $O(M \times N)$ cost. While suitable for smaller contexts, it becomes a performance bottleneck for densly-populated lists or complex interactive sections.
+* **Refinement**: Caching the snapshot array as an identity-keyed Map during the measurement phase would lower coordinate lookup cost to $O(1)$.
+
+### 6.2 Strong-Reference Memory Traps: [feedback.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/dom/src/feedback.ts) & [state.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/dom/src/state.ts)
+* **Mechanics**: Bind state values to CSS custom properties (`--d`, `--load`, etc.) and event thresholds.
+* **Risk (Strong-Reference Leak)**: Both registries store DOM element keys inside regular `Map` instances (`bindings`, `direct`, `activity`, `store`, `listeners`) rather than `WeakMap` objects. If an element is removed from the DOM, it remains pinned in memory and cannot be garbage-collected until:
+  1. The next `flush()` or `prune()` sweep runs and garbage-collects disconnected elements (`el.isConnected === false`).
+  2. The element is manually unregistered.
+* **Analysis**: While using iterable `Map`s is a conscious design choice to allow phase loops to iterate over all active bindings/states without relying on non-enumerable `WeakMap` keys, it creates a retention window. If a field's refresh loop is paused, throttled, or destroyed without unregistering, elements removed from the tree will leak in memory.
+
+### 6.3 DOM Subtree Rescan Overheads: [relationships.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/dom/src/relationships.ts) & [visual-bindings.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/dom/src/visual-bindings.ts)
+* **Mechanics**: Normalizes native DOM linkages (such as `a[href]`, `label[for]`, and `aria-controls`) and custom visual bindings.
+* **Risk (Layout Scanning)**: Both `RelationshipRegistry.discover()` and `VisualBindingRegistry.scan()` execute a full `root.querySelectorAll(...)` query. While designed to run out-of-loop (on initialization, route transitions, or custom mutation events), the platform API does not guard against these methods being attached to high-frequency frame ticks (e.g. `discover` phase hooks), which would trigger substantial layout-traversal overhead.
+
+### 6.4 Telemetry, Discontinuity, & Hysteresis: [governor.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/dom/src/governor.ts) & [perf.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/dom/src/perf.ts)
+* **Mechanics**: Monitors frame timing anomalies and scales performance quality tiers accordingly.
+* **Aesthetics & Invariants**: The `QualityGovernor` avoids performance flickering by utilizing asymmetric thresholds—requiring 10 consecutive overrun frames to escalate quality degradation, but 30 clean frames to recover.
+* **Discontinuity Filtering**: `FieldPerf` establishes a strict `DISCONTINUITY_MS = 500` gap limit. Any frame delay exceeding 500 ms (e.g., from browser suspension, system sleep, or tab switching) is completely skipped. This guarantees that background pausing does not pollute performance statistics or trigger erroneous quality-tier scaling.
+
+### 6.5 Assistive-Technology Static Analysis: [lint.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/dom/src/lint.ts)
+* **Mechanics**: Parses active stylesheets dynamically to verify layout accessibility.
+* **Compliance**: `lintReducedMotion` verifies that any element expressing independent motion is matched by an `@media (prefers-reduced-motion: reduce)` block in a stylesheet. It handles unreachable or cross-origin stylesheets gracefully via try/catch blocks on `sheet.cssRules`, preventing runtime crashes when third-party stylesheets are present.
+
+## 7. File-by-File Elements & Vanilla System Analysis
+
+An audit of the Custom Elements runtime (`packages/elements/src`) and the framework-free Vanilla JS adapter (`packages/vanilla/src`) reveals how high-level consumer interfaces, option forwarding structures, loop lifecycle throttling, and multi-host resolution are managed.
+
+### 7.1 Centralized Option Forwarding & CEM Synchronization: [elements/src/index.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/elements/src/index.ts)
+* **Mechanics**: Implements `<field-root>` and `<field-field>` custom elements. 
+* **Design Invariant**: Establishes a static metadata table `OPTIONS` to map custom element attributes to the engine's option schema. This prevents key property forwarding drift (such as `depth` being missed during setup) by driving option mapping programmatically.
+* **Observed Attributes constraint**: To support Custom Elements Manifest (CEM) static analysis, the element exposes a literal string array `observedAttributes`. A dedicated unit test (`option-attrs.test.ts`) verifies compile-time lockstep by matching the literal list against the keys of the `OPTIONS` table.
+* **Infinite Recoil Protection**: Employs a boolean guard `this.reflecting` in custom element property setters to prevent infinite attribute reflection loops when updating properties programmatically.
+
+### 7.2 Compositing Blends and Cadence Throttling: [elements/src/platform-runtime.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/elements/src/platform-runtime.ts)
+* **Mechanics**: Manages the platform adapter loop and telemetry integrations.
+* **Optimization (Compositing Opt-out)**: The z-indexed overlay canvas uses `mix-blend-mode: screen`. To prevent the browser from executing redundant whole-screen composite passes on empty visual layers, `syncOverlaySurface` toggles the overlay canvas's style to `display: none` whenever `overlay: off` is set.
+* **Quality Tier Stride-Scaling**: The platform runtime adapts to performance degradation by dropping the tick rate of DOM measurement reads and feedback writes (to every 2nd frame at tier 2, and every 4th at tier 3). The core physics simulator continues executing at full rate, maintaining visual smoothness while lowering expensive DOM queries under load.
+* **Registry Cleanups**: At destruction, the platform runtime calls `platform.visuals.setMirroring(false)` to disconnect all MutationObservers, releasing references and preventing memory leaks of detached DOM elements.
+
+### 7.3 Multi-Host Resolution and Boundary Decoupling: [vanilla/src/create-field.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/vanilla/src/create-field.ts) & [field.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/vanilla/src/field.ts)
+* **Mechanics**: Implements the framework-free `FieldField` wrapper class and the unified `createField()` factory function.
+* **Decoupling**: Extends the `FieldHandle` interface via delegation rather than inheritance, ensuring that plain-JS consumers get a stable, identical API footprint.
+* **Cascade Resolution**: The `createField()` factory implements a clean host resolution hierarchy:
+  1. explicit `opts.host` (for headless/custom test hosts).
+  2. `containerHost(opts.bounds)` (for card-sized contained DOM scopes).
+  3. `browserHost()` (the default, window-scoped page host).
+* **SSR Safety**: Utilizes `assertBrowser()` to trigger a clean, descriptive warning during server-side compilation (SSR) instead of cryptic browser-global crashes.
+
+---
+
+## 8. Recommendations & Actions
 
 1. **Unify Integrator Mode Specs**:
    Update [substrate-api.md](file:///Users/zachshallbetter/Projects/fundamental-engine/docs/canonical/substrate-api.md) to document the `'velocity-verlet'` scheme and synchronize deprecated names inside [physics-workover.md](file:///Users/zachshallbetter/Projects/fundamental-engine/docs/engine-reference/physics-workover.md).
@@ -271,5 +338,13 @@ const verb =
    Consider throwing a dev-mode warning via `devWarnNoOp` when mapping conceptual semantic layers (`status`, `hierarchy`) that return empty metrics, advising developers on correct configuration.
 8. **Correct `eventNamesFor` Mappings**:
    Update [event-agent.ts:eventNamesFor](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/agents/event-agent.ts#L104) to map metric types like `attention`, `entropy`, and `memory` to their proper canonical names (`field:attention-shifted`, `field:entropy-warning`, etc.) rather than fallback generics, and update [agents.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/agents/agents.test.ts#L40) accordingly.
-
-
+9. **Cache Measurement Registry Snapshots**:
+   Refactor `MeasurementRegistry.for()` to leverage an identity-keyed Map cached during the `measure()` step, converting lookup times from $O(N)$ linear scans to $O(1)$ constant-time operations.
+10. **Establish Safeguards for Discovery and Scan Intervals**:
+    Introduce internal checks or warning systems in `discover()` and `scan()` to warn if subtree traversal is invoked at high frequency (e.g., more than once every 60 frames) to prevent performance degradation from layout queries in frame loops.
+11. **Standardize registry cleanup on frame pauses**:
+    Update the `FieldPlatform` teardown or pause routines to perform an immediate, explicit `prune()` and `clear()` of states and bindings on all registries, ensuring removed elements are immediately freed from memory rather than relying on delayed loop steps.
+12. **Centralize Custom Element Option Forwarding Validation**:
+    Add an automated pre-publish script or build step checking that any future addition to `FieldOptions` is added to the `<field-root>` `OPTIONS` mapping table and `observedAttributes` literal array, maintaining lockstep synchronization automatically.
+13. **Optimize Contained Canvas Re-creation in Vanilla Fields**:
+    In [field.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/vanilla/src/field.ts), verify that when a vanilla instance is destroyed and rebuilt inside the same container bounds, the previously created canvas is fully unmounted and disposed of to prevent redundant overlay canvases piling up in the DOM.
