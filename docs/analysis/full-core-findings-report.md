@@ -451,3 +451,38 @@ This pass targets concrete executable claims from sampled sections (including `d
 1. Update the `common-mistakes` event-bus example to remove `settle` (or relabel it as planned/reserved if intentionally documented ahead of runtime).
 2. Tighten wording around vanilla/core `createField` to “same door semantics, different exported function (vanilla wrapper over core primitive)” for implementation precision.
 3. Run a targeted “docs-claim conformance” check over canonical docs for API symbol examples (`field.on(...)`, event names, option defaults) to catch executable-surface drift earlier.
+
+## llms-full content vs code alignment (exhaustive pass addendum)
+### Scope
+Second pass focused on drift-prone executable claims in `apps/site/public/llms-full.txt`, prioritizing defaults, event alias behavior, and migration-compatibility statements that can be validated directly in runtime code.
+
+### Additional verified findings
+1. **Mismatch** — `llms-full` states “`waves` defaults off,” but current runtime default is `true`.
+2. **Mismatch / internal doc contradiction** — multiple `llms-full` sections claim `field:*` → `forces:*` event aliases “still fire,” but runtime dispatch paths examined emit canonical `field:*` only, and no concrete `forces:*` event names are present in core/dom TS runtime code.
+3. **Mismatch / internal doc contradiction** — one migration checklist section says CSS write-back emits both old and new names, while multiple other sections (and runtime code) state legacy `--forces-*` CSS variables are removed.
+4. **Accurate** — `createField(canvas, opts)` requires `opts.host`.
+5. **Accurate** — canonical runtime write-back still includes `--d` + `--field-density` and thresholded `field:lit`/`field:dim`.
+
+### Evidence index (exhaustive addendum)
+1. `waves` default mismatch
+   - Claim: `apps/site/public/llms-full.txt:11556` (“`waves` defaults off”)
+   - Runtime: `packages/core/src/core/field.ts:376` (`waves: opts.waves ?? true`)
+2. `forces:*` event-alias claim drift
+   - Claims: `apps/site/public/llms-full.txt:6723`, `apps/site/public/llms-full.txt:7968`, `apps/site/public/llms-full.txt:8388`, `apps/site/public/llms-full.txt:8484`, `apps/site/public/llms-full.txt:8840`
+   - Runtime dispatch examined: `packages/core/src/core/feedback-sink.ts:62`, `packages/core/src/core/feedback-sink.ts:65`, `packages/core/src/core/field.ts:1041`, `packages/core/src/core/field.ts:1060`, `packages/elements/src/platform-runtime.ts:160`
+   - Repository-wide exact-name check over package TS sources found no concrete `forces:lit|dim|captured|released|relocated|register-body|unregister-body|update-body` event strings.
+3. CSS migration contradiction
+   - Contradicting claim: `apps/site/public/llms-full.txt:8928` (“CSS variables write both old and new names”)
+   - Counterclaims in same corpus: `apps/site/public/llms-full.txt:7988`, `apps/site/public/llms-full.txt:8480`
+   - Runtime write paths: `packages/core/src/core/feedback-sink.ts:45` (writes `--d`, `--field-density`, `--field-heatmap-density`, `--load`, `--lit`, bare thermodynamics), `packages/elements/src/platform-runtime.ts:139`
+4. Host requirement remains accurate
+   - Claim: `apps/site/public/llms-full.txt:6688`
+   - Runtime: `packages/core/src/core/field.ts:323`
+
+### Prioritized remediation for llms source set
+1. Correct the `waves` default statement to match current runtime (`true`) or explicitly annotate version/branch context if documenting historical behavior.
+2. Resolve the `forces:*` alias inconsistency by either:
+   - updating docs to canonical `field:*`-only dispatch language, or
+   - restoring explicit alias emission in runtime and adding regression tests.
+3. Remove or version-gate any “write both old and new CSS names” statements; they conflict with current canonical “`--forces-*` removed” messaging and runtime behavior.
+4. Add a docs conformance check that validates default values and concrete event-name literals against code for `field.ts`, `feedback-sink.ts`, and platform feedback wiring.

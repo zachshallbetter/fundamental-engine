@@ -57,6 +57,7 @@
     "@fundamental-engine/core": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "three": "^0.169.0",
     "@types/three": "^0.169.0",
     "typescript": "^5.9.3"

@@ -188,14 +188,20 @@ export class FieldLayer implements FieldHandle {
   }
   setAccent(hex: string): void {
     this.field.setAccent(hex);
-    this.pool.material.uniforms.uAccent.value.set(hex);
+    const u = this.pool.material.uniforms['uAccent'];
+    if (u?.value) {
+      u.value.set(hex);
+    }
   }
   setPalette(palette: string | readonly string[]): void {
     this.field.setPalette(palette);
     const stops = resolvePalette(palette);
     const first = stops[0];
     if (first) {
-      this.pool.material.uniforms.uAccent.value.set(first);
+      const u = this.pool.material.uniforms['uAccent'];
+      if (u?.value) {
+        u.value.set(first);
+      }
     }
   }
   setFormation(name: string): void {
