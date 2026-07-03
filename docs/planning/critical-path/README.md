@@ -1,6 +1,6 @@
 # Fundamental Critical Path Docs
 
-This pack contains five focused planning documents for the next major Fundamental substrate work.
+This pack contains the focused planning documents for the next major Fundamental substrate work.
 
 ## Documents
 
@@ -9,6 +9,7 @@ This pack contains five focused planning documents for the next major Fundamenta
 3. [Field Snapshot + Causal Replay](03-field-snapshot-causal-replay.md)
 4. [Dimension-Aware Accumulator + Body-Authority Modes](04-dimension-aware-accumulator-body-authority.md)
 5. [Projection Registry + Governance](05-projection-registry-governance.md)
+6. [Carrier Seam](06-carrier-seam.md)
 
 ## Critical path
 
@@ -27,6 +28,9 @@ Dimension-aware accumulator + body-authority modes
 
 Projection registry + governance
   makes field behavior visible, accessible, and trustworthy
+
+Carrier seam
+  makes ambient structure declared and readable instead of painted
 ```
 
 ## Guiding principle
@@ -42,4 +46,5 @@ Accumulator = attribute cause before integration
 Body Authority = decide who owns position
 Projection = reveal state
 Governance = keep the system authorable instead of magical
+Carrier = convey ambient structure
 ```
