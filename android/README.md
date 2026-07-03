@@ -93,6 +93,12 @@ Ported and tested:
   discontinuities (never averaged; stored acceleration resets). Non-symplectic by design (the decays sit
   outside the scheme): it buys positional accuracy, not conservation — count stays the invariant. Pinned
   by `IntegratorVerletTests`, the JS `integrator-verlet.test.ts` suite test-for-test.
+- **The determinism seam** (`Env.rng`, fed by `FieldController(seed = …)` — the JS `FieldOptions.rng`
+  / #371 mirror; #974): ALL engine randomness — pool seeding, the integrator's brownian wander, force
+  jitter (thermal / jet / morph / spawn), spark counts + directions, wave-bound riders, supernova
+  release angles — flows through one injectable `() -> Float`. No seed (the default) is
+  `Random.Default`, unchanged; a seeded controller run reproduces bit-for-bit. Pinned by
+  `DeterminismTests`.
 - **Supporting subsystems** — real scalar grids (`ScalarGridImpl`: diffuse / wave / memory stepping),
   the `SpatialHash` + `FieldStore` neighbour index, carrier waves (`Currents`), `Geometry` (pole-pair
   dipoles, box SDF, `netField`), `Formations` (presets + easing + accretion target), the `when`

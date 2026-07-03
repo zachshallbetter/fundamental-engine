@@ -122,6 +122,11 @@ public struct FieldOptions {
     /// The integration scheme (doc 04 §Step 3 / #659) — mirrors JS `FieldOptions.integrator`. Opt-in:
     /// `.legacy` (the default) is the shipped engine, byte-identical. See ``IntegratorMode``.
     public var integrator: IntegratorMode
+    /// The random source for ALL engine randomness — particle seeding, spawn scatter, jitter, spark
+    /// counts + directions, release angles (the JS `FieldOptions.rng` / #371 mirror — the determinism
+    /// seam, #974). `nil` (the default) = the platform generator, today's nondeterministic behavior;
+    /// supply a seeded generator (``seededRng(_:)``) and a run becomes fully reproducible.
+    public var rng: (() -> Float)?
 
     public init(
         accent: String? = nil,
@@ -148,7 +153,8 @@ public struct FieldOptions {
         feedbackSink: FeedbackSink? = nil,
         identify: ((AnyObject) -> FieldBodyIdentity?)? = nil,
         policy: FieldPolicy? = nil,
-        integrator: IntegratorMode = .legacy
+        integrator: IntegratorMode = .legacy,
+        rng: (() -> Float)? = nil
     ) {
         self.accent = accent
         self.density = density
@@ -175,6 +181,7 @@ public struct FieldOptions {
         self.identify = identify
         self.policy = policy
         self.integrator = integrator
+        self.rng = rng
     }
 }
 

@@ -111,7 +111,7 @@ public struct JetForce: Force {
         if e.dist >= range { return }
         if e.dist < 24 {
             // at the nozzle: relaunch as a hot jet, with a cone of spread (about the plane axis).
-            let sp = (Float.random(in: 0..<1) - 0.5) * 0.8
+            let sp = (e.rng() - 0.5) * 0.8
             let rot = simd_quatf(angle: sp, axis: PLANE_AXIS)
             let h = rot.act(b.heading)
             let spd = 2.4 + b.strength * 2.6

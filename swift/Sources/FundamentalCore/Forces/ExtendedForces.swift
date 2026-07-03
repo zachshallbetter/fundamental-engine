@@ -285,8 +285,8 @@ public struct MorphForce: Force {
         let arrived: Float = d < MORPH_ARRIVE ? 1 - d / MORPH_ARRIVE : 0
         let jit = (1 - arrived) * k * 0.3 // jitter that fades to zero on arrival
         if jit > 0 {
-            p.velocity.x += (Float.random(in: 0..<1) - 0.5) * jit
-            p.velocity.y += (Float.random(in: 0..<1) - 0.5) * jit
+            p.velocity.x += (e.rng() - 0.5) * jit
+            p.velocity.y += (e.rng() - 0.5) * jit
         }
     }
 }
@@ -315,9 +315,9 @@ public struct SpawnForce: Force {
         while n > 0 {
             n -= 1
             // rotate the heading by a small random angle → a soft emission cone
-            let j = (Float.random(in: 0..<1) - 0.5) * 0.6
+            let j = (e.rng() - 0.5) * 0.6
             let h = simd_quatf(angle: j, axis: PLANE_AXIS).act(b.heading)
-            let speed = 2 + Float.random(in: 0..<1) * 2
+            let speed = 2 + e.rng() * 2
             let p = Particle(position: b.center, velocity: h * speed, heat: 0.6)
             p.age = life
             e.spawn(p)

@@ -17,7 +17,6 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
-import kotlin.random.Random
 
 // Natural primitives (§20.10) — the Kotlin port of swift/Sources/FundamentalCore/Forces/NaturalForces.swift.
 // Real field laws (true softened inverse-square), not the designed UI falloffs. Opt-in via tokens.
@@ -147,14 +146,14 @@ class ThermalForce : Force {
         val falloff = 1f - env.dist / body.range // hotter nearer the source
         val sigma = thermalSigma(body.strength * falloff)
         if (sigma == 0f) return
-        val u1 = max(Random.nextFloat(), 1e-9f) // avoid log(0)
+        val u1 = max(env.rng(), 1e-9f) // avoid log(0)
         val mag = sigma * sqrt(-2f * ln(u1))
-        val ang = TWO_PI * Random.nextFloat()
+        val ang = TWO_PI * env.rng()
         var v = particle.velocity
         v = Vec3(v.x + mag * cos(ang), v.y + mag * sin(ang), v.z)
         if (env.volume.z > 0f) {
-            val u2 = max(Random.nextFloat(), 1e-9f)
-            v = Vec3(v.x, v.y, v.z + sigma * sqrt(-2f * ln(u2)) * cos(TWO_PI * Random.nextFloat()))
+            val u2 = max(env.rng(), 1e-9f)
+            v = Vec3(v.x, v.y, v.z + sigma * sqrt(-2f * ln(u2)) * cos(TWO_PI * env.rng()))
         }
         particle.velocity = v
         if (body.isEngaged) particle.heat = max(particle.heat, falloff * 0.4f)
