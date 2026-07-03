@@ -133,10 +133,10 @@ rAF(() => {
 });`;
 
 const eventsAbsorb = `// react to a sink body capturing / releasing matter — discrete, not polled
-const off = field.on('absorb', ({ body, count }) => {
+const off = field.on('captured', ({ body, count }) => {
   body.el?.dispatchEvent(new CustomEvent('field:captured', { detail: count }));
 });
-field.on('release', ({ body, count }) => {
+field.on('released', ({ body, count }) => {
   console.log(\`sink \${body.el?.id} released \${count} particles\`);
 });
 

@@ -80,6 +80,25 @@ tags, the `ForcesField`/`ForcesController`/`useForcesField` exports, the `--forc
 `@fundamental-engine/compat-*` packages. If you are on a `0.7.0+` release you have already migrated off
 these.
 
+## 3a. Event-bus keys `absorb` / `release` renamed to `captured` / `released`
+
+The discrete event bus (`field.on(type, cb)`) renamed two of its keys in the pre-1.0 breaking window.
+`absorb` was a **naming-lane violation** — `absorb` is concept language (the runtime token is `sink`),
+not an execution-lane name; the occurrence a consumer subscribes to is that a body *captured* / *released*
+matter. The new keys are the past-tense occurrence verbs `captured` / `released`, which also match the
+native ports (Swift `CaptureEvent.captured/released`, Kotlin `CaptureEvent.CAPTURED/RELEASED`).
+
+```diff
+- field.on('absorb', (e) => { … })   // e = { body, count }
++ field.on('captured', (e) => { … })
+
+- field.on('release', (e) => { … })
++ field.on('released', (e) => { … })
+```
+
+Only the **bus keys** change. Untouched: the `data-absorb` sink body attribute, the `--load` channel,
+and the DOM `field:captured` / `field:released` `CustomEvent`s (already canonical).
+
 ## 4. Everything else is additive — nothing to change
 
 These all arrived in 0.8.x as **new** options/methods/exports; nothing existing changed:

@@ -54,7 +54,7 @@ function drivableHost(bodyEls: unknown[]): { host: FieldHost; step: (frames: num
   return { host, step };
 }
 
-test('a sink emits absorb with a positive count, and on() returns a working unsubscribe', () => {
+test('a sink emits captured with a positive count, and on() returns a working unsubscribe', () => {
   const sink = virtualBody(
     { 'data-body': 'sink attract', 'data-strength': '1.6', 'data-range': '900', 'data-absorb': '120' },
     { x: 500, y: 400, w: 40, h: 40 },
@@ -62,24 +62,24 @@ test('a sink emits absorb with a positive count, and on() returns a working unsu
   const { host, step } = drivableHost([sink]);
   const field = createField({} as HTMLCanvasElement, { host, render: 'none' });
   try {
-    let absorbs = 0;
+    let captures = 0;
     let lastCount = 0;
-    const off = field.on('absorb', (e) => { absorbs++; lastCount = e.count; });
+    const off = field.on('captured', (e) => { captures++; lastCount = e.count; });
     field.scan();
     step(400); // pull matter in + capture it
-    assert.ok(absorbs >= 1, `absorb fired as the sink captured matter: ${absorbs}`);
-    assert.ok(lastCount > 0, `absorb carried a positive count: ${lastCount}`);
+    assert.ok(captures >= 1, `captured fired as the sink captured matter: ${captures}`);
+    assert.ok(lastCount > 0, `captured carried a positive count: ${lastCount}`);
 
     off(); // unsubscribe
-    const before = absorbs;
+    const before = captures;
     step(400);
-    assert.equal(absorbs, before, 'no more absorb events after unsubscribe');
+    assert.equal(captures, before, 'no more captured events after unsubscribe');
   } finally {
     field.destroy();
   }
 });
 
-test('release fires when a saturated sink lets go (count carried from the captured peak)', () => {
+test('released fires when a saturated sink lets go (count carried from the captured peak)', () => {
   // a small-capacity sink saturates and supernovas, releasing what it held — the falling edge.
   const sink = virtualBody(
     { 'data-body': 'sink attract', 'data-strength': '1.8', 'data-range': '900', 'data-absorb': '140', 'data-max': '8' },
@@ -89,20 +89,20 @@ test('release fires when a saturated sink lets go (count carried from the captur
   const field = createField({} as HTMLCanvasElement, { host, render: 'none' });
   try {
     let releases = 0;
-    field.on('release', () => { releases++; });
+    field.on('released', () => { releases++; });
     field.scan();
     step(900); // capture to saturation → supernova → release
-    assert.ok(releases >= 1, `release fired on the sink's falling edge: ${releases}`);
+    assert.ok(releases >= 1, `released fired on the sink's falling edge: ${releases}`);
   } finally {
     field.destroy();
   }
 });
 
-test('bus events coalesce per frame: a saturating sink delivers one release per frame, never per pass (#684)', () => {
+test('bus events coalesce per frame: a saturating sink delivers one released per frame, never per pass (#684)', () => {
   // A small-capacity sink fills, saturates and supernovas repeatedly. The capture/release machinery
-  // can raise `release` from more than one path within a single tick (supernova's falling edge +
+  // can raise `released` from more than one path within a single tick (supernova's falling edge +
   // updateCaptureEvents); the per-frame coalescing layer guarantees the bus delivers at most ONE
-  // release per (body, type) per frame. Stepping ONE frame at a time lets us assert exactly that.
+  // released per (body, type) per frame. Stepping ONE frame at a time lets us assert exactly that.
   const sink = virtualBody(
     { 'data-body': 'sink attract', 'data-strength': '1.8', 'data-range': '900', 'data-absorb': '140', 'data-max': '4' },
     { x: 500, y: 400, w: 40, h: 40 },
@@ -113,7 +113,7 @@ test('bus events coalesce per frame: a saturating sink delivers one release per 
     let perFrame = 0;
     let maxPerFrame = 0;
     let totalReleases = 0;
-    field.on('release', () => { perFrame++; });
+    field.on('released', () => { perFrame++; });
     field.scan();
     for (let i = 0; i < 900; i++) {
       perFrame = 0;

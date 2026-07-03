@@ -113,7 +113,7 @@ test('captured matter survives a rescan: load carried, particles remapped, relea
   try {
     let releasedCount = 0;
     let releases = 0;
-    field.on('release', (e) => { releases++; releasedCount = e.count; });
+    field.on('released', (e) => { releases++; releasedCount = e.count; });
     field.scan();
 
     // capture a partial load (well below capacity), stepping one frame at a time.

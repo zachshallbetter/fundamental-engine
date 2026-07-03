@@ -15,9 +15,9 @@ import type { Body } from './types.ts';
 /** The discrete occurrences the field emits, keyed by type → payload. */
 export interface FieldEventMap {
   /** a `sink` body captured matter — fired on the rising edge of accreting. */
-  absorb: { body: Body; count: number };
+  captured: { body: Body; count: number };
   /** a `sink` body released what it held — fired on the falling edge / supernova. */
-  release: { body: Body; count: number };
+  released: { body: Body; count: number };
   /** another body crossed INTO this body's `range` (#441) — the gameplay "entered radius" trigger. */
   enter: { body: Body; other: Body };
   /** another body crossed OUT of this body's `range` (#441). */
@@ -33,7 +33,7 @@ export type FieldEventType = keyof FieldEventMap;
  * fill+release); without batching the bus would deliver duplicates per tick. `record` buffers an
  * occurrence keyed by (type, source identity); `flush` delivers at most ONE event per (source, type)
  * for the frame — last write wins, so a consumer sees the final payload for that frame. State events
- * (absorb/release) key on the single source body; relational events (enter/exit/met) key on the body
+ * (captured/released) key on the single source body; relational events (enter/exit/met) key on the body
  * *pair* so distinct counterparties in one frame stay distinct while a genuine duplicate collapses.
  * Identity uses object reference (the body, falling back from its element), via a per-source numeric id.
  */

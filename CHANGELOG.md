@@ -24,6 +24,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
     body was added/removed. The reconciliation now carries the kinematic state, so the body resumes
     on its trajectory. The ports (Swift/Kotlin) register bodies explicitly rather than rescanning the
     document, so neither discontinuity exists there — no port follow-up.
+### Changed
+
+- **`@fundamental-engine/core` (breaking, pre-1.0 window, #988):** renamed the discrete event-bus keys
+  `absorb` → `captured` and `release` → `released` (`field.on(...)` / `FieldEventMap`). `absorb` was a
+  naming-lane violation — concept language in the execution/event lane (the token is `sink`) — and the
+  new past-tense occurrence verbs match the native ports (Swift `CaptureEvent.captured/released`,
+  Kotlin `CaptureEvent.CAPTURED/RELEASED`). Only the bus keys change; the `data-absorb` body attribute,
+  the `--load` channel, and the DOM `field:captured`/`field:released` CustomEvents are unaffected.
+  Migrate `field.on('absorb'|'release', …)` → `field.on('captured'|'released', …)`.
 
 ### Documentation
 
