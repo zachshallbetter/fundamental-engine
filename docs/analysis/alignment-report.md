@@ -429,7 +429,22 @@ An audit of the diagnostics vectors (`packages/core/src/diagnostics`), recording
 
 ---
 
-## 11. Recommendations & Actions
+## 12. Custom Elements and Project Scaffolding CLI Audits
+
+An audit of the custom elements runtime (`packages/elements`) and the project template generator CLI (`packages/create`) outlines element lifecycle compliance and template setup invariants.
+
+### 12.1 Custom Element Lifecycles and Option Drift Guards: [elements/src/index.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/elements/src/index.ts) & [elements/src/option-attrs.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/elements/src/option-attrs.test.ts)
+* **Observed Option Mapping**: Utilizes a static private `OPTIONS` mapping table to build the configuration forwarded to `createBrowserField()`. The literal `observedAttributes` array is tested against `OPTIONS` via reflection to guarantee that new features cannot be added to one list without the other.
+* **Teardown Invariant**: The `disconnectedCallback()` removes the visibility IntersectionObserver, deletes the light-DOM overlay canvas, terminates the platform runtime, and cleans all element handles to `undefined` to guarantee subsequent mounts rebuild cleanly.
+* **Signals-First Defaults**: Standardizes fallback rendering modes to `'none'` (no canvas, signals-only) for unrecognized or omitted attributes, ensuring client-side performance is preserved out-of-the-box.
+
+### 12.2 Scaffolding Invariants and npm Packing Workarounds: [create/src/scaffold.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/create/src/scaffold.ts)
+* **Placeholder Gitignores**: Since npm packaging automatically strips `.gitignore` files from published packages, templates include a `_gitignore` placeholder file. The scaffolding script (`scaffold()`) automatically renames it to `.gitignore` when copying templates.
+* **Project Name Stamps**: Mutates the output `package.json` package name field to the target directory name, ensuring that template scripts are customized without manual intervention.
+
+---
+
+## 13. Recommendations & Actions
 
 1. **Unify Integrator Mode Specs**:
    Update [substrate-api.md](file:///Users/zachshallbetter/Projects/fundamental-engine/docs/canonical/substrate-api.md) to document the `'velocity-verlet'` scheme and synchronize deprecated names inside [physics-workover.md](file:///Users/zachshallbetter/Projects/fundamental-engine/docs/engine-reference/physics-workover.md).
