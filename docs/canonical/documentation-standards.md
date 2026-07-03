@@ -54,6 +54,12 @@ feedback returns the field to the DOM.
 Preserve: **Electric fields push. Magnetic fields bend. Fieldflow carries.** Do not make
 `magnetism.apply()` follow magnetic field lines — field-aligned transport belongs to `fieldflow`.
 
+**The substrate-not-wallpaper line is enforceable doctrine, not a slogan** — the test, remedies
+(derive → declare → demote → sugar; never deletion), corollaries (injected-rng determinism,
+one-writer-per-reading, proofs-must-be-produced), and per-plane guards live in
+[the Wallpaper Rule](wallpaper-rule.md). Run any new default-on or field-expressing feature
+through its three prongs before shipping it.
+
 ## Natural Field Translation System
 
 Fundamental does not copy physics into the interface; it **translates** the four fundamental fields into
