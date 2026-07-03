@@ -249,6 +249,9 @@ class AndroidFieldHost(
     override fun scanBodies(): List<Body> = emptyList()
 
     override fun worldBox(view: Any): Box? {
+        // The `view` handle is a body's `Body.view` (Types.kt) — the opaque platform reference the
+        // registry reads and passes here (MeasurementRegistry). For AndroidFieldHost that must be an
+        // Android `View`; anything else (incl. a view-less body) can't be boxed, so return null.
         if (view !is View) return null
         val target = view
         // getLocationOnScreen is the Android equivalent of UIKit convert(bounds, to: root): take both

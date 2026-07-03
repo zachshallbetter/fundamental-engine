@@ -237,6 +237,9 @@ class RegistriesTests {
         val reg = MeasurementRegistry()
         val body = Body(tokens = listOf("attract"))
         body.box = Box(center = Vec3(200f, 150f, 10f), halfExtents = Vec3(20f, 20f, 10f))
+        // `Body.view` is the opaque platform handle the host boxes; TestHost keys `worldBox` on it.
+        // Self-reference here so the host reads this body's own `box` (mirrors the view-backed contract).
+        body.view = body
         reg.register(body)
 
         val out = reg.measure(now = 5.0, volume = host.volume, host = host)
@@ -255,6 +258,7 @@ class RegistriesTests {
         val host = NullBoxHost(FieldVolume(100f, 100f))
         val reg = MeasurementRegistry()
         val body = Body(tokens = listOf("attract"))
+        body.view = body // present view, but the host still can't box it — exercises the box-null drop.
         reg.register(body)
         assertTrue(reg.has(body))
 
@@ -262,6 +266,24 @@ class RegistriesTests {
 
         assertTrue(out.isEmpty(), "an unresolvable body yields no measurement")
         assertFalse(reg.has(body), "the unresolvable body was dropped from the registry")
+        assertEquals(0, reg.count)
+    }
+
+    @Test
+    fun measurementRegistryDropsBodiesWhoseViewIsGone() {
+        // Contract mirror of Swift's `guard let view = body.view` (MeasurementRegistry.swift): a body
+        // registered without a live view handle (view-less, or a GC'd weak ref) is dropped by measure()
+        // BEFORE the host is even asked to box it — the host never sees a `Body` masquerading as a view.
+        val host = TestHost(FieldVolume(100f, 100f))
+        val reg = MeasurementRegistry()
+        val body = Body(tokens = listOf("attract")) // no `view` set → view == null.
+        reg.register(body)
+        assertTrue(reg.has(body))
+
+        val out = reg.measure(volume = host.volume, host = host)
+
+        assertTrue(out.isEmpty(), "a body with no view yields no measurement")
+        assertFalse(reg.has(body), "the view-less body was dropped from the registry")
         assertEquals(0, reg.count)
     }
 
@@ -276,6 +298,7 @@ class RegistriesTests {
         val reg = MeasurementRegistry()
         val docY = 600f
         val body = Body(tokens = listOf("attract"))
+        body.view = body // the host keys `docBoxes` / `worldBox` on the body's view handle.
         host.docBoxes[body] = Box(center = Vec3(187f, docY, 0f), halfExtents = Vec3(50f, 25f, 0f))
         reg.register(body)
 

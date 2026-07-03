@@ -84,7 +84,13 @@ public enum Snapshotter {
                           userInfo: [NSLocalizedDescriptionKey: "could not open \(url.path)"])
         }
         CGImageDestinationAddImage(dest, image, nil)
-        CGImageDestinationFinalize(dest)
+        // Finalize returns false if the image could not actually be written (disk full, bad path,
+        // permissions) — surface it instead of silently returning a URL to a missing/partial PNG.
+        guard CGImageDestinationFinalize(dest) else {
+            field.destroy()
+            throw NSError(domain: "FieldLab", code: 4,
+                          userInfo: [NSLocalizedDescriptionKey: "could not write PNG to \(url.path)"])
+        }
 
         field.destroy()
         return url
