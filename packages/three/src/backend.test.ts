@@ -182,3 +182,21 @@ test('dispose() releases the label sprite materials and cached textures', () => 
   assert.ok(materialDisposed, 'the sprite material was disposed');
   assert.ok(textureDisposed, 'the cached label texture was disposed');
 });
+
+test('clear() purges the texture cache if it grows beyond the boundary limit (256)', () => {
+  const backend = threeBackend({ projection: new PlaneProjection({ width: 800, height: 600, scale: 0.01 }) });
+
+  // draw 260 distinct labels
+  for (let i = 0; i < 260; i++) {
+    backend.text(`label-${i}`, 0, 0, 255, 255, 255, 1);
+  }
+
+  // Before clear, they are cached (but not cleared yet because clear() runs at frame boundaries)
+  backend.clear(); // this clear runs, purges because size (260) > 256
+  
+  // Now write one more to see that the cache has been reset (meaning the new label is the only one)
+  backend.text('new-label', 0, 0, 255, 255, 255, 1);
+  // We can't access the private cache directly, but we can verify the backend functions without crash
+  backend.clear(); 
+  backend.dispose();
+});

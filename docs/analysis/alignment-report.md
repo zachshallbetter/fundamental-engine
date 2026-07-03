@@ -349,31 +349,61 @@ An audit of the React integration door (`packages/react/src`) reveals how React 
 * **Diff Reconciliation**: Binds a React array of arbitrary records to field-space bodies. Added, updated, or deleted items undergo automatic diff-reconciliation via their unique IDs rather than resetting the field on state updates.
 * **Closure Reference Safety**: References the mapper function and options through mutable React refs (`mapperRef`, `optionsRef`). This ensures that changes to parent closures do not trigger layout churn or redundant body creation.
 
-## 9. File-by-File Diagnostics, Recording, and Security Audits
+## 9. File-by-File Three.js Integration Analysis
+
+An audit of the Three.js integration door (`packages/three/src`) reveals how WebGL scene elements, instanced geometries, coordinate projection planes, and dynamic shader-based swarm rendering map to the core engine.
+
+### 9.1 Coordinate Projection Planes: [project.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/three/src/project.ts)
+* **Mechanics**: Implements the `FieldProjection` interface via `PlaneProjection` and `VolumeProjection`.
+* **Flat Plane Projection**: Maps 2D CSS-pixel coordinates $(x, y)$ onto the world-space XY plane (flipping screen-$y$-down to world-$y$-up), utilizing particle `heat` as a volumetric height offset (relief) for flat fields.
+* **Isotropic Volume Projection**: Maps the engine's 3D depth lane ($z \in [0, \text{depth})$) onto world depth ranges to construct true 3D particle clouds, centering the particles relative to the document page plane ($z = 0$) if configured.
+
+### 9.2 GPU Particle Bridges and Materials: [particles.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/three/src/particles.ts)
+* **Mechanics**: Implements the GPU-optimized `ParticlePool` class.
+* **Allocation-Free Synchronizations**: Prefers pre-allocating contiguous Float32 BufferAttributes for particle position, heat, and size to match the engine's `readParticles()` stride array, avoiding allocation thrashing on the frame loop.
+* **Vertex Shaders**: Features an dynamic ShaderMaterial executing perspective sizing attenuation based on a custom `uFocal` length focal ratio.
+
+### 9.3 Virtual DOM Element Mapping: [bodies.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/three/src/bodies.ts)
+* **Mechanics**: Implements the virtual DOM proxy adapter class `BodyImpl` (managed via `FieldBodyRegistry`).
+* **DOM Interface Compliance**: Mapped as a virtual non-DOM element, implementing standard Element interfaces (`getAttribute`, `hasAttribute`, `getBoundingClientRect`).
+* **Active Rect Projections**: Automatically evaluates its bounding rect coordinates each frame by mapping the linked mesh's world coordinate position back to 2D CSS-pixel space via `projection.toField()`, rendering mesh-based bodies reactive to physical and tactile forces.
+
+### 9.4 Batch Render Overlays: [backend.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/three/src/backend.ts)
+* **Mechanics**: Implements the `threeBackend` render backend.
+* **Geometry Batching**: Aggregates segments and polyline paths into dynamic line segments and fills data-chip labels into instanced triangle meshes.
+* **Canvas Texture Cache Bounds**: Caches canvas textures for text elements using a composite string-and-color key map. Employs a cache limit check (`labelCache.size > 256`) inside `clear()` to automatically purge and dispose of textures when custom overlays print high-precision, continuously changing text.
+
+### 9.5 Cadence Visuals and Stepped Agents: [samplers.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/three/src/samplers.ts) & [agents.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/three/src/agents.ts)
+* **Cadence Tracing**: Streamline tubes (`streamlineTubes`) and instanced arrow grids (`vectorField`) run field query samplers on configurable interval cadences (e.g. every 6th frame), aligning computation loops with body movement paces.
+* **Stepped Agents**: Steered agents (`FieldAgent` and `MeshAgentHandle`) integrate forces and write positions back to the projected meshes, wrapping edge bounces.
+
+---
+
+## 10. File-by-File Diagnostics, Recording, and Security Audits
 
 An audit of the diagnostics vectors (`packages/core/src/diagnostics`), recording runtime (`packages/core/src/record`), and permission enforcement layers (`packages/core/src/agent-permissions.test.ts` & `field-policy.test.ts`) details how vector exporting, deterministic playback, and policy/sandbox boundaries are structured.
 
-### 9.1 Seeded Determinism and Replay Integrity: [record/rng.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/record/rng.ts) & [record/record.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/record/record.ts)
+### 10.1 Seeded Determinism and Replay Integrity: [record/rng.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/record/rng.ts) & [record/record.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/record/record.ts)
 * **Mechanics**: Implements a zero-dependency 32-bit `mulberry32` generator (`seededRng`).
 * **Design Invariant**: By enforcing integer-only operations and bypassing `Math.random()`, the generator ensures that simulation runs are platform-independent and reproduce bit-for-bit identically across client engines.
 * **Compact Stride Buffer Allocation**: The recorder saves trajectories using flat, contiguous `Float32Array` buffers (recording each frame as `[x, y, vx, vy, age]`), eliminating frame-by-frame memory allocations and GC spikes during recording passes.
 
-### 9.2 Security Facades and capability scoping: [agent-permissions.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/agent-permissions.test.ts) & [field-policy.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/field-policy.test.ts)
+### 10.2 Security Facades and capability scoping: [agent-permissions.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/agent-permissions.test.ts) & [field-policy.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/field-policy.test.ts)
 * **Design Invariant (Opaque Gating)**: The `field.forAgent(options)` interface provides a strict read-only wrapper facade for Software Agents, gating method access by capability permissions (`read:metrics`, `read:relationships`, `read:replay`). Mutation methods are fully omitted from the facade, ensuring that the runtime remains sandboxed.
 * **Tightest-Fit Precedence**: Capability queries evaluate to the tightest intersection of permissions. If a global policy denies body data (`allowBodyDataInSnapshots: false`), data queries will return undefined even if the agent is granted `read:body-data`.
 * **Zero-Limit Budget Hard Gate**: Setting `budgets.agentRead = 0` immediately drops metrics outputs to `{}` and forces snapshots to public profiles, safeguarding performance and data privacy under strict allocation limits.
 
-### 9.3 Meta-Contract Validation: [contract-coverage.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/contract-coverage.test.ts)
+### 10.3 Meta-Contract Validation: [contract-coverage.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/contract-coverage.test.ts)
 * **Mechanics**: Implements a compile-time meta-test verifying unit coverage for all public configuration options, metrics, and DOM attributes.
 * **Sync Assurance**: Direct-parses the Astro documentation rosters (`docs-api.ts`) and `types.ts` to construct a live roster of expected symbols, comparing it against the test files. This guarantees that new options or attributes cannot be checked in without accompanying unit test coverage.
 
-### 9.4 Pure Diagnostics and Vector Serialization: [diagnostics/modes.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/diagnostics/modes.ts) & [export.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/export.ts)
+### 10.4 Pure Diagnostics and Vector Serialization: [diagnostics/modes.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/diagnostics/modes.ts) & [export.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/export.ts)
 * **ReadOnly Diagnostics**: Diagnostics modes (topology graphs, HUD HUDs, predictive trajectories) read parameters but never mutate core coordinates, preserving physical invariants.
 * **Vector Precision**: The vector serializer (`segmentsToSvg`) rounds coordinates to two decimal places (`Math.round(n * 100) / 100`) to output compact standalone SVGs while maintaining subpixel spatial accuracy.
 
 ---
 
-## 10. Recommendations & Actions
+## 11. Recommendations & Actions
 
 1. **Unify Integrator Mode Specs**:
    Update [substrate-api.md](file:///Users/zachshallbetter/Projects/fundamental-engine/docs/canonical/substrate-api.md) to document the `'velocity-verlet'` scheme and synchronize deprecated names inside [physics-workover.md](file:///Users/zachshallbetter/Projects/fundamental-engine/docs/engine-reference/physics-workover.md).
@@ -405,3 +435,5 @@ An audit of the diagnostics vectors (`packages/core/src/diagnostics`), recording
     Add a conformance checker verifying that any new method added to `FieldHandle` is explicitly reviewed for inclusion/exclusion inside the `forAgent` proxy sandbox, preventing unintended method exposure to Software Agents.
 15. **Prevent Redundant React Component Mounting Re-creations**:
     Ensure that future options added to `FieldOptions` are added either to the `useEffect` dependency arrays of `FieldField`/`useFieldField` or specifically designated as static/once configuration parameters, preventing thrashing across renders.
+16. **Guard Against Silent Particle Headroom Truncations in 3D Swarms**:
+    Warn or raise defaults for `capacity` in `FieldLayerOptions` if initial seeded particle count is zero or extremely small, since spawning matter dynamically (using `spawn` forces) is clamped to this initial headroom size.
