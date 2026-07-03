@@ -91,8 +91,8 @@ the phases that ran and any violations.
    is internal truth, distinct from ARIA. CSS and JS both consume it; only feedback writes it.
 3. **FeedbackRegistry** — the write phase. Turns held state into CSS custom properties (continuous)
    and thresholded, debounced events (discrete, with hysteresis). The `--forces-*` CSS-variable
-   mirroring has been removed; the `field:*` → `forces:*` **event** aliases still fire for
-   compatibility. Do not let other modules write CSS variables directly. `cssWritesLastFrame()`
+   mirroring has been removed; the canonical event namespace is `field:*`. Do not let other modules
+   write CSS variables directly. `cssWritesLastFrame()`
    reports the actual `style.setProperty` calls made during the last `flush()` — the real
    per-frame DOM write cost (off-screen elements with active bindings still generate mutations).
    It is distinct from `boundVars().length`, which counts registrations, not writes; the

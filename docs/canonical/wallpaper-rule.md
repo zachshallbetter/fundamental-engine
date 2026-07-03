@@ -61,14 +61,14 @@ The rule extends beyond pixels — these are its enforced consequences:
   field-driven is wallpaper even when the values look plausible). Data-backed examples declare
   their provenance ([invisible-fields.md](invisible-fields.md)).
 - **The resting state of every plane is the same:** nothing painted, nothing imposed,
-  everything readable. `render` defaults `'none'`; `waves` defaults off; the ports match
-  (#985 brought Swift's retained pre-#538 defaults into line).
+  everything readable. `render` defaults `'none'`; ambient wave behavior is controlled as
+  an explicit surface policy (not as an implicit truth claim), and parity is pinned by tests.
 
 ## Lineage
 
 ```txt
 #538   render: 'none'      — signals-first: drawing becomes opt-in
-#979   waves: off          — ambient structure becomes opt-in (all planes, #985)
+#979   waves demotion      — ambient structure treated as opt-in policy, not implied truth
 06     Carrier Seam        — ambient structure becomes declared, readable, swappable
        (planning; the structural home for demoted wallpaper)
 ```
@@ -80,8 +80,8 @@ The rule generalizes #538 from *drawing* to *all ambient behavior*.
 Shipped guards (each plane pins its own honesty):
 
 - **Honest defaults** — bare-field tests on every plane: no waves, no render, byte-identical
-  to the explicit opt-out (`waves-default.test.ts`, Swift `WavesDefaultTests`, Kotlin
-  `bareFieldBuildsNoWaves`).
+  to the explicit opt-out where the plane's contract requires it (`waves-default.test.ts`,
+  Swift `WavesDefaultTests`, Kotlin `bareFieldBuildsNoWaves`).
 - **Determinism suites** — seeded fingerprint tests per plane (JS `determinism.test.ts`,
   Kotlin `DeterminismTests`, Swift `DeterminismTests`/`EngineDeterminismTests`).
 - **Ownership** — the scanner boundary tests (`scanner.boundary.test.ts`).

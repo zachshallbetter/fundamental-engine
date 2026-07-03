@@ -76,17 +76,6 @@ Current planning material. Forward-looking; does not describe planned work as sh
 | [`fundamental-release-gate-spec.md`](planning/fundamental-release-gate-spec.md) | The RC/1.0 release-gate program — two gates (freezability + survivor), the source spec behind the RC issues (#316–334) |
 | [`fundamental-three-integration.md`](planning/fundamental-three-integration.md) | Three.js renderer integration plan |
 
-## planning-archive/ — design history & planning records
-
-Preserved for design history and sequencing. Do not treat as current implementation without checking
-the canonical docs and the code.
-
-| Document | Role |
-|---|---|
-| [`field-concept.md`](planning-archive/field-concept.md) | North-star concept / vision (full conceptual arc) |
-| [`field-explainer.md`](planning-archive/field-explainer.md) | Plain-language "what it is" explainer |
-| [`roadmap-frontiers.md`](planning-archive/roadmap-frontiers.md) | Frontier roadmap (R1–R4 shipped; R5+ planned) |
-| [`live-web-examples.md`](planning-archive/live-web-examples.md) | Plan for familiar-page "concept study" demos |
 
 ## Authority order
 
@@ -97,14 +86,13 @@ When documents conflict, prefer:
 3. `canonical/fundamental-field-behavior-table.md` for field behavior.
 4. `canonical/testing-and-conformance.md` for validation and acceptance.
 5. `engine-reference/*` for force formulas and engine internals.
-6. `planning-archive/*` for history and intent only.
 
 ## Naming policy
 
 Use `Fundamental` for the project, packages, and docs. Use `field` for runtime concepts (field state,
 field root, field body, field event, field metric). New code uses `--field-*` CSS variables and
-`field:*` events; the compact `--d` CSS alias and the legacy `forces:*` event aliases remain where
-compatibility requires them. (The legacy `--forces-*` CSS variables have been removed.)
+`field:*` events; the compact `--d` CSS alias remains alongside `--field-density` as canonical dual
+naming. (The legacy `--forces-*` CSS variables have been removed.)
 
 ## Core distinctions
 

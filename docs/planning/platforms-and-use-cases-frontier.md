@@ -3,8 +3,7 @@
 > **Status: exploration.** This is a forward-looking catalog of *where else* the engine could run and
 > *what else* the field is good for — not a commitment. Nothing here is shipped. Each entry has a
 > corresponding **draft brief on the RC1 board** ([user Project #24](https://github.com/users/zachshallbetter/projects/24),
-> Status `Backlog`) so the idea is dispatchable when it gets prioritized. Strategic context lives in
-> [`planning-archive/roadmap-frontiers.md`](../planning-archive/roadmap-frontiers.md); the shipped port
+> Status `Backlog`) so the idea is dispatchable when it gets prioritized. Strategic context lives in the documentation map [`docs/README.md`](../README.md); the shipped port
 > status is in [`../../android/README.md`](../../android/README.md) and the
 > [Swift](../../swift/) tree.
 

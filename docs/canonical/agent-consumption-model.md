@@ -206,8 +206,7 @@ attribute/concept lane). The visual layer never becomes the body; it represents 
 ## Events
 
 Field events are thresholded and debounced — never per-frame by default. The canonical catalog is
-`FIELD_EVENTS` (`packages/core/src/agents/event-agent.ts`); `field:*` mirrors to `forces:*` during the
-alias window (`FeedbackRegistry`, `shadow.ts`).
+`FIELD_EVENTS` (`packages/core/src/agents/event-agent.ts`) and uses canonical `field:*` names.
 
 **Dispatched today (shipped):**
 
@@ -228,7 +227,7 @@ alias window (`FeedbackRegistry`, `shadow.ts`).
   (dispatched on the source body's element).
 - **any event name you bind via `data-on`** — e.g. `data-on="captured:field:dock, dense:field:lit"`.
 
-Every `field:*` here mirrors to its `forces:*` twin during the alias window.
+Use the canonical `field:*` names in docs and consumers.
 
 **Names reserved, not yet dispatched (planned):** `field:relationship-strengthened` — the designed
 relationship-strength dynamics rarely cross a fixed level cleanly, so it is left reserved until a use

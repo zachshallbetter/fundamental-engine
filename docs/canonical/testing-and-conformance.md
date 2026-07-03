@@ -330,7 +330,7 @@ scheduler. Each registry needs coverage:
 MeasurementRegistry reads element geometry only in the read phase
 StateRegistry tracks registered state and flags unregistered access
 FeedbackRegistry writes CSS variables (--field-density primary) only in the write phase
-FeedbackRegistry mirrors field:* to forces:* events (legacy --forces-* CSS vars removed)
+FeedbackRegistry emits canonical field:* events (legacy --forces-* CSS vars removed)
 RelationshipRegistry resolves from/to targets and reports missing targets
 VisualBindingRegistry keeps decorative bindings hidden / non-orphaned
 OverlayRegistry attaches overlays only where links exist
@@ -422,8 +422,8 @@ Lab still runs
 docs links resolve
 examples use new naming
 old public names still work as aliases
-CSS variables write both old and new names
-events support old and new names
+canonical CSS variables are --d/--field-* (legacy --forces-* removed)
+canonical event names use field:* in docs/examples/tests
 package metadata uses Fundamental
 no hardcoded force/ path remains except migration notes
 no accidental behavior changes occurred

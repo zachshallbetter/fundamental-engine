@@ -1,8 +1,8 @@
 # Migrating 0.x → 1.0
 
 > The 1.0 surface and its stability promise are in
-> [`planning/1.0-surface.md`](planning/1.0-surface.md); the support/semver policy is in
-> [`../SUPPORT.md`](../SUPPORT.md). This note is the upgrade checklist (RC-9 — closes #326).
+> [`../planning/1.0-surface.md`](../planning/1.0-surface.md); the support/semver policy is in
+> [`../../SUPPORT.md`](../../SUPPORT.md). This note is the upgrade checklist (RC-9 — closes #326).
 
 **The good news:** 0.x was already frozen-and-additive, so 1.0 introduces **almost no breakage**. There
 is exactly **one behavior change** to act on, a packaging change, and a small set of migration-era
@@ -44,7 +44,7 @@ The `forces-ui → field-ui → Fundamental` rename left a handful of **living a
 (an extra event, an extra CSS-var write, a re-export) kept so consumers on the new naming who still
 listen for an old event, read an old var, or import the old package name did not break. They shipped
 through the whole `0.x` line; **1.0 removes them.** Each removal is a mechanical find-and-replace on the
-consumer side. The full policy is [`canonical/deprecation-plan.md`](canonical/deprecation-plan.md); the
+consumer side. The full policy is [`../canonical/deprecation-plan.md`](../canonical/deprecation-plan.md); the
 per-alias table:
 
 | Old form | New form (do this) | Why it's going away |
@@ -91,16 +91,16 @@ These all arrived in 0.8.x as **new** options/methods/exports; nothing existing 
 - **`field.version`** / `FIELD_VERSION`, the `grid` overlay's `gridIntensity`, the unified `createField`
   (host/bounds resolution).
 
-See the [CHANGELOG](../CHANGELOG.md) for the full list.
+See the [CHANGELOG](../../CHANGELOG.md) for the full list.
 
 ## 5. Versioning from 1.0
 
 `1.x` is **additive only** — new options/methods/exports, never a break to the
-[Stable surface](planning/1.0-surface.md). Breaking changes wait for `2.0`, after the deprecation window.
-Full policy: [`SUPPORT.md`](../SUPPORT.md).
+[Stable surface](../planning/1.0-surface.md). Breaking changes wait for `2.0`, after the deprecation window.
+Full policy: [`../../SUPPORT.md`](../../SUPPORT.md).
 
 ---
 
 *Maintainers:* the file-level inventory of exactly what gets deleted at the cut (source sites, tests,
-cross-plane notes) is in [`planning/1.0-removal-checklist.md`](planning/1.0-removal-checklist.md). That
+cross-plane notes) is in [`../planning/1.0-removal-checklist.md`](../planning/1.0-removal-checklist.md). That
 list is the mechanical removal spec; this note is the consumer-facing upgrade guide.

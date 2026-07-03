@@ -105,8 +105,8 @@ Every markdown doc carries a status banner, and the folders mirror it:
 ## Naming policy
 
 New code and docs use `--field-*` CSS variables and `field:*` events. The `--forces-*` CSS-variable
-mirroring has been **removed** — `--d` and the `--field-*` family are the live vars. The `forces:*`
-**event** aliases still fire from the engine for compatibility. The density channel has a canonical
+mirroring has been **removed** — `--d` and the `--field-*` family are the live vars. Event naming is
+canonicalized as `field:*` in docs and examples. The density channel has a canonical
 raw form and an expressive long form — do not invert them:
 
 ```txt

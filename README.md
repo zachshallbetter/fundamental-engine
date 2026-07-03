@@ -528,7 +528,7 @@ surface is frozen, with new surface added additively; the support and versioning
 - [`docs/README.md`](docs/README.md): the full documentation map.
 - [`docs/canonical/api-stability.md`](docs/canonical/api-stability.md) ·
   [`docs/planning/1.0-surface.md`](docs/planning/1.0-surface.md): the frozen + additive surface and its tiering.
-- [`docs/migration-0.x-to-1.0.md`](docs/migration-0.x-to-1.0.md): the 0.x → 1.0 upgrade checklist.
+- [`docs/analysis/migration-0.x-to-1.0.md`](docs/analysis/migration-0.x-to-1.0.md): the 0.x → 1.0 upgrade checklist.
 - [`docs/canonical/lifecycle-contract.md`](docs/canonical/lifecycle-contract.md) ·
   [`docs/canonical/support-matrix.md`](docs/canonical/support-matrix.md): the lifecycle, browser/DPR/
   reduced-motion/SSR support, and accessibility records.
