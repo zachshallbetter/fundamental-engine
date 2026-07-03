@@ -13,7 +13,6 @@ import { FieldStore } from '../src/core/field-store.ts';
 import { step, makeAccumulator } from '../src/core/integrator.ts';
 import { attract, swirl } from '../src/forces/index.ts';
 import type { Body, Env, Particle, Force } from '../src/core/types.ts';
-import process from 'node:process';
 import { lcg, tickHost, timeIt, table, ms } from './harness.ts';
 
 const rng = lcg();

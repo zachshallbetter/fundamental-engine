@@ -100,7 +100,7 @@ function env(): Env {
     supernova: () => {},
     spawn: () => {},
     neighbors: (p, r) => store.neighbors(p, r),
-    grid: () => ({ sample: () => 0, deposit: () => {}, gradient: () => ({ x: 0, y: 0 }) }),
+    grid: () => ({ sample: () => 0, deposit: () => {}, gradient: () => ({ x: 0, y: 0 }), decay: () => {}, clear: () => {} }),
   };
   return e;
 }
