@@ -486,3 +486,89 @@ Second pass focused on drift-prone executable claims in `apps/site/public/llms-f
    - restoring explicit alias emission in runtime and adding regression tests.
 3. Remove or version-gate any “write both old and new CSS names” statements; they conflict with current canonical “`--forces-*` removed” messaging and runtime behavior.
 4. Add a docs conformance check that validates default values and concrete event-name literals against code for `field.ts`, `feedback-sink.ts`, and platform feedback wiring.
+
+## End-to-end comprehensive non-generated code review (full-repo addendum)
+### Scope
+Comprehensive static review across tracked, non-built/non-generated code files, split by directory for full coverage (`android/**`, `apps/**`, `examples/**`, `packages/**`, `scripts/**`, `swift/**`, `Package.swift`), explicitly excluding generated/build output directories and generated site artifacts.
+
+### Coverage summary
+1. `packages/core` + `packages/dom`: 288 files / 40,319 lines reviewed.
+2. `packages/elements` + `packages/react`: 28 tracked code/config files reviewed (after excluding non-code tracked artifacts in scope).
+3. `packages/three` + `packages/vanilla` + `packages/create`: 63 files reviewed.
+4. `android/**`: 104 files / 13,231 lines reviewed.
+5. `swift/**` + `Package.swift`: 87 non-generated files / 17,145 lines reviewed (explicit generated-file exclusion applied).
+6. `apps/**` + `examples/**` + `scripts/**`: 307 files / 70,579 lines reviewed (non-generated codefiles only).
+
+### Consolidated findings
+#### Medium
+1. Determinism drift risk in thermal force path:
+   - `packages/core/src/forces/natural.ts:217`
+   - `packages/core/src/forces/natural.ts:219`
+   - `packages/core/src/forces/natural.ts:224`
+   - `packages/core/src/forces/natural.ts:225`
+   - Uses direct `Math.random()` in `thermal.apply`, bypassing injected RNG seam intended for reproducibility.
+2. `x-ray` overlay HTML injection surface:
+   - `packages/dom/src/x-ray.ts:34`
+   - `packages/dom/src/x-ray.ts:40`
+   - Unescaped interpolation into `innerHTML` can inject markup if `hotkey` is untrusted.
+3. React hook lifecycle gap (`useForcesData`):
+   - `packages/react/src/index.tsx:198`
+   - `packages/react/src/index.tsx:199`
+   - `packages/react/src/index.tsx:207`
+   - If `containerRef.current` is null on first effect pass, binding init is skipped and never retried.
+4. Android compose coordinate-space mismatch risk:
+   - `android/fundamental-compose/src/main/kotlin/com/fundamental/compose/FieldView.kt:236`
+   - `android/fundamental-compose/src/main/kotlin/com/fundamental/compose/FieldView.kt:253`
+   - Comment says on-screen bounds, implementation uses `positionInParent()` which can drift in nested/scrolling contexts.
+5. Swift strict-mode behavior mismatch:
+   - `swift/Sources/FundamentalPlatform/FrameScheduler.swift:64`
+   - `swift/Sources/FundamentalPlatform/FrameScheduler.swift:105`
+   - Comment says strict mode “throws,” implementation hard-crashes with `fatalError`.
+6. E2E harness inconsistency for offline determinism:
+   - `apps/site/e2e/README.md:26`
+   - `apps/site/e2e/recipes-explore.spec.ts:1`
+   - `recipes-explore.spec.ts` imports Playwright directly instead of shared fixtures, bypassing documented network-block harness.
+
+#### Low
+1. Non-deterministic scaffold dependency pinning:
+   - `packages/create/templates/react/package.json:12`
+   - `packages/create/templates/web-component/package.json:12`
+   - Template dependencies use `"latest"` rather than a bounded version/range.
+2. Elements reverse drift guard is incomplete:
+   - `packages/elements/src/option-attrs.test.ts:29`
+   - `packages/elements/src/index.ts:102`
+   - `packages/elements/src/index.ts:110`
+   - Guarded key list omits additional forwarded options (e.g., `gridWarp`, `gridIntensity`, `theme`, `gradient*`, `waveBaseline`, `separation`).
+3. Elements/runtime document scoping portability issue:
+   - `packages/elements/src/platform-runtime.ts:225`
+   - `packages/elements/src/platform-runtime.ts:266`
+   - Visibility listener binds to global `document` instead of already-resolved owner document.
+4. `x-ray` portability/type-safety debt:
+   - `packages/dom/src/x-ray.ts:32`
+   - `packages/dom/src/x-ray.ts:33`
+   - `packages/dom/src/x-ray.ts:48`
+   - `packages/dom/src/x-ray.ts:51`
+   - Uses `any` casts for optional APIs and global document/body rather than container document.
+5. Swift snapshot write result is ignored:
+   - `swift/Sources/FieldLabKit/Snapshotter.swift:87`
+   - `CGImageDestinationFinalize` return value is not checked.
+6. Android platform TODO indicates contract drift risk:
+   - `android/fundamental-platform/src/main/kotlin/com/fundamental/platform/MeasurementRegistry.kt:91`
+   - `android/fundamental-platform/src/main/kotlin/com/fundamental/platform/MeasurementRegistry.kt:92`
+   - `android/fundamental-android/src/main/kotlin/com/fundamental/android/AndroidFieldHost.kt:252`
+   - Registry currently passes `Body` where Android host expects `View`.
+7. Example/docs consistency drift (Next.js SSR guidance):
+   - `examples/nextjs/app/components/FieldCanvas.tsx:9`
+   - `examples/nextjs/app/page.tsx:3`
+   - `examples/nextjs/package.json:5`
+   - Mixed guidance around `dynamic(..., { ssr:false })`.
+
+### No-high-severity defects found
+Across reviewed scopes, no immediate high-severity crash/data-loss/security findings were identified beyond the medium-level issues listed.
+
+### Prioritized follow-ups
+1. Fix determinism seam (`thermal`) to use injected RNG path, then add deterministic regression coverage.
+2. Replace `x-ray` `innerHTML` path with safe text-node rendering and container/owner-document-safe mounting.
+3. Harden React/elements lifecycle behavior around late-mounted containers and owner-document visibility wiring.
+4. Tighten drift guards (option-forwarding completeness; docs-vs-runtime checks for examples/templates).
+5. Normalize scaffolding/versioning strategy to avoid `latest` template drift.
