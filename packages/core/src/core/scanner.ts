@@ -271,6 +271,35 @@ export function authoredAttrs(el: HTMLElement): BodyAttrs | null {
 }
 
 /**
+ * The reserved field-boundary marker (#980) — ENGINE-SET, not authored. A contained host
+ * (`containerHost(el)` / the `bounds:` path in `@fundamental-engine/dom`) marks its bounds element
+ * with this attribute at attach and removes it on detach/destroy. The scanner then applies
+ * nearest-enclosing-field ownership: a body belongs to the NEAREST enclosing marked boundary, so a
+ * document-rooted page field never adopts bodies that live inside a contained field's bounds (the
+ * two-writer `--d` flicker), each contained field owns exactly its subtree, and nesting resolves to
+ * the nearest boundary. Removing the marker (contained field destroyed) hands the bodies back to
+ * the outer field on its next rescan.
+ */
+export const FIELD_BOUNDARY_ATTR = 'data-field-boundary';
+
+/** The selector form of {@link FIELD_BOUNDARY_ATTR}, for `closest()` / boundary queries. */
+export const FIELD_BOUNDARY_SELECTOR = `[${FIELD_BOUNDARY_ATTR}]`;
+
+/**
+ * Nearest-enclosing-field ownership (#980): does the scan rooted at `root` own `el`?
+ * True when the element's closest marked boundary is the scan root itself (the contained field
+ * scanning its own bounds — including a body ON the bounds element), or when no boundary encloses
+ * it at all (the body rides the outer/page field). An element without `closest` (programmatic /
+ * stub / minimal shadow shapes) is always owned — ownership filtering only applies where a real
+ * ancestor chain exists to resolve it.
+ */
+export function ownedByScanRoot(el: Element, root: ParentNode): boolean {
+  if (typeof el.closest !== 'function') return true;
+  const boundary = el.closest(FIELD_BOUNDARY_SELECTOR);
+  return boundary === null || boundary === (root as unknown);
+}
+
+/**
  * The selector matching every element the scanner turns into one or more bodies: a raw `data-body`,
  * a `data-preset`, or an element authored via `data-intent` / `data-field-role`. This is the single
  * source of truth shared with the platform's MeasurementRegistry (Phase D) so the two never drift.
@@ -283,21 +312,27 @@ export const BODY_SELECTOR =
  * Every element in `root` that contributes a body, deduped and in document order. The geometry
  * source for the platform MeasurementRegistry; pure over the passed root (no globals). A
  * `data-preset` element still expands to several virtual bodies in `scanBodies`, but it is one
- * element with one rect — which is exactly what measurement registers.
+ * element with one rect — which is exactly what measurement registers. Applies the same
+ * nearest-enclosing-field ownership filter as `scanBodies` (#980), so platform measurement never
+ * registers bodies a contained field owns.
  */
 export function bodyElements(root: ParentNode): Element[] {
-  return [...root.querySelectorAll(BODY_SELECTOR)];
+  return [...root.querySelectorAll(BODY_SELECTOR)].filter((el) => ownedByScanRoot(el, root));
 }
 
 /** Scan a DOM subtree for `[data-body]` and `[data-preset]` elements → bodies (§2.1,
  *  §20.9). A preset element emits one virtual body per entry, all sharing its rect;
- *  the plain `data-body` path is unchanged. */
+ *  the plain `data-body` path is unchanged. Ownership (#980): a body whose nearest enclosing
+ *  `[data-field-boundary]` is not this scan root belongs to that (contained) field and is
+ *  skipped — see {@link ownedByScanRoot}. */
 export function scanBodies(root: ParentNode): Body[] {
   const bodies: Body[] = [];
   root.querySelectorAll('[data-body]').forEach((node) => {
+    if (!ownedByScanRoot(node, root)) return;
     bodies.push(bodyFromElement(node as HTMLElement));
   });
   root.querySelectorAll('[data-preset]').forEach((node) => {
+    if (!ownedByScanRoot(node, root)) return;
     const el = node as HTMLElement;
     for (const sb of expandPreset(el.dataset.preset ?? '')) bodies.push(makeBody(el, sb));
   });
@@ -306,6 +341,7 @@ export function scanBodies(root: ParentNode): Body[] {
   root
     .querySelectorAll('[data-intent]:not([data-body]), [data-field-role]:not([data-body]):not([data-intent])')
     .forEach((node) => {
+      if (!ownedByScanRoot(node, root)) return;
       const a = authoredAttrs(node as HTMLElement);
       if (a) bodies.push(bodyFromElement(node as HTMLElement, a));
     });

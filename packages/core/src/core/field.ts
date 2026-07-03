@@ -3595,6 +3595,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       for (const em of emitters) for (const clone of em.emitted) clone.remove();
       emitters = [];
       store.clear();
+      // release host-side state last (e.g. a contained host's data-field-boundary marker, #980)
+      // so an outer field re-adopts this field's bodies on its next rescan.
+      host.detach?.();
     },
   };
 

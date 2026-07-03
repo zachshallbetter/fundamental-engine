@@ -6,15 +6,22 @@
  * CONTAINED, card-sized field — pass `bounds: el` to `createField`/`FieldField`, or wire it directly:
  * `createField(canvas, { host: containerHost(card) })`. The first concrete `FieldSurface` (#539).
  */
-import type { FieldHost } from '@fundamental-engine/core';
+import { FIELD_BOUNDARY_ATTR, type FieldHost } from '@fundamental-engine/core';
 import { prefersReducedMotion, pageHidden } from './env.ts';
 
 const INPUT_EVENTS = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const;
 
 /** Build a FieldHost scoped to `el` — a contained field in the element's local coordinate space. */
 export function containerHost(el: HTMLElement): FieldHost {
+  // Nearest-enclosing-field ownership (#980): mark the bounds element as a field boundary at
+  // attach, so an OUTER field's scan (the page `<field-root>` scans `document`) skips the bodies
+  // this contained field owns — two engines writing `--d` on the same elements is the per-frame
+  // flicker this prevents. Idempotent (setting an already-set marker is a no-op; a re-attach after
+  // destroy simply re-marks); `detach()` removes it so the outer field re-adopts on rescan.
+  el.setAttribute(FIELD_BOUNDARY_ATTR, '');
   return {
     root: el,
+    detach: () => el.removeAttribute(FIELD_BOUNDARY_ATTR),
     viewport: () => {
       const r = el.getBoundingClientRect();
       // originX/Y = the container's viewport position → bodies/threads/moves are measured

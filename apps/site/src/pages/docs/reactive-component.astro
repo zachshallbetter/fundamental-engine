@@ -26,7 +26,7 @@ for (const row of list.querySelectorAll('li')) {
 
 const css = `/* the field wrote --d (the canonical raw density channel; --field-density is
    its field-namespaced form) onto each [data-feedback] row.
-   read it to turn density into presence — weight, lift, glow. No canvas involved. */
+   read it to turn density into presence — weight, lift, glow. Nothing drawn. */
 .inbox li {
   font-weight: calc(400 + var(--d, 0) * 360);
   transform: translateX(calc(var(--d, 0) * 6px));
@@ -37,7 +37,7 @@ const css = `/* the field wrote --d (the canonical raw density channel; --field-
 
 <DocsLayout
   title="A reactive component (no particles)"
-  description="The field as a behaviour layer on a real interface: a contained, signals-only field gives an ordinary list weight and reactivity through --field-* CSS variables, with no canvas and no particles drawn."
+  description="The field as a behaviour layer on a real interface: a contained, signals-only field gives an ordinary list weight and reactivity through --field-* CSS variables, with nothing drawn to its canvas."
 >
   <h1>A reactive component — no particles</h1>
   <p class="lede">
@@ -54,7 +54,8 @@ const css = `/* the field wrote --d (the canonical raw density channel; --field-
     invisible matter toward them and writes the local density back as <code>--d</code>
     (the field-namespaced <code>--field-density</code> holds the same value). Important rows are visibly
     heavier; engaging one pulls the field toward it.
-    There is no <code>&lt;canvas&gt;</code> on this page — the field is pure signal.
+    Nothing is <em>drawn</em>: with <code>render: 'none'</code> the field's canvas stays blank —
+    the list's field is pure signal.
   </p>
 
   <h2>Copy it into your app</h2>
