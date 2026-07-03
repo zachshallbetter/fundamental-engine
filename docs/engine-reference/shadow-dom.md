@@ -349,8 +349,9 @@ through the same path.
 
 The field writes state back to the registered element or write target using CSS custom properties.
 
-`--field-density` is the primary density variable (with `--d` as the compact alias). The legacy
-`--forces-*` CSS variables have been removed.
+`--field-density` and its compact twin `--d` hold the same density value — consistent, neither
+is legacy (see `docs/canonical/feedback-channels.md`). The genuinely legacy `--forces-*` CSS
+variables have been removed.
 
 Minimum variables:
 

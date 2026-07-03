@@ -266,8 +266,9 @@ Recipe authors must not expect a designed lane to flow unless the host provides 
 platform writes what it can compute; `classifyMetric(name)` returns `'computed'`,
 `'supplied-only'`, or `'designed'` for any metric name.
 
-Suggested CSS variables for the platform-computed lane (canonical `--field-*`; `--d` is the compact
-alias for density). The legacy `--forces-*` CSS variables have been removed — only the `forces:*`
+Suggested CSS variables for the platform-computed lane (the `--field-*` namespace; for density,
+`--d` and `--field-density` hold the same value — consistent, neither legacy, see
+`feedback-channels.md`). The legacy `--forces-*` CSS variables have been removed — only the `forces:*`
 **event** aliases remain for backward compatibility (those still fire from the engine):
 
 ```css

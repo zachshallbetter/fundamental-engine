@@ -76,8 +76,9 @@ conserved particle field is one engine/render layer of that context, drawn on a
 full-viewport `<canvas>` behind the content (canvas is one render surface of
 several — see the render modes in §20.6 and the diagnostic surfaces). Bodies exert
 **forces** on free particles. In return, the local particle **density** around a
-body is written back into that element as a CSS variable (`--field-density`, with
-the legacy/compat alias `--d`), so type can swell, glow, and gain weight where the
+body is written back into that element as a CSS variable — `--d` and its namespaced
+twin `--field-density` hold the same value (consistent; neither is legacy — see
+`docs/canonical/feedback-channels.md`) — so type can swell, glow, and gain weight where the
 field gathers. The interaction is two-way and continuous.
 
 Three invariants define the system:

@@ -24,6 +24,7 @@
     "gen:atoms": "node scripts/gen-atoms.mjs > apps/site/src/data/atoms.json",
     "check:atoms": "node scripts/gen-atoms.mjs > apps/site/src/data/atoms.json && git diff --exit-code apps/site/src/data/atoms.json",
     "gen:force-catalog": "node scripts/gen-force-catalog.mjs",
+    "gen:parity-matrix": "node scripts/gen-parity-matrix.mjs",
     "gen:papers": "node scripts/papers-to-latex.mjs",
     "dev": "pnpm --filter @fundamental-engine/site dev",
     "build:site": "pnpm --filter @fundamental-engine/site build",

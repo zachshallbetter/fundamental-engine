@@ -308,7 +308,7 @@ These guidelines ensure visual consistency and typography legibility. They prese
 * **Symptom:** Text words or case study headings are assembled from, or morphed out of, loose particles. The typography becomes noisy, jagged, and illegible.
 * **Root Cause:** Direct morphing or glyph assembly (`data-glyph`) applied to prose words.
 * **Correct Pattern:** Words must remain solid, vector-drawn typographic elements. The field must *decorate* and interact with the text box, not form the text itself. Reserve particle shape-assembly strictly for simple punctuation and marks (e.g., `.`, `—`, `·`, brackets, logos) where the silhouette remains simple and legible.
-* **Typographic Interaction:** To make words feel alive, alter their typographic properties using the eased local density variable written back by the engine. The primary token is `--field-density` (`--d` is the compact alias the FeedbackRegistry keeps mirrored; the legacy `--forces-density` CSS variable has been removed):
+* **Typographic Interaction:** To make words feel alive, alter their typographic properties using the eased local density variable written back by the engine. `--field-density` and its compact twin `--d` hold the same value — consistent, neither legacy (see `docs/canonical/feedback-channels.md`); the genuinely legacy `--forces-density` CSS variable has been removed. Read either:
   ```css
   .liveword {
     /* Drive weight from local density */
