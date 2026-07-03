@@ -695,7 +695,7 @@
       ],
       "counts": {
         "js": 35,
-        "swift": 25,
+        "swift": 26,
         "kotlin": 0
       },
       "planes": {
@@ -758,6 +758,7 @@
           "policy",
           "qualityTier",
           "render",
+          "rng",
           "separation",
           "waveCenter",
           "waveStyle",
@@ -967,7 +968,7 @@
         {
           "symbol": "rng",
           "js": true,
-          "swift": false,
+          "swift": true,
           "kotlin": false
         },
         {
