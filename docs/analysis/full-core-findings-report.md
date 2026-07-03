@@ -408,3 +408,46 @@ Quick structural review of `packages/create` as the scaffolding CLI package.
 2. Argument parsing and interactive prompt flow
    - `packages/create/src/index.ts:10`
    - `packages/create/src/index.ts:22`
+
+## llms-full content vs code alignment (first pass)
+### Scope
+Focused audit of high-impact claims in `apps/site/public/llms-full.txt` against current runtime code in `packages/core`, `packages/vanilla`, `packages/elements`, and `packages/create`.
+This pass targets concrete executable claims from sampled sections (including `docs/canonical/common-mistakes.md` content embedded in `llms-full.txt`).
+
+### Verdict summary
+1. **Accurate** — Core `createField` requires an explicit host.
+2. **Accurate** — Vanilla `createField` auto-resolves host (`host` → `bounds`/contained → browser).
+3. **Accurate** — Default render mode is signals-first (`'none'`).
+4. **Accurate** — Contained mode is a vanilla `bounds` path; `<field-root>` remains the singleton window-style element surface.
+5. **Accurate** — Recipe catalog claims (64 recipes, 4 tiers, first-release set of 8) match code/tests.
+6. **Mismatch** — `common-mistakes` currently says event bus is `field.on('absorb' | 'release' | 'settle', …)`; runtime event bus does **not** expose `settle`.
+7. **Partially accurate phrasing** — “core and vanilla are the same `createField` function” is conceptually close but implementation-wise vanilla uses a wrapper that calls core with resolved host.
+
+### Evidence index (alignment checks)
+1. Core host requirement
+   - `packages/core/src/core/field.ts:323`
+2. Vanilla host resolution wrapper
+   - `packages/vanilla/src/create-field.ts:33`
+   - `packages/vanilla/src/create-field.ts:35`
+3. Signals-first render default
+   - `packages/core/src/core/field.ts:363`
+4. `<field-root>` implementation + contained mode reference surface
+   - `packages/elements/src/index.ts:729`
+   - `packages/vanilla/src/create-field.ts:30`
+5. Recipe catalog counts/tiers
+   - `packages/core/src/recipes/recipes.test.ts:41`
+   - `packages/core/src/recipes/recipes.test.ts:49`
+   - `packages/core/src/recipes/catalog.ts:1518`
+   - `packages/core/src/recipes/catalog.ts:1527`
+6. Runtime event bus shape (no `settle`)
+   - `packages/core/src/core/events.ts:17`
+   - `packages/core/src/core/events.ts:21`
+   - `packages/core/src/core/events.ts:26`
+   - `packages/core/src/core/types.ts:1615`
+7. Contradicting doc line in llms-full sample
+   - `apps/site/public/llms-full.txt:1510`
+
+### Recommended doc fixes in llms source set
+1. Update the `common-mistakes` event-bus example to remove `settle` (or relabel it as planned/reserved if intentionally documented ahead of runtime).
+2. Tighten wording around vanilla/core `createField` to “same door semantics, different exported function (vanilla wrapper over core primitive)” for implementation precision.
+3. Run a targeted “docs-claim conformance” check over canonical docs for API symbol examples (`field.on(...)`, event names, option defaults) to catch executable-surface drift earlier.
