@@ -70,6 +70,9 @@ export interface FrameState {
   heat: number;
   speed: number;
   cap?: boolean;
+  /** carried pigment (§20.8): present only once matter has been stained, so a `pigment`
+   *  scenario's trajectory records the real color transport, not a painted stand-in. */
+  color?: string;
 }
 
 /** The frame-0 force delta a particle receives (one direct `apply`, before friction). */

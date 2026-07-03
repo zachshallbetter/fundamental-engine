@@ -15,7 +15,7 @@
 // (threads) stay imperative — their window is user-interaction-gated, so the element will
 // always be upgraded by the time they fire.
 
-import { recipeById } from "@fundamental-engine/core";
+import { recipeById, BURST_RADIUS } from "@fundamental-engine/core";
 import { applyRecipe } from "@fundamental-engine/dom";
 
 type FieldEl = HTMLElement & {
@@ -203,6 +203,11 @@ export function initHomeRuntime(): () => void {
           const ring = document.createElement("span");
           ring.className = "shock";
           ring.style.setProperty("--cc", color);
+          // size the shock ring to the REAL burst front: field.burst shoves + heats matter
+          // within BURST_RADIUS engine (page-px) units, so the ring expands to exactly that
+          // reach instead of an arbitrary painted scale — the visual marks what the burst
+          // actually touched. --shock-r is the final radius; the CSS grows the ring to it.
+          ring.style.setProperty("--shock-r", BURST_RADIUS + "px");
           const sr = stage.getBoundingClientRect();
           ring.style.left = cx - sr.left + "px";
           ring.style.top = cy - sr.top + "px";

@@ -55,41 +55,47 @@ function drawTrace(
   }
 
   if (trace.special === "pigment") {
-    // pigment exerts no force — show the dye it carries: a stain + streaks that tint up
-    const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
-    grd.addColorStop(0, `rgba(${r},${g},${b},0.32)`);
-    grd.addColorStop(0.6, `rgba(${r},${g},${b},0.12)`);
-    grd.addColorStop(1, `rgba(${r},${g},${b},0)`);
-    ctx.fillStyle = grd;
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.fill();
-    for (let row = -1; row <= 1; row++) {
-      const y = cy + row * R * 0.4;
-      const steps = 26;
-      for (let i = 0; i < steps; i++) {
-        const t = i / steps;
-        const x0 = cx - R + t * 2 * R;
-        // neutral entering left → full tint past the body centre (picks up the dye)
-        const mix = Math.max(0, Math.min(1, (t - 0.35) / 0.4));
-        const cr = Math.round(150 + (r - 150) * mix);
-        const cg = Math.round(160 + (g - 160) * mix);
-        const cb = Math.round(170 + (b - 170) * mix);
-        ctx.strokeStyle = `rgba(${cr},${cg},${cb},0.45)`;
-        ctx.lineWidth = 1.4;
+    // pigment exerts no force — it STAINS passing matter its own tint, carried away (§20.8).
+    // These streaklines are the REAL engine run: neutral probes stream across the tinted body
+    // and each point carries the color the engine transported onto it (undefined = still
+    // neutral, past the body = fully dyed). No painted dye ramp — the tint is measured.
+    const NEUTRAL: [number, number, number] = [150, 160, 170]; // undyed matter
+    for (const path of trace.paths) {
+      if (path.length < 2) continue;
+      for (let i = 1; i < path.length; i++) {
+        const a = path[i - 1]!;
+        const bpt = path[i]!;
+        // the segment's color is the dye carried at its leading point (neutral until stained)
+        const [sr, sg, sb] = bpt.c ? hexToRgb(bpt.c) : NEUTRAL;
+        ctx.strokeStyle = `rgba(${sr},${sg},${sb},0.5)`;
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(x0, y);
-        ctx.lineTo(x0 + (2 * R) / steps + 1, y);
+        ctx.moveTo(cx + a.x * R, cy + a.y * R);
+        ctx.lineTo(cx + bpt.x * R, cy + bpt.y * R);
         ctx.stroke();
       }
-      // arrowhead
-      ctx.strokeStyle = `rgba(${r},${g},${b},0.5)`;
-      ctx.beginPath();
-      ctx.moveTo(cx + R, y);
-      ctx.lineTo(cx + R - 6, y - 3);
-      ctx.moveTo(cx + R, y);
-      ctx.lineTo(cx + R - 6, y + 3);
-      ctx.stroke();
+      // arrowhead at the leading (dyed) end
+      const head = path[path.length - 1]!;
+      const tail = path[Math.max(0, path.length - 3)]!;
+      const dx = head.x - tail.x,
+        dy = head.y - tail.y;
+      const d = Math.hypot(dx, dy);
+      if (d > 1e-4) {
+        const ux = dx / d,
+          uy = dy / d,
+          sz = 5;
+        const [hr, hg, hb] = head.c ? hexToRgb(head.c) : [r, g, b];
+        const hx = cx + head.x * R,
+          hy = cy + head.y * R;
+        ctx.strokeStyle = `rgba(${hr},${hg},${hb},0.62)`;
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.moveTo(hx, hy);
+        ctx.lineTo(hx - ux * sz - uy * sz * 0.5, hy - uy * sz + ux * sz * 0.5);
+        ctx.moveTo(hx, hy);
+        ctx.lineTo(hx - ux * sz + uy * sz * 0.5, hy - uy * sz - ux * sz * 0.5);
+        ctx.stroke();
+      }
     }
     return;
   }
@@ -179,6 +185,8 @@ export function initStageFieldOverlay(): () => void {
       range?: number;
       spin?: number;
       angleDeg?: number;
+      aspect?: number;
+      tint?: string;
     };
   }
 
@@ -234,6 +242,13 @@ export function initStageFieldOverlay(): () => void {
         angleDeg: num(sub.angle),
       };
     }
+    // derive the diagram geometry from the live body: its measured aspect ratio (so the
+    // dipole/monopole field-line shape reflects the annotated body) and, for pigment, the
+    // real carried tint (`data-color`) the engine transports onto passing matter.
+    const rect = chip.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) override.aspect = rect.width / rect.height;
+    if (chip.dataset.color) override.tint = chip.dataset.color;
+
     const cvs = document.createElement("canvas");
     cvs.className = "stage-field";
     cvs.setAttribute("aria-hidden", "true");

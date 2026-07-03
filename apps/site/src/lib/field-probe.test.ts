@@ -8,7 +8,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { traceRaw, traceDipole, WARP_PAIR_D, WARP_THROAT, type RawTrace } from './field-probe.ts';
+import { traceRaw, traceField, traceDipole, WARP_PAIR_D, WARP_THROAT, type RawTrace } from './field-probe.ts';
 import { DEMO_OVERRIDES } from './demo-forces.ts';
 
 const mean = (xs: number[]): number => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
@@ -293,13 +293,66 @@ for (const [token, check] of Object.entries(CHECKS)) {
 
 // pigment is the one non-kinematic force: it tints, never moves matter. Verify it stays put.
 test('demo accurate: pigment (no kinematic effect)', () => {
-  // pigment's probe recipe is `special` (traceRaw returns null); the contract is "no force".
-  // Assert the engine force itself never changes velocity by tracing it as a plain body.
+  // Trace pigment as the ONLY body token so no sibling force moves the probes: the pigment
+  // force must never change velocity. (The pigment stage's own recipe streams probes across
+  // with a SEED velocity — pigment stains them, motion comes from the seed, not the force.)
   const raw = traceRaw('repel', { tokens: ['pigment'], strength: 1.5, range: 280, spin: 1, angleDeg: -90 });
   assert.ok(raw, 'pigment-as-body trace failed');
   const A = analyze(raw!);
   const moved = mean(A.parts.map((p) => Math.hypot(p.xN - p.x0, p.yN - p.y0)));
   assert.ok(moved < 2, `pigment must not move matter — mean displacement ${moved.toFixed(2)}`);
+});
+
+// The pigment STAGE derives from a real engine run: neutral probes stream across a tinted
+// body and the engine transports the body's tint onto them. Assert the trace records that
+// real color pickup (not a painted dye ramp) — some points carry the tint, and it's the
+// body's `data-color`, not a hardcoded stand-in.
+test('pigment stage: color is transported by the engine, not painted', () => {
+  const TINT = '#2277ee';
+  const trace = traceField('pigment', { tint: TINT });
+  assert.ok(trace, 'pigment traceField returned null');
+  assert.equal(trace!.special, 'pigment', 'pigment trace must flag the stain render');
+  assert.ok(trace!.paths.length > 0, 'pigment must produce real streaklines');
+  const colored = trace!.paths.flat().filter((p) => p.c != null);
+  assert.ok(colored.length > 0, 'no probe was stained — pigment transport did not run');
+  // the carried color is the body's tint (the engine mixes toward it), never the neutral base.
+  assert.ok(
+    colored.some((p) => p.c === TINT || /^#/.test(p.c!)),
+    'stained color must come from the body tint (real transport), not a painted constant',
+  );
+  // a different tint yields a different stain — proof the color is derived from data-color.
+  const other = traceField('pigment', { tint: '#ee5522' })!.paths.flat().filter((p) => p.c != null);
+  assert.notDeepEqual(
+    colored.map((p) => p.c),
+    other.map((p) => p.c),
+    'stain color must track the body tint (two tints must differ)',
+  );
+});
+
+// The charge stage samples the ENGINE's real monopole field: flipping the body polarity
+// (spin sign) reverses the field direction, so the traced spokes must actually differ.
+test('charge stage: field lines derive from the engine monopole (polarity flips them)', () => {
+  const pos = traceDipole('charge', { spin: 1 });
+  const neg = traceDipole('charge', { spin: -1 });
+  assert.ok(pos && neg, 'charge dipole trace returned null');
+  assert.notDeepEqual(
+    pos!.paths.map((l) => l.map((p) => [p.x.toFixed(3), p.y.toFixed(3)])),
+    neg!.paths.map((l) => l.map((p) => [p.x.toFixed(3), p.y.toFixed(3)])),
+    'a + and − charge must trace different field lines (real engine field, not a fixed diagram)',
+  );
+});
+
+// The dipole/monopole geometry derives from the live body's measured aspect ratio — a wide
+// body and a tall body must trace different diagrams (not one fixed stand-in shape).
+test('charge stage: diagram geometry tracks the body aspect ratio', () => {
+  const wide = traceDipole('charge', { aspect: 4 });
+  const tall = traceDipole('charge', { aspect: 0.5 });
+  assert.ok(wide && tall, 'charge dipole trace returned null');
+  assert.notDeepEqual(
+    wide!.paths.map((l) => l.length),
+    tall!.paths.map((l) => l.length),
+    'different body aspects must yield different field-line geometry',
+  );
 });
 
 // Dipole field-line render (Stage B): magnetism and charge produce real traced field lines;

@@ -13,7 +13,7 @@
 
 import type { Body, Particle, Env, Force } from '../core/types.ts';
 import type { Registry } from '../core/registry.ts';
-import { polePair, dipoleField, EPS, type Pole } from '../core/geometry.ts';
+import { polePair, dipoleField, monopoleField, EPS, type Pole } from '../core/geometry.ts';
 
 /**
  * The body's dipole field at a world point (the visual/structure field, Stage B): the
@@ -60,12 +60,10 @@ function bodyDipole(b: Body, x: number, y: number, s: number): { x: number; y: n
  * exist, so `magnetism` loops), a lone electric charge radiates, so `charge` is a monopole.
  */
 function bodyMonopole(b: Body, x: number, y: number, s: number): { x: number; y: number } {
-  const dx = x - b.cx;
-  const dy = y - b.cy;
-  const d = Math.max(Math.hypot(dx, dy), EPS);
-  const sgn = b.spin < 0 ? -1 : 1;
-  const mag = (sgn * s * (1 + Q_GAIN * (b.d ?? 0))) / (d * d); // 1/d², signed by polarity
-  return { x: (dx / d) * mag, y: (dy / d) * mag };
+  // one radial-monopole formula, shared with the charge-stage field-line diagram
+  // (geometry.monopoleField): the diagram traces the exact field the engine radiates.
+  // charged elements radiate a stronger field as they charge up (Q_GAIN · b.d).
+  return monopoleField(b.cx, b.cy, b.spin, s * (1 + Q_GAIN * (b.d ?? 0)), x, y);
 }
 
 /**

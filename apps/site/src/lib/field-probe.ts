@@ -15,6 +15,7 @@ import {
   runScenario,
   polePair,
   dipoleField,
+  monopoleField,
   traceFieldLines,
   dipoleSeeds,
   monopoleSeeds,
@@ -26,13 +27,17 @@ import {
 export interface Pt {
   x: number;
   y: number;
+  /** carried pigment at this point of the path (§20.8) — set only on a `pigment` trace,
+   *  read straight off the engine's per-frame color transport (undefined = still neutral). */
+  c?: string;
 }
 export interface FieldTrace {
   /** polylines in body-relative units, normalized so the framed extent is ~[-1, 1]. */
   paths: Pt[][];
   /** annotation circles (normalized radius) — capture ring, rest shell, etc. */
   rings: { r: number; dash: boolean }[];
-  /** a special non-traced visual (pigment has no kinematic effect). */
+  /** a `pigment` trace: real streaklines whose points carry the engine-transported color.
+   *  Kept as a flag so the drawer renders the stain instead of arrowed trajectories. */
   special?: 'pigment';
 }
 
@@ -143,7 +148,11 @@ const CFG: Record<string, ProbeCfg> = {
   morph: { strength: 2.4, seed: 'targets', vel: 'none', n: 24 },
   resonate: { strength: 1.4, tokens: ['resonate', 'attract'], spin: 2, seed: 'ring', vel: 'orbit', v0: 2.2, n: 12 },
   spotlight: { strength: 2, tokens: ['spotlight', 'stream'], angle: -90, seed: 'grid', vel: 'none' },
-  pigment: { strength: 0, seed: 'ring', vel: 'none', special: 'pigment' },
+  // pigment exerts no FORCE — it stains passing matter its own tint, carried away (§20.8).
+  // Seed rows of neutral probes streaming across the tinted body (vel 'dir' along the heading):
+  // the engine's `pigment.apply` tints each on overlap, so the real per-frame color transport
+  // (recorded on the trajectory) IS the streak diagram — no painted dye ramp.
+  pigment: { strength: 1, angle: 0, seed: 'grid', vel: 'dir', v0: 3, special: 'pigment', frames: 70 },
   // fieldflow has no field of its own — it advects matter along the NET field other tokens
   // radiate (env.fieldAt), so pair it with magnetism (the live chip does too, via BODY_TOKENS):
   // probes released at rest steer onto and stream along the dipole loops, so the traced paths
@@ -263,6 +272,13 @@ export interface ProbeOverride {
   range?: number;
   spin?: number;
   angleDeg?: number;
+  /** the live body's measured aspect ratio (width / height of its element box). The
+   *  dipole/monopole diagram lays its poles along the body's real proportions, so the
+   *  field-line geometry reflects the annotated body instead of a fixed stand-in shape. */
+  aspect?: number;
+  /** the pigment body's carried tint (`data-color`) — the real dye the engine transports
+   *  onto matter overlapping the body. Read off the live chip so the stain is its color. */
+  tint?: string;
 }
 
 /** The raw engine run behind a force's demo: the full trajectory (positions + velocities),
@@ -276,11 +292,11 @@ export interface RawTrace {
   origin: Pt;
 }
 
-/** Resolve the live body attrs (override ?? CFG) and run the engine. Returns null for the
- *  non-kinematic `pigment` special and for unknown tokens. */
+/** Resolve the live body attrs (override ?? CFG) and run the engine. Returns null only for an
+ *  unknown token — `pigment` now runs a real scenario (it stains its streaming probes, §20.8). */
 export function traceRaw(token: string, override: ProbeOverride = {}): RawTrace | null {
   const cfg = CFG[token];
-  if (!cfg || cfg.special === 'pigment') return null;
+  if (!cfg) return null;
   // live chip attrs win; the CFG value is the fallback when the chip omits one.
   const strength = override.strength ?? cfg.strength ?? 1.5;
   const range = override.range ?? cfg.range ?? RANGE;
@@ -301,6 +317,9 @@ export function traceRaw(token: string, override: ProbeOverride = {}): RawTrace 
     angle: (angleDeg * Math.PI) / 180,
     hw: cfg.bw ?? 26, hh: cfg.bh ?? 14,
     on: true, // enables propagate emission, spawn source, thermal heat — never disables a force
+    // pigment stains passing matter its tint (§20.8) — carry the live chip's data-color so
+    // the engine transports the real dye onto the probes (default keeps a visible stain).
+    ...(token === 'pigment' ? { tint: override.tint ?? '#d6529e' } : {}),
     ...(token === 'morph' ? { targets: morphTargets().map((t) => ({ x: t.x + org.x, y: t.y + org.y })) } : {}),
     // warp's pairing is resolved from the DOM live (data-pair → b.warpHas/warpX/warpY);
     // headless, wire the resolved target directly — a paired throat down the heading.
@@ -353,7 +372,9 @@ function autoFrame(
   for (const l of lines) {
     let run: Pt[] = [];
     for (const p of l) {
-      const q = { x: (p.x - cx) * norm, y: (p.y - cy) * norm };
+      const q: Pt = p.c != null
+        ? { x: (p.x - cx) * norm, y: (p.y - cy) * norm, c: p.c }
+        : { x: (p.x - cx) * norm, y: (p.y - cy) * norm };
       if (Math.hypot(q.x, q.y) < opts.clip) {
         run.push(q);
       } else {
@@ -374,12 +395,6 @@ export function traceField(token: string, override: ProbeOverride = {}): FieldTr
   if (traceCache.has(key)) return traceCache.get(key)!;
   const cfg = CFG[token];
   if (!cfg) return null;
-
-  if (cfg.special === 'pigment') {
-    const t: FieldTrace = { paths: [], rings: [], special: 'pigment' };
-    traceCache.set(key, t);
-    return t;
-  }
 
   const raw = traceRaw(token, override)!;
   const result = raw.result;
@@ -404,7 +419,8 @@ export function traceField(token: string, override: ProbeOverride = {}): FieldTr
         prev = null;
         continue;
       }
-      const pt = { x: p.x - bcx, y: p.y - bcy };
+      // carry the engine's per-frame color so a pigment trace records the real dye pickup.
+      const pt: Pt = p.color != null ? { x: p.x - bcx, y: p.y - bcy, c: p.color } : { x: p.x - bcx, y: p.y - bcy };
       // a toroidal wrap (a jump of thousands of units) ends this particle's path — the
       // pre-wrap motion is the meaningful part; positions after a wrap are off-frame.
       if (prev && Math.hypot(pt.x - prev.x, pt.y - prev.y) > RANGE * 3) {
@@ -424,7 +440,8 @@ export function traceField(token: string, override: ProbeOverride = {}): FieldTr
   const { paths, norm } = autoFrame(rawPaths, 0, 0, { pct: 0.95, clip: 1.6, floor: range * 0.5, empty: range });
   const rings = (cfg.rings ? cfg.rings(range) : []).map((r) => ({ r: r * norm, dash: true }));
 
-  const trace: FieldTrace = { paths, rings };
+  const trace: FieldTrace =
+    cfg.special === 'pigment' ? { paths, rings, special: 'pigment' } : { paths, rings };
   traceCache.set(key, trace);
   return trace;
 }
@@ -455,22 +472,25 @@ export function traceDipole(token: string, override: ProbeOverride = {}): FieldT
   const cx = W / 2;
   const cy = H / 2;
 
-  // a synthetic body for the seed generators — the chip's dipole/monopole geometry.
-  const seedBody = { cx, cy, hw: 74, hh: 28, ux: Math.cos(a), uy: Math.sin(a), spin, range: 0 };
+  // derive the body's half-extents from its MEASURED aspect ratio (width/height of the live
+  // element box), so the pole separation and diagram shape reflect the annotated body rather
+  // than a fixed stand-in. Area is held constant (hw·hh ≈ the reference cell) so only the
+  // aspect changes: a wide chip lays a long dipole, a square one a compact field.
+  const aspect = override.aspect && override.aspect > 0 ? override.aspect : 74 / 28;
+  const REF_AREA = 74 * 28;
+  const hh = Math.sqrt(REF_AREA / aspect);
+  const hw = hh * aspect;
+
+  // a synthetic body for the seed generators — the chip's real dipole/monopole geometry.
+  const seedBody = { cx, cy, hw, hh, ux: Math.cos(a), uy: Math.sin(a), spin, range: 0 };
 
   let lines: Pt[][];
   if (token === 'charge') {
     // A lone electric charge is a MONOPOLE: straight radial field lines, OUT of a + source
-    // (spin ≥ 0) and IN to a −. Trace the radial field from the core-ring seeds, giving
-    // clean spokes — the textbook electric-field diagram.
-    const sgn = spin < 0 ? -1 : 1;
-    const sample = (x: number, y: number) => {
-      const dx = x - cx;
-      const dy = y - cy;
-      const d = Math.max(Math.hypot(dx, dy), 1);
-      const m = sgn / (d * d); // radial 1/d², signed by polarity
-      return { x: (dx / d) * m, y: (dy / d) * m };
-    };
+    // (spin ≥ 0) and IN to a −. Sample the ENGINE's own radial field (geometry.monopoleField —
+    // the exact function `charge.field` radiates), traced from the core-ring seeds, so the
+    // spokes are the real electric-field diagram, not a hand-rolled 1/d² stand-in.
+    const sample = (x: number, y: number) => monopoleField(cx, cy, spin, 1, x, y);
     const seeds = monopoleSeeds(seedBody); // the canonical ring (core fieldlines.ts)
     lines = traceFieldLines(sample, seeds, { step: 7, maxSteps: 240, bounds: { w: W, h: H } });
   } else {

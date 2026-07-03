@@ -441,10 +441,14 @@
   }
 }
 .shock {
+  /* the ring's box is the REAL burst front: 2·--shock-r (= 2·BURST_RADIUS px, set in JS
+     from the engine constant), so the ring expands to exactly the reach field.burst touches
+     instead of an arbitrary painted scale. Falls back to 160px if the var is unset. */
+  --shock-d: calc(2 * var(--shock-r, 160px));
   position: absolute;
-  width: 16px;
-  height: 16px;
-  margin: -8px 0 0 -8px;
+  width: var(--shock-d);
+  height: var(--shock-d);
+  margin: calc(-0.5 * var(--shock-d)) 0 0 calc(-0.5 * var(--shock-d));
   border-radius: 999px;
   border: 1.5px solid var(--cc, var(--accent));
   pointer-events: none;
@@ -454,11 +458,11 @@
 @keyframes shock {
   from {
     opacity: 0.85;
-    transform: scale(1);
+    transform: scale(0.06);
   }
   to {
     opacity: 0;
-    transform: scale(9);
+    transform: scale(1);
   }
 }
 

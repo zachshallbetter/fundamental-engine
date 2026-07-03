@@ -194,6 +194,9 @@ const snap = (p: Particle): FrameState => ({
   heat: p.heat,
   speed: Math.hypot(p.vx, p.vy),
   cap: !!p.cap,
+  // record carried pigment so a `pigment` scenario's trajectory shows the real color
+  // transport (§20.8); undefined until matter is stained, so untinted runs are unaffected.
+  ...(p.color != null ? { color: p.color } : {}),
 });
 
 /** Per-particle frame-0 force effect: one direct `apply` of the body's non-modifier

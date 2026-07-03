@@ -107,3 +107,27 @@ export function dipoleField(poles: readonly Pole[], x: number, y: number): Vec2 
   }
   return { x: fx, y: fy };
 }
+
+/**
+ * The radial monopole field of a single point charge at `(cx, cy)` sampled at `(x, y)`:
+ * `E = sgn · s · r̂ / (d² + …)`, straight field lines OUT of a `+` source (`sign ≥ 0`) and
+ * IN to a `−`. This is the one formula the electric-charge force radiates (`charge.field`
+ * via `bodyMonopole`) AND the charge-stage field-line diagram traces — so the diagram is
+ * the engine's real field, not a hand-rolled stand-in. `EPS` floors the distance at the
+ * core so the sample never divides by zero.
+ */
+export function monopoleField(
+  cx: number,
+  cy: number,
+  sign: number,
+  s: number,
+  x: number,
+  y: number,
+): Vec2 {
+  const dx = x - cx;
+  const dy = y - cy;
+  const d = Math.max(EPS, Math.hypot(dx, dy));
+  const sgn = sign < 0 ? -1 : 1;
+  const mag = (sgn * s) / (d * d); // 1/d², signed by polarity
+  return { x: (dx / d) * mag, y: (dy / d) * mag };
+}
