@@ -259,3 +259,18 @@ test('the substrate surface is the SAME registry/result the wrapped engine expos
     layer.destroy();
   }
 });
+
+test('setAccent and setPalette propagate accent colors to the ParticlePool material uniforms', () => {
+  const layer = makeLayer();
+  try {
+    layer.setAccent('#ff5522');
+    const accentColor = layer.pool.material.uniforms.uAccent.value;
+    assert.equal(accentColor.getHexString(), 'ff5522', 'uAccent uniform updated via setAccent');
+
+    // setPalette will resolve to the first stop (for 'spectrum' it is '#ff3b30' in palettes.ts)
+    layer.setPalette('spectrum');
+    assert.equal(accentColor.getHexString(), 'ff3b30', 'uAccent uniform updated via setPalette');
+  } finally {
+    layer.destroy();
+  }
+});

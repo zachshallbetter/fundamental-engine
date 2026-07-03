@@ -358,10 +358,11 @@ An audit of the Three.js integration door (`packages/three/src`) reveals how Web
 * **Flat Plane Projection**: Maps 2D CSS-pixel coordinates $(x, y)$ onto the world-space XY plane (flipping screen-$y$-down to world-$y$-up), utilizing particle `heat` as a volumetric height offset (relief) for flat fields.
 * **Isotropic Volume Projection**: Maps the engine's 3D depth lane ($z \in [0, \text{depth})$) onto world depth ranges to construct true 3D particle clouds, centering the particles relative to the document page plane ($z = 0$) if configured.
 
-### 9.2 GPU Particle Bridges and Materials: [particles.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/three/src/particles.ts)
+### 9.2 GPU Particle Bridges and Materials: [particles.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/three/src/particles.ts) & [layer.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/three/src/layer.ts)
 * **Mechanics**: Implements the GPU-optimized `ParticlePool` class.
 * **Allocation-Free Synchronizations**: Prefers pre-allocating contiguous Float32 BufferAttributes for particle position, heat, and size to match the engine's `readParticles()` stride array, avoiding allocation thrashing on the frame loop.
 * **Vertex Shaders**: Features an dynamic ShaderMaterial executing perspective sizing attenuation based on a custom `uFocal` length focal ratio.
+* **Accent and Palette Synchronization**: Overrides `setAccent()` and `setPalette()` inside `FieldLayer` to resolve palette stops and dynamically set the `uAccent` uniform in the `ParticlePool` material. This ensures WebGL particles change color in sync with the core engine and overlay drawings instead of remaining static.
 
 ### 9.3 Virtual DOM Element Mapping: [bodies.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/three/src/bodies.ts)
 * **Mechanics**: Implements the virtual DOM proxy adapter class `BodyImpl` (managed via `FieldBodyRegistry`).
