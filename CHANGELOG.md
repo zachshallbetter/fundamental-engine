@@ -7,6 +7,10 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Documentation
+
+- Correct `packages/core/README.md` feedback wording: `--d` and `--field-density` are consistent twins (same live value, read either), not legacy aliases; only `--forces-density` is the removed legacy variable — matching `docs/canonical/feedback-channels.md`.
+
 ### Docs
 
 - **`@fundamental-engine/dom`:** corrected the stale `QualityGovernor` header comment

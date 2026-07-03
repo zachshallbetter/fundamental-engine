@@ -71,8 +71,8 @@ host throws a clear error pointing you to those doors.
 - **The field** is one conserved pool of particles. It re-reads every body's rectangle each frame, so
   any layout change *is* a change to the force geometry.
 - **Feedback** samples the density gathered on a body and eases it into the element's `--field-density`
-  custom property (with `--d` and `--forces-density` as legacy aliases). Drive weight, glow, and scale
-  from it.
+  custom property. `--d` is the same live value written alongside it (consistent twins — read either);
+  `--forces-density` is the removed legacy variable. Drive weight, glow, and scale from it.
 
 ## The handle
 
