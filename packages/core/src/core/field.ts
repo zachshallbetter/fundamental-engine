@@ -368,6 +368,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
     reaction: opts.reaction ?? false, // Newtonian own-emission recoil for dynamic bodies (#873)
     separation: opts.separation != null && opts.separation >= 0 ? opts.separation : 0,
+    // DECLARED ambient bias (Wallpaper Rule, #978): the resting `ambient` formation's swirl (`orbit`)
+    // and drift (`wander`), formerly hardcoded (0.1 / 1.0) in FORMATION_BY.ambient.preset — a gray debt.
+    // Defaulting to the historical preset values keeps the resting field byte-identical; these dials let
+    // a host zero the spiral (ambientOrbit:0 → purely radial attract) or calm the drift.
+    ambientOrbit: opts.ambientOrbit != null && opts.ambientOrbit >= 0 ? opts.ambientOrbit : FORMATION_BY.ambient.preset.orbit,
+    ambientWander: opts.ambientWander != null && opts.ambientWander >= 0 ? opts.ambientWander : FORMATION_BY.ambient.preset.wander,
     attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
     heatmap: opts.heatmap ?? false, // density heatmap layer (field-systems H1), opt-in
@@ -421,7 +427,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // the simulation + feedback signals stay live. Tab-level visibility is handled separately
   // (onVisibility stops the loop entirely).
   let canvasVisible = true;
-  let formTarget: Formation = { ...FORMATION_BY.ambient.preset };
+  // the resting `ambient` formation, with its two DECLARED dials applied (#978). Everything that
+  // targets `ambient` — the initial form, env.form, and the conductor's idle drift-back — resolves
+  // through this so the override is consistent. Defaults reproduce FORMATION_BY.ambient.preset.
+  const ambientForm: Formation = {
+    ...FORMATION_BY.ambient.preset,
+    orbit: cfg.ambientOrbit,
+    wander: cfg.ambientWander,
+  };
+  let formTarget: Formation = { ...ambientForm };
   let formationName = 'ambient'; // the active formation's id, for FieldHandle.query()
 
   // First-class body identity (substrate critical path). Every body resolves to a stable, structured
@@ -706,7 +720,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     dy: 0,
     dz: 0,
     dist: 1,
-    form: { ...FORMATION_BY.ambient.preset },
+    form: { ...ambientForm },
     W: 0,
     H: 0,
     D: cfg.depth, // the optional z volume (z-axis.md); 0 = the flat field
@@ -2587,7 +2601,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   function setFormation(name: string): void {
     const f = FORMATION_BY[name as FormationId];
     if (f) {
-      formTarget = { ...f.preset };
+      // `ambient` carries the two DECLARED dials (#978); other formations keep their authored presets.
+      formTarget = name === 'ambient' ? { ...ambientForm } : { ...f.preset };
       formationName = name;
     }
   }

@@ -69,6 +69,19 @@ class FieldController(
      * [IntegratorMode.LEGACY] (the default) is the shipped engine, byte-identical.
      */
     integrator: IntegratorMode = IntegratorMode.LEGACY,
+    /**
+     * DECLARED ambient bias (Wallpaper Rule, JS #978): the resting `ambient` formation's tangential
+     * swirl on `attract` (the JS `FieldOptions.ambientOrbit`). Formerly a hardcoded `0.1` in the JS
+     * ambient preset; here it overrides the ambient preset's orbit when [setFormation]`("ambient")`
+     * runs. Defaults to `0.1` (the historical value); `0` gives a purely radial resting attract.
+     */
+    private val ambientOrbit: Float = 0.1f,
+    /**
+     * DECLARED ambient bias (Wallpaper Rule, JS #978): the resting `ambient` formation's `wander`
+     * drift (the JS `FieldOptions.ambientWander`). Defaults to `1.0` (the historical value); overrides
+     * the ambient preset's wander when [setFormation]`("ambient")` runs.
+     */
+    private val ambientWander: Float = 1.0f,
 ) {
     val store = FieldStore()
     val forces: ForceRegistry = Registry.standardForces()
@@ -405,7 +418,11 @@ class FieldController(
 
     /** Ease toward a named global formation (ambient / wells / lanes / scatter / accretion). */
     fun setFormation(name: String) {
-        formation(name)?.let { formationTarget = it.preset; formationName = name }
+        formation(name)?.let {
+            // `ambient` carries the two DECLARED dials (JS #978); other formations keep authored presets.
+            formationTarget = if (name == "ambient") it.preset.copy(orbit = ambientOrbit, wander = ambientWander) else it.preset
+            formationName = name
+        }
     }
 
     /** One-shot: shove + heat matter near a point (the §11 burst interaction). */

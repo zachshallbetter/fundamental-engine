@@ -440,7 +440,7 @@
               "privacy": "private",
               "static": true,
               "readonly": true,
-              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp }, { key: 'gridIntensity', attr: 'grid-intensity', read: (el) => el.gridIntensity }, { key: 'theme', attr: 'theme', read: (el) => el.theme }, { key: 'gradientCool', attr: 'gradient-cool', read: (el) => el.gradientCool }, { key: 'gradientWarm', attr: 'gradient-warm', read: (el) => el.gradientWarm }, { key: 'waveBaseline', attr: 'wave-baseline', read: (el) => el.waveBaseline }, { key: 'waveStyle', attr: 'wave-style', read: (el) => el.waveStyle }, { key: 'waveCenter', attr: 'wave-center', read: (el) => el.waveCenter }, { key: 'separation', attr: 'separation', read: (el) => el.separation }, { key: 'integrator', attr: 'integrator', read: (el) => el.integrator }, ]",
+              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp }, { key: 'gridIntensity', attr: 'grid-intensity', read: (el) => el.gridIntensity }, { key: 'theme', attr: 'theme', read: (el) => el.theme }, { key: 'gradientCool', attr: 'gradient-cool', read: (el) => el.gradientCool }, { key: 'gradientWarm', attr: 'gradient-warm', read: (el) => el.gradientWarm }, { key: 'waveBaseline', attr: 'wave-baseline', read: (el) => el.waveBaseline }, { key: 'waveStyle', attr: 'wave-style', read: (el) => el.waveStyle }, { key: 'waveCenter', attr: 'wave-center', read: (el) => el.waveCenter }, { key: 'separation', attr: 'separation', read: (el) => el.separation }, { key: 'ambientOrbit', attr: 'ambient-orbit', read: (el) => el.ambientOrbit }, { key: 'ambientWander', attr: 'ambient-wander', read: (el) => el.ambientWander }, { key: 'integrator', attr: 'integrator', read: (el) => el.integrator }, ]",
               "description": "The engine options `<field-root>` forwards to `createBrowserField`, as ONE declarative table —\nthe single source of truth for the option object built in `start()`, so a new forwarded\n`FieldOption` can never be silently dropped from forwarding the way `depth` once was. `accent`\n(raw passthrough so a `palette` with no `accent` adopts the palette stop) and\n`overlayCanvas`/`feedbackSink` (managed internally) are special-cased in `start()` and absent here.\n\n`observedAttributes` stays an explicit literal below — the Custom-Elements-Manifest analyzer reads\nit statically and can't enumerate a computed array — but the `option-attrs-observed` test pins it\nto this table (every `attr` here must be observed), so the two lists can't drift apart."
             },
             {
@@ -666,6 +666,24 @@
                 "text": "number | undefined"
               },
               "description": "`separation` — particle-to-particle separation force strength ∈ [0,1]; undefined if absent/invalid.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "ambientOrbit",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "`ambient-orbit` — DECLARED resting-formation swirl on attract (#978); undefined (engine default\n0.1, the historical hardcoded value) if absent/invalid. `0` is valid (a purely radial attract).",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "ambientWander",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "`ambient-wander` — DECLARED resting-formation drift (#978); undefined (engine default 1.0, the\nhistorical hardcoded value) if absent/invalid. `0` is valid (a still resting field).",
               "readonly": true
             },
             {
@@ -1703,6 +1721,12 @@
               "name": "separation"
             },
             {
+              "name": "ambient-orbit"
+            },
+            {
+              "name": "ambient-wander"
+            },
+            {
               "name": "integrator"
             },
             {
@@ -1885,6 +1909,20 @@
               }
             },
             {
+              "name": "ambient-orbit",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "ambient-wander",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
               "name": "integrator",
               "inheritedFrom": {
                 "name": "FieldField",
@@ -1916,7 +1954,7 @@
               "privacy": "private",
               "static": true,
               "readonly": true,
-              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp }, { key: 'gridIntensity', attr: 'grid-intensity', read: (el) => el.gridIntensity }, { key: 'theme', attr: 'theme', read: (el) => el.theme }, { key: 'gradientCool', attr: 'gradient-cool', read: (el) => el.gradientCool }, { key: 'gradientWarm', attr: 'gradient-warm', read: (el) => el.gradientWarm }, { key: 'waveBaseline', attr: 'wave-baseline', read: (el) => el.waveBaseline }, { key: 'waveStyle', attr: 'wave-style', read: (el) => el.waveStyle }, { key: 'waveCenter', attr: 'wave-center', read: (el) => el.waveCenter }, { key: 'separation', attr: 'separation', read: (el) => el.separation }, { key: 'integrator', attr: 'integrator', read: (el) => el.integrator }, ]",
+              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp }, { key: 'gridIntensity', attr: 'grid-intensity', read: (el) => el.gridIntensity }, { key: 'theme', attr: 'theme', read: (el) => el.theme }, { key: 'gradientCool', attr: 'gradient-cool', read: (el) => el.gradientCool }, { key: 'gradientWarm', attr: 'gradient-warm', read: (el) => el.gradientWarm }, { key: 'waveBaseline', attr: 'wave-baseline', read: (el) => el.waveBaseline }, { key: 'waveStyle', attr: 'wave-style', read: (el) => el.waveStyle }, { key: 'waveCenter', attr: 'wave-center', read: (el) => el.waveCenter }, { key: 'separation', attr: 'separation', read: (el) => el.separation }, { key: 'ambientOrbit', attr: 'ambient-orbit', read: (el) => el.ambientOrbit }, { key: 'ambientWander', attr: 'ambient-wander', read: (el) => el.ambientWander }, { key: 'integrator', attr: 'integrator', read: (el) => el.integrator }, ]",
               "description": "The engine options `<field-root>` forwards to `createBrowserField`, as ONE declarative table —\nthe single source of truth for the option object built in `start()`, so a new forwarded\n`FieldOption` can never be silently dropped from forwarding the way `depth` once was. `accent`\n(raw passthrough so a `palette` with no `accent` adopts the palette stop) and\n`overlayCanvas`/`feedbackSink` (managed internally) are special-cased in `start()` and absent here.\n\n`observedAttributes` stays an explicit literal below — the Custom-Elements-Manifest analyzer reads\nit statically and can't enumerate a computed array — but the `option-attrs-observed` test pins it\nto this table (every `attr` here must be observed), so the two lists can't drift apart.",
               "inheritedFrom": {
                 "name": "FieldField",
@@ -2242,6 +2280,32 @@
                 "text": "number | undefined"
               },
               "description": "`separation` — particle-to-particle separation force strength ∈ [0,1]; undefined if absent/invalid.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "ambientOrbit",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "`ambient-orbit` — DECLARED resting-formation swirl on attract (#978); undefined (engine default\n0.1, the historical hardcoded value) if absent/invalid. `0` is valid (a purely radial attract).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "ambientWander",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "`ambient-wander` — DECLARED resting-formation drift (#978); undefined (engine default 1.0, the\nhistorical hardcoded value) if absent/invalid. `0` is valid (a still resting field).",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",

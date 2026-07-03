@@ -19,6 +19,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core` + `@fundamental-engine/elements`:** **declared the resting
+  `ambient` formation's swirl + drift (Wallpaper Rule, #978).** The default `ambient` formation
+  injected a hardcoded `orbit: 0.1` tangential swirl into `attract` bodies (plus a hardcoded
+  `wander: 1.0` drift) — a content-independent "gray debt" painted into behavior. Per the Wallpaper
+  Rule remedy order (derive → declare → demote → sugar; never delete), these are now DECLARED as
+  documented, opt-in `FieldOptions` — `ambientOrbit` (default `0.1`) and `ambientWander`
+  (default `1.0`), also `<field-root ambient-orbit>` / `<field-root ambient-wander>`. The defaults
+  reproduce the historical constants, so the resting field is byte-identical; set `ambientOrbit: 0`
+  for a purely radial resting attract (no spiral). Applies to the `ambient` formation only (the
+  section formations keep their authored presets). Proven default-unchanged in
+  `ambient-formation-declared.test.ts`.
 - **`@fundamental-engine/core` + `@fundamental-engine/elements`:** **opt-in velocity-Verlet
   integrator mode (#659).** `integrator: 'velocity-verlet'` (also
   `<field-root integrator="velocity-verlet">`) runs the second-order scheme in its

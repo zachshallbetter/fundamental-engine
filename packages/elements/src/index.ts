@@ -108,6 +108,8 @@ export class FieldField extends HTMLElementBase {
     { key: 'waveStyle', attr: 'wave-style', read: (el) => el.waveStyle },
     { key: 'waveCenter', attr: 'wave-center', read: (el) => el.waveCenter },
     { key: 'separation', attr: 'separation', read: (el) => el.separation },
+    { key: 'ambientOrbit', attr: 'ambient-orbit', read: (el) => el.ambientOrbit },
+    { key: 'ambientWander', attr: 'ambient-wander', read: (el) => el.ambientWander },
     { key: 'integrator', attr: 'integrator', read: (el) => el.integrator },
   ];
 
@@ -134,6 +136,8 @@ export class FieldField extends HTMLElementBase {
     'wave-style',
     'wave-center',
     'separation',
+    'ambient-orbit',
+    'ambient-wander',
     'integrator',
     'background',
     'formation',
@@ -281,6 +285,18 @@ export class FieldField extends HTMLElementBase {
   /** `separation` — particle-to-particle separation force strength ∈ [0,1]; undefined if absent/invalid. */
   get separation(): number | undefined {
     const v = Number(this.getAttribute('separation'));
+    return Number.isFinite(v) && v >= 0 ? v : undefined;
+  }
+  /** `ambient-orbit` — DECLARED resting-formation swirl on attract (#978); undefined (engine default
+   *  0.1, the historical hardcoded value) if absent/invalid. `0` is valid (a purely radial attract). */
+  get ambientOrbit(): number | undefined {
+    const v = Number(this.getAttribute('ambient-orbit'));
+    return Number.isFinite(v) && v >= 0 ? v : undefined;
+  }
+  /** `ambient-wander` — DECLARED resting-formation drift (#978); undefined (engine default 1.0, the
+   *  historical hardcoded value) if absent/invalid. `0` is valid (a still resting field). */
+  get ambientWander(): number | undefined {
+    const v = Number(this.getAttribute('ambient-wander'));
     return Number.isFinite(v) && v >= 0 ? v : undefined;
   }
   /** `integrator` — the integration scheme (substrate doc 04 §Step 3); `'fixed'` opts into the

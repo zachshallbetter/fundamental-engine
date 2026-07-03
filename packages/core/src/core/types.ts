@@ -694,6 +694,23 @@ export interface FieldOptions {
   reaction?: boolean;
   /** strength of particle-to-particle separation/repulsion force (0 to 1, default 0). */
   separation?: number;
+  /**
+   * DECLARED ambient bias (Wallpaper Rule, #978): the resting `ambient` formation's tangential
+   * swirl injected into `attract` bodies (`Formation.orbit`) — the gentle spiral free matter
+   * traces around a well at rest. Formerly a hardcoded `0.1` painted into the default formation
+   * preset (a "gray debt": a content-independent constant inside an honest feature). Now a
+   * documented, opt-in dial with the historical value as its default, so behavior is unchanged;
+   * set `0` for a purely radial resting attract (no spiral), or raise it for a stronger orbit.
+   * Applies to the `ambient` formation only (the section formations keep their authored presets);
+   * `<field-root ambient-orbit>`. Default `0.1`. */
+  ambientOrbit?: number;
+  /**
+   * DECLARED ambient bias (Wallpaper Rule, #978): the resting `ambient` formation's `wander`
+   * term — the per-particle drift that keeps resting matter alive rather than frozen. Formerly a
+   * hardcoded `1.0` in the default formation preset. Now a documented, opt-in dial defaulting to
+   * the historical value (behavior unchanged); lower it for a calmer rest, `0` to still the drift.
+   * Applies to the `ambient` formation only; `<field-root ambient-wander>`. Default `1.0`. */
+  ambientWander?: number;
   /** color template for the travelling accent (§9): a built-in name
    *  (`'ours'` · `'heatmap'` · `'infrared'` · `'spectrum'`) or custom hex stops. */
   palette?: string | readonly string[];
