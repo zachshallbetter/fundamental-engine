@@ -156,9 +156,25 @@ These are areas where the codebase and the documentation specifications have dri
 * **Compliance**: Checks are compiled out under production node environments ($process.env.NODE\_ENV === 'production'$), leaving production performance unaffected.
 
 ### 2.23 Configuration Layer: [config/](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config)
-* **Files**: [forces.config.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config/forces.config.ts), [manual.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config/manual.ts), [presets.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config/presets.ts), [palettes.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config/palettes.ts), [themes.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config/themes.ts), [tokens.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config/tokens.ts)
-* **Mechanics**: Houses the canonical definitions, design custom properties, named preset compositions (blackhole, galaxy, whitehole), scroll journey bias vectors, color themes (warm, cool, mono), and public-facing reference copy.
-* **Compliance**: Strictly verified by unit tests (`manual.test.ts`, `forces.config.test.ts`), which guarantee exact 1-to-1 correspondences between registry entries, symbols, colors, and passports. Presets explicitly declare lifespans and capacities to pass the source budget contracts.
+
+This directory serves as the centralized repository of color tokens, composite presets, mathematical references, and developer-facing documentation metadata.
+
+#### 2.23.1 Canonical Force Definitions: [forces.config.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config/forces.config.ts) & [tokens.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config/tokens.ts)
+* **Mechanics**: Declares the canonical nine forces (`attract`, `jet`, `tether`, `wall`, `stream`, `repel`, `viscosity`, `swirl`, `sink`), defining their hex identity colors, target disciplines (e.g. *Product strategy*), and default parameter attributes.
+* **Token Exportation**: `cssTokens()` formats these definitions programmatically into standard CSS custom properties (e.g., `--f-attract`), ensuring that the browser stylesheet's visual cues remain synchronized with registry colors.
+
+#### 2.23.2 Field Manual Registry: [manual.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config/manual.ts)
+* **Mechanics**: Houses the complete developer-facing catalog of all 27 forces across the three families (canonical, natural, extended). Each entry logs the periodic-table style abbreviation symbol (e.g., `At` for attract), mathematical formula descriptions, and calibration values (approximate $\Delta v$ velocity output at a $100\text{px}$ reference distance).
+* **Drift Protection**: Validated by `manual.test.ts`, which asserts that every entry is matched by a registered force in the active engine core, preventing un-passported or dead configurations.
+
+#### 2.23.3 Composite Presets: [presets.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config/presets.ts)
+* **Mechanics**: Defines named multi-body compositions (e.g., `blackhole`, `quasar`, `nebula`, `fountain`) that map multiple co-located primitives onto a single DOM element boundary.
+* **Design Solution**: Solves parameter sharing restrictions (where a single element using `data-body` must share a uniform strength/range) by expanding into multiple virtual bodies, allowing independent limits for horizons (`sink.absorb = 42`) and attraction wells (`attract.range = 340`).
+* **Source Budgeting Compliance**: Presets that spawn matter (such as `fountain` using `spawn`) explicitly declare their `life` (lifespan) and `cap` parameters, ensuring they pass the source budget contract validation automatically.
+
+#### 2.23.4 Ambient Themes and Ramps: [themes.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config/themes.ts) & [palettes.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/config/palettes.ts)
+* **Mechanics**: Bundles the ambient particle heat gradient ends (`cool` and `warm` RGB colors) and background wave baseline layers into named presets (`warm`, `cool`, `mono`), allowing complete visual transitions without code changes.
+* **Scroll Journey Accents**: Houses the custom traveling stops used to update elements dynamically as a reader scroll-progresses down the page.
 
 ---
 
