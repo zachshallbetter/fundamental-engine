@@ -39,6 +39,21 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 - Correct `packages/core/README.md` feedback wording: `--d` and `--field-density` are consistent twins (same live value, read either), not legacy aliases; only `--forces-density` is the removed legacy variable — matching `docs/canonical/feedback-channels.md`.
 ### Added
 
+- **`@fundamental-engine/core` — DECLARED four render reference points (Wallpaper Rule, #975).** Four
+  content-independent constants painted into the render/diagnostics draw path (a "gray debt") are now
+  documented, opt-in `FieldOptions` whose defaults reproduce the historical values, so every render
+  mode is byte-identical by default:
+  - `heatCenter: { x, y }` — the cool→warm heat-vignette center for the `dots`/`depth` swarm, as
+    viewport fractions (default `{ x: 0.5, y: 0.4 }` = the old `(W/2, H·0.4)`).
+  - `redshiftObserver: { x, y }` — the observer the `redshift` mode reads radial velocity against
+    (default `{ x: 0.5, y: 0.5 }` = the old `(W/2, H/2)`).
+  - `depthFocal: number` — the `depth` camera perspective focal length in CSS px (default `480` = the
+    old `FOCAL`).
+  - `heatmapFade: { start, span }` — the density-`heatmap` scroll-fade curve in viewports; full above
+    `start·H`, gone by `(start+span)·H` (default `{ start: 0.3, span: 0.85 }` reproduces the old
+    `(1.15 - scrollY/H)/0.85`; set a large `span` to disable the scroll fade). Also fixes the stale
+    "NOT coupled to scroll" comment that contradicted the fade code.
+
 - **DX batch (#993) — dev-only diagnostics + teardown reclamation.**
   - **`@fundamental-engine/core`:** `semanticToMetrics()` now emits a dev-only, deduped
     `NOOP_CONCEPTUAL_LAYER` warning when a semantic layer whose target is a conceptual/visual lane

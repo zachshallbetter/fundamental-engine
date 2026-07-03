@@ -702,6 +702,42 @@ export interface FieldOptions {
     | 'blackbody'
     | 'depth'
     | 'none';
+  /**
+   * DECLARED render reference point (Wallpaper Rule, #975): the center of the cool→warm heat
+   * vignette the `dots`/`depth` swarm is tinted against — a body far from this point reads warm,
+   * a body near it reads cool. Given as viewport FRACTIONS `{ x, y }` ∈ [0,1] (resolved to pixels
+   * against the live canvas each frame, so it tracks resize). Formerly a hardcoded `(W/2, H·0.4)`
+   * painted into the draw path (a content-independent "gray debt"): the default `{ x: 0.5, y: 0.4 }`
+   * reproduces it exactly, so the default render is byte-identical. Only affects the `dots`/`depth`
+   * render modes. **Experimental.** */
+  heatCenter?: { x: number; y: number };
+  /**
+   * DECLARED render reference point (Wallpaper Rule, #975): the OBSERVER the `redshift` mode
+   * measures each particle's radial velocity against — receding matter reddens, approaching matter
+   * blues, at-rest at the observer. Given as viewport FRACTIONS `{ x, y }` ∈ [0,1] (resolved to
+   * pixels against the live canvas each frame). Formerly a hardcoded `(W/2, H/2)` (a "gray debt"):
+   * the default `{ x: 0.5, y: 0.5 }` reproduces it exactly, so the `redshift` render is byte-identical.
+   * Only affects the `redshift` render mode. **Experimental.** */
+  redshiftObserver?: { x: number; y: number };
+  /**
+   * DECLARED render reference point (Wallpaper Rule, #975): the perspective focal length (in CSS px)
+   * of the `depth` mode's camera — the size/parallax recession the z lane is projected through. A
+   * larger focal flattens the perspective (a longer lens); a smaller one exaggerates it. Formerly a
+   * hardcoded `FOCAL = 480` (a "gray debt"): the default `480` reproduces it exactly, so the `depth`
+   * render is byte-identical. Only affects the `depth` render mode (pairs with `depth > 0`).
+   * **Experimental.** */
+  depthFocal?: number;
+  /**
+   * DECLARED page-layout reference (Wallpaper Rule, #975): how the density `heatmap` glow fades out
+   * as the page scrolls past the hero. `start` is the scroll position (in VIEWPORTS, `scrollY / H`)
+   * at which the fade begins, `span` is how many viewports it takes to reach fully transparent — the
+   * layer is full above `start·H` and gone by `(start + span)·H`. Formerly a hardcoded
+   * `(1.15 - scrollY/H)/0.85` baked into a core draw path — a "content = first viewport" assumption
+   * (a "gray debt"): the default `{ start: 0.3, span: 0.85 }` reproduces it exactly (the historical
+   * curve is full through `1.15 - 0.85 = 0.3` viewports and gone by `1.15`), so the heatmap glow is
+   * byte-identical. Set a large `span` to disable the scroll fade. Only affects the density `heatmap`
+   * layer. **Experimental.** */
+  heatmapFade?: { start: number; span: number };
   /** first-class mass (§21.3): when true, particle mass ∝ size and body forces accelerate by `a = F/m`
    *  (heavier matter moves less). Also gives DYNAMIC bodies inertial mass ∝ rendered area (#872), so a
    *  big heading recoils slowly and a small tag snaps. Default false (unit mass, byte-identical). */
