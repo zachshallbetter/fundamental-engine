@@ -156,6 +156,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   New exports: `FIELD_BOUNDARY_ATTR`, `FIELD_BOUNDARY_SELECTOR`, `ownedByScanRoot`. DOM-plane
   fix only: the Swift/Kotlin hosts register bodies explicitly (no document-wide scan), so the
   double-adoption class does not exist there.
+- **`@fundamental-engine/core`:** **the conformance runner injects its seeded PRNG through the
+  `Env.rng` seam instead of monkey-patching the global `Math.random` (#992, post-#981).** `thermal`'s
+  Box–Muller kicks now draw from `e.rng ?? Math.random` like `jet`/`spawn` already did, and
+  `conformance/run.ts` threads one seeded `mulberry` instance through the frame-0 delta env and the
+  trajectory env — so a seeded scenario is reproducible with no global side effect. Production behavior
+  is byte-identical (no `Env.rng` set ⇒ `Math.random`); the cross-plane conformance golden is unchanged.
+
 - **`@fundamental-engine/three`:** **`threeBackend`'s overlay `z` now offsets the projected field
   plane instead of being an absolute world z (#949).** The backend pinned every overlay vertex —
 - **`@fundamental-engine/core`:** **rescan no longer discards body feedback state or strands
@@ -216,6 +223,20 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   motion, so focus engagement is reduced-motion-safe by the same path hover is. DOM plane only — the
   native ports set engagement from the body model and have no DOM focus event. The speculative
   "tab order forms a current" half of #665 (a directional flow along the tab sequence) is deferred.
+
+### Tests
+
+- **`@fundamental-engine/{core,elements,vanilla}`:** **five permanent drift-guard tests (#992).**
+  (1) `<field-root>`'s option-forwarding reverse guard now DERIVES its checked set from
+  `observedAttributes`/`OPTIONS` instead of a stale hand-maintained literal (it had fallen behind
+  `grid-warp`/`theme`/`gradient*`/`wave-baseline`/`separation`). (2) A vanilla delegation-drift guard
+  compares a real headless `FieldHandle`'s method surface to `FieldField.prototype`. (3) A `forAgent`
+  facade-completeness guard requires every `FieldHandle` method to be explicitly exposed OR withheld
+  (safety: no accidental agent exposure). (4) A passport-vs-implementation guard (in
+  `validatePassports`) asserts any force whose live object defines `modify()` is passported as a
+  non-moving modifier. (5) Conformance-runner determinism guards prove a seeded scenario reproduces
+  exactly and never touches the global `Math.random`. Each was verified non-vacuous (fails when its
+  invariant is deliberately broken).
 
 ### Changed
 

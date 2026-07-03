@@ -174,3 +174,91 @@ test('forAgent: budgets.agentRead === 0 closes the surface to the most-restricte
     field.destroy();
   }
 });
+
+// ─── Facade completeness drift guard (safety-relevant) ────────────────────────────────────────────
+// The `forAgent` facade exposes a DELIBERATELY SMALL, read-only slice of the `FieldHandle` surface —
+// mutators (addBody, burst, seed, setPolicy, …) must never leak onto an agent view. Nothing structural
+// forces a *new* `FieldHandle` method to be considered: it would simply be absent from the facade (the
+// safe default) — but "absent by omission" and "absent by decision" are indistinguishable, so a method
+// that SHOULD be agent-exposed (a new read) could be silently withheld, or a reviewer could miss that a
+// new method needs a conscious agent-exposure decision. This guard makes the decision explicit: every
+// FieldHandle method must be named in exactly one of the two partitions below. A new method fails the
+// build until it is placed — into AGENT_EXPOSED (and the facade is extended to serve it) or
+// AGENT_WITHHELD (kept off the agent surface on purpose).
+
+// The methods the agent facade DOES surface (read-only; `replay` is capability-gated but still exposed).
+const AGENT_EXPOSED = new Set<string>(['query', 'snapshot', 'replay']);
+
+// Every other FieldHandle method — mutators, lifecycle, low-level readers — kept OFF the agent view.
+const AGENT_WITHHELD = new Set<string>([
+  // lifecycle / scanning
+  'scan', 'rescan', 'destroy', 'setVisible',
+  // mutators: appearance / behavior toggles
+  'setAccent', 'setPalette', 'setFormation', 'setWaveStyle', 'setWaveCenter', 'setSeparation',
+  'setAttention', 'setCausality', 'setHeatmap', 'setDprCap', 'setQualityTier', 'setRender',
+  'setOverlay', 'setBackground', 'setPolicy',
+  // mutators: matter / bodies / edges / flow / threads
+  'threads', 'burst', 'flowTo', 'clearFlow', 'seed', 'addAgent', 'addBody', 'addEdge',
+  'addField', 'registerOverlay',
+  // point / particle / grid readers (raw substrate, not the scoped agent reading)
+  'readEdges', 'atomAt', 'focusAt', 'clearFocus', 'sampleField', 'particleCount', 'readParticles',
+  'readParticleIds', 'readParticleChannels', 'energy', 'sample', 'sampleScalar', 'sampleGradient',
+  'grid', 'scrollV',
+  // diff is a pure static helper on the handle; the agent composes query/snapshot instead
+  'diff',
+  // events + the facade factory itself are never re-exposed through the facade
+  'on', 'forAgent',
+]);
+
+test('forAgent: every FieldHandle method is explicitly exposed OR withheld (facade drift guard)', () => {
+  const field = fieldWithBodies();
+  try {
+    const handleMethods = new Set(
+      (Object.keys(field) as Array<keyof typeof field>).filter((k) => typeof field[k] === 'function') as string[],
+    );
+    assert.ok(handleMethods.size > 20, `sanity: expected a rich handle surface, got ${handleMethods.size}`);
+
+    const partitioned = new Set<string>([...AGENT_EXPOSED, ...AGENT_WITHHELD]);
+    // No name may sit in both partitions.
+    const both = [...AGENT_EXPOSED].filter((m) => AGENT_WITHHELD.has(m));
+    assert.deepEqual(both, [], `method(s) in BOTH AGENT_EXPOSED and AGENT_WITHHELD: ${both.join(', ')}`);
+
+    // Every real handle method must be partitioned — a NEW method forces a conscious decision.
+    const unpartitioned = [...handleMethods].filter((m) => !partitioned.has(m)).sort();
+    assert.deepEqual(
+      unpartitioned,
+      [],
+      `FieldHandle method(s) not classified for the agent facade: ${unpartitioned.join(', ')}. ` +
+        `Add each to AGENT_EXPOSED (and extend forAgent to serve it) or AGENT_WITHHELD (keep it off the agent view) — ` +
+        `this is a SAFETY decision, don't skip it.`,
+    );
+    // No stale names: every partitioned name must be a real handle method.
+    const stale = [...partitioned].filter((m) => !handleMethods.has(m)).sort();
+    assert.deepEqual(stale, [], `partition names a method that no longer exists on FieldHandle: ${stale.join(', ')}`);
+  } finally {
+    field.destroy();
+  }
+});
+
+test('forAgent: a fully-granted agent view exposes ONLY the AGENT_EXPOSED methods (no mutator leak)', () => {
+  const field = fieldWithBodies();
+  try {
+    // grant everything so any conditionally-attached method (e.g. replay) is present.
+    const view = field.forAgent({
+      capabilities: [
+        'read:metrics', 'read:relationships', 'read:influences', 'read:body-data',
+        'read:snapshots', 'read:replay', 'read:projections',
+      ],
+    });
+    const viewMethods = new Set(
+      (Object.keys(view) as Array<keyof typeof view>).filter((k) => typeof view[k] === 'function') as string[],
+    );
+    const leaked = [...viewMethods].filter((m) => !AGENT_EXPOSED.has(m)).sort();
+    assert.deepEqual(leaked, [], `agent view exposes method(s) not in AGENT_EXPOSED (mutator/reader leak): ${leaked.join(', ')}`);
+    // and everything promised is actually present on a fully-granted view.
+    const absent = [...AGENT_EXPOSED].filter((m) => !viewMethods.has(m)).sort();
+    assert.deepEqual(absent, [], `AGENT_EXPOSED names a method the fully-granted agent view does not surface: ${absent.join(', ')}`);
+  } finally {
+    field.destroy();
+  }
+});

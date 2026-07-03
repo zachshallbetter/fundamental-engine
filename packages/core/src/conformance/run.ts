@@ -3,8 +3,8 @@
  *
  * Mirrors the integrator benchmark (FieldStore + Env + `step()`), with real
  * `neighbors` (class B) and a real `ScalarGridImpl` advanced each frame (class C).
- * RNG forces (thermal, jet) are made deterministic by swapping `Math.random` for
- * a seeded PRNG during the run. Returns the full trajectory plus each particle's
+ * RNG forces (thermal, jet) are made deterministic by injecting a seeded PRNG through
+ * the `Env.rng` seam (no global `Math.random` monkey-patch). Returns the full trajectory plus each particle's
  * frame-0 force delta (one direct `apply`, before friction) for exact/invariant checks.
  */
 import type { Body, Env, ForceRegistry, Particle } from '../core/types.ts';
@@ -141,12 +141,15 @@ function makeParticle(p: import('./types.ts').ScenarioParticle): Particle {
   };
 }
 
-function makeEnv(store: FieldStore): Env {
+function makeEnv(store: FieldStore, rng?: () => number): Env {
   const grids = new Map<string, ScalarGridImpl>();
   return {
     dx: 0,
     dy: 0,
     dist: 1,
+    // the injected rng seam (Env.rng): forces that draw randomness (thermal, jet, spawn scatter) read
+    // `e.rng ?? Math.random`, so seeding this makes a run reproducible with NO global Math.random patch.
+    ...(rng ? { rng } : {}),
     form: { driftX: 0, wander: 0, orbit: 0, spread: 0, conv: 0 },
     W,
     H,
@@ -201,7 +204,7 @@ const snap = (p: Particle): FrameState => ({
 
 /** Per-particle frame-0 force effect: one direct `apply` of the body's non-modifier
  *  tokens on a clone of each initial particle, with real neighbours from the store. */
-function frameZeroDelta(s: Scenario, body: Body, forces: ForceRegistry, store: FieldStore): ApplyDelta[] {
+function frameZeroDelta(s: Scenario, body: Body, forces: ForceRegistry, store: FieldStore, rng?: () => number): ApplyDelta[] {
   return s.particles.map((sp) => {
     const p = makeParticle(sp);
     const vx0 = p.vx;
@@ -210,7 +213,7 @@ function frameZeroDelta(s: Scenario, body: Body, forces: ForceRegistry, store: F
     const dy = body.cy - p.y;
     const d = Math.hypot(dx, dy);
     // a transient env for the single apply (real neighbours, fresh grid)
-    const env = makeEnv(store);
+    const env = makeEnv(store, rng);
     env.dx = dx;
     env.dy = dy;
     env.dist = d < 1 ? 1 : d;
@@ -233,28 +236,28 @@ export function runScenario(input: Scenario, forces: ForceRegistry = allForces()
   const body = resolveBody(s);
   // cross-body scenarios (workover v0.3): extra bodies simulate alongside the main one.
   const bodies = [body, ...(s.extraBodies ?? []).map((e) => resolvePartialBody(e.tokens, e.attrs))];
-  const env = makeEnv(store) as Env & { __grids: Map<string, ScalarGridImpl> };
 
-  const origRandom = Math.random;
-  if (s.seed != null) Math.random = mulberry(s.seed);
-  try {
-    // build the spatial index first so neighbour queries (class B) see the other
-    // particles, then measure frame-0 deltas on pristine clones.
+  // Deterministic randomness via the INJECTED Env.rng seam (not a global Math.random monkey-patch, #981):
+  // one seeded PRNG instance is threaded through the frame-0 delta env and the trajectory env, so it is
+  // consumed in exactly the historical order (frame-0 apply first, then each stepped frame). Unseeded
+  // scenarios pass `undefined` → forces fall back to Math.random, unchanged.
+  const rng = s.seed != null ? mulberry(s.seed) : undefined;
+  const env = makeEnv(store, rng) as Env & { __grids: Map<string, ScalarGridImpl> };
+
+  // build the spatial index first so neighbour queries (class B) see the other
+  // particles, then measure frame-0 deltas on pristine clones.
+  store.reindex();
+  const applyDelta = frameZeroDelta(s, body, forces, store, rng);
+
+  const trajectory: FrameState[][] = [store.particles.map(snap)];
+  for (let f = 0; f < s.frames; f++) {
+    env.frameN = f;
+    env.t = f / 60;
     store.reindex();
-    const applyDelta = frameZeroDelta(s, body, forces, store);
-
-    const trajectory: FrameState[][] = [store.particles.map(snap)];
-    for (let f = 0; f < s.frames; f++) {
-      env.frameN = f;
-      env.t = f / 60;
-      store.reindex();
-      step({ store, bodies, env, forces, conditions });
-      if (env.dt) for (const g of env.__grids.values()) g.step();
-      trajectory.push(store.particles.map(snap));
-    }
-    // report the centred scenario so r.scenario / r.body / r.trajectory share one frame.
-    return { scenario: s, trajectory, applyDelta, body };
-  } finally {
-    Math.random = origRandom;
+    step({ store, bodies, env, forces, conditions });
+    if (env.dt) for (const g of env.__grids.values()) g.step();
+    trajectory.push(store.particles.map(snap));
   }
+  // report the centred scenario so r.scenario / r.body / r.trajectory share one frame.
+  return { scenario: s, trajectory, applyDelta, body };
 }

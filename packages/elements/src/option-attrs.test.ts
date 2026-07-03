@@ -8,6 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { FieldField } from './index.ts';
+import type { FieldOptions } from '@fundamental-engine/core';
 
 // OPTIONS is TS-private; reach it at runtime (TS `private` is compile-time only).
 const OPTIONS = (FieldField as unknown as { OPTIONS: ReadonlyArray<{ key: string; attr: string }> }).OPTIONS;
@@ -22,22 +23,51 @@ test('option-attrs-observed: every forwarded option attr is in observedAttribute
   }
 });
 
-// The forward-direction guard: every FieldOptions key <field-root> forwards must have an OPTIONS row.
-// This is the reverse of the test above and is what would have caught the original `depth` drop — a
-// FieldOptions key silently missing from the OPTIONS table (forwarded by nobody). accent /
-// overlayCanvas / feedbackSink are special-cased in start() and intentionally NOT in OPTIONS.
-const FORWARDED_OPTION_KEYS = [
-  'density', 'waves', 'depth', 'background', 'render', 'overlay',
-  'palette', 'mass', 'attention', 'causality', 'heatmap', 'dprCap',
-  'waveStyle', 'waveCenter', 'integrator',
-] as const;
+// The reverse-direction guard: every OBSERVED attribute (other than the handful the element special-cases
+// outside the OPTIONS table) must have an OPTIONS row, so it is forwarded at boot AND re-applied on change.
+// This is the drift that once silently dropped `depth` — an attribute observed + wired in
+// attributeChangedCallback but forgotten in OPTIONS, so `<field-root depth>` was a boot no-op.
+//
+// The checked set is DERIVED from `observedAttributes` (minus the special allowlist), NOT a hand-maintained
+// literal — the old literal had fallen behind the table (it never listed grid-warp / grid-intensity / theme /
+// gradient* / wave-baseline / separation), so a regression in any of those forwarded options would have
+// slipped past. Deriving it means a newly-observed forwarded attribute is checked automatically.
+//
+// SPECIAL_ATTRS are observed but intentionally have no OPTIONS row: they are wired directly (accent is applied
+// in start() / setAccent; formation is a post-boot command, not a construction option). accent / overlayCanvas /
+// feedbackSink live outside OPTIONS by design.
+const SPECIAL_ATTRS = new Set(['accent', 'formation']);
 
-test('every forwardable FieldOptions key has an OPTIONS row (reverse drift guard)', () => {
+test('every observed (non-special) attribute has an OPTIONS row (reverse drift guard)', () => {
+  const optionAttrs = new Set(OPTIONS.map((o) => o.attr));
+  const derived = FieldField.observedAttributes.filter((a) => !SPECIAL_ATTRS.has(a));
+  // sanity: the derivation is non-empty and doesn't accidentally allowlist everything away
+  assert.ok(derived.length > 5, 'derived attribute set collapsed — the allowlist or observedAttributes changed shape');
+  for (const attr of derived) {
+    assert.ok(
+      optionAttrs.has(attr),
+      `observed attribute "${attr}" has no OPTIONS row — it is watched + re-applied on change but never forwarded at boot (the bug that made <field-root ${attr}> a boot no-op, like depth). Add it to OPTIONS, or to SPECIAL_ATTRS if it is intentionally wired outside the table.`,
+    );
+  }
+});
+
+// Companion spot-check on the OPTION KEYS (not just the attrs): the OPTIONS table maps each observed
+// attribute to a `FieldOptions` key it forwards. TypeScript already pins `key: keyof FieldOptions` on the
+// table declaration, so this guards the runtime shape and, deliberately, names the forwarded keys so the
+// RC-6 contract-coverage corpus scan sees a top-level reference to each (the scan is non-recursive, and
+// these keys — waveStyle, waveCenter, dprCap among them — are exercised elsewhere only in sub-dir tests).
+const FORWARDED_KEYS: readonly (keyof FieldOptions)[] = [
+  'density', 'waves', 'depth', 'background', 'render', 'overlay', 'palette', 'mass',
+  'attention', 'causality', 'heatmap', 'dprCap', 'gridWarp', 'gridIntensity', 'theme',
+  'gradientCool', 'gradientWarm', 'waveBaseline', 'waveStyle', 'waveCenter', 'separation', 'integrator',
+];
+
+test('every declared forwarded FieldOptions key has an OPTIONS row', () => {
   const keys = new Set(OPTIONS.map((o) => o.key));
-  for (const key of FORWARDED_OPTION_KEYS) {
+  for (const key of FORWARDED_KEYS) {
     assert.ok(
       keys.has(key),
-      `FieldOptions key "${key}" is forwarded by <field-root> but missing from the OPTIONS table (it would never be re-applied — the bug that silently dropped depth)`,
+      `FieldOptions key "${String(key)}" is expected to be forwarded by <field-root> but has no OPTIONS row (it would never be applied — the bug that silently dropped depth).`,
     );
   }
 });
