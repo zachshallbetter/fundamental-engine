@@ -144,6 +144,7 @@ export const ATTRS: AttrRow[] = [
   { name: 'data-intensity', type: 'number', def: '1', desc: 'Modifier for data-intent: scales the compiled strength (0 = subtle, 1 = default, 2 = strong). Ignored when data-body is set directly.' },
   { name: 'data-risk', type: "'low' | 'medium' | 'high'", desc: 'Intent hint for data-intent compilation — tunes the body\'s compiled forces when the intent has risk-sensitive variants.' },
   { name: 'data-field-role', type: "role", desc: 'Semantic role: source / sink / anchor / boundary / sensor / display. Maps the element to a default body token and feedback (data-body is optional). sensor/display are feedback-only (no force).' },
+  { name: 'data-field-boundary', type: 'flag (engine-set)', desc: 'Field-ownership marker — ENGINE-SET by a contained host (containerHost / the bounds: option) on its bounds element, not authored. A body belongs to the NEAREST enclosing marked boundary: outer/page-field scans skip bodies inside it, the contained field owns exactly its subtree, and nesting resolves to the nearest. Removed on destroy so the outer field re-adopts on rescan.' },
 ];
 
 /** The CSS custom properties the field writes back onto bodies — the reciprocal half of the

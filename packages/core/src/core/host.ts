@@ -77,6 +77,11 @@ export interface FieldHost extends MinimalFieldHost {
   onInput?(cb: () => void): () => void;
   /** subscribe to a composed shadow-DOM body event by name; returns an unsubscribe. Absent ⇒ programmatic bodies only (no DOM body-event registration). */
   onBodyEvent?(type: string, cb: (e: Event) => void): () => void;
+  /** release host-side state when the field is destroyed — called once by `FieldHandle.destroy()`
+   *  after every event subscription is unsubscribed. A contained host (`containerHost`) uses it to
+   *  remove its `data-field-boundary` ownership marker so the outer/page field re-adopts the bodies
+   *  on its next rescan (#980). Absent ⇒ nothing to release. Idempotent by contract. */
+  detach?(): void;
 }
 
 /**

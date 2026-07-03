@@ -85,6 +85,22 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   (unseeded) behavior is unchanged; the conformance harness's global-swap seeding still applies
   through the fallback.
 
+- **`@fundamental-engine/core` + `@fundamental-engine/dom`:** **bodies belong to the nearest
+  enclosing field — contained fields stop double-adoption (#980).** A contained field
+  (`containerHost(el)` / the `bounds:` option) and the document-rooted page `<field-root>` both
+  adopted the same `[data-body]` elements, so two engines alternated `--d`/`--field-density`
+  writes on them every frame (a visible per-frame flicker between the contained field's values
+  and the page field's near-zero ones — verified on /docs/reactive-component). Ownership is now
+  nearest-enclosing-field: `containerHost` marks its bounds element with the reserved, engine-set
+  `data-field-boundary` attribute at attach (idempotent) and removes it via the new optional
+  `FieldHost.detach()` hook (called once by `FieldHandle.destroy()`); the scanner
+  (`scanBodies`/`bodyElements`, shared with platform measurement) skips any body whose closest
+  boundary marker is not the scan root — the page field only adopts bodies whose nearest boundary
+  is the document, each contained field owns exactly its subtree, nesting resolves to the nearest
+  boundary, and destroying a contained field hands its bodies back to the page field on rescan.
+  New exports: `FIELD_BOUNDARY_ATTR`, `FIELD_BOUNDARY_SELECTOR`, `ownedByScanRoot`. DOM-plane
+  fix only: the Swift/Kotlin hosts register bodies explicitly (no document-wide scan), so the
+  double-adoption class does not exist there.
 - **`@fundamental-engine/three`:** **`threeBackend`'s overlay `z` now offsets the projected field
   plane instead of being an absolute world z (#949).** The backend pinned every overlay vertex —
   lines/arrows (`segments`/`polyline`), the data-chip plates (`rect`), and the #921 label sprites
