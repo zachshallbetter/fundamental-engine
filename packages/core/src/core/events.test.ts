@@ -32,8 +32,8 @@ test('triggerActive evaluates the built-in triggers', () => {
 test('#684 coalescer: N records of one (source, type) in a frame → one delivery (last-wins payload)', () => {
   const c = new FieldEventCoalescer();
   const body = fakeBody('sink');
-  // Simulate many force-passes raising `absorb` on the SAME body within one frame.
-  for (let i = 1; i <= 7; i++) c.record('absorb', { body, count: i });
+  // Simulate many force-passes raising `captured` on the SAME body within one frame.
+  for (let i = 1; i <= 7; i++) c.record('captured', { body, count: i });
   const got: Array<{ type: string; count: number }> = [];
   c.flush((type, payload) => got.push({ type, count: (payload as { count: number }).count }));
   assert.equal(got.length, 1, `seven passes coalesce to one delivery: ${got.length}`);
@@ -49,14 +49,14 @@ test('#684 coalescer: distinct sources and distinct types each get their own del
   const a = fakeBody('a');
   const b = fakeBody('b');
   // same type, two different source bodies → two deliveries
-  c.record('absorb', { body: a, count: 1 });
-  c.record('absorb', { body: b, count: 2 });
+  c.record('captured', { body: a, count: 1 });
+  c.record('captured', { body: b, count: 2 });
   // different type on the same body a → its own delivery (types are independent)
-  c.record('release', { body: a, count: 9 });
+  c.record('released', { body: a, count: 9 });
   const got: string[] = [];
   c.flush((type, payload) => got.push(`${type}:${(payload as { count: number }).count}`));
-  assert.equal(got.length, 3, `two sources × absorb + one release = three deliveries: ${got.join(',')}`);
-  assert.ok(got.includes('absorb:1') && got.includes('absorb:2') && got.includes('release:9'));
+  assert.equal(got.length, 3, `two sources × captured + one released = three deliveries: ${got.join(',')}`);
+  assert.ok(got.includes('captured:1') && got.includes('captured:2') && got.includes('released:9'));
 });
 
 test('#684 coalescer: relational events key on the pair — distinct pairs survive, same pair collapses', () => {

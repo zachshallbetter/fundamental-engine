@@ -786,7 +786,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (b.el.dataset.fxCap === '1') {
         b.el.dataset.fxCap = '0';
         fireCaptureEvent(b.el, 'released', { accreted: 0, load: 0 });
-        if (busHas('release')) busEmit('release', { body: b, count: released.length });
+        if (busHas('released')) busEmit('released', { body: b, count: released.length });
         sinkPeak.delete(b);
       }
     },
@@ -1181,12 +1181,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (edge.fire === 'captured') {
         b.el.dataset.fxCap = '1';
         fireCaptureEvent(b.el, 'captured', { accreted: b.accreted, load: sinkLoad(b) });
-        if (busHas('absorb')) busEmit('absorb', { body: b, count: b.accreted });
+        if (busHas('captured')) busEmit('captured', { body: b, count: b.accreted });
         sinkPeak.set(b, b.accreted);
       } else if (edge.fire === 'released') {
         b.el.dataset.fxCap = '0';
         fireCaptureEvent(b.el, 'released', { accreted: 0, load: 0 });
-        if (busHas('release')) busEmit('release', { body: b, count: sinkPeak.get(b) ?? 0 });
+        if (busHas('released')) busEmit('released', { body: b, count: sinkPeak.get(b) ?? 0 });
         sinkPeak.delete(b);
       }
     }

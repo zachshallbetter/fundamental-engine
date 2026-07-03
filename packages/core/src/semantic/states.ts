@@ -32,7 +32,7 @@ export const FIELD_STATES: Readonly<Record<FieldState, string>> = {
   critical: 'reduce sources / warn',
   celebrating: 'burst / emission',
   hovered: 'attract',
-  pressed: 'sink (absorb)',
+  pressed: 'sink (capture)',
   loading: 'stream / swirl',
   success: 'release',
   error: 'repel + thermal',
