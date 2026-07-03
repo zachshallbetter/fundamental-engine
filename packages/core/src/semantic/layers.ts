@@ -5,6 +5,7 @@
  * drive the field from semantics instead of raw forces. Pure data + a tiny helper; node-testable.
  */
 import type { ElementMetrics } from '../agents/element-agent.ts';
+import { devWarnNoOp } from '../contracts/guards.ts';
 
 export type SemanticLayer =
   | 'importance'
@@ -44,12 +45,32 @@ export const SEMANTIC_LAYERS: Readonly<Record<SemanticLayer, SemanticMapping>> =
 
 /**
  * Convert a semantic value (0..1) into the `ElementMetrics` contribution it implies, for the layers
- * whose target metric is a real ElementMetric (status→phase and hierarchy→potential are conceptual
- * and returned as `{}`). Pure.
+ * whose target metric is a real ElementMetric.
+ *
+ * Any layer whose target is a CONCEPTUAL/VISUAL lane rather than a scalar `ElementMetrics` channel
+ * returns `{}` — today that is `status` (→ `phase`); the `SemanticMapping` type also permits
+ * `potential`, and it is handled the same way. There is no numeric metric to drive. This is
+ * intentional, but it used to be silent; a dev-only warn (deduped per layer, compiled out in
+ * production) now explains *why* the result is empty so a caller doesn't debug a mysterious no-op.
+ *
+ * Resolution order when co-occurring layers drive the SAME metric channel: `semanticToMetrics` is
+ * per-layer, so it never merges — the CALLER decides. Because the ElementMetrics contributions are a
+ * flat object, the last write wins when spread/merged in declaration order. The channels that collide:
+ *   - `attention` ← `importance` + `priority`
+ *   - `heat`      ← `urgency` + `recency`
+ *   - `memory`    ← `relationship` + `history`
+ * Feed the higher-authority layer LAST (or max/sum them yourself) if both are present; the default
+ * object-spread order is "last layer wins", not additive. Pure.
  */
 export function semanticToMetrics(layer: SemanticLayer, value: number): ElementMetrics {
   const m = SEMANTIC_LAYERS[layer];
   const v = value < 0 ? 0 : value > 1 ? 1 : value;
-  if (m.metric === 'phase' || m.metric === 'potential') return {};
+  if (m.metric === 'phase' || m.metric === 'potential') {
+    devWarnNoOp(
+      'NOOP_CONCEPTUAL_LAYER',
+      `semanticToMetrics('${layer}') returned {} — the '${layer}' layer maps to the conceptual/visual '${m.metric}' lane (${m.response}), which has no scalar ElementMetrics channel. Drive it through the phase/potential visualization, not as a metric.`,
+    );
+    return {};
+  }
   return { [m.metric]: v } as ElementMetrics;
 }

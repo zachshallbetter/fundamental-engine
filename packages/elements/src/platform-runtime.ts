@@ -189,8 +189,20 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
     if (doc) for (const [name, fn] of wired) doc.removeEventListener(name, fn);
   };
 
+  // Registry teardown shared by both destroy paths: disconnect the VisualBindingRegistry's live
+  // MutationObservers (they otherwise keep every observed source alive), then prune + clear the
+  // StateRegistry and FeedbackRegistry so removed elements are freed immediately — closing the
+  // strong-ref retention window instead of leaning on the platform object being collected.
+  const teardownRegistries = (): void => {
+    platform.visuals.setMirroring(false);
+    platform.state.prune();
+    platform.state.clearAll();
+    platform.feedback.prune();
+    platform.feedback.clearAll();
+  };
+
   if (typeof window === 'undefined' || typeof requestAnimationFrame === 'undefined') {
-    return { platform, attachHandle: () => {}, destroy: unwireShadow };
+    return { platform, attachHandle: () => {}, destroy: () => { unwireShadow(); teardownRegistries(); } };
   }
 
   let raf = 0;
@@ -265,12 +277,12 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
       handle = null;
       document.removeEventListener('visibilitychange', onVisibility);
       unwireShadow();
-      // Registry teardown: the VisualBindingRegistry holds live MutationObservers (one per
-      // mirrored source) that the browser keeps firing — and keeps the registry, plus every
-      // observed element, alive long after this runtime is gone. setMirroring(false) disconnects
-      // and clears them all; the remaining registry maps hold no external refs and GC with the
-      // platform object once the host element drops its reference (disconnectedCallback / rebuild).
-      platform.visuals.setMirroring(false);
+      // Registry teardown: the VisualBindingRegistry holds live MutationObservers (one per mirrored
+      // source) that the browser keeps firing — and keeps the registry, plus every observed element,
+      // alive long after this runtime is gone. Beyond disconnecting those, explicitly prune + clear
+      // the StateRegistry and FeedbackRegistry so every strong Element ref they hold is released now,
+      // closing the retention window rather than waiting for the platform object to be collected.
+      teardownRegistries();
     },
   };
 }

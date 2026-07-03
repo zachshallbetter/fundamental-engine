@@ -60,7 +60,8 @@ function fail(code: FieldUIErrorCode, message: string): never {
  *  because a prerequisite was missing. Advisory, not a contract violation: the call is legal, it
  *  just couldn't do anything. */
 export type FieldUINoOpCode =
-  | 'NOOP_NO_HEATMAP'; // a heatmap-dependent read ran with the heatmap layer off
+  | 'NOOP_NO_HEATMAP' // a heatmap-dependent read ran with the heatmap layer off
+  | 'NOOP_CONCEPTUAL_LAYER'; // a semantic layer mapping to a conceptual lane (phase/potential) has no scalar metric
 
 /** Diagnostic code for a migration-era alias that is still shipping but scheduled for removal. */
 export type FieldUIDeprecationCode =

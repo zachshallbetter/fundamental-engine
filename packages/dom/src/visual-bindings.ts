@@ -22,6 +22,7 @@
  * Change-gated via a MutationObserver on the source's style attribute — no polling, no frame cost
  * while the field is quiet.
  */
+import { warnIfFrameFrequent } from './dev-warn.ts';
 
 export type VisualRole = 'decorative' | 'representation' | 'debug' | 'relationship' | 'measurement';
 
@@ -188,6 +189,14 @@ export class VisualBindingRegistry {
    * and disconnected visuals are pruned. `resolve` defaults to a document-backed resolver.
    */
   scan(root: ParentNode, resolve: (ref: string) => Element | null = defaultResolver(root)): VisualBindingScanResult {
+    // layout-traversal trap: scan() walks the DOM with querySelectorAll to (re)discover declarative
+    // bindings. It is meant to run on mount / mutation, not every frame — warn once (dev-only) if it
+    // is being called at frame frequency. Once bound, mirroring is change-gated via MutationObserver,
+    // so per-frame rescans are pure overhead.
+    warnIfFrameFrequent(
+      'VISUAL_BINDING_SCAN',
+      'VisualBindingRegistry.scan() is being called at frame frequency — it walks the DOM (querySelectorAll) to rediscover bindings. Scan on mount / DOM mutation, not every frame (mirroring is already change-gated via MutationObserver).',
+    );
     // navigation hygiene: drop bindings whose visual OR source left the DOM (and stop mirroring
     // them). Pruning only on the visual leaves a MutationObserver pinned to a removed source —
     // holding that detached source subtree alive for as long as the visual stays mounted.

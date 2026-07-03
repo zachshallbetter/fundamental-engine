@@ -138,6 +138,22 @@ export class FeedbackRegistry {
     }
   }
 
+  /** Drop the entries for every element that left the DOM (strong-ref reclamation without a flush). */
+  prune(): void {
+    for (const el of this.bindings.keys()) if (el.isConnected === false) { this.bindings.delete(el); this.activity.delete(el); }
+    for (const el of this.direct.keys()) if (el.isConnected === false) this.direct.delete(el);
+    for (let i = this.thresholds.length - 1; i >= 0; i--) if (!this.thresholds[i]!.element.isConnected) this.thresholds.splice(i, 1);
+  }
+
+  /** Drop ALL bindings, direct writes, thresholds, and activity — used on platform teardown to free
+   *  every strong Element ref immediately rather than waiting for the registry object to be collected. */
+  clearAll(): void {
+    this.bindings.clear();
+    this.direct.clear();
+    this.activity.clear();
+    this.thresholds.length = 0;
+  }
+
   /**
    * Write-phase: apply bound state → CSS vars, apply queued direct writes, and run thresholders →
    * fire edge events. `state` supplies the numeric values for bound vars + thresholds. Disconnected

@@ -10,8 +10,37 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 ### Documentation
 
 - Correct `packages/core/README.md` feedback wording: `--d` and `--field-density` are consistent twins (same live value, read either), not legacy aliases; only `--forces-density` is the removed legacy variable — matching `docs/canonical/feedback-channels.md`.
+### Added
+
+- **DX batch (#993) — dev-only diagnostics + teardown reclamation.**
+  - **`@fundamental-engine/core`:** `semanticToMetrics()` now emits a dev-only, deduped
+    `NOOP_CONCEPTUAL_LAYER` warning when a semantic layer whose target is a conceptual/visual lane
+    (`phase`/`potential`, e.g. `status`) returns `{}` — explaining why the result is empty instead of
+    a silent no-op. Documented the metric-channel resolution order for co-occurring layers
+    (importance+priority→attention, urgency+recency→heat, relationship+history→memory): per-layer,
+    last-write-wins on merge. Dev-gated (compiled out in production).
+  - **`@fundamental-engine/dom`:** `RelationshipRegistry.discover()` and
+    `VisualBindingRegistry.scan()` now warn once (dev-only, deduped) when invoked at frame frequency —
+    the layout-traversal trap; both walk the DOM and are meant to run on a throttle / on mutation.
+    Added a package-local `dev-warn` helper mirroring core's guard gate. Added
+    `StateRegistry.clearAll()`, `FeedbackRegistry.prune()`, and `FeedbackRegistry.clearAll()` for
+    immediate strong-ref reclamation.
+  - **`@fundamental-engine/elements`:** the `<field-root>` platform runtime `destroy()` now explicitly
+    prunes + clears the state and feedback registries on teardown, closing the strong-ref retention
+    window rather than relying on the platform object being collected.
+  - **`@fundamental-engine/create`:** template deps are pinned to a bounded range (`^0.9.2`) instead
+    of `latest`; the CLI now handles `--help`/`-h` and `--version`/`-v`; added non-interactive CLI
+    smoke tests.
 
 ### Docs
+
+- **`<field-cell>` boundary statement (#993):** documented that a cell is a demo pool, not the engine
+  — own particle pool, local `Math.random()`, and **none** of the core guarantees (no determinism,
+  snapshot/causal replay, cross-plane conformance, or physics parity). Added to the
+  `@fundamental-engine/elements` README and `docs/engine-reference/shadow-dom.md`. Also aligned the
+  Next.js example's SSR guidance (`examples/nextjs/app/components/FieldCanvas.tsx`) with the README:
+  a `'use client'` import from a Server Component IS the App Router SSR boundary — no
+  `dynamic(…, { ssr: false })` wrapper (that pattern is Pages-Router-only and throws in an RSC).
 
 - **`@fundamental-engine/dom`:** corrected the stale `QualityGovernor` header comment
   (`packages/dom/src/governor.ts`) — it still said the engine-side quality responses were "NOT
