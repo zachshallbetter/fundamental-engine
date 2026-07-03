@@ -334,31 +334,46 @@ An audit of the Custom Elements runtime (`packages/elements/src`) and the framew
   3. `browserHost()` (the default, window-scoped page host).
 * **SSR Safety**: Utilizes `assertBrowser()` to trigger a clean, descriptive warning during server-side compilation (SSR) instead of cryptic browser-global crashes.
 
-## 8. File-by-File Diagnostics, Recording, and Security Audits
+## 8. File-by-File React System Analysis
+
+An audit of the React integration door (`packages/react/src`) reveals how React components, state-binding hooks, and declarative lifecycle scopes are mapped to the core engine and DOM platform runtime.
+
+### 8.1 Declarative Component Lifecycle: [index.tsx](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/react/src/index.tsx)
+* **Mechanics**: Implements the `<FieldField>` wrapper component and `useFieldField()` hook.
+* **Declarative Synchronization**: Triggers core field instantiation inside `useEffect` on canvas mount. Updates/recreates the field only when a declarative option (such as `accent`, `density`, `depth`, `integrator`, `palette`, `separation`) changes.
+* **Seam Preservation**: Determinism and telemetry injection seams (`rng`, `now`, `feedbackSink`, `overlayBackend`) are excluded from the `useEffect` dependency array. This prevents the field from thrashing (destroying and recreating the canvas) if inline closures or object references are re-instantiated on each React render pass.
+* **Overlay Canvas Lifecycle**: Lazily spawns the fixed overlay canvas (`mix-blend-mode: screen`) only if overlays are configured (`overlay !== 'off'`). Ensures clean garbage collection by removing the canvas element on hook teardown / unmount.
+
+### 8.2 State-to-Field Binding: [index.tsx:useForcesData](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/react/src/index.tsx#L176)
+* **Mechanics**: Implements the `useForcesData()` hook, exposing a React interface for the DOM's `bindData()` API.
+* **Diff Reconciliation**: Binds a React array of arbitrary records to field-space bodies. Added, updated, or deleted items undergo automatic diff-reconciliation via their unique IDs rather than resetting the field on state updates.
+* **Closure Reference Safety**: References the mapper function and options through mutable React refs (`mapperRef`, `optionsRef`). This ensures that changes to parent closures do not trigger layout churn or redundant body creation.
+
+## 9. File-by-File Diagnostics, Recording, and Security Audits
 
 An audit of the diagnostics vectors (`packages/core/src/diagnostics`), recording runtime (`packages/core/src/record`), and permission enforcement layers (`packages/core/src/agent-permissions.test.ts` & `field-policy.test.ts`) details how vector exporting, deterministic playback, and policy/sandbox boundaries are structured.
 
-### 8.1 Seeded Determinism and Replay Integrity: [record/rng.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/record/rng.ts) & [record/record.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/record/record.ts)
+### 9.1 Seeded Determinism and Replay Integrity: [record/rng.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/record/rng.ts) & [record/record.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/record/record.ts)
 * **Mechanics**: Implements a zero-dependency 32-bit `mulberry32` generator (`seededRng`).
 * **Design Invariant**: By enforcing integer-only operations and bypassing `Math.random()`, the generator ensures that simulation runs are platform-independent and reproduce bit-for-bit identically across client engines.
 * **Compact Stride Buffer Allocation**: The recorder saves trajectories using flat, contiguous `Float32Array` buffers (recording each frame as `[x, y, vx, vy, age]`), eliminating frame-by-frame memory allocations and GC spikes during recording passes.
 
-### 8.2 Security Facades and capability scoping: [agent-permissions.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/agent-permissions.test.ts) & [field-policy.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/field-policy.test.ts)
+### 9.2 Security Facades and capability scoping: [agent-permissions.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/agent-permissions.test.ts) & [field-policy.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/field-policy.test.ts)
 * **Design Invariant (Opaque Gating)**: The `field.forAgent(options)` interface provides a strict read-only wrapper facade for Software Agents, gating method access by capability permissions (`read:metrics`, `read:relationships`, `read:replay`). Mutation methods are fully omitted from the facade, ensuring that the runtime remains sandboxed.
 * **Tightest-Fit Precedence**: Capability queries evaluate to the tightest intersection of permissions. If a global policy denies body data (`allowBodyDataInSnapshots: false`), data queries will return undefined even if the agent is granted `read:body-data`.
 * **Zero-Limit Budget Hard Gate**: Setting `budgets.agentRead = 0` immediately drops metrics outputs to `{}` and forces snapshots to public profiles, safeguarding performance and data privacy under strict allocation limits.
 
-### 8.3 Meta-Contract Validation: [contract-coverage.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/contract-coverage.test.ts)
+### 9.3 Meta-Contract Validation: [contract-coverage.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/contract-coverage.test.ts)
 * **Mechanics**: Implements a compile-time meta-test verifying unit coverage for all public configuration options, metrics, and DOM attributes.
 * **Sync Assurance**: Direct-parses the Astro documentation rosters (`docs-api.ts`) and `types.ts` to construct a live roster of expected symbols, comparing it against the test files. This guarantees that new options or attributes cannot be checked in without accompanying unit test coverage.
 
-### 8.4 Pure Diagnostics and Vector Serialization: [diagnostics/modes.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/diagnostics/modes.ts) & [export.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/export.ts)
+### 9.4 Pure Diagnostics and Vector Serialization: [diagnostics/modes.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/diagnostics/modes.ts) & [export.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/export.ts)
 * **ReadOnly Diagnostics**: Diagnostics modes (topology graphs, HUD HUDs, predictive trajectories) read parameters but never mutate core coordinates, preserving physical invariants.
 * **Vector Precision**: The vector serializer (`segmentsToSvg`) rounds coordinates to two decimal places (`Math.round(n * 100) / 100`) to output compact standalone SVGs while maintaining subpixel spatial accuracy.
 
 ---
 
-## 9. Recommendations & Actions
+## 10. Recommendations & Actions
 
 1. **Unify Integrator Mode Specs**:
    Update [substrate-api.md](file:///Users/zachshallbetter/Projects/fundamental-engine/docs/canonical/substrate-api.md) to document the `'velocity-verlet'` scheme and synchronize deprecated names inside [physics-workover.md](file:///Users/zachshallbetter/Projects/fundamental-engine/docs/engine-reference/physics-workover.md).
@@ -388,3 +403,5 @@ An audit of the diagnostics vectors (`packages/core/src/diagnostics`), recording
     In [field.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/vanilla/src/field.ts), verify that when a vanilla instance is destroyed and rebuilt inside the same container bounds, the previously created canvas is fully unmounted and disposed of to prevent redundant overlay canvases piling up in the DOM.
 14. **Enforce Facade Scoping Constraints programmatically**:
     Add a conformance checker verifying that any new method added to `FieldHandle` is explicitly reviewed for inclusion/exclusion inside the `forAgent` proxy sandbox, preventing unintended method exposure to Software Agents.
+15. **Prevent Redundant React Component Mounting Re-creations**:
+    Ensure that future options added to `FieldOptions` are added either to the `useEffect` dependency arrays of `FieldField`/`useFieldField` or specifically designated as static/once configuration parameters, preventing thrashing across renders.
