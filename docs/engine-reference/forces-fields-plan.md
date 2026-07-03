@@ -59,9 +59,9 @@ The reciprocal loop gets one more turn of the wheel:
 particles → heatmap / body charge Q → DOM (--field-density, --field-heatmap-*) → field → particles
 ```
 
-The primary density variable is `--field-density`; `--d` is kept as the compact alias and mirrors
-the same number, so older selectors keep working. (The legacy `--forces-density` CSS variable has
-been removed.)
+`--d` and `--field-density` hold the same density number — consistent, neither legacy (see
+`docs/canonical/feedback-channels.md`); read either, and older `--d` selectors keep working.
+(The genuinely legacy `--forces-density` CSS variable has been removed.)
 
 Three pillars, plus the accumulator threaded through:
 

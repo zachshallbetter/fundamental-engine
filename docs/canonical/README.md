@@ -33,6 +33,7 @@ host, not the boundary. Canvas is one render surface, not the whole system.
 | [`body-lifecycle.md`](body-lifecycle.md) | The body lifecycle for non-DOM / programmatic bodies (declare → measure → participate → … → remove); DOM vs synthetic/data bodies; stable identity across the life |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Render + diagnostic methods, and **Surfaces & Placement** (underlay / overlay / typographic) |
 | [`invisible-fields.md`](invisible-fields.md) | The typographic (invisible) placement: two-field page architecture, live channels, engagement contracts, declared relationships, data provenance |
+| [`feedback-channels.md`](feedback-channels.md) | The canonical, correct feedback-vars reference (the **Read** channel): engine-written vs host-supplied; `--d`/`--field-density` (consistent, not aliased), `--load`, `--lit`, the measured thermodynamics (`--entropy`/`--coherence`/`--temperature`), the nine `--field-<metric>` recipe lanes and their provenance |
 | [`time.md`](time.md) | Time in the field: the three clocks (simulation / experiential / world), the five time senses, the temporal kernels, the `data-field-at` contract |
 | [`visual-language-and-geometry.md`](visual-language-and-geometry.md) | The visual language layer: metric→appearance mappings and geometry |
 | [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring surfaces and the FieldRecipe system |

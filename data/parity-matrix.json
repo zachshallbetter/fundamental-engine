@@ -1,0 +1,1592 @@
+{
+  "generated": "scripts/gen-parity-matrix.mjs",
+  "note": "Cross-platform capability support matrix (docs-refactor §3/§5). Regenerate with `pnpm gen:parity-matrix`; check:docs fails if a port gains/loses a symbol without regenerating. Symbol sets are extracted by a lightweight per-port parse of the public FieldHandle/force/render surface — an idiom difference is an equivalent, a missing symbol is a gap.",
+  "planes": [
+    "js",
+    "swift",
+    "kotlin"
+  ],
+  "conformanceGolden": {
+    "note": "The shared cross-plane golden the ports reproduce at depth:0 — the proof the force math matches.",
+    "forces": [
+      "attract",
+      "repel",
+      "stream",
+      "swirl",
+      "tether",
+      "viscosity"
+    ],
+    "count": 6
+  },
+  "frozenPublicValues": [
+    "FIELD_VERSION",
+    "applyRecipe",
+    "bindData",
+    "browserHost",
+    "compileRecipe",
+    "createField",
+    "createFieldPlatform"
+  ],
+  "dimensions": [
+    {
+      "id": "field-handle-methods",
+      "label": "FieldHandle methods",
+      "union": [
+        "addAgent",
+        "addBody",
+        "addEdge",
+        "addField",
+        "atomAt",
+        "attach",
+        "burst",
+        "clearFlow",
+        "clearFocus",
+        "destroy",
+        "diff",
+        "effectiveMotion",
+        "energy",
+        "feedReducedMotion",
+        "feedScrollV",
+        "flowTo",
+        "focusAt",
+        "forAgent",
+        "grid",
+        "on",
+        "overlayRegistry",
+        "particleCount",
+        "pause",
+        "policy",
+        "projections",
+        "query",
+        "readEdges",
+        "readParticleChannels",
+        "readParticleIds",
+        "readParticles",
+        "registerOverlay",
+        "removeOverlay",
+        "replay",
+        "rescan",
+        "resume",
+        "sample",
+        "sampleField",
+        "sampleGradient",
+        "sampleScalar",
+        "scan",
+        "scrollV",
+        "seed",
+        "setAccent",
+        "setAttention",
+        "setBackground",
+        "setCausality",
+        "setDprCap",
+        "setFormation",
+        "setHeatmap",
+        "setOverlay",
+        "setPalette",
+        "setPolicy",
+        "setQualityTier",
+        "setRender",
+        "setSeparation",
+        "setVisible",
+        "setWaveCenter",
+        "setWaveStyle",
+        "setWaves",
+        "snapshot",
+        "threads",
+        "tick"
+      ],
+      "counts": {
+        "js": 50,
+        "swift": 56,
+        "kotlin": 59
+      },
+      "planes": {
+        "js": [
+          "addAgent",
+          "addBody",
+          "addEdge",
+          "addField",
+          "atomAt",
+          "burst",
+          "clearFlow",
+          "clearFocus",
+          "destroy",
+          "diff",
+          "energy",
+          "flowTo",
+          "focusAt",
+          "forAgent",
+          "grid",
+          "on",
+          "particleCount",
+          "query",
+          "readEdges",
+          "readParticleChannels",
+          "readParticleIds",
+          "readParticles",
+          "registerOverlay",
+          "replay",
+          "rescan",
+          "sample",
+          "sampleField",
+          "sampleGradient",
+          "sampleScalar",
+          "scan",
+          "scrollV",
+          "seed",
+          "setAccent",
+          "setAttention",
+          "setBackground",
+          "setCausality",
+          "setDprCap",
+          "setFormation",
+          "setHeatmap",
+          "setOverlay",
+          "setPalette",
+          "setPolicy",
+          "setQualityTier",
+          "setRender",
+          "setSeparation",
+          "setVisible",
+          "setWaveCenter",
+          "setWaveStyle",
+          "snapshot",
+          "threads"
+        ],
+        "swift": [
+          "addAgent",
+          "addBody",
+          "addEdge",
+          "addField",
+          "atomAt",
+          "burst",
+          "clearFlow",
+          "clearFocus",
+          "destroy",
+          "diff",
+          "energy",
+          "flowTo",
+          "focusAt",
+          "forAgent",
+          "grid",
+          "on",
+          "overlayRegistry",
+          "particleCount",
+          "pause",
+          "policy",
+          "projections",
+          "query",
+          "readEdges",
+          "readParticleChannels",
+          "readParticleIds",
+          "readParticles",
+          "registerOverlay",
+          "removeOverlay",
+          "replay",
+          "rescan",
+          "resume",
+          "sample",
+          "sampleField",
+          "sampleGradient",
+          "sampleScalar",
+          "scan",
+          "scrollV",
+          "seed",
+          "setAccent",
+          "setAttention",
+          "setBackground",
+          "setCausality",
+          "setDprCap",
+          "setFormation",
+          "setHeatmap",
+          "setOverlay",
+          "setPalette",
+          "setPolicy",
+          "setQualityTier",
+          "setRender",
+          "setSeparation",
+          "setVisible",
+          "setWaveCenter",
+          "setWaveStyle",
+          "snapshot",
+          "threads"
+        ],
+        "kotlin": [
+          "addAgent",
+          "addBody",
+          "addEdge",
+          "addField",
+          "atomAt",
+          "attach",
+          "burst",
+          "clearFlow",
+          "clearFocus",
+          "destroy",
+          "diff",
+          "effectiveMotion",
+          "energy",
+          "feedReducedMotion",
+          "feedScrollV",
+          "flowTo",
+          "focusAt",
+          "forAgent",
+          "grid",
+          "on",
+          "particleCount",
+          "pause",
+          "query",
+          "readEdges",
+          "readParticleChannels",
+          "readParticleIds",
+          "readParticles",
+          "registerOverlay",
+          "removeOverlay",
+          "replay",
+          "rescan",
+          "resume",
+          "sample",
+          "sampleField",
+          "sampleGradient",
+          "sampleScalar",
+          "scan",
+          "scrollV",
+          "seed",
+          "setAccent",
+          "setAttention",
+          "setBackground",
+          "setCausality",
+          "setDprCap",
+          "setFormation",
+          "setHeatmap",
+          "setOverlay",
+          "setPalette",
+          "setPolicy",
+          "setQualityTier",
+          "setRender",
+          "setSeparation",
+          "setVisible",
+          "setWaveCenter",
+          "setWaveStyle",
+          "setWaves",
+          "snapshot",
+          "threads",
+          "tick"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "addAgent",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "addBody",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "addEdge",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "addField",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "atomAt",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "attach",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "burst",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "clearFlow",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "clearFocus",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "destroy",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "diff",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "effectiveMotion",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "energy",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "feedReducedMotion",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "feedScrollV",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "flowTo",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "focusAt",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "forAgent",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "grid",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "on",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "overlayRegistry",
+          "js": false,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "particleCount",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "pause",
+          "js": false,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "policy",
+          "js": false,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "projections",
+          "js": false,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "query",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "readEdges",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "readParticleChannels",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "readParticleIds",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "readParticles",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "registerOverlay",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "removeOverlay",
+          "js": false,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "replay",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "rescan",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "resume",
+          "js": false,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "sample",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "sampleField",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "sampleGradient",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "sampleScalar",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "scan",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "scrollV",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "seed",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setAccent",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setAttention",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setBackground",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setCausality",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setDprCap",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setFormation",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setHeatmap",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setOverlay",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setPalette",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setPolicy",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setQualityTier",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setRender",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setSeparation",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setVisible",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setWaveCenter",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setWaveStyle",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "setWaves",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "snapshot",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "threads",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "tick",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        }
+      ]
+    },
+    {
+      "id": "field-options",
+      "label": "Field options (JS/Swift struct; Kotlin uses setters)",
+      "union": [
+        "accent",
+        "attention",
+        "background",
+        "causality",
+        "density",
+        "depth",
+        "dprCap",
+        "feedbackSink",
+        "firstClassMass",
+        "gradientCool",
+        "gradientWarm",
+        "gridIntensity",
+        "gridWarp",
+        "heatmap",
+        "host",
+        "identify",
+        "integrator",
+        "mass",
+        "now",
+        "overlay",
+        "overlayBackend",
+        "overlayCanvas",
+        "overlayCanvasProvider",
+        "palette",
+        "particleGlow",
+        "particleShape",
+        "particleSize",
+        "policy",
+        "qualityTier",
+        "reaction",
+        "render",
+        "rng",
+        "separation",
+        "theme",
+        "waveBaseline",
+        "waveCenter",
+        "waveStyle",
+        "waves"
+      ],
+      "counts": {
+        "js": 33,
+        "swift": 23,
+        "kotlin": 0
+      },
+      "planes": {
+        "js": [
+          "accent",
+          "attention",
+          "background",
+          "causality",
+          "density",
+          "depth",
+          "dprCap",
+          "feedbackSink",
+          "gradientCool",
+          "gradientWarm",
+          "gridIntensity",
+          "gridWarp",
+          "heatmap",
+          "host",
+          "identify",
+          "integrator",
+          "mass",
+          "now",
+          "overlay",
+          "overlayBackend",
+          "overlayCanvas",
+          "overlayCanvasProvider",
+          "palette",
+          "policy",
+          "reaction",
+          "render",
+          "rng",
+          "separation",
+          "theme",
+          "waveBaseline",
+          "waveCenter",
+          "waveStyle",
+          "waves"
+        ],
+        "swift": [
+          "accent",
+          "attention",
+          "background",
+          "causality",
+          "density",
+          "dprCap",
+          "feedbackSink",
+          "firstClassMass",
+          "heatmap",
+          "identify",
+          "integrator",
+          "overlay",
+          "palette",
+          "particleGlow",
+          "particleShape",
+          "particleSize",
+          "policy",
+          "qualityTier",
+          "render",
+          "separation",
+          "waveCenter",
+          "waveStyle",
+          "waves"
+        ],
+        "kotlin": []
+      },
+      "support": [
+        {
+          "symbol": "accent",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "attention",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "background",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "causality",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "density",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "depth",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "dprCap",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "feedbackSink",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "firstClassMass",
+          "js": false,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "gradientCool",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "gradientWarm",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "gridIntensity",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "gridWarp",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "heatmap",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "host",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "identify",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "integrator",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "mass",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "now",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "overlay",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "overlayBackend",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "overlayCanvas",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "overlayCanvasProvider",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "palette",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "particleGlow",
+          "js": false,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "particleShape",
+          "js": false,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "particleSize",
+          "js": false,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "policy",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "qualityTier",
+          "js": false,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "reaction",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "render",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "rng",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "separation",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "theme",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "waveBaseline",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "waveCenter",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "waveStyle",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "waves",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        }
+      ]
+    },
+    {
+      "id": "force-tokens",
+      "label": "Force tokens",
+      "union": [
+        "align",
+        "attract",
+        "buoyancy",
+        "charge",
+        "cohesion",
+        "collide",
+        "crystallize",
+        "diffuse",
+        "fieldflow",
+        "gate",
+        "gravity",
+        "hunt",
+        "jet",
+        "lens",
+        "link",
+        "magnetism",
+        "memory",
+        "morph",
+        "pigment",
+        "pressure",
+        "propagate",
+        "repel",
+        "resonate",
+        "screen",
+        "shear",
+        "sink",
+        "spawn",
+        "spotlight",
+        "stream",
+        "swirl",
+        "tether",
+        "thermal",
+        "viscosity",
+        "wall",
+        "warp",
+        "wind"
+      ],
+      "counts": {
+        "js": 36,
+        "swift": 36,
+        "kotlin": 36
+      },
+      "planes": {
+        "js": [
+          "align",
+          "attract",
+          "buoyancy",
+          "charge",
+          "cohesion",
+          "collide",
+          "crystallize",
+          "diffuse",
+          "fieldflow",
+          "gate",
+          "gravity",
+          "hunt",
+          "jet",
+          "lens",
+          "link",
+          "magnetism",
+          "memory",
+          "morph",
+          "pigment",
+          "pressure",
+          "propagate",
+          "repel",
+          "resonate",
+          "screen",
+          "shear",
+          "sink",
+          "spawn",
+          "spotlight",
+          "stream",
+          "swirl",
+          "tether",
+          "thermal",
+          "viscosity",
+          "wall",
+          "warp",
+          "wind"
+        ],
+        "swift": [
+          "align",
+          "attract",
+          "buoyancy",
+          "charge",
+          "cohesion",
+          "collide",
+          "crystallize",
+          "diffuse",
+          "fieldflow",
+          "gate",
+          "gravity",
+          "hunt",
+          "jet",
+          "lens",
+          "link",
+          "magnetism",
+          "memory",
+          "morph",
+          "pigment",
+          "pressure",
+          "propagate",
+          "repel",
+          "resonate",
+          "screen",
+          "shear",
+          "sink",
+          "spawn",
+          "spotlight",
+          "stream",
+          "swirl",
+          "tether",
+          "thermal",
+          "viscosity",
+          "wall",
+          "warp",
+          "wind"
+        ],
+        "kotlin": [
+          "align",
+          "attract",
+          "buoyancy",
+          "charge",
+          "cohesion",
+          "collide",
+          "crystallize",
+          "diffuse",
+          "fieldflow",
+          "gate",
+          "gravity",
+          "hunt",
+          "jet",
+          "lens",
+          "link",
+          "magnetism",
+          "memory",
+          "morph",
+          "pigment",
+          "pressure",
+          "propagate",
+          "repel",
+          "resonate",
+          "screen",
+          "shear",
+          "sink",
+          "spawn",
+          "spotlight",
+          "stream",
+          "swirl",
+          "tether",
+          "thermal",
+          "viscosity",
+          "wall",
+          "warp",
+          "wind"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "align",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "attract",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "buoyancy",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "charge",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "cohesion",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "collide",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "crystallize",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "diffuse",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "fieldflow",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "gate",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "gravity",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "hunt",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "jet",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "lens",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "link",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "magnetism",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "memory",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "morph",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "pigment",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "pressure",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "propagate",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "repel",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "resonate",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "screen",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "shear",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "sink",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "spawn",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "spotlight",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "stream",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "swirl",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "tether",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "thermal",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "viscosity",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "wall",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "warp",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "wind",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        }
+      ]
+    },
+    {
+      "id": "render-modes",
+      "label": "Render modes",
+      "union": [
+        "dots",
+        "field-lines",
+        "heatmap",
+        "links",
+        "metaballs",
+        "none",
+        "streamlines",
+        "trails",
+        "voronoi"
+      ],
+      "counts": {
+        "js": 8,
+        "swift": 7,
+        "kotlin": 7
+      },
+      "planes": {
+        "js": [
+          "dots",
+          "field-lines",
+          "heatmap",
+          "links",
+          "metaballs",
+          "streamlines",
+          "trails",
+          "voronoi"
+        ],
+        "swift": [
+          "dots",
+          "links",
+          "metaballs",
+          "none",
+          "streamlines",
+          "trails",
+          "voronoi"
+        ],
+        "kotlin": [
+          "dots",
+          "links",
+          "metaballs",
+          "none",
+          "streamlines",
+          "trails",
+          "voronoi"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "dots",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "field-lines",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "heatmap",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "links",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "metaballs",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "none",
+          "js": false,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "streamlines",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "trails",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "voronoi",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        }
+      ]
+    },
+    {
+      "id": "overlay-modes",
+      "label": "Overlay readings",
+      "union": [
+        "data",
+        "energy",
+        "field-lines",
+        "force-vectors",
+        "grid",
+        "off",
+        "path",
+        "streamlines",
+        "temperature"
+      ],
+      "counts": {
+        "js": 9,
+        "swift": 9,
+        "kotlin": 9
+      },
+      "planes": {
+        "js": [
+          "data",
+          "energy",
+          "field-lines",
+          "force-vectors",
+          "grid",
+          "off",
+          "path",
+          "streamlines",
+          "temperature"
+        ],
+        "swift": [
+          "data",
+          "energy",
+          "field-lines",
+          "force-vectors",
+          "grid",
+          "off",
+          "path",
+          "streamlines",
+          "temperature"
+        ],
+        "kotlin": [
+          "data",
+          "energy",
+          "field-lines",
+          "force-vectors",
+          "grid",
+          "off",
+          "path",
+          "streamlines",
+          "temperature"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "data",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "energy",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "field-lines",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "force-vectors",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "grid",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "off",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "path",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "streamlines",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "temperature",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        }
+      ]
+    }
+  ]
+}

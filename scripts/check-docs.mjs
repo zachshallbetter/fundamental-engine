@@ -17,10 +17,19 @@
  *   4. force tokens          (engine: forces/{index,natural,extended}.ts · docs: atoms.json forces)
  *   5. body attrs            (engine: core/scanner.ts        · docs: ATTRS[])
  *   6. field-root attrs      (engine: elements/custom-elements.json     · docs: FIELD_ROOT_ATTRS[])
+ *
+ * It also asserts the cross-platform PARITY MATRIX (data/parity-matrix.json, §5) is current: it
+ * regenerates the JS·Swift·Kotlin support matrix in-memory (via gen-parity-matrix.mjs) and fails if
+ * the committed artifact drifted — so a port gaining/losing a symbol must update the matrix.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import {
+  buildParityMatrix,
+  serializeParityMatrix,
+  PARITY_MATRIX_PATH,
+} from './gen-parity-matrix.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p) => readFileSync(resolve(root, p), 'utf8');
@@ -207,6 +216,32 @@ for (const s of surfaces) {
 
 const totalPct = totalTruth ? Math.round((totalCovered / totalTruth) * 100) : 100;
 console.log(`\n${totalCovered}/${totalTruth} of the checked surface is documented (${totalPct}%).`);
+
+// ── parity matrix freshness (§5) ─────────────────────────────────────────────────────────────────
+// Regenerate the JS·Swift·Kotlin support matrix in-memory and compare against the committed artifact.
+// A port that gains or loses a public symbol (FieldHandle method, force, render/overlay mode, option)
+// shifts the matrix — if data/parity-matrix.json wasn't regenerated to match, this fails: the docs'
+// per-platform support rows would silently drift from the ports otherwise.
+let matrixStale = false;
+try {
+  const fresh = serializeParityMatrix(await buildParityMatrix());
+  const committed = existsSync(PARITY_MATRIX_PATH) ? readFileSync(PARITY_MATRIX_PATH, 'utf8') : '';
+  if (fresh !== committed) {
+    matrixStale = true;
+    console.log(
+      committed
+        ? '\n✗ parity matrix: data/parity-matrix.json is STALE — a port surface changed. Run `pnpm gen:parity-matrix`.'
+        : '\n✗ parity matrix: data/parity-matrix.json is MISSING. Run `pnpm gen:parity-matrix`.',
+    );
+    gaps.push({ surface: 'parity matrix (data/parity-matrix.json)', missing: ['regenerate with pnpm gen:parity-matrix'] });
+  } else {
+    console.log('\n✓ parity matrix: data/parity-matrix.json is current with the JS/Swift/Kotlin surfaces.');
+  }
+} catch (err) {
+  matrixStale = true;
+  console.log(`\n✗ parity matrix: failed to build (${err.message}).`);
+  gaps.push({ surface: 'parity matrix (build error)', missing: [err.message] });
+}
 
 if (gaps.length === 0) {
   console.log('No documentation gaps in the checked surfaces. ✓');
