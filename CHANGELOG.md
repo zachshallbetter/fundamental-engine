@@ -147,6 +147,21 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   pre-#538 (`FieldOptions` in `FieldHandle.swift`); the Kotlin port already had both defaults off
   (`wavesEnabled = false`, `RenderMode.NONE`) and gains a pin test. The cross-plane conformance
   golden never passes waves and is byte-unchanged.
+- **`@fundamental-engine/core` + `@fundamental-engine/dom`:** **allocation/lookup refactors on the
+  per-frame hot paths (#991)** — correctness-preserving, aimed at GC churn rather than a headline
+  fps win (the field is fill-rate-bound; see the performance notes). (1) `SpatialHash`
+  (`packages/core/src/core/spatial-hash.ts`) now pools bin arrays across the every-frame `reindex`
+  rebuild — `clear()` empties live bins (`length = 0`) onto a free-list instead of discarding them,
+  so a re-populated cell reuses its backing array instead of allocating a fresh one per non-empty
+  cell per frame. An equivalence test pins neighbour-query results byte-identical to brute force
+  across 60 churning rebuilds. (2) `MeasurementRegistry.for()`
+  (`packages/dom/src/measurement.ts`) is now O(1) via an identity-keyed `Map` built during
+  `measure()`, replacing a linear `snapshot.find()` scan (was O(M×N)/frame when forces looked up
+  per element); the self-healing prune of disconnected elements is unchanged. (3) the off-thread
+  render bridge (`packages/dom/src/worker/offthread-bridge.ts` + `render-worker.ts`) transfers a
+  pooled particle buffer to the worker and back each frame instead of `buf.slice(...)` copying it,
+  removing the per-tick allocation. Public behaviour unchanged; benchmark deltas are indicative only
+  (headless software-raster) — confirm on real hardware.
 
 - **`@fundamental-engine/core`:** **the RC-6 contract-coverage guard now guards body attributes**
   (`packages/core/src/contract-coverage.test.ts`, #323). The meta-test already asserted every public

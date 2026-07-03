@@ -2,11 +2,19 @@
  * Off-main-thread render worker. Receives particle data each frame via postMessage,
  * draws to an OffscreenCanvas using the canvas2d API.
  * Protocol: main → worker: { type:'frame', particles: Float32Array, count: number,
- *   W: number, H: number, dpr: number, frameN: number }
- * worker → main: { type:'done', frameN: number }
+ *   W: number, H: number, dpr: number, frameN: number }  — `particles.buffer` is transferred.
+ * worker → main: { type:'done', frameN: number, particles: Float32Array } — the particle buffer is
+ *   transferred BACK so the main thread can recycle it (see offthread-bridge pool, #991).
  */
 
 let ctx: OffscreenCanvasRenderingContext2D | null = null;
+
+// This module runs in a DedicatedWorkerGlobalScope, but the package tsconfig uses the DOM lib (not
+// WebWorker), so `self` types as Window — whose postMessage overloads differ (targetOrigin first).
+// Narrow to the worker shape for the transfer-list call below.
+const workerScope = self as unknown as {
+  postMessage(message: unknown, transfer: Transferable[]): void;
+};
 
 self.addEventListener('message', (e: MessageEvent) => {
   const msg = e.data;
@@ -38,6 +46,10 @@ self.addEventListener('message', (e: MessageEvent) => {
       ctx.fill();
     }
     ctx.restore();
-    self.postMessage({ type: 'done', frameN });
+    // Transfer the particle buffer back to the main thread so it can be recycled (zero-copy pool).
+    workerScope.postMessage(
+      { type: 'done', frameN, particles },
+      particles?.buffer ? [particles.buffer] : []
+    );
   }
 });

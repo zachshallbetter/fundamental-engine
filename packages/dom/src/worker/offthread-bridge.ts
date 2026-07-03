@@ -40,30 +40,56 @@ export function attachOffthreadRender(
   let pending = false;
   let raf: number | null = null;
 
-  // Shared particle buffer — allocated once, grown if needed
-  let buf = new Float32Array(1000 * PARTICLE_STRIDE);
+  // Double-buffered particle transfer (#991). Instead of `buf.slice(...)` allocating a fresh copy
+  // every posted frame, we keep a small free-list of buffers and *transfer* ownership to the worker
+  // (zero-copy). The worker posts the buffer back on 'done', where it re-enters the pool. A pool of
+  // two lets frame N+1 fill one buffer while the worker still holds frame N's — but rendering is
+  // gated on `pending` (one frame in flight), so at most one buffer is ever out on the worker.
+  const pool: Float32Array[] = [
+    new Float32Array(1000 * PARTICLE_STRIDE),
+    new Float32Array(1000 * PARTICLE_STRIDE),
+  ];
+
+  function takeBuffer(minLen: number): Float32Array {
+    // reuse a pooled buffer if one is large enough; else allocate (and let the small one drop).
+    for (let i = 0; i < pool.length; i++) {
+      if (pool[i]!.length >= minLen) return pool.splice(i, 1)[0]!;
+    }
+    return new Float32Array(minLen * 2);
+  }
 
   function tick() {
     raf = requestAnimationFrame(tick);
-    if (pending) return; // worker still rendering previous frame
+    if (pending) return; // worker still rendering previous frame (its buffer is still out)
 
     const n = field.particleCount();
-    if (n * PARTICLE_STRIDE > buf.length) buf = new Float32Array(n * PARTICLE_STRIDE * 2);
+    const need = n * PARTICLE_STRIDE;
+    const buf = takeBuffer(need);
     field.readParticles(buf);
 
     pending = true;
-    worker.postMessage({
-      type: 'frame',
-      particles: buf.slice(0, n * PARTICLE_STRIDE),
-      count: n,
-      W: canvas.width / dpr,
-      H: canvas.height / dpr,
-      dpr,
-      frameN: frameN++,
-    });
+    // Transfer the underlying ArrayBuffer — zero-copy hand-off. The buffer is neutered on this side
+    // until the worker returns it (below), which is safe because `pending` blocks the next fill.
+    worker.postMessage(
+      {
+        type: 'frame',
+        particles: buf,
+        count: n,
+        W: canvas.width / dpr,
+        H: canvas.height / dpr,
+        dpr,
+        frameN: frameN++,
+      },
+      [buf.buffer]
+    );
   }
 
-  worker.addEventListener('message', () => { pending = false; });
+  worker.addEventListener('message', (e: MessageEvent) => {
+    // Reclaim the transferred buffer the worker sends back, and clear the in-flight gate.
+    const returned = (e.data as { particles?: Float32Array })?.particles;
+    if (returned instanceof Float32Array && pool.length < 2) pool.push(returned);
+    pending = false;
+  });
   tick();
 
   return {
