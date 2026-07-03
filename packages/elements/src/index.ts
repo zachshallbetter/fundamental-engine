@@ -33,7 +33,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {string} accent - Accent color (hex) the field draws particles and overlay in.
  * @attr {number} density - Particle-density multiplier (default `1`; `0.5` halves the count).
  * @attr {boolean} waves - Draw the background Currents (the resting wave layers + bound shimmer). OPT-IN (#979): absent = off (the bare field); present (and not `"false"`) = on.
- * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `none`. The DEFAULT is `none` (#538) — the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn. Set `render="dots"` for the particle surface.
+ * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `flow` | `knockout` | `redshift` | `blackbody` | `depth` | `none`. The DEFAULT is `none` (#538) — the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn. Set `render="dots"` for the particle surface.
  * @attr {string} overlay - Overlay readings (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines` | `grid` | `temperature` | `energy` | `path` | `data` — or a space-separated stack (readings are additive, drawn in order).
  * @attr {string} palette - Named color palette for the field.
  * @attr {string} theme - Ambient theme preset (#529): `warm` (default) | `cool` | `mono` — the heat ramp + wave baseline.
@@ -205,9 +205,31 @@ export class FieldField extends HTMLElementBase {
 
   /** render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,
    *  never draw (#297). Set `render="dots"` (or another drawing mode) to get a visible surface. */
-  get renderMode(): 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none' {
+  get renderMode():
+    | 'dots'
+    | 'trails'
+    | 'links'
+    | 'metaballs'
+    | 'voronoi'
+    | 'streamlines'
+    | 'flow'
+    | 'knockout'
+    | 'redshift'
+    | 'blackbody'
+    | 'depth'
+    | 'none' {
     const v = this.getAttribute('render');
-    return v === 'dots' || v === 'trails' || v === 'links' || v === 'metaballs' || v === 'voronoi' || v === 'streamlines' || v === 'flow'
+    return v === 'dots' ||
+      v === 'trails' ||
+      v === 'links' ||
+      v === 'metaballs' ||
+      v === 'voronoi' ||
+      v === 'streamlines' ||
+      v === 'flow' ||
+      v === 'knockout' ||
+      v === 'redshift' ||
+      v === 'blackbody' ||
+      v === 'depth'
       ? v
       : 'none';
   }
@@ -436,7 +458,21 @@ export class FieldField extends HTMLElementBase {
     this.field?.setQualityTier(tier);
   }
   /** switch the underlay render mode (§20.6) live; `none` = signals-only — stop drawing, keep the signals (#297). */
-  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'): void {
+  setRender(
+    mode:
+      | 'dots'
+      | 'trails'
+      | 'links'
+      | 'metaballs'
+      | 'voronoi'
+      | 'streamlines'
+      | 'flow'
+      | 'knockout'
+      | 'redshift'
+      | 'blackbody'
+      | 'depth'
+      | 'none',
+  ): void {
     this.field?.setRender(mode);
     this.reflect('render', mode);
   }

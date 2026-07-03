@@ -60,6 +60,10 @@ export const RENDER_MODES: readonly RenderModeInfo[] = [
   { mode: 'inspector', type: 'debug', shows: 'bodies, agents, metrics, contracts', status: 'shipped' },
   { mode: 'causality', type: 'debug', shows: 'contribution sources', status: 'shipped' },
   { mode: 'prediction', type: 'debug', shows: 'ghost trajectory', status: 'shipped' },
+  { mode: 'knockout', type: 'matter', shows: 'matter as negative space in a field wash', status: 'shipped' },
+  { mode: 'redshift', type: 'matter', shows: 'Doppler + gravitational spectral shift', status: 'shipped' },
+  { mode: 'blackbody', type: 'matter', shows: 'energy as thermal color', status: 'shipped' },
+  { mode: 'depth', type: 'matter', shows: 'the z lane — parallax, occlusion, defocus', status: 'shipped' },
 ];
 
 /** Named visualization presets (viz-taxonomy "Visualization Presets") as render-layer stacks. */

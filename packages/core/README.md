@@ -33,9 +33,10 @@ instead of wiring the host themselves. The public surface is frozen for `0.x` (s
   field-line transport `fieldflow`, and wormhole relocate `warp`).
 - **8 presets** compose those primitives into cosmology with no new engine code (`blackhole`, `star`,
   `galaxy`, `tornado`, …), plus **5 formations** that bias the whole field and **6 condition** gates.
-- **16 render modes**: matter/structure (`dots`, `trails`, `links`, `streamlines`, `metaballs`,
-  `voronoi`, `field-lines`, `heatmap`) and diagnostics (`force-vectors`, `contours`, `potential`,
-  `energy`, `topology`, `inspector`, `causality`, `prediction`).
+- **20 render modes**: matter/structure (`dots`, `trails`, `links`, `streamlines`, `metaballs`,
+  `voronoi`, `field-lines`, `heatmap`, `knockout`, `redshift`, `blackbody`, `depth`) and
+  diagnostics (`force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`,
+  `causality`, `prediction`).
 - **64 recipes** across 4 tiers: a recipe is a portable field program. `compileRecipe()` lives here
   (pure, no DOM); `applyRecipe()` and `bindData()` are in [`@fundamental-engine/dom`](../platform).
 - **A conformance framework** that fires known particles into each force and checks the measured

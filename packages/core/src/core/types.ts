@@ -682,8 +682,26 @@ export interface FieldOptions {
    *  dots), 'streamlines' (draw the force field itself — diagnostic, REPLACES the dots),
    *  'flow' (the dots AND the streamlines drawn together in the one underlay canvas —
    *  particles drifting along the visible flow, with no separate front surface and no
-   *  `mix-blend`, so it stays a single cheap layer). */
-  render?: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none';
+   *  `mix-blend`, so it stays a single cheap layer), 'knockout' (figure-ground inversion:
+   *  an accent field wash with matter punched out as negative space — clip the canvas to
+   *  type with a host CSS mask for the field-inside-letters treatment, #667), 'redshift'
+   *  (dots tinted by spectral shift — Doppler from radial velocity + gravitational red
+   *  near body wells, #668), 'blackbody' (dots tinted by energy on a thermal ramp, ember
+   *  → white → blue-white, #669), 'depth' (the z lane made visible: far-to-near painter's
+   *  sorting, perspective parallax, defocus with distance — pairs with `depth > 0`, #670). */
+  render?:
+    | 'dots'
+    | 'trails'
+    | 'links'
+    | 'metaballs'
+    | 'voronoi'
+    | 'streamlines'
+    | 'flow'
+    | 'knockout'
+    | 'redshift'
+    | 'blackbody'
+    | 'depth'
+    | 'none';
   /** first-class mass (§21.3): when true, particle mass ∝ size and body forces accelerate by `a = F/m`
    *  (heavier matter moves less). Also gives DYNAMIC bodies inertial mass ∝ rendered area (#872), so a
    *  big heading recoils slowly and a small tag snaps. Default false (unit mass, byte-identical). */
@@ -1462,7 +1480,21 @@ export interface FieldHandle {
    * backing store (the no-allocation guarantee belongs to fields CREATED with `render: 'none'`);
    * switching FROM `'none'` acquires the context lazily and sizes the backing store at that moment.
    */
-  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'): void;
+  setRender(
+    mode:
+      | 'dots'
+      | 'trails'
+      | 'links'
+      | 'metaballs'
+      | 'voronoi'
+      | 'streamlines'
+      | 'flow'
+      | 'knockout'
+      | 'redshift'
+      | 'blackbody'
+      | 'depth'
+      | 'none',
+  ): void;
   /**
    * Render field READINGS on the OVERLAY surface — in front of page content (Field Surfaces). Pairs
    * with `setRender` (the underlay); set both for an immersive look. No-op unless the field was created

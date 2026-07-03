@@ -1,3 +1,5 @@
+import type { RGB } from './math.ts';
+
 /** Opacity of a particle↔particle link by separation (§20.6 links mode). */
 export function linkAlpha(d: number, r: number, max = 0.12): number {
   if (d >= r) return 0;
@@ -147,6 +149,186 @@ export interface GridSeg {
   y1: number;
   x2: number;
   y2: number;
+}
+
+// ── Knockout (§20.6 / #667) — figure-ground inversion: the field is the sheet ───────
+//
+// The knockout mode paints the field as a solid accent wash and draws matter as NEGATIVE
+// space: each particle erases (`destination-out`) a feathered hole through everything
+// beneath it, so the swarm reads as punched-out absence rather than glowing presence — the
+// print-knockout treatment. §11-safe by construction: matter never assembles into
+// letterforms. For the "field visible only inside letters" treatment the HOST clips the
+// canvas to real type with a CSS mask/clip-path — the type stays type, the field shows
+// through it.
+
+/**
+ * Radius of the hole a particle punches through the knockout wash (§20.6 knockout).
+ * Scales with the particle's draw size, breathes with heat, and recedes with the depth
+ * factor `zk` (exactly 1 in a flat field); floored at 2 px so matter always reads.
+ */
+export function knockoutHoleRadius(size: number, heat: number, zk = 1): number {
+  const r = (size * 2.6 + heat * 2.5) * zk;
+  return r < 2 ? 2 : r;
+}
+
+// ── Redshift (§20.6 / #668) — Doppler + gravitational spectral tint ─────────────────
+//
+// The dots geometry tinted by SPECTRAL SHIFT instead of the heat ramp: the Doppler term
+// reads each particle's radial velocity against an observer at the viewport centre
+// (receding reds, approaching blues, normalized by the unit system's velocity cap `env.c`),
+// and the gravitational term reads proximity to body wells — light climbing out of a well
+// loses energy, so a well only ever reddens. The §20.6 "relativistic accretion-disk" look.
+
+/**
+ * Signed radial velocity of a particle at `(px, py)` moving `(vx, vy)`, relative to an
+ * observer at `(ox, oy)`: positive = receding, negative = approaching, 0 at the observer.
+ */
+export function radialVelocity(px: number, py: number, vx: number, vy: number, ox: number, oy: number): number {
+  const dx = px - ox;
+  const dy = py - oy;
+  const d = Math.hypot(dx, dy);
+  if (d < 1e-6) return 0;
+  return (dx * vx + dy * vy) / d;
+}
+
+/**
+ * Doppler shift factor for a radial velocity `vr`, normalized by the unit system's
+ * velocity cap `c` (§20.10): `vr / (0.35·c)` clamped to [−1, 1]. The 0.35 gain puts
+ * typical field speeds (a few px/frame against c = 12) on a readable spectral scale.
+ */
+export function dopplerShift(vr: number, c: number): number {
+  if (c <= 0) return 0;
+  const s = vr / (0.35 * c);
+  return s < -1 ? -1 : s > 1 ? 1 : s;
+}
+
+/**
+ * Gravitational well weight at squared distance `d2` inside a body of squared range `r2`:
+ * 1 at the core → 0 at the range edge (linear in distance), 0 outside or for no range.
+ */
+export function wellWeight(d2: number, r2: number): number {
+  if (r2 <= 0 || d2 >= r2) return 0;
+  return 1 - Math.sqrt(d2 / r2);
+}
+
+/**
+ * The net spectral shift: the signed Doppler term plus the gravitational term (a well
+ * only reddens — weighted 0.6 so a deep well reads without drowning motion), clamped to
+ * [−1, 1]. −1 = full blueshift, 0 = at rest, +1 = full redshift.
+ */
+export function redshiftShift(doppler: number, well: number): number {
+  const s = doppler + well * 0.6;
+  return s < -1 ? -1 : s > 1 ? 1 : s;
+}
+
+const SHIFT_BLUE: RGB = [96, 160, 255]; // approaching
+const SHIFT_REST: RGB = [226, 230, 240]; // at rest
+const SHIFT_RED: RGB = [255, 72, 48]; // receding
+
+/**
+ * Spectral color for a shift ∈ [−1, 1]: blueshift → rest white → redshift, piecewise
+ * linear through the rest point. Writes into a caller-owned `out` (zero allocation on
+ * the draw path); returns `out`.
+ */
+export function redshiftRGBInto(out: RGB, s: number): RGB {
+  const t = s < -1 ? -1 : s > 1 ? 1 : s;
+  const from = t < 0 ? SHIFT_BLUE : SHIFT_REST;
+  const to = t < 0 ? SHIFT_REST : SHIFT_RED;
+  const k = t < 0 ? t + 1 : t;
+  out[0] = from[0] + (to[0] - from[0]) * k;
+  out[1] = from[1] + (to[1] - from[1]) * k;
+  out[2] = from[2] + (to[2] - from[2]) * k;
+  return out;
+}
+
+// ── Blackbody (§20.6 / #669) — energy on a thermal ramp ─────────────────────────────
+//
+// Each particle tinted by its ENERGY on a Planckian-ish ramp — near-black ember → deep
+// red → orange → warm white → blue-white (≈1000 K → 10000 K) — with brightness rising
+// with temperature, so cold matter barely glows and hot matter reads white. Energy =
+// carried heat + kinetic (|v|² against a 0.3·c reference). Physics caveat canon applies:
+// this is a *reading* of the designed unit system, not radiometry.
+
+/**
+ * Normalized blackbody temperature ∈ [0, 1] from a particle's velocity and carried heat.
+ * Kinetic term saturates at `|v| = 0.3·c` (a particle at a third of the velocity cap is
+ * already white-hot); heat and kinetic each contribute up to 0.55 and the sum clamps.
+ */
+export function blackbodyT(vx: number, vy: number, heat: number, c: number): number {
+  const vref = 0.3 * c;
+  const k = vref > 0 ? (vx * vx + vy * vy) / (vref * vref) : 0;
+  const t = 0.55 * heat + 0.55 * (k > 1 ? 1 : k);
+  return t < 0 ? 0 : t > 1 ? 1 : t;
+}
+
+/** The thermal ramp stops, evenly spaced over t ∈ [0, 1] (≈1000 K → 10000 K). */
+const BLACKBODY_STOPS: readonly RGB[] = [
+  [12, 2, 0], // cold ember, nearly black
+  [130, 24, 2], // deep red
+  [235, 100, 10], // orange
+  [255, 180, 90], // warm yellow
+  [255, 236, 200], // warm white
+  [201, 218, 255], // blue-white
+];
+
+/**
+ * Blackbody color for a normalized temperature t ∈ [0, 1] — piecewise linear through
+ * `BLACKBODY_STOPS`. Writes into a caller-owned `out` (zero allocation on the draw
+ * path); returns `out`.
+ */
+export function blackbodyRGBInto(out: RGB, t: number): RGB {
+  const tt = t < 0 ? 0 : t > 1 ? 1 : t;
+  const scaled = tt * (BLACKBODY_STOPS.length - 1);
+  const i = Math.min(Math.floor(scaled), BLACKBODY_STOPS.length - 2);
+  const k = scaled - i;
+  const from = BLACKBODY_STOPS[i]!;
+  const to = BLACKBODY_STOPS[i + 1]!;
+  out[0] = from[0] + (to[0] - from[0]) * k;
+  out[1] = from[1] + (to[1] - from[1]) * k;
+  out[2] = from[2] + (to[2] - from[2]) * k;
+  return out;
+}
+
+// ── Depth (§20.6 / #670) — the z lane made visible (2.5D) ───────────────────────────
+//
+// Particles are sorted far-to-near (painter's algorithm, source-over so near matter
+// occludes far), projected toward the viewport centre by a perspective scale (motion
+// parallax emerges as z integrates), and defocused with distance — a soft halo plus a
+// faded core, the cheap draw-time stand-in for blur (no `ctx.filter`, which costs a
+// composited surface per particle). The z lane is symmetric about the page plane
+// (z-axis.md — depth is |z|), so both directions recede; in a flat field every factor
+// is exactly 1.
+
+/**
+ * Perspective scale for a particle at depth `|z|` with focal length `focal` (px):
+ * 1 on the page plane, shrinking toward 0 as matter recedes into the volume.
+ */
+export function depthScale(z: number, focal: number): number {
+  const az = z < 0 ? -z : z;
+  return focal / (focal + az);
+}
+
+/** Project one axis value toward the projection `center` by the perspective `scale`. */
+export function depthProject(v: number, center: number, scale: number): number {
+  return center + (v - center) * scale;
+}
+
+/**
+ * Depth-of-field alpha factor for a normalized depth `zn = |z|/depth` ∈ [0, 1]:
+ * 1 on the page plane → 0.45 at the volume edge (the dots-mode recession constant).
+ */
+export function depthAlpha(zn: number): number {
+  const z = zn < 0 ? 0 : zn > 1 ? 1 : zn;
+  return 1 - 0.55 * z;
+}
+
+/**
+ * Defocus halo radius (px) for a normalized depth `zn = |z|/depth` ∈ [0, 1] — 0 on the
+ * focal plane, up to 4.5 px of extra soft halo at the volume edge.
+ */
+export function depthBlurRadius(zn: number): number {
+  const z = zn < 0 ? 0 : zn > 1 ? 1 : zn;
+  return 4.5 * z;
 }
 
 /**
