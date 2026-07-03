@@ -4,6 +4,10 @@ import com.fundamental.core.engine.AtomPayload
 import com.fundamental.core.engine.Box
 import com.fundamental.core.math.Vec3
 import com.fundamental.core.runtime.BodySpec
+import com.fundamental.core.runtime.FieldEvent
+import com.fundamental.core.runtime.FieldEventPayload
+import com.fundamental.core.runtime.FieldHandle
+import com.fundamental.core.runtime.OverlayRenderer
 import com.fundamental.core.runtime.PARTICLE_STRIDE
 import com.fundamental.core.runtime.createField
 import kotlin.test.Test
@@ -161,5 +165,96 @@ class FieldHandleTests {
         // a smaller buffer truncates to capacity
         val small = FloatArray(3 * PARTICLE_STRIDE)
         assertEquals(3, f.readParticles(small))
+    }
+
+    // ── #818 readParticleIds — stable per-particle identity ─────────────────────────────
+    @Test
+    fun readParticleIdsAreStableAcrossFramesAndParallelReadParticles() {
+        val f = createField(300f, 300f, particleCount = 10, seed = 8)
+        val ids = IntArray(10)
+        val n = f.readParticleIds(ids)
+        assertEquals(10, n, "returns the particle count")
+        // ids are assigned at pool creation, one per slot, all distinct
+        assertEquals(10, ids.toSet().size, "every particle carries a distinct id")
+
+        // parallel to readParticles: same pool order, so ids[i] identifies the particle written at
+        // stride offset i*5 in readParticles — driving frames does not renumber a live slot.
+        val before = ids.copyOf()
+        repeat(30) { f.tick() }
+        val after = IntArray(10)
+        f.readParticleIds(after)
+        assertTrue(before.contentEquals(after), "ids survive across ticks (stable identity)")
+
+        // a smaller buffer truncates to capacity but still reports the true count
+        val small = IntArray(3)
+        assertEquals(10, f.readParticleIds(small), "count is reported even when the buffer truncates")
+    }
+
+    // ── #819 readParticleChannels — per-particle field-channel readout ──────────────────
+    @Test
+    fun readParticleChannelsPacksNamedGridSamplesAtEachParticle() {
+        val f = createField(400f, 400f, particleCount = 8, seed = 3)
+        // open two scalar grids and write a known constant into each so the sampled value is predictable.
+        val a = f.grid("a"); val b = f.grid("b")
+        for (p in f.controller.particles) { a.deposit(p.position, 1f); b.deposit(p.position, 2f) }
+
+        val names = listOf("a", "b")
+        val out = FloatArray(8 * names.size)
+        val n = f.readParticleChannels(names, out)
+        assertEquals(8, n, "returns the particle count")
+        // stride = names.size; each particle sees a positive sample from a grid it splatted into.
+        for (i in 0 until 8) {
+            assertTrue(out[i * 2] > 0f, "channel a sampled non-zero at particle $i")
+            assertTrue(out[i * 2 + 1] >= out[i * 2], "channel b (splatted 2×) samples at least channel a")
+        }
+
+        // a buffer too small for the next full stride stops early but reports the true count.
+        val small = FloatArray(3 * names.size)
+        assertEquals(8, f.readParticleChannels(names, small), "count reported even when the buffer truncates")
+    }
+
+    // ── #817 on(event, handler) — the discrete event bus ────────────────────────────────
+    @Test
+    fun onTickFiresEachFrameAndSubscriptionCancels() {
+        val f = createField(300f, 300f, particleCount = 5, seed = 1)
+        var ticks = 0
+        val sub = f.on(FieldEvent.TICK) { ticks++ }
+        repeat(4) { f.tick() }
+        assertEquals(4, ticks, "TICK fires once per frame while subscribed")
+
+        sub.cancel()
+        repeat(3) { f.tick() }
+        assertEquals(4, ticks, "cancel() removes the listener — no further deliveries")
+    }
+
+    @Test
+    fun onBodyAddDeliversTheBodyPayload() {
+        val f = createField(300f, 300f, particleCount = 5, seed = 1)
+        var got: FieldEventPayload? = null
+        f.on(FieldEvent.BODY_ADD) { got = it }
+        val h = f.addBody(BodySpec(tokens = listOf("attract"), rect = { Box(center = Vec3(150f, 150f, 0f)) }))
+        assertNotNull(got, "BODY_ADD fired on addBody")
+        assertEquals(FieldEvent.BODY_ADD, got!!.event)
+        assertTrue(got!!.body === h.body, "the payload carries the added body")
+    }
+
+    // ── #820 registerOverlay — named renderer registry the host drives ──────────────────
+    @Test
+    fun registerOverlayIsHeldInTheRegistryAndRemovable() {
+        val f = createField(300f, 300f, particleCount = 5, seed = 1)
+        var rendered = 0
+        val renderer = object : OverlayRenderer {
+            override fun render(handle: FieldHandle) { rendered++ }
+        }
+        f.registerOverlay("diag", renderer)
+        assertTrue(f.overlayRegistry.containsKey("diag"), "the renderer is held under its key")
+        assertTrue(f.overlayRegistry["diag"] === renderer, "the exact renderer is retained")
+
+        // the host drives the registry each frame — simulate one host draw pass.
+        f.overlayRegistry.values.forEach { it.render(f) }
+        assertEquals(1, rendered, "a host draw pass invokes the registered renderer")
+
+        f.removeOverlay("diag")
+        assertTrue(f.overlayRegistry.isEmpty(), "removeOverlay drops it")
     }
 }
