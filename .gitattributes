@@ -1,0 +1,6 @@
+# Auto-resolve CHANGELOG conflicts by keeping both sides' entries. The [Unreleased]
+# section is append-only, so parallel PRs that each add a bullet must NOT block each
+# other on a merge conflict. GitHub honours the built-in `union` merge driver here, so
+# concurrent PRs merge without the manual keep-both rebase dance. (Motivated by the
+# 2026-07 batch landing where ~25 PRs cascaded on this file.)
+CHANGELOG.md merge=union
