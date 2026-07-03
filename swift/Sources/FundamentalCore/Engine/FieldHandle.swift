@@ -79,6 +79,17 @@ public struct FieldOptions {
     public var heatmap: Bool
     public var overlay: OverlayInput
     public var separation: Float
+    /// DECLARED ambient bias (Wallpaper Rule, JS #978): the resting `ambient` formation's tangential
+    /// swirl injected into `attract` bodies — the gentle spiral free matter traces around a well at
+    /// rest. Formerly a hardcoded `0.1` in the ambient formation preset (a content-independent "gray
+    /// debt"); now a documented dial defaulting to that value, so the resting field is byte-identical.
+    /// Set `0` for a purely radial resting attract. Applies to the `ambient` formation only.
+    public var ambientOrbit: Float
+    /// DECLARED ambient bias (Wallpaper Rule, JS #978): the resting `ambient` formation's `wander`
+    /// drift — the per-particle jitter that keeps resting matter alive rather than frozen. Formerly a
+    /// hardcoded `1.0` in the ambient preset; now a documented dial defaulting to that value (behavior
+    /// unchanged). Lower for a calmer rest, `0` to still it. Applies to the `ambient` formation only.
+    public var ambientWander: Float
     /// How matter is drawn — `.dot` (default), `.star(...)`, `.polygon(...)`, or `.custom(...)`. The
     /// shape rides the physics: each particle's size + heat scale it. Only affects the matter render
     /// modes (`dots` / `trails` / `links`).
@@ -125,6 +136,8 @@ public struct FieldOptions {
         causality: Bool = false,
         heatmap: Bool = false,
         overlay: OverlayInput = .single(.off),
+        ambientOrbit: Float = 0.1,
+        ambientWander: Float = 1.0,
         particleShape: ParticleShape = .dot,
         particleSize: Float = 1.0,
         particleGlow: Float = 1.0,
@@ -149,6 +162,8 @@ public struct FieldOptions {
         self.causality = causality
         self.heatmap = heatmap
         self.overlay = overlay
+        self.ambientOrbit = ambientOrbit
+        self.ambientWander = ambientWander
         self.particleShape = particleShape
         self.particleSize = particleSize
         self.particleGlow = particleGlow

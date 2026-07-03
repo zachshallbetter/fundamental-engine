@@ -107,6 +107,10 @@ final class FieldEngine: FieldHandle {
         return resolved
     }
     private var formTarget: Formation
+    /// The resting `ambient` formation with its two DECLARED dials applied (JS #978). Everything that
+    /// targets `ambient` — the initial `formTarget`, `env.form`, and the conductor's idle drift-back —
+    /// resolves through this so the override is consistent. Defaults reproduce the ambient preset.
+    private let ambientForm: Formation
     /// The active formation's id — reported as each body's `activeFormations` by `query()`. Tracks the
     /// name passed to `setFormation`; defaults to `"ambient"` (the initial preset). Mirrors the JS
     /// `formationName` local in `field.ts` and the Kotlin port's `controller.formationName`.
@@ -198,7 +202,14 @@ final class FieldEngine: FieldHandle {
         self.store = FieldStore()
         self.env = Env()
         self.accent = hexToRgb(options.accent ?? "#4da3ff")
-        self.formTarget = formation(named: "ambient")!.preset
+        // DECLARED ambient bias (Wallpaper Rule, JS #978): the resting swirl (`orbit`) and drift
+        // (`wander`), formerly hardcoded (0.1 / 1.0) in the ambient preset. Defaulting to those values
+        // keeps the resting field byte-identical; the two options let a host zero/derive them.
+        var resolvedAmbient = formation(named: "ambient")!.preset
+        resolvedAmbient.orbit = options.ambientOrbit
+        resolvedAmbient.wander = options.ambientWander
+        self.ambientForm = resolvedAmbient
+        self.formTarget = resolvedAmbient
         self.journey = Self.buildJourney(palette: options.palette, accent: accent)
         let density = max(options.density ?? 1, 0)
         self.spawnCeiling = Int((130 * density).rounded()) * 4
@@ -791,7 +802,8 @@ final class FieldEngine: FieldHandle {
 
     func setFormation(_ name: String) {
         if let def = formation(named: name) {
-            formTarget = def.preset
+            // `ambient` carries the two DECLARED dials (JS #978); other formations keep authored presets.
+            formTarget = name == "ambient" ? ambientForm : def.preset
             formationName = name // query() reports this as each body's activeFormations
         }
     }
