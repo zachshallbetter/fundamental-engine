@@ -7,6 +7,8 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+## [0.9.3] — 2026-07-03
+
 ### Fixed
 
 - `packages/react/tsconfig.json` now excludes `*.test.tsx`/`*.spec.*` (not just `*.test.ts`), so a JSX test file no longer compiles into `dist/` and gets picked up as a stale `node --test` artifact (#1006).

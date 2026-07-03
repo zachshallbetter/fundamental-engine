@@ -1,6 +1,6 @@
 {
   "name": "@fundamental-engine/dom",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "The platform-adjacent layer for Fundamental — native-first registries for measurement, semantic state, feedback, relationships, visual-semantic bindings, and overlays. The browser primitives Fundamental wishes existed, built on the ones it has.",
   "type": "module",
   "license": "MIT",
