@@ -89,22 +89,7 @@ export function resetNoOpWarnings(): void {
   warnedOnce.clear();
 }
 
-/**
- * Dev-only, deduped `console.warn` for a migration-era ALIAS being exercised (#709). The
- * `forces-ui → field-ui → Fundamental` rename left a few living aliases (the `forces:*` event
- * mirror, the deprecated `@fundamental-engine/platform` package). They keep working through RC1 /
- * `1.0` but are **removed at 1.0**; this warn nudges consumers to the canonical form. Same dev gate
- * and dedup set as {@link devWarnNoOp} — no-op in production, warns at most once per `id`, never
- * throws. `id` is the dedup key (e.g. the event name or package name), so a mirror fired every frame
- * warns exactly once. See docs/canonical/deprecation-plan.md.
- */
-export function devWarnDeprecated(id: string, message: string): void {
-  if (!CHECKS) return;
-  const key = `DEPRECATED_ALIAS:${id}`;
-  if (warnedOnce.has(key)) return;
-  warnedOnce.add(key);
-  console.warn(`[Fundamental:DEPRECATED_ALIAS] ${message}`);
-}
+
 
 // ── guards ──────────────────────────────────────────────────────────────────────────────────
 

@@ -60,7 +60,7 @@ const ZERO_RECT: HarnessRect = { left: 0, top: 0, width: 0, height: 0 };
  * One element in the harness scan root — a hand-rolled stand-in answering the exact surface the
  * engine reads off a DOM element. The fields the frame loop mutates (transforms via `style`, a11y
  * via `aria-hidden`/`inert`, the `data-fx-cap` edge flag) are observable so tests can assert them,
- * and every `field:*` / `forces:*` event the engine dispatches is recorded in {@link events}.
+ * and every `field:*` event the engine dispatches is recorded in {@link events}.
  */
 export class HarnessElement {
   /** mutable layout box; the engine reads it through `getBoundingClientRect`. Move it to relocate. */
@@ -69,7 +69,7 @@ export class HarnessElement {
   id: string;
   className = '';
   isConnected = true;
-  /** every `dispatchEvent`'d event type, in order (e.g. `'field:captured'`, `'forces:captured'`). */
+  /** every `dispatchEvent`'d event type, in order (e.g. `'field:captured'`). */
   readonly events: string[] = [];
   /** every dispatched event with its detail, in order — for asserting the payload. */
   readonly dispatched: Array<{ type: string; detail: unknown }> = [];

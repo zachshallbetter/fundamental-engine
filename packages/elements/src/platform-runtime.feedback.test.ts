@@ -31,13 +31,13 @@ test('density routes to --d and --field-density (forces mirror is FeedbackRegist
   assert.deepEqual(sets[0]!.vars, { '--d': '0.500', '--field-density': '0.500' }, 'matches legacy toFixed(3) formatting');
 });
 
-test('load routes to --load + --mass; heatmap to --field-heatmap-density', () => {
+test('load routes to --load; heatmap to --field-heatmap-density', () => {
   const { platform, sets } = fakePlatform();
   const sink = makeFeedbackSink(platform);
   const el = {} as HTMLElement;
   sink(el, { load: 0.3, heatmapDensity: 0.2 });
   const flat = Object.assign({}, ...sets.map((s) => s.vars));
-  assert.deepEqual(flat, { '--load': '0.300', '--mass': '0.300', '--field-heatmap-density': '0.200' });
+  assert.deepEqual(flat, { '--load': '0.300', '--field-heatmap-density': '0.200' });
 });
 
 test('lit writes --lit, sets state, and registers the threshold exactly once per element', () => {

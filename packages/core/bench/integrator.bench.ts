@@ -68,7 +68,7 @@ function makeBody(tokens: string[], cx: number, cy: number): Body {
   };
 }
 
-const TOKENS = ['attract', 'repel', 'vortex', 'stream', 'drag', 'spring', 'gravity', 'wind'];
+const TOKENS = ['attract', 'repel', 'swirl', 'stream', 'viscosity', 'tether', 'gravity', 'wind'];
 
 // a small deterministic PRNG so runs are comparable (no Math.random)
 function mulberry(seed: number): () => number {

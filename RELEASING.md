@@ -5,9 +5,9 @@ How versions are cut and published. The mechanical detail lives in
 
 ## Versioning policy
 
-The seven published packages — `@fundamental-engine/core`, `@fundamental-engine/dom`,
-`@fundamental-engine/platform` (the deprecated `dom` alias), `@fundamental-engine/elements`,
-`@fundamental-engine/react`, `@fundamental-engine/vanilla`, `@fundamental-engine/three` — are versioned
+The six published packages — `@fundamental-engine/core`, `@fundamental-engine/dom`,
+`@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`,
+`@fundamental-engine/three` — are versioned
 **together**. (The umbrella meta-packages `@fundamental-engine/kit` / `fundamental-engine` were retired in
 0.7.0 and are no longer published — they are kept `private` in the workspace. `@fundamental-engine/three`
 declares `three` as a peer dependency.) They follow [Semantic Versioning](https://semver.org):

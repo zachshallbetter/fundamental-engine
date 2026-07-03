@@ -46,12 +46,11 @@ test('heatmapDensity writes --field-heatmap-density', () => {
   ]);
 });
 
-test('load writes --load then the --mass back-compat alias', () => {
+test('load writes --load', () => {
   const el = fakeEl();
   defaultFeedbackSink(el, { load: 1 });
   assert.deepEqual(el.writes, [
     ['--load', '1.000'],
-    ['--mass', '1.000'],
   ]);
 });
 
@@ -67,7 +66,7 @@ test('the full writeFeedback channel set lands in the legacy order: density, hea
   defaultFeedbackSink(el, { density: 0.25, heatmapDensity: 0.0625, load: 0.75 });
   assert.deepEqual(
     el.writes.map(([n]) => n),
-    ['--d', '--field-density', '--field-heatmap-density', '--load', '--mass'],
+    ['--d', '--field-density', '--field-heatmap-density', '--load'],
   );
 });
 
@@ -128,6 +127,6 @@ test('thermo channels sit after load and before lit in a full write (the documen
   defaultFeedbackSink(el, { density: 0.1, load: 0.2, entropy: 0.3, coherence: 0.7, temperature: 0.4, lit: 0.1 });
   assert.deepEqual(
     el.writes.map(([n]) => n),
-    ['--d', '--field-density', '--load', '--mass', '--entropy', '--coherence', '--temperature', '--lit'],
+    ['--d', '--field-density', '--load', '--entropy', '--coherence', '--temperature', '--lit'],
   );
 });

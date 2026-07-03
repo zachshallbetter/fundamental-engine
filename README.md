@@ -471,7 +471,6 @@ nothing stable is renamed or removed without a major. See [API stability](docs/c
 |---|---|
 | [`@fundamental-engine/core`](packages/core) | renderer-agnostic field runtime: bodies, agents, forces, FieldRecipes, Field Contracts, integrator, diagnostics, snapshots, query, conformance |
 | [`@fundamental-engine/dom`](packages/dom) | web host adapter: `browserHost()`, the FrameScheduler, measurement / state / feedback / relationships / visual bindings / overlays, `applyRecipe()` / `bindData()`, and `lintPlatform()` |
-| [`@fundamental-engine/platform`](packages/platform) | **deprecated alias** of `@fundamental-engine/dom` — re-exports it with a deprecation notice so existing imports keep working; migrate to `dom` |
 | [`@fundamental-engine/vanilla`](packages/vanilla) | framework-free web door: `FieldField`, `mountField()`, and a host-bundled `createField()`, no custom element |
 | [`@fundamental-engine/elements`](packages/elements) | the `<field-root>` and `<field-cell>` custom elements (`<field-root>` is also registered as `<field-field>`) |
 | [`@fundamental-engine/react`](packages/react) | the `<FieldField>` component and the `useFieldField()` hook |

@@ -844,7 +844,7 @@ export interface FeedbackChannels {
   density?: number;
   /** the ambient heatmap density at the body → `--field-heatmap-density`. */
   heatmapDensity?: number;
-  /** sink accretion fill ∈ [0,1] → `--load` / `--mass`. */
+  /** sink accretion fill ∈ [0,1] → `--load`. */
   load?: number;
   /** cross-boundary lit signal ∈ [0,1] → `--lit` + thresholded `field:lit` / `field:dim`. */
   lit?: number;
