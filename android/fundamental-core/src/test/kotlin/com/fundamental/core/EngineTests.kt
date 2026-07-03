@@ -80,6 +80,25 @@ class EngineTests {
     }
 
     @Test
+    fun frozenStepDrainsDensityInsteadOfLeavingItStale() {
+        // #967: under reduced-motion / maxMotionBudget 0 the sim freezes (dt = 0). writeFeedback()
+        // still runs every frame, so if the frozen step returned before re-zeroing b.count, `--d`
+        // would report presence from a sim that is no longer running. The frozen step must re-zero.
+        val sim = Sim()
+        val c = Vec3(3000f, 2000f, 0f)
+        val body = Body(tokens = listOf("attract"), strength = 1f, range = 600f, box = Box(center = c)).apply {
+            isVisible = true
+            feedback = true
+        }
+        ring(c, 150f, 24).forEach { sim.store.add(it) }
+        sim.frame(listOf(body)) // live tick accumulates density
+        assertTrue(body.count > 0f, "live step accumulates a non-zero count")
+        sim.env.dt = 0f // motion freezes
+        sim.frame(listOf(body))
+        assertEquals(0f, body.count, "a dt=0 step re-zeros the count instead of holding the stale live value")
+    }
+
+    @Test
     fun frictionBleedsKineticEnergy() {
         val sim = Sim()
         repeat(50) { i -> sim.store.add(Particle(position = Vec3(1000f + i * 10f, 2000f, 0f), velocity = Vec3(6f, -4f, 0f))) }

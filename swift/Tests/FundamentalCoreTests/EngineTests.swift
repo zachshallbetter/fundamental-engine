@@ -177,6 +177,22 @@ struct IntegratorTests {
         #expect(b.thermo != nil)
     }
 
+    @Test("frozen step (dt = 0, reduced motion) drains the density count instead of leaving it stale (#967)")
+    func frozenStepDrainsDensity() {
+        let store = FieldStore()
+        let b = makeBody(["attract"], at: Vec3(400, 300, 0), range: 200)
+        b.feedback = true
+        store.add(Particle(position: Vec3(420, 300, 0))) // within range/2 = 100
+        let env = makeEnv()
+        stepOnce(store: store, bodies: [b], env: env) // live tick accumulates density
+        #expect(b.count > 0)
+        // motion freezes (reduced-motion / maxMotionBudget 0 → dt = 0). writeFeedback() runs every
+        // frame regardless, so a stale count would keep `--d` elevated from a sim no longer running.
+        env.dt = 0
+        stepOnce(store: store, bodies: [b], env: env)
+        #expect(b.count == 0) // re-zeroed, not the stale live value
+    }
+
     @Test("invisible bodies exert no force")
     func invisibleBodies() {
         let store = FieldStore()

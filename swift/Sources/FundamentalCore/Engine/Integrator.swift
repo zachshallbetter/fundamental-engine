@@ -105,6 +105,17 @@ private func applyForce(_ f: any Force, _ b: Body, _ p: Particle, _ env: Env, _ 
     p.velocity = before + (p.velocity - before) * inv
 }
 
+/// Zero the per-frame density + thermodynamic accumulators on every body. Runs at the top of every
+/// step — including the frozen (`dt == 0`) path (#967) — so `count` never carries a stale value into
+/// writeFeedback(). The subsequent particle pass re-accumulates when the sim is live; when frozen the
+/// counts stay at 0 and `--d` drains to the engagement-only baseline.
+private func resetDensity(_ bodies: [Body]) {
+    for b in bodies {
+        b.count = 0
+        if b.thermo != nil { b.thermo = Body.Thermo() }
+    }
+}
+
 public func step(_ input: StepInput) {
     let store = input.store
     let bodies = input.bodies
@@ -112,7 +123,17 @@ public func step(_ input: StepInput) {
     let forces = input.forces
     let conditions = input.conditions
     let dt = env.dt
-    if dt == 0 { return }
+    if dt == 0 {
+        // Motion is frozen (reduced-motion / maxMotionBudget 0): skip integration, but the
+        // density/thermo bookkeeping MUST still drain. writeFeedback() runs unconditionally every
+        // frame, easing `d` toward feedbackTarget(count, on). If we returned before zeroing the
+        // counts, `count` would hold its last live value forever — `--d`/`--field-density` would
+        // report particle presence from a sim that is no longer running (#967). The doctrine is
+        // "motion freezes; the signals stay honest": engagement (`on`, dt-independent) still reads
+        // truthfully, so `d` eases to feedbackTarget(0, on) — the engagement-only baseline.
+        resetDensity(bodies)
+        return
+    }
     // the opt-in second-order scheme (#659) — see the header doc for the math + approximations.
     let verlet = env.integrator == .velocityVerlet
     // Under `.fixed` / `.velocityVerlet` the per-step decays scale with dt (`FRICTION^dt`, doc 04
@@ -129,10 +150,7 @@ public func step(_ input: StepInput) {
     // expose the net structure field so field-following forces can read the superposition.
     env.fieldAt = { p in netField(bodies: bodies, forces: forces, at: p) }
 
-    for b in bodies {
-        b.count = 0
-        if b.thermo != nil { b.thermo = Body.Thermo() }
-    }
+    resetDensity(bodies)
 
     // visible `screen` bodies: each damps OTHER bodies' forces on matter inside its range.
     // No screens (the common case) ⇒ nil and the whole pass is skipped — zero cost.
