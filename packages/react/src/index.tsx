@@ -13,7 +13,7 @@
  * law); call `field.scan()` from `onReady` after you render new bodies.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactElement, RefObject } from 'react';
 import { FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions, type OverlayInput } from '@fundamental-engine/core';
 import {
@@ -182,8 +182,29 @@ export function useForcesData<T>(
   bindingRef: RefObject<DataBinding<T> | null>;
   inspect: () => DataBindingInspection | null;
 } {
-  const containerRef = useRef<HTMLDivElement>(null);
   const bindingRef = useRef<DataBinding<T> | null>(null);
+  // The host node is tracked in STATE, not just a ref, so the mount effect RE-RUNS the moment the
+  // node attaches. A plain `useRef` read once in a `[]`-dep effect stays null forever if the
+  // container mounts after the first effect pass (the #989 bug) — the effect never re-runs.
+  const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
+  // A STABLE RefObject-shaped view (built once) keeps the returned contract unchanged and avoids
+  // detach/reattach churn: React assigns `.current` on attach (node) / detach (null) in the commit
+  // phase; the setter records the node and — on a real change — flips state to wake the effect.
+  const refView = useRef<RefObject<HTMLDivElement | null>>(undefined as unknown as RefObject<HTMLDivElement | null>);
+  if (!refView.current) {
+    let node: HTMLDivElement | null = null;
+    refView.current = {
+      get current() {
+        return node;
+      },
+      set current(next: HTMLDivElement | null) {
+        if (next === node) return;
+        node = next;
+        setContainerEl(next);
+      },
+    };
+  }
+  const containerRef = refView.current;
   // latest mapper/options/records held in refs so the binding can read them without re-creating
   // the binding (and re-mounting every body) when an inline closure changes identity each render.
   const mapperRef = useRef(mapper);
@@ -193,9 +214,10 @@ export function useForcesData<T>(
   const recordsRef = useRef(records);
   recordsRef.current = records;
 
-  // create/destroy the binding when the container element appears/disappears.
+  // create/destroy the binding when the container element appears/disappears — keyed on the node,
+  // so a container that attaches AFTER first render still gets bound (the null-first-pass fix).
   useEffect(() => {
-    const container = containerRef.current;
+    const container = containerEl;
     if (!container) return;
     const binding = bindData(container, recordsRef.current, (rec, i) => mapperRef.current(rec, i), optionsRef.current);
     bindingRef.current = binding;
@@ -203,8 +225,8 @@ export function useForcesData<T>(
       binding.destroy();
       bindingRef.current = null;
     };
-    // mount once per container; data flows through update() in the effect below.
-  }, []);
+    // re-mount when the container node identity changes; data flows through update() in the effect below.
+  }, [containerEl]);
 
   // push every records change into the live binding (diff by id is bindData's job).
   useEffect(() => {

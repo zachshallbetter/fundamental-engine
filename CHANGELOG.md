@@ -84,6 +84,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   test pins a seeded thermal + discharge run to a bit-identical fingerprint across runs. Default
   (unseeded) behavior is unchanged; the conformance harness's global-swap seeding still applies
   through the fallback.
+- **`@fundamental-engine/dom` + `@fundamental-engine/react`:** hardening pass on the X-Ray overlay
+  and `useForcesData` (#989). **`mountXRay`** (`packages/dom/src/x-ray.ts`) no longer builds its panel
+  with `innerHTML` — an interpolated `hotkey` value (or any readout) was an injection surface; the
+  panel is now assembled from typed element/`textContent` nodes, so a hotkey like `<img onerror=…>`
+  renders as inert text and injects no element. It also mounts against the container's own document
+  (`ownerDocument`) instead of the global `document`/`body` (works in an iframe / popup / test DOM),
+  and probes the optional `sample`/`energy` readouts through typed structural guards rather than
+  `(field as any)`. **`useForcesData`** (`packages/react/src/index.tsx`) no longer skips binding
+  forever when `containerRef.current` is null on the first effect pass: the host node is tracked in
+  state and the mount effect re-runs the moment the container attaches. New mount/teardown +
+  injection-inert tests for X-Ray; new null-first-pass retry tests for the hook.
 
 - **`@fundamental-engine/three`:** **`threeBackend`'s overlay `z` now offsets the projected field
   plane instead of being an absolute world z (#949).** The backend pinned every overlay vertex —
