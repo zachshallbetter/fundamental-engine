@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fundamental-engine/elements": "latest"
+    "@fundamental-engine/elements": "^0.9.2"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

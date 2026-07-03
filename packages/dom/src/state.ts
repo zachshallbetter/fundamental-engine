@@ -87,6 +87,13 @@ export class StateRegistry {
     this.listeners.delete(element);
   }
 
+  /** Drop ALL held state and listeners — used on platform teardown to free every strong Element ref
+   *  immediately rather than waiting for the registry object itself to be collected. */
+  clearAll(): void {
+    this.store.clear();
+    this.listeners.clear();
+  }
+
   /** Observe one key on one element. Returns an unsubscribe function. */
   observe(element: Element, key: string, fn: StateListener): () => void {
     let byKey = this.listeners.get(element);

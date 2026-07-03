@@ -11,6 +11,7 @@ import { FeedbackRegistry } from './feedback.ts';
 import { RelationshipRegistry } from './relationships.ts';
 import { OverlayRegistry } from './overlays.ts';
 import { createFieldPlatform } from './platform.ts';
+import { setDomDevWarnings, resetDomDevWarnings } from './dev-warn.ts';
 
 type Fake = Element & { isConnected: boolean; style: { setProperty(k: string, v: string): void } };
 
@@ -120,6 +121,78 @@ test('OverlayRegistry: prune drops overlays whose source element left the DOM', 
   b.isConnected = false;
   reg.prune();
   assert.equal(reg.all().length, 0, 'overlay with a detached endpoint is pruned');
+});
+
+test('StateRegistry.clearAll + FeedbackRegistry.clearAll drop every entry immediately (teardown)', () => {
+  const s = new StateRegistry();
+  const fb = new FeedbackRegistry();
+  const a = fakeEl();
+  const b = fakeEl();
+  s.set(a, 'lit', 1);
+  s.set(b, 'density', 0.5);
+  s.observe(a, 'lit', () => {});
+  fb.bind(a, { density: '--field-density' });
+  fb.set(b, { '--x': '1' });
+  fb.threshold(a, 'field:lit', { metric: 'lit', enter: 0.5, exit: 0.4 });
+  assert.ok(s.elements().length === 2);
+
+  s.clearAll();
+  assert.equal(s.elements().length, 0, 'state cleared regardless of connection');
+
+  // feedback cleared: even connected bindings/thresholds are gone → no writes on the next flush
+  let writes = 0;
+  (a as { style: unknown }).style = { setProperty: () => void writes++ };
+  fb.clearAll();
+  fb.flush(s);
+  assert.equal(writes, 0, 'no bindings survive clearAll');
+});
+
+test('FeedbackRegistry.prune drops only disconnected elements (leaves live ones)', () => {
+  const fb = new FeedbackRegistry();
+  const state = new StateRegistry();
+  const live = fakeEl();
+  const dead = fakeEl();
+  fb.bind(live, { density: '--field-density' });
+  fb.bind(dead, { density: '--field-density' });
+  fb.threshold(dead, 'field:dense', { metric: 'density', enter: 0.5, exit: 0.4 });
+  state.set(live, 'density', 0.4);
+  dead.isConnected = false;
+
+  fb.prune();
+  let liveWrites = 0;
+  let deadWrites = 0;
+  (live as { style: unknown }).style = { setProperty: () => void liveWrites++ };
+  (dead as { style: unknown }).style = { setProperty: () => void deadWrites++ };
+  fb.flush(state);
+  assert.equal(deadWrites, 0, 'pruned dead binding never writes');
+  assert.ok(liveWrites > 0, 'live binding survives prune');
+});
+
+test('discover()/scan() dev-warn once if called at frame frequency; silent in production', () => {
+  const orig = console.warn;
+  const seen: string[] = [];
+  console.warn = (m?: unknown) => void seen.push(String(m));
+  try {
+    setDomDevWarnings(true);
+    resetDomDevWarnings();
+    seen.length = 0;
+    const reg = new RelationshipRegistry();
+    const root = { querySelectorAll: () => [] } as unknown as ParentNode;
+    // hammer discover well past the frequency threshold (default 20 / window)
+    for (let i = 0; i < 60; i++) reg.discover(root, () => null);
+    const warns = seen.filter((m) => m.includes('FREQUENT_RELATIONSHIP_DISCOVER'));
+    assert.equal(warns.length, 1, 'warns exactly once (deduped) at frame frequency');
+
+    setDomDevWarnings(false);
+    resetDomDevWarnings();
+    seen.length = 0;
+    for (let i = 0; i < 60; i++) reg.discover(root, () => null);
+    assert.equal(seen.length, 0, 'silent in production');
+  } finally {
+    console.warn = orig;
+    setDomDevWarnings(true);
+    resetDomDevWarnings();
+  }
 });
 
 test('createFieldPlatform: the write cadence sweeps state + overlays for detached elements', () => {

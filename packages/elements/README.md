@@ -96,6 +96,14 @@ const field = mountField({ render: 'trails', accent: '#2dd4bf' });
 formation inside a frame), separate from the page-wide `<field-root>`. It runs a deliberately
 simplified in-frame model, not the canonical engine math.
 
+> **Boundary statement — `<field-cell>` is a demo pool, not the engine.** A cell owns its own
+> particle pool, canvas, and lifecycle, seeded with the host's local `Math.random()`. It carries
+> **none of the core guarantees**: no determinism, no snapshot/causal replay, no cross-plane
+> conformance, and no physics parity with `@fundamental-engine/core` or the Swift/Kotlin ports. Its
+> numbers are illustrative, not a source of truth — never assert against a cell in a conformance or
+> replay test. When you need the real engine (deterministic, replayable, parity-held), use
+> `<field-root>` or `createField()`, not `<field-cell>`.
+
 ## Framework use
 
 The custom elements work unchanged in React, Vue, Svelte, Solid, Angular, or plain HTML — register once

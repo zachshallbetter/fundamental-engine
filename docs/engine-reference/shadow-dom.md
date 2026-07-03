@@ -143,6 +143,15 @@ Example:
 
 A local cell is explicit. Components should not create a private canvas by default.
 
+> **Boundary statement — a cell is a demo pool, not the engine.** `<field-cell>` owns its own
+> particle pool, canvas, registry, and lifecycle, and seeds motion from the host's local
+> `Math.random()`. It carries **none of the core guarantees**: no determinism, no snapshot / causal
+> replay, no cross-plane conformance golden, and no physics parity with `@fundamental-engine/core`
+> or the Swift / Kotlin ports — it runs the simplified in-frame model, not the canonical engine math.
+> Cell output is illustrative, never a source of truth: do not assert against a cell in a
+> conformance or replay test. Reach for `<field-root>` / `createField()` when you need the real,
+> deterministic, replayable engine.
+
 ## 5. Default Body Target
 
 The default registered body is the custom element host.

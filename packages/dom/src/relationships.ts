@@ -8,6 +8,7 @@
  * Output maps to core's `RelationshipAgent` so the field engine treats relationships as agents.
  */
 import type { RelationshipAgent } from '@fundamental-engine/core';
+import { warnIfFrameFrequent } from './dev-warn.ts';
 
 export type RelationshipSource = 'html' | 'aria' | 'data' | 'recipe' | 'runtime';
 export type RelationshipDirection = 'from-to' | 'to-from' | 'bidirectional';
@@ -131,6 +132,13 @@ export class RelationshipRegistry {
    * Resolved edges accumulate across passes — only disconnected ones are dropped.
    */
   discover(root: ParentNode, resolve?: Resolver): void {
+    // layout-traversal trap: discover() walks the DOM with querySelectorAll to rebuild graph edges.
+    // It is meant to run on a throttle (see shouldDiscoverRelationships' every-30-frames cadence), not
+    // every frame — warn once (dev-only) if it is being called at frame frequency.
+    warnIfFrameFrequent(
+      'RELATIONSHIP_DISCOVER',
+      'RelationshipRegistry.discover() is being called at frame frequency — it walks the DOM (querySelectorAll) to rebuild the relationship graph. Throttle it (e.g. every ~30 frames) instead of running it each frame.',
+    );
     const r: Resolver =
       resolve ?? ((id) => (typeof document !== 'undefined' ? document.getElementById(id) : null));
 
