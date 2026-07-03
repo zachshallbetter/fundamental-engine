@@ -932,6 +932,27 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         nextIdx.set(nb.el, i + 1);
         const ob = list[i];
         if (!ob || ob === nb) continue; // index outgrew the old expansion, or same object (addBody)
+        // IDENTITY (#970): carry the resolved identity so an anonymous body keeps its synthetic
+        // `body-N` across rescans. Without this the rebuilt Body has `identity: undefined` and
+        // bodyIdentity() mints a FRESH `body-${bodyIdSeq++}` — the same element's id churned on
+        // every rescan, breaking snapshot/diff/replay continuity for anonymous bodies (state carry,
+        // captures, and relationship edges all key on identity.id). Keyed by the same (element,
+        // per-element index) as the state carry, so a preset's virtual bodies keep their ids too.
+        if (ob.identity !== undefined) nb.identity = ob.identity;
+        // DYNAMIC MOTION (#970): a `data-authority="dynamic"` body's position + velocity are
+        // engine-owned (bx/by/bvx/bvy), not DOM-derived. makeBody leaves them undefined, so on
+        // rescan moveDynamicBodies() re-adopts the freshly-measured DOM centre and zeroes velocity
+        // — a drifting body teleported back to its authored slot when ANY body was added/removed.
+        // Carry the kinematic state so the body keeps moving through a rescan (the motion analog of
+        // the feedback-state carry above). Only meaningful for dynamic bodies; undefined otherwise.
+        if (ob.bx !== undefined) {
+          nb.bx = ob.bx;
+          nb.by = ob.by;
+          nb.bvx = ob.bvx;
+          nb.bvy = ob.bvy;
+          // measureBodies (below) overwrites cx/cy from the rect, but the next moveDynamicBodies()
+          // re-asserts the carried bx/by as authoritative — so the body resumes from where it was.
+        }
         nb.d = ob.d;
         if (ob.attn !== undefined) nb.attn = ob.attn;
         nb.accreted = ob.accreted;

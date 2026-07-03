@@ -10,6 +10,20 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 ### Fixed
 
 - `packages/react/tsconfig.json` now excludes `*.test.tsx`/`*.spec.*` (not just `*.test.ts`), so a JSX test file no longer compiles into `dist/` and gets picked up as a stale `node --test` artifact (#1006).
+- **`@fundamental-engine/core` — rescan continuity follow-ups (#970, builds on #966/#969).** Two
+  more rescan discontinuities carried in `scan()`'s reconciliation, keyed by the same (element,
+  per-element body index):
+  - **Anonymous-id churn.** A body with no DOM id resolves to a synthetic `body-N`. That id lived
+    only on the rebuilt `Body` object, so any rescan minted a fresh id for the same element — the id
+    churned, breaking every consumer that keys on it (snapshot/diff/replay, captures, relationship
+    edges). The reconciliation now carries `identity` onto the replacement, so the same element keeps
+    its id even when its scan index shifts under an add/remove.
+  - **Dynamic-body motion reset.** A `data-authority="dynamic"` body's engine-owned position/velocity
+    (`bx/by/bvx/bvy`) were undefined on the rebuilt `Body`, so a rescan re-adopted the freshly-measured
+    DOM centre and zeroed velocity — a drifting body teleported back to its authored slot when any
+    body was added/removed. The reconciliation now carries the kinematic state, so the body resumes
+    on its trajectory. The ports (Swift/Kotlin) register bodies explicitly rather than rescanning the
+    document, so neither discontinuity exists there — no port follow-up.
 
 ### Documentation
 
