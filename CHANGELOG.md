@@ -7,6 +7,10 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- `packages/react/tsconfig.json` now excludes `*.test.tsx`/`*.spec.*` (not just `*.test.ts`), so a JSX test file no longer compiles into `dist/` and gets picked up as a stale `node --test` artifact (#1006).
+
 ### Documentation
 
 - Correct `packages/core/README.md` feedback wording: `--d` and `--field-density` are consistent twins (same live value, read either), not legacy aliases; only `--forces-density` is the removed legacy variable — matching `docs/canonical/feedback-channels.md`.
