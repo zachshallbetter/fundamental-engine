@@ -240,6 +240,16 @@ export function validatePassports(
     if (p.canVisualizeFieldLines !== ownsField)
       problems.push({ token, issue: 'canVisualizeFieldLines must equal ownsField' });
 
+    // Behavioral drift: a force whose live implementation defines `modify()` IS a modifier — it acts on
+    // sibling forces, not on matter — so its passport must say so and must NOT claim to move particles.
+    // (The converse is intentionally NOT required: `screen` is a passport-declared modifier that damps
+    // through the integrator with no `modify()` of its own, so `modify`-presence ⇒ isModifier is one-way.)
+    const definesModify = typeof force.modify === 'function';
+    if (definesModify && !p.isModifier)
+      problems.push({ token, issue: 'force defines modify() (it is a modifier) but the passport isModifier=false' });
+    if (definesModify && p.movesParticles)
+      problems.push({ token, issue: 'force defines modify() (a modifier) but the passport claims movesParticles=true — a modifier acts on siblings, not matter' });
+
     const scenario = byToken.get(token);
     if (scenario) {
       if (p.family !== scenario.family)

@@ -121,3 +121,24 @@ test('modifiers and sources are flagged from their class', () => {
   assert.equal(passportFor('attract')?.isModifier, false);
   assert.equal(passportFor('attract')?.isSource, false);
 });
+
+test('passport-vs-implementation: a force defining modify() is passported as a non-moving modifier', () => {
+  // Cross-check the authored passport against the LIVE force object in extended.ts / natural.ts: any
+  // force that implements `modify()` genuinely IS a modifier (it acts on sibling forces), so its
+  // passport must carry isModifier=true and movesParticles=false. This catches a new modifier added to
+  // the registry that was passported as an ordinary matter-moving force (or vice-versa).
+  const registry = allForces();
+  const modifiersInCode = Object.entries(registry)
+    .filter(([, f]) => typeof (f as { modify?: unknown }).modify === 'function')
+    .map(([t]) => t);
+  assert.ok(modifiersInCode.length >= 2, `sanity: expected the resonate/spotlight modifiers, found: ${modifiersInCode.join(', ')}`);
+  for (const t of modifiersInCode) {
+    const p = passportFor(t)!;
+    assert.ok(p, `${t} has a passport`);
+    assert.equal(p.isModifier, true, `${t} defines modify() so its passport must be isModifier=true`);
+    assert.equal(p.movesParticles, false, `${t} is a modifier so its passport must be movesParticles=false`);
+  }
+  // and validatePassports must agree there is no modify()/passport drift.
+  const problems = validatePassports(registry, EXPERIMENTS).filter((p) => /modify\(\)/.test(p.issue));
+  assert.deepEqual(problems, [], `modify()-vs-passport drift: ${problems.map((p) => `${p.token}: ${p.issue}`).join(', ')}`);
+});
