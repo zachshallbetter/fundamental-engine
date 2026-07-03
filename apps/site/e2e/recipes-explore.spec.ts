@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 // /recipes is the solution-finder catalog (formerly /explore): a problem-domain filter bar, a static
 // card grid that filters client-side, and an expand-in-place detail overlay deep-linked via ?r=.
