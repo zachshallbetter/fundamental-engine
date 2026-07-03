@@ -209,7 +209,7 @@ jobs:
           FAIL=0
           for p in @fundamental-engine/core @fundamental-engine/dom \
                    @fundamental-engine/elements @fundamental-engine/vanilla @fundamental-engine/react \
-                   @fundamental-engine/three; do
+                   @fundamental-engine/three @fundamental-engine/create; do
             ATT=$(npm view "$p@$VERSION" dist.attestations.url 2>/dev/null || true)
             if [ -z "$ATT" ]; then
               echo "::error::$p@$VERSION has no provenance attestation"
