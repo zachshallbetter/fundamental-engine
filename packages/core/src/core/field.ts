@@ -313,7 +313,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // Reserved agent-threshold events (§22.5, FIELD_EVENTS): per-body hysteretic edge detectors that
   // turn a continuous metric (sink load, density, attention, entropy) into one debounced `field:*`
   // CustomEvent on its rising edge — never per-frame. Lazy: a body gets a Thresholder for a metric
-  // only the first frame it has a value to test, and the maps are pruned on rescan with the body.
+  // only the first frame it has a value to test. On rescan, a persisting body's Thresholders are
+  // re-keyed onto its replacement Body (scan()'s reconciliation, #966 — the carried d/attn would
+  // otherwise re-fire a rising edge already announced); a removed body's entries drop with it.
   // Keyed body → metric-name → Thresholder; edges track relationship `memory` the same way.
   const bodyThresholds = new WeakMap<Body, Map<string, Thresholder>>();
   const edgeThresholds = new WeakMap<RelationshipAgent, Map<string, Thresholder>>();
@@ -874,6 +876,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   function scan(): void {
+    // capture the outgoing generation FIRST — the rebuild below replaces every DOM-scanned Body
+    // object wholesale, and the reconciliation pass after the rebuild carries runtime state across.
+    const prevGen = bodies;
     const scanned = scanBodies(host.root);
     // merge event-registered shadow-DOM hosts (deduped — a light-DOM host that also fires
     // a registration event is counted once). Registration is the canonical discovery path;
@@ -886,6 +891,71 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
     // programmatic bodies (addBody) aren't discoverable by the scan — carry them across the rebuild.
     if (programmaticBodies.length > 0) bodies = bodies.concat(programmaticBodies);
+    // ——— Rescan reconciliation (#966): carry body feedback state + remap captures. ———
+    // makeBody zeroes runtime state (`d: 0`, `accreted: 0`, …), which made ANY rescan a visible
+    // discontinuity: every data-feedback body's --d hard-dropped (measured 1.000 → 0.080) and eased
+    // back over ~1s, while matter a sink had captured stayed pinned to the OLD (ghost) Body — frozen,
+    // never released — as the rebuilt sink re-captured a second full capacity. Mirror the
+    // prevMovers/prevEmitters reconciliation: key the outgoing generation by (element, per-element
+    // body index) — a data-preset element expands to several virtual bodies in a stable order, so
+    // the index tells them apart — and carry each persisting body's runtime feedback state
+    // (`d`, `attn`, `accreted`, `count`, `wasOn`) onto its replacement. Programmatic (addBody)
+    // bodies persist by object identity (ob === nb) and skip naturally. Removed elements are simply
+    // absent from the new generation, so their state drops with the old Body (no leak).
+    //
+    // Body-keyed side tables — per-map carry/reset decisions:
+    //   sinkPeak         CARRY — the armed flag lives on el.dataset.fxCap (which survives the
+    //                    rescan) and `accreted` is carried, so a filling sink is still mid-cycle;
+    //                    dropping the peak would make the eventual `release` bus event report 0.
+    //   bodyThresholds   CARRY — `d`/`attn` are carried, so keeping the hysteresis + debounce state
+    //                    avoids a duplicate rising-edge `field:*` event on the first post-rescan
+    //                    frame. (Entries for removed bodies drop with the Body — WeakMap keys.)
+    //   insideOf/metWith RESET (by design) — proximity membership re-derives from live geometry on
+    //                    the next detection pass; carrying it would need old→new remaps of both
+    //                    keys and set members for marginal benefit.
+    //   emitAcc/thermo/metrics RESET (by design) — the fractional-emission remainder and the
+    //                    windowed thermodynamic measurements re-accumulate within a frame or two.
+    let bodyRemap: Map<Body, Body> | null = null; // old → new, for the capture remaps below
+    let remapCaptures = false; // some persisting body held matter → run the O(P) cap-remap pass
+    if (prevGen.length > 0) {
+      const prevByEl = new Map<HTMLElement, Body[]>();
+      for (const ob of prevGen) {
+        const list = prevByEl.get(ob.el);
+        if (list) list.push(ob);
+        else prevByEl.set(ob.el, [ob]);
+      }
+      const nextIdx = new Map<HTMLElement, number>();
+      for (const nb of bodies) {
+        const list = prevByEl.get(nb.el);
+        if (!list) continue;
+        const i = nextIdx.get(nb.el) ?? 0;
+        nextIdx.set(nb.el, i + 1);
+        const ob = list[i];
+        if (!ob || ob === nb) continue; // index outgrew the old expansion, or same object (addBody)
+        nb.d = ob.d;
+        if (ob.attn !== undefined) nb.attn = ob.attn;
+        nb.accreted = ob.accreted;
+        nb.count = ob.count;
+        if (ob.wasOn !== undefined) nb.wasOn = ob.wasOn;
+        const th = bodyThresholds.get(ob);
+        if (th) bodyThresholds.set(nb, th);
+        const peak = sinkPeak.get(ob);
+        if (peak !== undefined) sinkPeak.set(nb, peak);
+        (bodyRemap ??= new Map()).set(ob, nb);
+        if (ob.accreted > 0) remapCaptures = true;
+      }
+      // Remap captured matter onto the replacement Body (the ghost-body strand: `p.cap` kept
+      // lerping to the old object's frozen centre — integrator.ts holds captured matter via
+      // `p.cap.cx/cy` — and `releaseCaptured` on the new body never matched it). One O(P) pass,
+      // and only when some persisting body actually held matter.
+      if (remapCaptures) {
+        for (const p of store.particles) {
+          if (!p.cap) continue;
+          const nb = bodyRemap!.get(p.cap);
+          if (nb) p.cap = nb;
+        }
+      }
+    }
     measureBodies(bodies, W, H, originX, originY);
     bindEngagement();
     // Reconcile movers: carry forward offset + dock state for elements that persist across
@@ -911,7 +981,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (prev) {
         // Persist the in-flight state: the element was already known, keep its offset + dock
         // progress. Re-check dockable/warpable/layout in case attributes changed. mEl re-measured.
-        return { el, o: prev.o, mEl, layout, dockable, dock: prev.dock, docked: prev.docked, warpable, warpCool: prev.warpCool };
+        // A docked element's sink reference is remapped to the sink's replacement Body (#966) —
+        // otherwise it would hold the OLD generation's object and `undockFrom` (supernova release)
+        // on the new body would never release it.
+        const docked = prev.docked ? (bodyRemap?.get(prev.docked) ?? prev.docked) : null;
+        return { el, o: prev.o, mEl, layout, dockable, dock: prev.dock, docked, warpable, warpCool: prev.warpCool };
       }
       return { el, o: { x: 0, y: 0, vx: 0, vy: 0 } as ElementOffset, mEl, layout, dockable, dock: { dock: 0 }, docked: null, warpable, warpCool: 0 };
     });

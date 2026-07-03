@@ -127,6 +127,21 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 - **`@fundamental-engine/three`:** **`threeBackend`'s overlay `z` now offsets the projected field
   plane instead of being an absolute world z (#949).** The backend pinned every overlay vertex —
+- **`@fundamental-engine/core`:** **rescan no longer discards body feedback state or strands
+  captured matter (#966).** `scan()` rebuilds every Body on any add/remove/register, and the
+  rebuilt bodies started from zeroed runtime state — so every `data-feedback` body's `--d`
+  hard-dropped (measured 1.000 → 0.080) and eased back over ~1s on ANY rescan, while matter a
+  sink had captured stayed pinned to the old (ghost) Body object — frozen centre, never
+  released — as the rebuilt sink re-captured a second full capacity. `scan()` now reconciles
+  the new generation against the old (the same pattern the movers/emitters already used), keyed
+  by (element, per-element body index) so `data-preset` expansions carry per virtual body:
+  persisting bodies keep `d`, `attn`, `accreted`, `count`, and `wasOn`; captured particles and
+  docked elements are remapped to the replacement Body (one O(P) pass, only when a persisting
+  body actually held matter); the Body-keyed `sinkPeak` + `bodyThresholds` side tables are
+  re-keyed (so a mid-cycle sink still reports its release count and carried density doesn't
+  re-fire an already-announced threshold edge), while proximity membership and the measured
+  thermodynamic windows still reset by design (they re-derive within a frame). Removed elements
+  still drop all their state. No public API change; measure cadence untouched.
   lines/arrows (`segments`/`polyline`), the data-chip plates (`rect`), and the #921 label sprites
   (`text`) — at `z` in world space, so overlay readings mis-registered under a
   `VolumeProjection({ centerZ: true })`, whose field plane sits at `-depth/2 · depthScale`, not at
