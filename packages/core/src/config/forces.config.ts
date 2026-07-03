@@ -144,8 +144,8 @@ export const FORCES: readonly ForceDef[] = [
     verb: 'holds, then releases',
     body: 'sink attract',
     // §21.2 naming: the sink's captured count is `b.accreted` (was `b.mass`), its
-    // limit is `capacity` (was `maxMass`), and the CSS fill var is `--load` (alias
-    // `--mass`). `data-max` is the authoring alias for capacity.
+    // limit is `capacity` (was `maxMass`), and the CSS fill var is `--load`.
+    // `data-max` is the authoring alias for capacity.
     attrs: {
       'data-absorb': '64',
       'data-max': '30',

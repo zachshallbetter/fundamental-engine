@@ -102,14 +102,17 @@ export const FIELD_EVENTS: Readonly<Record<string, FieldEventName>> = {
 
 /** Map a metric to its conventional `field:*` event name for an edge. */
 export function eventNamesFor(metric: string, edge: Exclude<ThresholdEdge, null>): { field: string } {
-  // density → lit/dim; attention → attention-shifted; generic → entered/exited
-  const verb =
-    metric === 'density'
-      ? edge === 'entered'
-        ? 'lit'
-        : 'dim'
-      : edge === 'entered'
-        ? 'entered'
-        : 'exited';
-  return { field: `field:${verb}` };
+  if (metric === 'density') {
+    return { field: edge === 'entered' ? 'field:lit' : 'field:dim' };
+  }
+  if (metric === 'attention') {
+    return { field: edge === 'entered' ? 'field:attention-shifted' : 'field:attention-settled' };
+  }
+  if (metric === 'entropy') {
+    return { field: edge === 'entered' ? 'field:entropy-warning' : 'field:entropy-cleared' };
+  }
+  if (metric === 'memory') {
+    return { field: edge === 'entered' ? 'field:memory-threshold' : 'field:memory-faded' };
+  }
+  return { field: edge === 'entered' ? 'field:entered' : 'field:exited' };
 }

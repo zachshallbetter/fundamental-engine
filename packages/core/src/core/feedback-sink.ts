@@ -25,7 +25,7 @@ import type { FeedbackSink } from './types.ts';
  *
  * - density → `--d` (the established var) + `--field-density` — same value, three decimals.
  * - heatmapDensity → `--field-heatmap-density`.
- * - load → `--load` (the canonical author-facing var) + `--mass` (back-compat alias, §21.2).
+ * - load → `--load` (the canonical author-facing var).
  * - lit → `--lit`, plus the thresholded `field:lit` (rising past 0.5) / `field:dim` (falling past
  *   0.4) events, armed via `data-fx-lit` for hysteresis.
  *
@@ -44,7 +44,6 @@ export const defaultFeedbackSink: FeedbackSink = (el, ch) => {
   if (ch.load !== undefined) {
     const loadStr = ch.load.toFixed(3);
     el.style.setProperty('--load', loadStr);
-    el.style.setProperty('--mass', loadStr);
   }
   // measured thermodynamics (workover v0.3): the bare names per the workover/BACKLOG contract.
   // Engine-MEASURED local thermodynamics — distinct from the platform's INFERRED interaction

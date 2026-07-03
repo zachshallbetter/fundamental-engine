@@ -1,6 +1,6 @@
 # Publishing
 
-The seven `@fundamental-engine/*` packages publish to npm **with provenance** via CI. This document is the
+The six `@fundamental-engine/*` packages publish to npm **with provenance** via CI. This document is the
 mechanics; the policy (versioning, when to cut) is in [`RELEASING.md`](RELEASING.md).
 
 > The public surface is frozen for `0.x` — see
@@ -13,7 +13,6 @@ mechanics; the policy (versioning, when to cut) is in [`RELEASING.md`](RELEASING
 |---|---|
 | `@fundamental-engine/core` | the engine (no workspace deps) |
 | `@fundamental-engine/dom` | the web host adapter; depends on core |
-| `@fundamental-engine/platform` | deprecated alias of `dom` (re-exports it); depends on dom |
 | `@fundamental-engine/vanilla` | framework-free door; depends on core + dom |
 | `@fundamental-engine/react` | React adapter; depends on core + dom |
 | `@fundamental-engine/elements` | web components; depends on core + dom + vanilla |

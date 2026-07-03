@@ -312,7 +312,7 @@ field:entropy-warning
 ```
 
 The canonical names are `field:*` (per `FIELD_EVENTS` in `packages/core/src/agents/event-agent.ts`).
-The legacy `forces:*` names still fire from `core/field.ts` as compatibility aliases.
+Use canonical `field:*` names in docs and consumers.
 
 Rule:
 

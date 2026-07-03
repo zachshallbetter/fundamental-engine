@@ -14,7 +14,6 @@
 > `core/shadow.test.ts`. Most production-hardening additions in §31 (portals, scopes, the
 > registration handshake, SSR queue, throttled field events) remain **proposed**;
 > **local-cell budgets shipped** on `<field-cell>` (§31.19, #685 — `max-particles` + `fps`).
-> Summary in [`field-concept.md`](../planning-archive/field-concept.md) §24–26.
 
 > **Phase D note (platform runtime).** Shadow-DOM host registration is now handled by
 > `@fundamental-engine/dom`: the platform owns DOM participation, so a registered host's `getRect`

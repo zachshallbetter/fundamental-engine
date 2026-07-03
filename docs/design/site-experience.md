@@ -1,8 +1,8 @@
 > **Status: as-built.**
 > The design of the fundamental-engine.com documentation and examples experience after the 2026-06
 > rebuild — what it does, why each piece exists, and where it lives. The conceptual canon for
-> the underlying pattern is [docs/canonical/invisible-fields.md](canonical/invisible-fields.md);
-> the practices that produced it are [docs/engineering-practices.md](engineering-practices.md).
+> the underlying pattern is [docs/canonical/invisible-fields.md](../canonical/invisible-fields.md);
+> the practices that produced it are [docs/engineering-practices.md](../engineering-practices.md).
 
 # The site experience
 
@@ -77,7 +77,7 @@ agents as first-class readers is that model made literal. The `/docs` index link
 
 The twelve-page invisible-fields family is the applied tier of the documentation — real
 data, live channels, provenance chips, each page's layout embodying its concept. Canon:
-[invisible-fields.md §7](canonical/invisible-fields.md). The docs link
+[invisible-fields.md §7](../canonical/invisible-fields.md). The docs link
 into it (sidebar Examples group, the index map, SeeItLive); the family's how-built sections
 link back with CodeTabs.
 
@@ -87,4 +87,4 @@ The e2e suite (`apps/site/e2e/`, chromium + webkit + mobile, ~128 tests) pins al
 the shell's field behaviors and toggle, the integrity chip's count, search end-to-end on the
 built index, the stamps' frozen/experimental honesty, the index map's group/roster sync, the
 llms files' existence and shape — alongside the homepage, /eli5, and the whole example
-family. The audit is permanent; see [engineering-practices.md](engineering-practices.md) §1.
+family. The audit is permanent; see [engineering-practices.md](../engineering-practices.md) §1.

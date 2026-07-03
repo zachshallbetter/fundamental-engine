@@ -16,7 +16,7 @@
  * matter; the visual layer shows what that absorption means; the semantic text remains the source
  * of meaning. CSS custom properties don't cross to siblings, so with mirroring enabled
  * (`setMirroring(true)` — the platform default) every `representation`/`measurement` visual
- * receives its source's feedback channels (`--d`/`--field-density`, `--load`/`--mass`, the measured
+ * receives its source's feedback channels (`--d`/`--field-density`, `--load`, the measured
  * metrics — see MIRRORED_CHANNELS) copied onto its own inline style: an aria-hidden SVG beside a
  * sink heading thickens its contours from `var(--load)` exactly as if it were the body itself.
  * Change-gated via a MutationObserver on the source's style attribute — no polling, no frame cost
@@ -73,7 +73,6 @@ export const MIRRORED_CHANNELS: readonly string[] = [
   '--d',
   '--field-density',
   '--load',
-  '--mass',
   '--lit',
   '--entropy',
   '--coherence',

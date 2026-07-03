@@ -19,9 +19,9 @@ import { spawnSync } from 'node:child_process';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PACKAGES = [
   // the published @fundamental-engine/* set (publish via CI). `dom` is the DOM-binding
-  // layer; `platform` is the deprecated alias re-exporting it. The kit / fundamental-engine
+  // layer; the `platform` alias was removed pre-1.0 (#939 checklist). The kit / fundamental-engine
   // umbrellas were retired (private) at 0.7.0.
-  'core', 'dom', 'platform', 'vanilla', 'elements', 'react', 'three',
+  'core', 'dom', 'vanilla', 'elements', 'react', 'three',
 ];
 
 let failed = 0;

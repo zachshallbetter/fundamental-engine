@@ -37,7 +37,12 @@ test('Thresholder debounce suppresses a too-soon edge', () => {
 test('eventNamesFor maps density to lit/dim in the field:* namespace', () => {
   assert.deepEqual(eventNamesFor('density', 'entered'), { field: 'field:lit' });
   assert.deepEqual(eventNamesFor('density', 'exited'), { field: 'field:dim' });
-  assert.deepEqual(eventNamesFor('attention', 'entered'), { field: 'field:entered' });
+  assert.deepEqual(eventNamesFor('attention', 'entered'), { field: 'field:attention-shifted' });
+  assert.deepEqual(eventNamesFor('attention', 'exited'), { field: 'field:attention-settled' });
+  assert.deepEqual(eventNamesFor('entropy', 'entered'), { field: 'field:entropy-warning' });
+  assert.deepEqual(eventNamesFor('entropy', 'exited'), { field: 'field:entropy-cleared' });
+  assert.deepEqual(eventNamesFor('memory', 'entered'), { field: 'field:memory-threshold' });
+  assert.deepEqual(eventNamesFor('memory', 'exited'), { field: 'field:memory-faded' });
 });
 
 test('relationship strengthens with use and decays when idle, bounded to [0,1]', () => {

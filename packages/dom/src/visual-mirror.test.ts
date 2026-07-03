@@ -50,10 +50,10 @@ test('setMirroring(true) copies the source feedback channels onto a representati
 test('a binding made while mirroring is on mirrors immediately', () => {
   const reg = new VisualBindingRegistry();
   reg.setMirroring(true);
-  const source = styledEl({}, { '--mass': '0.900' });
+  const source = styledEl({}, { '--load': '0.900' });
   const meter = styledEl({ 'aria-hidden': 'true' });
   reg.bind({ visual: meter, source, role: 'measurement' });
-  assert.equal(styleOf(meter)['--mass'], '0.900');
+  assert.equal(styleOf(meter)['--load'], '0.900');
 });
 
 test('decorative and debug visuals do not mirror', () => {

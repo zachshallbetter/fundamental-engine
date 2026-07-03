@@ -11,13 +11,13 @@ interaction participate in one **shared field context**. Elements bend the field
 back. The visible particle canvas is **one render surface**, not the whole system.
 
 ```txt
-@fundamental-engine/core      computes renderer-agnostic field, force, particle, metric, recipe, and diagnostic
-                    behavior. The engine. (The unscoped `Fundamental` name is taken by an unrelated package.)
-@fundamental-engine/dom  binds field behavior to the DOM: the browser host, measurement, state, feedback,
-                    relationships, visual bindings, overlays, recipes, data binding, lint, scheduling.
+@fundamental-engine/core      computes renderer-agnostic field, force, particle, metric, recipe, and diagnostic behavior. The engine. (The unscoped `Fundamental` name is taken by an unrelated package.)
+@fundamental-engine/dom       binds field behavior to the DOM: the browser host, measurement, state, feedback, relationships, visual bindings, overlays, recipes, data binding, lint, scheduling.
 @fundamental-engine/elements  native web components and the [data-body] HTML authoring contract.
 @fundamental-engine/react     the React adapter over the same contracts.
 @fundamental-engine/vanilla   the FieldField class for plain TypeScript.
+@fundamental-engine/three     a Three.js-based 3D renderer for the field system.
+@fundamental-engine/create    scaffolds a new Fundamental field project.
 ```
 
 ## Document statuses
@@ -76,17 +76,6 @@ Current planning material. Forward-looking; does not describe planned work as sh
 | [`fundamental-release-gate-spec.md`](planning/fundamental-release-gate-spec.md) | The RC/1.0 release-gate program — two gates (freezability + survivor), the source spec behind the RC issues (#316–334) |
 | [`fundamental-three-integration.md`](planning/fundamental-three-integration.md) | Three.js renderer integration plan |
 
-## planning-archive/ — design history & planning records
-
-Preserved for design history and sequencing. Do not treat as current implementation without checking
-the canonical docs and the code.
-
-| Document | Role |
-|---|---|
-| [`field-concept.md`](planning-archive/field-concept.md) | North-star concept / vision (full conceptual arc) |
-| [`field-explainer.md`](planning-archive/field-explainer.md) | Plain-language "what it is" explainer |
-| [`roadmap-frontiers.md`](planning-archive/roadmap-frontiers.md) | Frontier roadmap (R1–R4 shipped; R5+ planned) |
-| [`live-web-examples.md`](planning-archive/live-web-examples.md) | Plan for familiar-page "concept study" demos |
 
 ## Authority order
 
@@ -97,14 +86,13 @@ When documents conflict, prefer:
 3. `canonical/fundamental-field-behavior-table.md` for field behavior.
 4. `canonical/testing-and-conformance.md` for validation and acceptance.
 5. `engine-reference/*` for force formulas and engine internals.
-6. `planning-archive/*` for history and intent only.
 
 ## Naming policy
 
 Use `Fundamental` for the project, packages, and docs. Use `field` for runtime concepts (field state,
 field root, field body, field event, field metric). New code uses `--field-*` CSS variables and
-`field:*` events; the compact `--d` CSS alias and the legacy `forces:*` event aliases remain where
-compatibility requires them. (The legacy `--forces-*` CSS variables have been removed.)
+`field:*` events; the compact `--d` CSS alias remains alongside `--field-density` as canonical dual
+naming. (The legacy `--forces-*` CSS variables have been removed.)
 
 ## Core distinctions
 

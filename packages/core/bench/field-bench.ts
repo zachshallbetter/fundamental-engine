@@ -44,7 +44,7 @@ function accumulatorOverhead(): string {
     dx: 0, dy: 0, dist: 1, form: { driftX: 0, wander: 0, orbit: 0, spread: 0, conv: 0 },
     W: 1440, H: 900, t: 0, frameN: 1, dt: 1, c: 12, G: 1,
     spark: () => {}, supernova: () => {}, spawn: () => {}, neighbors: () => [],
-    grid: () => ({ sample: () => 0, deposit: () => {}, gradient: () => ({ x: 0, y: 0 }) }),
+    grid: () => ({ sample: () => 0, deposit: () => {}, gradient: () => ({ x: 0, y: 0 }), decay: () => {}, clear: () => {} }),
     ...over,
   });
   const makeBody = (cx: number, cy: number, tokens: string[]): Body => ({

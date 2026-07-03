@@ -229,6 +229,15 @@ export function threeBackend(opts: ThreeBackendOptions): ThreeBackend {
         labelPool[i]!.visible = false;
       }
       labelCursor = 0;
+
+      // Unbounded cache protection: if custom overlays generate high-frequency text labels,
+      // purge the cache at the start of a frame to prevent GPU memory leaks.
+      if (labelCache.size > 256) {
+        for (const { texture } of labelCache.values()) {
+          texture.dispose();
+        }
+        labelCache.clear();
+      }
     },
     segments(packed: ArrayLike<number>, stroke: Stroke): void {
       for (let i = 0; i + 3 < packed.length; i += 4) {

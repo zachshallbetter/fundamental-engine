@@ -58,7 +58,7 @@ export function releaseCaptured(
   return released;
 }
 
-/** Sink fill fraction ∈ [0,1] — the value written to `--load` / `--mass`. 0 when not a sink. */
+/** Sink fill fraction ∈ [0,1] — the value written to `--load`. 0 when not a sink. */
 export function sinkLoad(b: Body): number {
   if (b.capacity <= 0) return 0;
   const f = b.accreted / b.capacity;

@@ -28,12 +28,12 @@ export interface MaterialRecipe {
 }
 
 export const INTERACTION_MATERIALS: Readonly<Record<InteractionMaterial, MaterialRecipe>> = {
-  glass: { tokens: ['lens', 'wall'], note: 'lens + reflect + low drag' },
-  rubber: { tokens: ['tether', 'viscosity'], note: 'spring + damping' },
+  glass: { tokens: ['lens', 'wall'], note: 'lens + wall + low viscosity' },
+  rubber: { tokens: ['tether', 'viscosity'], note: 'tether + viscosity' },
   liquid: { tokens: ['cohesion', 'pressure'], render: ['metaballs'], note: 'cohesion + pressure' },
   plasma: { tokens: ['fieldflow', 'thermal'], render: ['trails', 'field-lines'], note: 'fieldflow + thermal + trails' },
   dust: { tokens: ['diffuse'], note: 'diffuse + low mass' },
-  metal: { tokens: ['magnetism', 'wall'], note: 'magnetism + reflect' },
+  metal: { tokens: ['magnetism', 'wall'], note: 'magnetism + wall' },
   fabric: { tokens: ['link', 'shear'], note: 'link + shear' },
   paper: { tokens: ['memory'], note: 'low motion + memory' },
   stone: { tokens: ['wall'], note: 'high mass + low response' },

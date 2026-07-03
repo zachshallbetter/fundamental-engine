@@ -68,7 +68,7 @@ function makeBody(tokens: string[], cx: number, cy: number): Body {
   };
 }
 
-const TOKENS = ['attract', 'repel', 'vortex', 'stream', 'drag', 'spring', 'gravity', 'wind'];
+const TOKENS = ['attract', 'repel', 'swirl', 'stream', 'viscosity', 'tether', 'gravity', 'wind'];
 
 // a small deterministic PRNG so runs are comparable (no Math.random)
 function mulberry(seed: number): () => number {
@@ -100,7 +100,7 @@ function env(): Env {
     supernova: () => {},
     spawn: () => {},
     neighbors: (p, r) => store.neighbors(p, r),
-    grid: () => ({ sample: () => 0, deposit: () => {}, gradient: () => ({ x: 0, y: 0 }) }),
+    grid: () => ({ sample: () => 0, deposit: () => {}, gradient: () => ({ x: 0, y: 0 }), decay: () => {}, clear: () => {} }),
   };
   return e;
 }

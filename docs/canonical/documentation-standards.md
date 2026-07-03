@@ -54,6 +54,12 @@ feedback returns the field to the DOM.
 Preserve: **Electric fields push. Magnetic fields bend. Fieldflow carries.** Do not make
 `magnetism.apply()` follow magnetic field lines — field-aligned transport belongs to `fieldflow`.
 
+**The substrate-not-wallpaper line is enforceable doctrine, not a slogan** — the test, remedies
+(derive → declare → demote → sugar; never deletion), corollaries (injected-rng determinism,
+one-writer-per-reading, proofs-must-be-produced), and per-plane guards live in
+[the Wallpaper Rule](wallpaper-rule.md). Run any new default-on or field-expressing feature
+through its three prongs before shipping it.
+
 ## Natural Field Translation System
 
 Fundamental does not copy physics into the interface; it **translates** the four fundamental fields into
@@ -99,8 +105,8 @@ Every markdown doc carries a status banner, and the folders mirror it:
 ## Naming policy
 
 New code and docs use `--field-*` CSS variables and `field:*` events. The `--forces-*` CSS-variable
-mirroring has been **removed** — `--d` and the `--field-*` family are the live vars. The `forces:*`
-**event** aliases still fire from the engine for compatibility. The density channel has a canonical
+mirroring has been **removed** — `--d` and the `--field-*` family are the live vars. Event naming is
+canonicalized as `field:*` in docs and examples. The density channel has a canonical
 raw form and an expressive long form — do not invert them:
 
 ```txt

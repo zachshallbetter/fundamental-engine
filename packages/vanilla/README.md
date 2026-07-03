@@ -16,6 +16,13 @@ npm i @fundamental-engine/vanilla
 The only dependency is the zero-dependency core plus [`@fundamental-engine/dom`](../dom) (which supplies
 the browser host). Reach for this from plain TypeScript, or any stack where you want to drive the field
 by hand.
+## Which API should I use?
+
+- `new FieldField(opts)` — best default for app code. Class ergonomics + full `FieldHandle`, with managed canvas lifecycle.
+- `mountField(opts)` — simplest imperative mount when you just want a handle quickly and don’t need a class instance.
+- `createField(canvas, opts)` — lowest-level control. Use when you own the canvas, need contained mode (`bounds`), or provide a custom/headless host.
+
+`createField` host resolution order is: `opts.host` → `opts.bounds` (contained host) → browser host.
 
 ## The class
 

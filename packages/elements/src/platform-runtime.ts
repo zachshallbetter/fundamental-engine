@@ -119,8 +119,8 @@ export function makeFeedbackSink(platform: FieldPlatform): FeedbackSink {
     if (ch.density !== undefined) platform.feedback.set(el, { '--d': f3(ch.density), '--field-density': f3(ch.density) });
     // heatmap density → --field-heatmap-density
     if (ch.heatmapDensity !== undefined) platform.feedback.set(el, { '--field-heatmap-density': f3(ch.heatmapDensity) });
-    // accretion load → --load + --mass (back-compat alias)
-    if (ch.load !== undefined) platform.feedback.set(el, { '--load': f3(ch.load), '--mass': f3(ch.load) });
+    // accretion load → --load
+    if (ch.load !== undefined) platform.feedback.set(el, { '--load': f3(ch.load) });
     // measured thermodynamics (workover v0.3) → the bare names, mirroring the engine's default
     // sink exactly. These are engine-MEASURED local thermodynamics; the platform's
     // `--field-entropy` / `--field-coherence` pipeline lanes (system-contracts §6) are

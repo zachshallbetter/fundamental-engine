@@ -17,7 +17,7 @@
  * the geometry, so it is safe to call from any render loop at any cadence.
  */
 
-import { createField } from '@fundamental-engine/core';
+import { createField, resolvePalette } from '@fundamental-engine/core';
 import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, EdgeHandle, EdgeView, FieldChannelHandle, FieldQuery, FieldQueryResult, FieldSnapshot, FieldSnapshotOptions, FieldDiff, CausalReplay, ReplayOptions, ProjectionRegistry } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
@@ -188,9 +188,21 @@ export class FieldLayer implements FieldHandle {
   }
   setAccent(hex: string): void {
     this.field.setAccent(hex);
+    const u = this.pool.material.uniforms['uAccent'];
+    if (u?.value) {
+      u.value.set(hex);
+    }
   }
   setPalette(palette: string | readonly string[]): void {
     this.field.setPalette(palette);
+    const stops = resolvePalette(palette);
+    const first = stops[0];
+    if (first) {
+      const u = this.pool.material.uniforms['uAccent'];
+      if (u?.value) {
+        u.value.set(first);
+      }
+    }
   }
   setFormation(name: string): void {
     this.field.setFormation(name);

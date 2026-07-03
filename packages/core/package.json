@@ -55,6 +55,7 @@
     "bench": "node bench/field-bench.ts"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "typescript": "^5.9.3"
   }
 }

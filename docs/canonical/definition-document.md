@@ -14,6 +14,7 @@
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Visualization and diagnostics |
 | [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring and recipes |
 | [`testing-and-conformance.md`](testing-and-conformance.md) | Testing and conformance |
+| [`wallpaper-rule.md`](wallpaper-rule.md) | The substrate-not-wallpaper rule made operational |
 
 ## 1. Definition
 
@@ -142,7 +143,7 @@ VisualBindingRegistry  binds field metrics to hidden visual elements
 OverlayRegistry        manages overlay surfaces over linked bodies
 ```
 
-The `--forces-*` CSS-variable mirroring has been removed; `FeedbackRegistry` writes `--field-*` vars directly, and the `field:*` → `forces:*` event aliases still fire for compatibility. `lintPlatform()` reports authoring mistakes: `relation-target-missing`, `state-unregistered`, `overlay-without-links`, `feedback-non-css-var`, `measurement-off-phase`, `visual-orphan`, and `visual-not-hidden`.
+The `--forces-*` CSS-variable mirroring has been removed; `FeedbackRegistry` writes `--field-*` vars directly, and events are documented under the canonical `field:*` namespace. `lintPlatform()` reports authoring mistakes: `relation-target-missing`, `state-unregistered`, `overlay-without-links`, `feedback-non-css-var`, `measurement-off-phase`, `visual-orphan`, and `visual-not-hidden`.
 
 The Reading Field demo (`/docs/reading-field`) exercises all six scheduler phases across four registries (measurement, state, feedback, relationships) in a normal content page: sections are bodies, viewport proximity drives attention, accumulation becomes memory, the table of contents reflects state, citations form relationships, and reduced motion preserves meaning.
 

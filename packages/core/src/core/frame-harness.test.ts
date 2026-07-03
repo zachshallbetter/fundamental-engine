@@ -61,7 +61,7 @@ test('a [data-move] element gets a transform once the frame loop runs', () => {
 
 // ── element capture (§22.3): a [data-dock] element docks into a sink ──────────
 
-test('a [data-dock] element inside a sink radius captures — field:captured + the forces:* alias', () => {
+test('a [data-dock] element inside a sink radius captures — field:captured', () => {
   const { harness, field } = frameHarnessField({ rng: seededRng(5) });
   harness.add({
     attrs: { 'data-body': 'sink', 'data-absorb': '120', 'data-max': '5000', 'data-when': 'active', 'data-active': '1' },
@@ -71,52 +71,10 @@ test('a [data-dock] element inside a sink radius captures — field:captured + t
   field.scan();
   harness.step();
   assert.ok(dock.events.includes('field:captured'), 'field:captured fired');
-  assert.ok(dock.events.includes('forces:captured'), 'the forces:* alias fired too (migration window)');
   // the captured detail carries the sink element (§22.3 dock capture payload).
   const cap = dock.dispatched.find((e) => e.type === 'field:captured');
   assert.ok(cap && typeof cap.detail === 'object' && cap.detail !== null && 'sink' in cap.detail, 'detail.sink is present');
   field.destroy();
-});
-
-// ── deprecation warning (#709): the forces:* mirror warns once in dev, silent in production ─────
-
-test('the forces:* alias fires a dev-only deprecation warn — once, deduped, silent in production', () => {
-  const orig = console.warn;
-  const runCapture = (): string[] => {
-    const seen: string[] = [];
-    console.warn = (msg?: unknown) => void seen.push(String(msg));
-    const { harness, field } = frameHarnessField({ rng: seededRng(5) });
-    harness.add({
-      attrs: { 'data-body': 'sink', 'data-absorb': '120', 'data-max': '5000', 'data-when': 'active', 'data-active': '1' },
-      rect: { left: 380, top: 280, width: 40, height: 40 },
-    });
-    const dock = harness.add({ attrs: { 'data-move': '', 'data-dock': '' }, rect: { left: 390, top: 290, width: 20, height: 20 } });
-    field.scan();
-    harness.step(4); // several frames — the forces:captured mirror would warn each frame if not deduped
-    field.destroy();
-    // sanity: the alias actually fired (so a zero-warn result means "deduped/suppressed", not "never ran")
-    assert.ok(dock.events.includes('forces:captured'), 'forces:captured mirror fired (path was exercised)');
-    return seen.filter((m) => m.includes('DEPRECATED_ALIAS') && m.includes('forces:captured'));
-  };
-
-  try {
-    // dev path (contract checks on): exactly one warn despite firing across multiple frames.
-    setContractChecks(true);
-    resetNoOpWarnings();
-    const devWarns = runCapture();
-    assert.equal(devWarns.length, 1, 'dev warns exactly once for forces:captured (deduped across frames)');
-    assert.match(devWarns[0], /removed at 1\.0/);
-    assert.match(devWarns[0], /'field:captured'/);
-
-    // production path (contract checks off): silent.
-    setContractChecks(false);
-    resetNoOpWarnings();
-    const prodWarns = runCapture();
-    assert.equal(prodWarns.length, 0, 'no deprecation warn in production');
-  } finally {
-    console.warn = orig;
-    setContractChecks(true); // restore for any later tests
-  }
 });
 
 test('a docked element collapses (scale → opacity) and holds — captured fires exactly once while held', () => {
@@ -158,8 +116,8 @@ test('capture → hold → release: a gated sink discharges on disengagement, fi
   harness.step(7);
   assert.deepEqual(
     dock.events,
-    ['field:captured', 'forces:captured', 'field:released', 'forces:released'],
-    'the full ordered sequence: captured (×alias) then released (×alias)',
+    ['field:captured', 'field:released'],
+    'the full ordered sequence: captured then released',
   );
   field.destroy();
 });
@@ -215,7 +173,6 @@ test('a [data-warp] element entering a warp throat fires field:relocated', () =>
   field.scan();
   harness.step(6);
   assert.ok(warpEl.events.includes('field:relocated'), 'field:relocated fired at the throat');
-  assert.ok(warpEl.events.includes('forces:relocated'), 'the forces:* alias fired too');
   field.destroy();
 });
 

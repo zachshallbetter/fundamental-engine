@@ -18,7 +18,7 @@ renderer other than the DOM canvas.
 npm i @fundamental-engine/core
 ```
 
-The browser host lives in [`@fundamental-engine/dom`](../platform); most apps reach for a thin adapter
+The browser host lives in [`@fundamental-engine/dom`](../dom); most apps reach for a thin adapter
 ([`@fundamental-engine/elements`](../elements), [`@fundamental-engine/react`](../react), [`@fundamental-engine/vanilla`](../vanilla))
 instead of wiring the host themselves. The public surface is frozen for `0.x` (see
 [API stability](../../docs/canonical/api-stability.md)).
@@ -38,14 +38,14 @@ instead of wiring the host themselves. The public surface is frozen for `0.x` (s
   diagnostics (`force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`,
   `causality`, `prediction`).
 - **64 recipes** across 4 tiers: a recipe is a portable field program. `compileRecipe()` lives here
-  (pure, no DOM); `applyRecipe()` and `bindData()` are in [`@fundamental-engine/dom`](../platform).
+  (pure, no DOM); `applyRecipe()` and `bindData()` are in [`@fundamental-engine/dom`](../dom).
 - **A conformance framework** that fires known particles into each force and checks the measured
   trajectory against the math. The same catalog drives the tests and the visual Lab.
 
 ## Quick start
 
 `createField` is renderer-agnostic, so it **requires a host** (a `FieldHost`: viewport, scroll, raf,
-and a canvas). In the browser, the host comes from [`@fundamental-engine/dom`](../platform):
+and a canvas). In the browser, the host comes from [`@fundamental-engine/dom`](../dom):
 
 ```ts
 import { createField } from '@fundamental-engine/core';
@@ -109,18 +109,18 @@ const plan = compileRecipe(recipeById('priority-well')!);
 ```
 
 `applyRecipe()` (run a recipe on a live DOM platform) and `bindData()` (records → bodies) are in
-[`@fundamental-engine/dom`](../platform). Browse all 64 at [`/docs/gallery`](https://fundamental-engine.com/docs/gallery).
+[`@fundamental-engine/dom`](../dom). Browse all 64 at [`/docs/gallery`](https://fundamental-engine.com/docs/gallery).
 
 ## Renderer-agnostic
 
 The engine touches no DOM globals (a boundary test keeps the allowlist empty). Everything the browser
 provides arrives through an injected `FieldHost`, so the same engine runs on a DOM canvas, an offscreen
 canvas, a headless harness, or any renderer you implement. `browserHost()` (in
-[`@fundamental-engine/dom`](../platform)) is the canonical DOM implementation of that contract.
+[`@fundamental-engine/dom`](../dom)) is the canonical DOM implementation of that contract.
 
 ## Related
 
-[`@fundamental-engine/dom`](../platform) · [`@fundamental-engine/elements`](../elements) ·
+[`@fundamental-engine/dom`](../dom) · [`@fundamental-engine/elements`](../elements) ·
 [`@fundamental-engine/react`](../react) · [`@fundamental-engine/vanilla`](../vanilla) · the
 [documentation map](../../docs/README.md).
 
