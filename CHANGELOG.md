@@ -86,6 +86,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   per-frame allocation (the depth sort reuses a persistent index scratch). The four modes
   join the `RENDER_MODES` catalog (now 20 entries), the recipe render layers, and the
   `<field-root>` CEM. JS core only; Swift/Kotlin port parity is a follow-up.
+- **`@fundamental-engine/core`:** **`BURST_RADIUS` and `monopoleField` exports (#977, Wallpaper
+  Rule).** `BURST_RADIUS` is the reach a one-shot `field.burst()` touches (formerly a private
+  literal in the burst glue), exported so a UI affordance that visualizes a burst sizes itself to
+  the real blast front. `monopoleField(cx, cy, sign, s, x, y)` is the engine's radial-monopole
+  field — now the ONE formula `charge.field` (via `bodyMonopole`) radiates AND the site's
+  charge-stage field-line diagram traces, so the diagram is the real engine field, not a hand-rolled
+  stand-in. `FrameState` (conformance trajectory) also records carried `color`, so a `pigment`
+  scenario's trajectory captures the real color transport. Additive; no behavior change.
 
 - **`@fundamental-engine/core` + `@fundamental-engine/elements`:** **opt-in velocity-Verlet
   integrator mode (#659).** `integrator: 'velocity-verlet'` (also

@@ -34,6 +34,14 @@ export function recoilImpulse(dpx: number, dpy: number, mOther: number): Vec2 {
 }
 
 /**
+ * The reach of a one-shot `field.burst(x, y)` blast, in engine (page-pixel) units: matter
+ * within this radius is shoved + heated, matter outside is inert (see `burstImpulse`). Exported
+ * so a UI affordance that visualizes a burst (e.g. an expanding shock ring) can size itself to
+ * the real blast front rather than painting an arbitrary radius.
+ */
+export const BURST_RADIUS = 160;
+
+/**
  * A discrete radial burst impulse (§11) — the velocity kick and heat a one-shot
  * `field.burst(x, y)` imparts to matter at offset `(dx, dy[, dz])` from the blast,
  * falling off linearly to nothing at radius `r`; outside `r` it's inert. `dz` is the

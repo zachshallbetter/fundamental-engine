@@ -57,7 +57,7 @@ import { registerCoreForces } from '../forces/index.ts';
 import { registerNaturalForces } from '../forces/natural.ts';
 import { registerExtendedForces } from '../forces/extended.ts';
 import { ScalarGridImpl } from './scalar-grid.ts';
-import { sparkCount, burstImpulse } from './reactions.ts';
+import { sparkCount, burstImpulse, BURST_RADIUS } from './reactions.ts';
 import {
   linkAlpha,
   marchingCell,
@@ -3092,7 +3092,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     threads: setThreads,
     burst: (x, y, hex) => {
       // discrete one-shot: shove + heat nearby matter, optionally tint it (§11).
-      const R = 160;
+      const R = BURST_RADIUS;
       for (const q of store.particles) {
         // the blast point sits on the page plane (z = 0): matter off-plane is shoved
         // deeper as well as outward — the 3D leg is 0 in a flat field (z-axis.md).
