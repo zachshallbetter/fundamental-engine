@@ -1,6 +1,7 @@
 package com.fundamental.core.engine
 
 import com.fundamental.core.math.Vec3
+import java.lang.ref.WeakReference
 
 // The core contracts — the Kotlin port of swift/Sources/FundamentalCore/Engine/Types.swift, trimmed
 // to what the foundation slice needs. `Particle`/`Body`/`Env` are classes (reference semantics) on
@@ -15,6 +16,20 @@ data class Box(
     /** Half-width / half-height — the JS `hw`/`hh`. */
     val hw: Float get() = halfExtents.x
     val hh: Float get() = halfExtents.y
+
+    companion object {
+        /**
+         * Build a flat body box from a **field-space** top-left corner and a size. This is the one
+         * transform every host adapter applies once it has expressed a body's top-left in field space
+         * (the Compose `Modifier.fieldBody` after `localPositionOf`, the View host's `worldBox` after
+         * subtracting the host's screen origin). The corner MUST already be field-relative — the origin
+         * conversion is the host's job; this only centers the box. See `coordinate-spaces.md`.
+         */
+        fun fromFieldTopLeft(x: Float, y: Float, width: Float, height: Float): Box = Box(
+            center = Vec3(x + width / 2f, y + height / 2f, 0f),
+            halfExtents = Vec3(width / 2f, height / 2f, 0f),
+        )
+    }
 }
 
 /** A free particle — the lightest agent. Positions/velocities are 3D; z stays 0 on flat fields. */
@@ -113,6 +128,21 @@ class Body(
     /** Source mass M for `gravity`/`charge` (§20.10/§21). */
     var M: Float = 1f,
 ) {
+    /**
+     * Opaque platform reference (an Android `View`, or any host-owned rendered object) that this body
+     * tracks. Mirrors Swift's `weak var view: AnyObject?` (Types.swift) — held weakly so the field never
+     * keeps a detached view alive, and so `MeasurementRegistry.measure()` can drop a body whose view has
+     * been garbage-collected. Null for a view-less programmatic body. Backed by a [WeakReference]; read
+     * and write through this accessor.
+     */
+    var view: Any?
+        get() = viewRef?.get()
+        set(value) {
+            viewRef = value?.let { WeakReference(it) }
+        }
+
+    private var viewRef: WeakReference<Any>? = null
+
     /** Captured load held by `sink` (was `mass`, §21.2). */
     var accreted: Float = 0f
 

@@ -19,6 +19,7 @@ class FieldPlatformTests {
         val platform = FieldPlatform(host)
         val body = Body(tokens = listOf("attract"))
         body.box = Box(center = Vec3(200f, 150f, 10f), halfExtents = Vec3(20f, 20f, 10f))
+        body.view = body // TestHost boxes the body's view handle; self-ref reads its own `box`.
         platform.measure.register(body)
 
         val report = platform.tick(now = 1.0)

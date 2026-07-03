@@ -26,9 +26,10 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.Lifecycle
@@ -36,7 +37,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import android.provider.Settings
 import com.fundamental.core.engine.Body
-import com.fundamental.core.math.Vec3
 import com.fundamental.core.runtime.FieldController
 import com.fundamental.core.engine.Box as FieldBox
 
@@ -68,6 +68,15 @@ enum class RenderMode {
 /** Provides the running [FieldController] to descendants so [Modifier.fieldBody] can attach. */
 val LocalFieldController = compositionLocalOf<FieldController?> { null }
 
+/**
+ * The [FieldView] root's live [LayoutCoordinates], published so [Modifier.fieldBody] can express a body's
+ * box in **field space** (relative to the field root's top-left), not relative to a body's immediate
+ * parent. This is the Compose analog of `AndroidFieldHost.worldBox` subtracting the host view's screen
+ * origin, and of the JS/UIKit contract in `docs/canonical/coordinate-spaces.md` (the adapter converts host
+ * → field space at the field boundary). Null until the root is first positioned.
+ */
+val LocalFieldRootCoordinates = compositionLocalOf<LayoutCoordinates?> { null }
+
 private const val LINK_RADIUS = 38f // px — links connect particles closer than this
 private val COOL = Color(0xFFFFE0C8) // resting (warm-default identity), matches the engine palette
 
@@ -82,6 +91,9 @@ fun FieldView(
     var controller by remember { mutableStateOf<FieldController?>(null) }
     var frame by remember { mutableIntStateOf(0) }
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
+    // The field root's coordinates — bodies express their box relative to THIS, so nested/scrolling
+    // layout offsets don't drift the well (see LocalFieldRootCoordinates / fieldBody).
+    var rootCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     // Reduced-motion seam. No FieldHost here (unlike :fundamental-android's AndroidFieldHost), so read
     // the same system signal it does: ANIMATOR_DURATION_SCALE == 0 means the user disabled animations.
@@ -125,16 +137,18 @@ fun FieldView(
     }
 
     Box(
-        modifier = modifier.onSizeChanged { size ->
-            if (size.width == 0 || size.height == 0) return@onSizeChanged
-            canvasSize = size
-            val c = controller
-            if (c == null) {
-                controller = FieldController(size.width.toFloat(), size.height.toFloat(), particleCount = particleCount)
-            } else {
-                c.resize(size.width.toFloat(), size.height.toFloat())
-            }
-        },
+        modifier = modifier
+            .onGloballyPositioned { rootCoordinates = it }
+            .onSizeChanged { size ->
+                if (size.width == 0 || size.height == 0) return@onSizeChanged
+                canvasSize = size
+                val c = controller
+                if (c == null) {
+                    controller = FieldController(size.width.toFloat(), size.height.toFloat(), particleCount = particleCount)
+                } else {
+                    c.resize(size.width.toFloat(), size.height.toFloat())
+                }
+            },
     ) {
         Canvas(
             modifier = Modifier
@@ -223,7 +237,10 @@ fun FieldView(
                     }
                 }
             }
-            CompositionLocalProvider(LocalFieldController provides c) { content() }
+            CompositionLocalProvider(
+                LocalFieldController provides c,
+                LocalFieldRootCoordinates provides rootCoordinates,
+            ) { content() }
         }
     }
 }
@@ -233,8 +250,14 @@ private class TrailBuffer(val bitmap: Bitmap, val canvas: AndroidCanvas, val pai
 
 /**
  * Make this composable a force source in the surrounding [FieldView]. The body's well tracks the
- * element's on-screen bounds each layout. Mirrors SwiftUI `.fieldBody(...)` / React `useFieldBody`.
- * A no-op when not inside a [FieldView].
+ * element's bounds **in field space** — its offset relative to the [FieldView] root, not its immediate
+ * parent — each layout. Mirrors SwiftUI `.fieldBody(...)` / React `useFieldBody`, and the JS/UIKit
+ * coordinate contract (`docs/canonical/coordinate-spaces.md`): the field adapter positions bodies in the
+ * field's own space, so nested layout containers and scroll offsets between the body and the field root
+ * do not drift the well.
+ *
+ * A no-op when not inside a [FieldView]. If the field root is not yet positioned (first frame), the body
+ * falls back to root-space so it still attaches at a sensible position until the root reports in.
  */
 @Composable
 fun Modifier.fieldBody(
@@ -244,18 +267,27 @@ fun Modifier.fieldBody(
     spin: Float = 1f,
 ): Modifier {
     val controller = LocalFieldController.current ?: return this
+    val rootCoordinates = LocalFieldRootCoordinates.current
     val body = remember { Body(tokens = tokens, strength = strength, range = range, spin = spin) }
     DisposableEffect(controller) {
         controller.addBody(body)
         onDispose { controller.removeBody(body) }
     }
     return this.onGloballyPositioned { coords ->
-        val pos = coords.positionInParent()
-        val w = coords.size.width.toFloat()
-        val h = coords.size.height.toFloat()
-        body.box = FieldBox(
-            center = Vec3(pos.x + w / 2f, pos.y + h / 2f, 0f),
-            halfExtents = Vec3(w / 2f, h / 2f, 0f),
+        // Field-space origin: this body's top-left expressed in the field root's local coordinates. When
+        // the root is attached, `localPositionOf` walks the layout tree so intervening containers/scroll
+        // offsets cancel out. Before the root reports in, `positionInRoot()` is the closest fallback.
+        val root = rootCoordinates
+        val topLeft = if (root != null && root.isAttached && coords.isAttached) {
+            root.localPositionOf(coords, Offset.Zero)
+        } else {
+            coords.positionInRoot()
+        }
+        body.box = FieldBox.fromFieldTopLeft(
+            x = topLeft.x,
+            y = topLeft.y,
+            width = coords.size.width.toFloat(),
+            height = coords.size.height.toFloat(),
         )
     }
 }

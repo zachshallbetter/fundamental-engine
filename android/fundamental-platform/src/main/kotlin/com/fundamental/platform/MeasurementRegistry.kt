@@ -84,11 +84,16 @@ class MeasurementRegistry {
         val toRemove = ArrayList<Body>()
 
         for ((id, body) in entries) {
-            // TODO(parity): Swift's `Body` exposes `weak var view: AnyObject?` and this loop reads
-            // `body.view`, dropping the body when the view is gone. The Kotlin core `Body` (Types.kt)
-            // was trimmed and has no `view` field yet, so we pass the `Body` itself as the view handle
-            // to `host.worldBox`. Restore the `body.view`-based read once `Body.view` lands in core.
-            val view: Any = body
+            // Mirror of Swift's loop (MeasurementRegistry.swift): read the body's weak `view` handle and
+            // drop the body if the view is gone (GC'd / detached) OR the host can't box it. `Body.view`
+            // (Types.kt) is the opaque platform reference the host resolves — an Android `View` for
+            // `AndroidFieldHost`. A view-less programmatic body has `view == null` and is dropped here,
+            // same as Swift.
+            val view = body.view
+            if (view == null) {
+                toRemove.add(id)
+                continue
+            }
             val box = host.worldBox(view)
             if (box == null) {
                 toRemove.add(id)

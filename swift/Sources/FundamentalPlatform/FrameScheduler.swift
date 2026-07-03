@@ -61,7 +61,15 @@ public struct FrameReport {
 ///   discover → read → compute → state → write → render
 ///
 /// The scheduler enforces the discipline: a geometry read requested during the write phase
-/// is a violation. In strict mode it throws; otherwise it records and continues.
+/// is a violation. In strict mode it **traps** — `fatalError`, an unrecoverable abort — surfacing the
+/// offending op fast in development; otherwise it records the violation and continues.
+///
+/// Per-plane divergence (intentional, noted for parity honesty): the Kotlin port
+/// (`FrameScheduler.kt`) uses `error(...)`, which raises a *catchable* `IllegalStateException`; Swift's
+/// `fatalError` cannot be caught. Both are non-recoverable in practice — strict mode is a
+/// development-only fail-fast, never wired on in production — but the mechanism differs, so a test can
+/// assert-throws on Kotlin while Swift must use death-test tooling. If strict mode ever needs to be
+/// recoverable on Swift, switch this to a thrown Swift `Error` and update this note.
 public final class FrameScheduler {
     /// A registered handler tagged with a stable token, so an unsubscribe identifies the original
     /// handler even after earlier removals shift the array (a captured index would go stale).
@@ -102,6 +110,7 @@ public final class FrameScheduler {
         guard let phase = current else { return } // outside a frame — allowed
         guard readPhases.contains(phase) else {
             let v = PhaseViolation(phase: phase, op: op, allowed: Array(readPhases), frame: frame)
+            // strict mode traps (unrecoverable) — see the type doc for the Swift-vs-Kotlin divergence.
             if strict { fatalError("[Fundamental/Platform] \(v.message)") }
             recorded.append(v)
             return
