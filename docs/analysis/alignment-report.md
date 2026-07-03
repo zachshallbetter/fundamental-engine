@@ -378,27 +378,52 @@ An audit of the Three.js integration door (`packages/three/src`) reveals how Web
 * **Cadence Tracing**: Streamline tubes (`streamlineTubes`) and instanced arrow grids (`vectorField`) run field query samplers on configurable interval cadences (e.g. every 6th frame), aligning computation loops with body movement paces.
 * **Stepped Agents**: Steered agents (`FieldAgent` and `MeshAgentHandle`) integrate forces and write positions back to the projected meshes, wrapping edge bounces.
 
+## 10. Comprehensive Core Engine Code Run-Through & Conformance Audit
+
+A comprehensive code audit of the core engine implementation (`packages/core/src/core`, `forces`, and `recipes`) identifies key design invariants, mathematical kernels, and integration lanes.
+
+### 10.1 Physics Integration Schemes: [core/integrator.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/core/integrator.ts)
+* **Verlet Scheme**: Opt-in `velocity-verlet` implements the stored-acceleration formulation. To handle discontinuous forces correctly, any kinematic force application resets stored acceleration and marks `kinTouch` to prevent invalid position extrapolations.
+* **Massive Scaling**: Additive forces scale velocity changes by `inv = 1 / p.m`, while kinematic forces bypass mass scaling to reflect, rotate, or relaunch matter unconditionally.
+* **Frictional Cadence**: Step friction (`FRICTION = 0.95`) and heat decay (`HEAT_DECAY = 0.972`) are applied out-of-scheme. Under `fixed` or `verlet` modes, decays are scaled exponentially by `dt` (`Math.pow(FRICTION, dt)`) to prevent simulation speed dependencies.
+
+### 10.2 Natural Force Laws: [forces/natural.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/forces/natural.ts) & [core/geometry.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/core/geometry.ts)
+* **Plummer Softening**: Monopole gravity and charges use Plummer softening based on the Schwarzschild radius $r_s = 2GM/c^2$ to bypass singularities ($d = 0$) at the core.
+* **Dipole Synthesis**: Chargeable and magnetic bodies map dipole vectors along the heading if spatial dimension scales are too small ($d < 8\text{px}$), maintaining readable fields.
+
+### 10.3 Log-Normalized Page Weights: [core/weights.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/core/weights.ts)
+* **Heavy-Tailed Compression**: Compresses values via a log-normalization curve $\ln(x+1) / \ln(\text{max}+1)$ to avoid scaling extremes.
+* **Engine Strength Mapping**: Maps weights onto attract-body forces using $0.4 + w \cdot 1.6$, capping strengths between $0.4$ (always active) and $2.0$.
+
+### 10.4 Local Thermodynamics: [core/thermo.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/core/thermo.ts)
+* **Alignment R-ratio**: Measures velocity alignment ($R \in [0,1]$) to evaluate direction dispersion.
+* **Agitation-Gating**: Gates entropy by agitation to treat near-still states as highly ordered.
+
+### 10.5 Compiler & Intent Execution: [recipes/compile.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/recipes/compile.ts) & [recipes/intent.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/recipes/intent.ts)
+* **Lane-Decoupled Compilation**: Maps concept definitions, diagnostics, and conditions into separate evaluation layers, compiling only token attributes into element markup.
+* **No-Silent-Caps Rule**: Named matter modes or overlays that cannot be applied under the current platform targets are reported in `unapplied` logs instead of being ignored.
+
 ---
 
-## 10. File-by-File Diagnostics, Recording, and Security Audits
+## 11. File-by-File Diagnostics, Recording, and Security Audits
 
 An audit of the diagnostics vectors (`packages/core/src/diagnostics`), recording runtime (`packages/core/src/record`), and permission enforcement layers (`packages/core/src/agent-permissions.test.ts` & `field-policy.test.ts`) details how vector exporting, deterministic playback, and policy/sandbox boundaries are structured.
 
-### 10.1 Seeded Determinism and Replay Integrity: [record/rng.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/record/rng.ts) & [record/record.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/record/record.ts)
+### 11.1 Seeded Determinism and Replay Integrity: [record/rng.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/record/rng.ts) & [record/record.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/record/record.ts)
 * **Mechanics**: Implements a zero-dependency 32-bit `mulberry32` generator (`seededRng`).
 * **Design Invariant**: By enforcing integer-only operations and bypassing `Math.random()`, the generator ensures that simulation runs are platform-independent and reproduce bit-for-bit identically across client engines.
 * **Compact Stride Buffer Allocation**: The recorder saves trajectories using flat, contiguous `Float32Array` buffers (recording each frame as `[x, y, vx, vy, age]`), eliminating frame-by-frame memory allocations and GC spikes during recording passes.
 
-### 10.2 Security Facades and capability scoping: [agent-permissions.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/agent-permissions.test.ts) & [field-policy.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/field-policy.test.ts)
+### 11.2 Security Facades and capability scoping: [agent-permissions.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/agent-permissions.test.ts) & [field-policy.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/field-policy.test.ts)
 * **Design Invariant (Opaque Gating)**: The `field.forAgent(options)` interface provides a strict read-only wrapper facade for Software Agents, gating method access by capability permissions (`read:metrics`, `read:relationships`, `read:replay`). Mutation methods are fully omitted from the facade, ensuring that the runtime remains sandboxed.
 * **Tightest-Fit Precedence**: Capability queries evaluate to the tightest intersection of permissions. If a global policy denies body data (`allowBodyDataInSnapshots: false`), data queries will return undefined even if the agent is granted `read:body-data`.
 * **Zero-Limit Budget Hard Gate**: Setting `budgets.agentRead = 0` immediately drops metrics outputs to `{}` and forces snapshots to public profiles, safeguarding performance and data privacy under strict allocation limits.
 
-### 10.3 Meta-Contract Validation: [contract-coverage.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/contract-coverage.test.ts)
+### 11.3 Meta-Contract Validation: [contract-coverage.test.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/contract-coverage.test.ts)
 * **Mechanics**: Implements a compile-time meta-test verifying unit coverage for all public configuration options, metrics, and DOM attributes.
 * **Sync Assurance**: Direct-parses the Astro documentation rosters (`docs-api.ts`) and `types.ts` to construct a live roster of expected symbols, comparing it against the test files. This guarantees that new options or attributes cannot be checked in without accompanying unit test coverage.
 
-### 10.4 Pure Diagnostics and Vector Serialization: [diagnostics/modes.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/diagnostics/modes.ts) & [export.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/export.ts)
+### 11.4 Pure Diagnostics and Vector Serialization: [diagnostics/modes.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/diagnostics/modes.ts) & [export.ts](file:///Users/zachshallbetter/Projects/fundamental-engine/packages/core/src/export.ts)
 * **ReadOnly Diagnostics**: Diagnostics modes (topology graphs, HUD HUDs, predictive trajectories) read parameters but never mutate core coordinates, preserving physical invariants.
 * **Vector Precision**: The vector serializer (`segmentsToSvg`) rounds coordinates to two decimal places (`Math.round(n * 100) / 100`) to output compact standalone SVGs while maintaining subpixel spatial accuracy.
 

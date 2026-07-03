@@ -1,6 +1,6 @@
 /**
- * `ParticlePool.write` — the particle bridge's conversion step. Pins that a stride-4
- * `[x, y, heat, size]` staging buffer (the shape `FieldHandle.readParticles` fills) lands on the
+ * `ParticlePool.write` — the particle bridge's conversion step. Pins that a stride-5
+ * `[x, y, z, heat, size]` staging buffer (the shape `FieldHandle.readParticles` fills) lands on the
  * geometry: position via the projection, `aHeat`/`aSize` per vertex, draw range = live count, and
  * truncation to capacity. No WebGL context needed — `BufferGeometry` is pure data.
  */
