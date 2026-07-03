@@ -7,6 +7,8 @@ system — the same field model can run headlessly, in native views, across desi
 tools, over data records, or through custom render surfaces.
 
 [![Live demo: fundamental-engine.com](https://img.shields.io/badge/demo-fundamental--engine.com-4da3ff)](https://fundamental-engine.com)
+[![npm](https://img.shields.io/npm/v/@fundamental-engine/core?label=npm&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/core)
+[![npm provenance](https://img.shields.io/badge/npm-provenance-2dd4bf?logo=npm)](https://www.npmjs.com/package/@fundamental-engine/core#provenance)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Core runtime dependencies: 0](https://img.shields.io/badge/core%20runtime%20deps-0-2dd4bf)
 ![TypeScript: strict](https://img.shields.io/badge/TypeScript-strict-3178c6)
@@ -467,18 +469,22 @@ nothing stable is renamed or removed without a major. See [API stability](docs/c
 
 ## Packages
 
-| Package | What it is |
-|---|---|
-| [`@fundamental-engine/core`](packages/core) | renderer-agnostic field runtime: bodies, agents, forces, FieldRecipes, Field Contracts, integrator, diagnostics, snapshots, query, conformance |
-| [`@fundamental-engine/dom`](packages/dom) | web host adapter: `browserHost()`, the FrameScheduler, measurement / state / feedback / relationships / visual bindings / overlays, `applyRecipe()` / `bindData()`, and `lintPlatform()` |
-| [`@fundamental-engine/vanilla`](packages/vanilla) | framework-free web door: `FieldField`, `mountField()`, and a host-bundled `createField()`, no custom element |
-| [`@fundamental-engine/elements`](packages/elements) | the `<field-root>` and `<field-cell>` custom elements (`<field-root>` is also registered as `<field-field>`) |
-| [`@fundamental-engine/react`](packages/react) | the `<FieldField>` component and the `useFieldField()` hook |
-| [`@fundamental-engine/three`](packages/three) | Three.js host and projection adapter: `createFieldLayer()`, `PlaneProjection`, `VolumeProjection`, `threeHost()`, `threeBackend()`; `three` is a peer dependency |
+All seven publish to [npm](https://www.npmjs.com/org/fundamental-engine) under the `@fundamental-engine` scope, in lockstep, **with provenance**. (GitHub's "Packages" tab stays empty because that's the separate GitHub Packages registry — these live on npm.org.)
+
+| Package | npm | What it is |
+|---|---|---|
+| [`@fundamental-engine/core`](packages/core) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/core?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/core) | renderer-agnostic field runtime: bodies, agents, forces, FieldRecipes, Field Contracts, integrator, diagnostics, snapshots, query, conformance |
+| [`@fundamental-engine/dom`](packages/dom) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/dom?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/dom) | web host adapter: `browserHost()`, the FrameScheduler, measurement / state / feedback / relationships / visual bindings / overlays, `applyRecipe()` / `bindData()`, and `lintPlatform()` |
+| [`@fundamental-engine/vanilla`](packages/vanilla) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/vanilla?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/vanilla) | framework-free web door: `FieldField`, `mountField()`, and a host-bundled `createField()`, no custom element |
+| [`@fundamental-engine/elements`](packages/elements) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/elements?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/elements) | the `<field-root>` and `<field-cell>` custom elements (`<field-root>` is also registered as `<field-field>`) |
+| [`@fundamental-engine/react`](packages/react) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/react?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/react) | the `<FieldField>` component and the `useFieldField()` hook |
+| [`@fundamental-engine/three`](packages/three) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/three?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/three) | Three.js host and projection adapter: `createFieldLayer()`, `PlaneProjection`, `VolumeProjection`, `threeHost()`, `threeBackend()`; `three` is a peer dependency |
+| [`@fundamental-engine/create`](packages/create) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/create?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/create) | project scaffolder — `npm create @fundamental-engine` generates a vanilla / React / web-component starter |
 
 Install the specific package you need:
 
 ```bash
+npm create @fundamental-engine     # scaffold a new project (fastest start)
 npm i @fundamental-engine/vanilla   # the recommended door
 npm i @fundamental-engine/react     # for React
 npm i @fundamental-engine/elements  # the web component
