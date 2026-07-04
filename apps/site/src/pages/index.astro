@@ -5,6 +5,7 @@ import SiteFooter from "../components/SiteFooter.astro";
 import ManualHero from "../components/ManualHero.astro";
 import Button from "../components/ui/Button.astro";
 import { MANUAL_FORCES } from "@fundamental-engine/core";
+import { currentVersion } from "../lib/changelog";
 import "../styles/manual.css";
 import "../styles/force-glyphs.css";
 import "../styles/landing.css";
@@ -30,11 +31,30 @@ const ASKS = [
   { title: 'Best way to debounce a resize observer?', meta: '1d · 7▲', urgency: 0.46 },
   { title: 'Preferred naming for boolean props?', meta: '4d · 2▲', urgency: 0.24 },
 ];
+
+// Product structured data — Fundamental is a dev library, so SoftwareApplication is the right
+// schema (richer than the site-wide WebSite graph). softwareVersion tracks the changelog so it
+// never goes stale.
+const softwareLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Fundamental',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Web, iOS, macOS, Android',
+  description:
+    'A platform-native relational field runtime — elements become bodies in an invisible physics field that measures importance, attention, and relationships, then writes them back as CSS variables and agent-readable queries.',
+  url: 'https://fundamental-engine.com',
+  softwareVersion: currentVersion(),
+  author: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  license: 'https://opensource.org/licenses/MIT',
+};
 ---
 
 <Base
   title="Fundamental — a readable behavior layer for host objects"
   description="Fundamental is a readable behavior layer for host objects. Add a data-* attribute and the runtime turns an element, record, or view into a body in a shared field, then writes importance, attention, and relationships back as --field-* variables you style with — and exposes the same state to agents via field.query(). The DOM is the first host, not the boundary: the renderer-agnostic core also runs in WebGL, natively on Apple and Android, and headlessly. Zero runtime dependencies in core. 0.x preview."
+  jsonLd={softwareLd}
 >
   <SiteNav current="home" />
   <div id="main" class="manual-shell">

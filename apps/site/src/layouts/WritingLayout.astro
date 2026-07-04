@@ -70,7 +70,7 @@ const articleLd = {
 };
 ---
 
-<Base title={`${title} · Fundamental writings`} description={description}>
+<Base title={`${title} · Fundamental writings`} description={description} ogType="article">
   <script type="application/ld+json" is:inline set:html={JSON.stringify(articleLd)} />
   <SiteNav current="writings" />
   <div class="docs-shell">

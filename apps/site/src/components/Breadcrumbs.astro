@@ -13,7 +13,23 @@ interface Props {
   crumbs: Crumb[];
 }
 const { crumbs } = Astro.props;
+
+// BreadcrumbList structured data — Google shows a breadcrumb trail in the SERP from this.
+// Only crumbs with an href get an `item` URL; label-only section crumbs still hold a position.
+const site = Astro.site ?? 'https://fundamental-engine.com';
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: crumbs.map((c, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: c.label,
+    ...(c.href ? { item: new URL(c.href, site).href } : {}),
+  })),
+};
 ---
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbLd)} />
 
 <nav class="breadcrumbs" aria-label="Breadcrumb" data-pagefind-ignore data-breadcrumbs>
   <ol>
