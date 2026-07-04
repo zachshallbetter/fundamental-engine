@@ -42,7 +42,7 @@ runs *the same physics* the live product does. We argue the engineering case for
 same core already drives a canvas surface, SVG overlays, CSS-variable feedback, and a headless test
 harness, and could target WebGL, native, or a different document through a custom host — and we are
 candid about the one place the boundary is not yet clean: a legacy element write-back path in
-`core/field.ts` is still being migrated behind the platform registries (Phase 5; tracking issue
+`engine/field.ts` is still being migrated behind the platform registries (Phase 5; tracking issue
 #228). Portability here is demonstrated by a *proven boundary plus host injection*, not by a second
 shipping production renderer.
 
@@ -281,7 +281,7 @@ on an element the host handed in. Operating on an injected node is not the same 
 global, and the boundary test (which forbids `document.*` / `window.*` / `requestAnimationFrame` /
 `new ResizeObserver`, not "all element access") correctly distinguishes the two.
 
-**The one legacy path.** A *legacy element write-back path in `core/field.ts` is still pending
+**The one legacy path.** A *legacy element write-back path in `engine/field.ts` is still pending
 migration*. The engine's canvas simulate-and-render loop writes feedback directly onto bodies it was
 handed — CSS custom properties (`el.style.setProperty('--field-density', …)`), a `transform` on
 moving layouts, and `data-*` flags — rather than routing every such write through the
@@ -294,7 +294,7 @@ so it does not break the empty-allowlist boundary — but it does mean the platf
 contracts state the same thing plainly:
 
 > `Fundamental` is renderer-agnostic and imports no DOM globals (a legacy element write-back path
-> still lives in `core/field.ts`, pending migration).
+> still lives in `engine/field.ts`, pending migration).
 > — `system-contracts.md` §24
 
 Stating this boundary precisely is part of the contribution: the value of an *enforced* boundary is
@@ -616,7 +616,7 @@ The argument rests on three checkable artifacts:
 The portability claim is bounded, and we state the bounds plainly.
 
 - **The legacy write-back is the one place the boundary is not fully clean.** As detailed in §3.5, the
-  canvas surface's element write-back in `core/field.ts` still writes CSS variables and transforms onto
+  canvas surface's element write-back in `engine/field.ts` still writes CSS variables and transforms onto
   injected nodes directly rather than through the `FeedbackRegistry`. This is element write-back, not a
   DOM global, so it does not break the empty-allowlist boundary — but it is the reason we do not claim
   the platform owns *all* DOM writes. It is tracked for migration behind the registries (Phase 5;
@@ -636,7 +636,7 @@ separation and a *checkable* portability story, stated to exactly the precision 
 
 ## 7. Limitations
 
-Beyond the two honest limits of §6.3 — the legacy element write-back path in `core/field.ts` not yet
+Beyond the two honest limits of §6.3 — the legacy element write-back path in `engine/field.ts` not yet
 routed through the `FeedbackRegistry` (Phase 5; #228), and the absence of a shipping non-DOM production
 renderer — the architecture carries two further caveats a preprint must name.
 
@@ -708,7 +708,7 @@ headless physics harness, and a supplied-vs-derived metric discipline turns inte
 portable, auditable program. We have made the engineering case for portability — one core already
 driving a canvas, SVG overlays, CSS-variable feedback, and a headless harness, with a clear host-
 shaped path to WebGL, native, or a different document — and we have been candid about its bounds: a
-legacy element write-back path in `core/field.ts` is still being migrated behind the platform
+legacy element write-back path in `engine/field.ts` is still being migrated behind the platform
 registries (Phase 5; #228), and there is no shipping non-DOM production renderer yet. Portability is
 demonstrated by a proven boundary plus host injection, not by a second production renderer. The
 companion papers validate the paradigm this runtime serves in their own domains — reading (Paper 2),

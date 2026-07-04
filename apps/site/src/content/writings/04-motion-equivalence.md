@@ -136,7 +136,7 @@ design, never a finding.
 for reduced motion as a CSS/JS media query, intended for readers for whom motion is a barrier rather
 than an enhancement. Fundamental reads it through an injected host capability —
 `reducedMotion()` on the `FieldHost` interface, documented as "whether the user prefers reduced motion
-(freezes the sim)" (`packages/core/src/core/host.ts`) and implemented in the browser host via
+(freezes the sim)" (`packages/core/src/engine/host.ts`) and implemented in the browser host via
 `matchMedia('(prefers-reduced-motion: reduce)')` (`packages/dom/src/browser-host.ts`). The
 standard's framing — motion is a *preference dimension*, not a binary on/off of the interface — is the
 seed of this paper's model. [prefers-reduced-motion]
@@ -432,7 +432,7 @@ To be precise, in the family's house style:
   (`packages/core/src/agents/user-agent.ts`), both with the a11y test set
   (`packages/core/src/contracts/a11y.test.ts`).
 - The `reducedMotion()` host capability that freezes the simulation
-  (`packages/core/src/core/host.ts`, `packages/dom/src/browser-host.ts`).
+  (`packages/core/src/engine/host.ts`, `packages/dom/src/browser-host.ts`).
 - The accessibility preview (`apps/site/src/pages/docs/accessibility-preview.astro`), the reduced-motion
   path of the Reading Field (`apps/site/src/pages/docs/reading-field.astro`), and the static narrative
   collapse (visualization-methods-taxonomy §13: under `prefers-reduced-motion` the narrative "collapses
@@ -613,7 +613,7 @@ Every accessibility claim in this paper is checkable against the repository. The
   `packages/core/src/contracts/guards.ts` (`assertReducedMotionFallback`, `MISSING_REDUCED_MOTION`),
   `packages/core/src/agents/user-agent.ts` (`userFieldSource` wake-gating),
   `packages/core/src/visual/channels.ts` (`emission` reduced-motion flattening),
-  `packages/core/src/core/host.ts` / `packages/dom/src/browser-host.ts` (`reducedMotion()`),
+  `packages/core/src/engine/host.ts` / `packages/dom/src/browser-host.ts` (`reducedMotion()`),
   `packages/core/src/contracts/index.ts` (Accessibility Contract in `CONTRACTS`).
 - **Tests:** `packages/core/src/contracts/a11y.test.ts` (fallback required; meaning survives without
   motion; color/glyph not sole carriers; events thresholded; contract published).

@@ -9,8 +9,8 @@
 > inspecting the shadow tree, measures it by `getBoundingClientRect` or an optional `getRect`,
 > and writes `--d` / `--field-density` back to the host (or a `writeTarget`). A
 > `FieldController` helper (§31.1) removes the event boilerplate. Engine pieces:
-> `core/shadow.ts` (`FieldController`, `ShadowRegistry`), `core/scanner.ts` (`bodyFromElement`,
-> rect-provider measurement), and the event wiring in `core/field.ts`; covered by
+> `engine/shadow.ts` (`FieldController`, `ShadowRegistry`), `engine/scanner.ts` (`bodyFromElement`,
+> rect-provider measurement), and the event wiring in `engine/field.ts`; covered by
 > `core/shadow.test.ts`. Most production-hardening additions in §31 (portals, scopes, the
 > registration handshake, SSR queue, throttled field events) remain **proposed**;
 > **local-cell budgets shipped** on `<field-cell>` (§31.19, #685 — `max-particles` + `fps`).
@@ -18,7 +18,7 @@
 > **Phase D note (platform runtime).** Shadow-DOM host registration is now handled by
 > `@fundamental-engine/dom`: the platform owns DOM participation, so a registered host's `getRect`
 > flows into the `MeasurementRegistry` and feedback writes are issued through the
-> `FeedbackRegistry`. The legacy `core/shadow.ts` path remains and behaves as documented below,
+> `FeedbackRegistry`. The legacy `engine/shadow.ts` path remains and behaves as documented below,
 > but on a default `<field-root>` the platform runtime is what binds these bodies to the field
 > (opt back to pure-legacy with `experimental-platform="off"` / `usePlatformRuntime(false)`).
 
@@ -228,7 +228,7 @@ The composed: true flag is required. It allows the event to cross the shadow bou
 
 ## 7. Registration Event Contract
 
-The registration event payload may provide only an element, or it may provide additional metadata. The shipped type is `RegisterBodyDetail` (`core/shadow.ts`):
+The registration event payload may provide only an element, or it may provide additional metadata. The shipped type is `RegisterBodyDetail` (`engine/shadow.ts`):
 
 ```ts
 interface RegisterBodyDetail {
@@ -338,7 +338,7 @@ This works for:
 - elements inside open shadow roots,
 - elements inside closed shadow roots when exposed through getRect.
 
-Canonical conversion (as built in `measureBodies`, `core/scanner.ts`): the rect is
+Canonical conversion (as built in `measureBodies`, `engine/scanner.ts`): the rect is
 read viewport-relative, with no canvas-rect subtraction and no DPR scaling.
 
 ```ts
@@ -494,7 +494,7 @@ updates that element's detail idempotently, and disconnected hosts are pruned. T
 
 ## 15. Registry Contract
 
-**As built (`ShadowRegistry`, `core/shadow.ts`):** the registry is a `Map` keyed by the host
+**As built (`ShadowRegistry`, `engine/shadow.ts`):** the registry is a `Map` keyed by the host
 element, holding that host's registration detail. Each live host yields exactly one body.
 
 ```ts
@@ -936,7 +936,7 @@ nested fields, design-system usage, and debugging. Except where marked **shipped
 
 ### 1. A FieldController helper for custom elements
 
-**Shipped (`FieldController`, `core/shadow.ts`).** Instead of every custom element manually
+**Shipped (`FieldController`, `engine/shadow.ts`).** Instead of every custom element manually
 dispatching registration events, the engine provides a tiny controller class. Construct it with
 the host (and optional extra detail), then call `connect()` / `disconnect()` / `update()` from
 the element's lifecycle callbacks; each emits the corresponding composed event with

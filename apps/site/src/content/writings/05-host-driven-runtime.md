@@ -53,7 +53,7 @@ runs *the same physics* the live product does. We argue the engineering case for
 same core already drives a canvas surface, SVG overlays, CSS-variable feedback, and a headless test
 harness, and could target WebGL, native, or a different document through a custom host — and we are
 candid about the one place the boundary is not yet clean: a legacy element write-back path in
-`core/field.ts` is still being migrated behind the platform registries (Phase 5; tracking issue
+`engine/field.ts` is still being migrated behind the platform registries (Phase 5; tracking issue
 #228). Portability here is demonstrated by a *proven boundary plus host injection*, not by a second
 shipping production renderer.
 
@@ -196,7 +196,7 @@ it turns on.
 ### 3.2 The `FieldHost` interface
 
 The core reaches the environment through exactly one injected interface,
-`FieldHost` (`packages/core/src/core/host.ts`). It is *pure types — no globals* — so the file that
+`FieldHost` (`packages/core/src/engine/host.ts`). It is *pure types — no globals* — so the file that
 imports it imports no DOM:
 
 ```ts
@@ -223,7 +223,7 @@ scroll position and page height, reduced-motion and visibility preferences, fram
 canvas factory for the heatmap buffer, and the event subscriptions for resize, scroll, visibility,
 input, and composed shadow-DOM body events — is a *method on the host*, not a global the engine calls.
 The engine's entry point, `createField(canvas, opts)`, makes the dependency mandatory: it throws if
-`opts.host` is absent (`packages/core/src/core/field.ts`), so there is no silent fallback to `window`.
+`opts.host` is absent (`packages/core/src/engine/field.ts`), so there is no silent fallback to `window`.
 
 ### 3.3 `browserHost()`: one implementation among possible many
 
@@ -254,7 +254,7 @@ different object with the same shape. `createBrowserField()` is the convenience 
 ### 3.4 The proof: an empty-allowlist boundary test
 
 The renderer-agnostic claim is not asserted; it is *enforced* by
-`packages/core/src/core/dom-boundary.test.ts`, the architectural keystone. The test walks every
+`packages/core/src/engine/dom-boundary.test.ts`, the architectural keystone. The test walks every
 non-test source file in `Fundamental` and fails if any of them contains a DOM-global *call-site*,
 matched as access/construction patterns so that ordinary prose ("scan the document", "debounce
 window") does not trip it:
@@ -292,7 +292,7 @@ on an element the host handed in. Operating on an injected node is not the same 
 global, and the boundary test (which forbids `document.*` / `window.*` / `requestAnimationFrame` /
 `new ResizeObserver`, not "all element access") correctly distinguishes the two.
 
-**The one legacy path.** A *legacy element write-back path in `core/field.ts` is still pending
+**The one legacy path.** A *legacy element write-back path in `engine/field.ts` is still pending
 migration*. The engine's canvas simulate-and-render loop writes feedback directly onto bodies it was
 handed — CSS custom properties (`el.style.setProperty('--field-density', …)`), a `transform` on
 moving layouts, and `data-*` flags — rather than routing every such write through the
@@ -305,7 +305,7 @@ so it does not break the empty-allowlist boundary — but it does mean the platf
 contracts state the same thing plainly:
 
 > `Fundamental` is renderer-agnostic and imports no DOM globals (a legacy element write-back path
-> still lives in `core/field.ts`, pending migration).
+> still lives in `engine/field.ts`, pending migration).
 > — `system-contracts.md` §24
 
 Stating this boundary precisely is part of the contribution: the value of an *enforced* boundary is
@@ -627,7 +627,7 @@ The argument rests on three checkable artifacts:
 The portability claim is bounded, and we state the bounds plainly.
 
 - **The legacy write-back is the one place the boundary is not fully clean.** As detailed in §3.5, the
-  canvas surface's element write-back in `core/field.ts` still writes CSS variables and transforms onto
+  canvas surface's element write-back in `engine/field.ts` still writes CSS variables and transforms onto
   injected nodes directly rather than through the `FeedbackRegistry`. This is element write-back, not a
   DOM global, so it does not break the empty-allowlist boundary — but it is the reason we do not claim
   the platform owns *all* DOM writes. It is tracked for migration behind the registries (Phase 5;
@@ -647,7 +647,7 @@ separation and a *checkable* portability story, stated to exactly the precision 
 
 ## 7. Limitations
 
-Beyond the two honest limits of §6.3 — the legacy element write-back path in `core/field.ts` not yet
+Beyond the two honest limits of §6.3 — the legacy element write-back path in `engine/field.ts` not yet
 routed through the `FeedbackRegistry` (Phase 5; #228), and the absence of a shipping non-DOM production
 renderer — the architecture carries two further caveats a preprint must name.
 
@@ -719,7 +719,7 @@ headless physics harness, and a supplied-vs-derived metric discipline turns inte
 portable, auditable program. We have made the engineering case for portability — one core already
 driving a canvas, SVG overlays, CSS-variable feedback, and a headless harness, with a clear host-
 shaped path to WebGL, native, or a different document — and we have been candid about its bounds: a
-legacy element write-back path in `core/field.ts` is still being migrated behind the platform
+legacy element write-back path in `engine/field.ts` is still being migrated behind the platform
 registries (Phase 5; #228), and there is no shipping non-DOM production renderer yet. Portability is
 demonstrated by a proven boundary plus host injection, not by a second production renderer. The
 companion papers validate the paradigm this runtime serves in their own domains — reading (Paper 2),
@@ -733,13 +733,13 @@ paradigm itself.
 
 Every architectural claim in this paper is checkable against the repository. The load-bearing anchors:
 
-- **The host boundary.** The `FieldHost` interface: `packages/core/src/core/host.ts`. The browser
+- **The host boundary.** The `FieldHost` interface: `packages/core/src/engine/host.ts`. The browser
   adapter: `packages/dom/src/browser-host.ts` (`browserHost()`). The shipped DOM-free reference host:
   `headlessHost()`, exported from `@fundamental-engine/core` (#600). The mandatory-host entry point:
-  `packages/core/src/core/field.ts` (`createField` throws without `opts.host`).
-- **The proof.** The empty-allowlist boundary test: `packages/core/src/core/dom-boundary.test.ts`
+  `packages/core/src/engine/field.ts` (`createField` throws without `opts.host`).
+- **The proof.** The empty-allowlist boundary test: `packages/core/src/engine/dom-boundary.test.ts`
   (`const ALLOW = new Set<string>()`). The legacy element write-back path it documents:
-  `packages/core/src/core/field.ts` (the `--field-density` / `transform` / `data-*` writes and the
+  `packages/core/src/engine/field.ts` (the `--field-density` / `transform` / `data-*` writes and the
   `feedbackSink` seam).
 - **The scheduler and registries.** `packages/dom/src/schedule.ts` (`FrameScheduler`, `PHASES`,
   `READ_PHASES`, `readGuard`, `assertPhase`), `platform.ts` (`createFieldPlatform`), and the six

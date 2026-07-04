@@ -35,7 +35,7 @@ apply, **declaration wins over inference** (§3).
 
 Temporal distance is a distance. The engine derives force from spatial distance; the kernels
 derive weight from temporal distance — pure, deterministic functions in
-`@fundamental-engine/core` (`core/temporal.ts`), all `(…, nowMs) → 0..1`, no `Date.now()` inside
+`@fundamental-engine/core` (`engine/temporal.ts`), all `(…, nowMs) → 0..1`, no `Date.now()` inside
 (callers supply `now`, which keeps them testable and frame-coherent):
 
 | Kernel | Shape | The question it answers |
@@ -123,7 +123,7 @@ snapshots do.
 
 ### Doctrine
 
-- **Adapters map host time.** Core imports no wall clock (`core/temporal.ts` takes `nowMs` from its
+- **Adapters map host time.** Core imports no wall clock (`engine/temporal.ts` takes `nowMs` from its
   caller; the kernels never call `Date.now()`). The host adapter is the *only* place host time
   enters, and it enters as a supplied value — this is what keeps the engine testable and
   frame-coherent.

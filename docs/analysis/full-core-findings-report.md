@@ -50,7 +50,7 @@ Most paths support injected RNG, but at least one natural-force path still uses 
 Impact:
 - Replay/conformance behavior can depend on global-patch strategy rather than pure injected RNG.
 
-### 2) `core/field.ts` is very large and multi-responsibility
+### 2) `engine/field.ts` is very large and multi-responsibility
 `field.ts` combines lifecycle orchestration, rendering modes, overlay rendering, event coalescing, host wiring, feedback writeback, movement systems, and API façade surface.
 This increases change risk and regression surface concentration.
 
@@ -102,7 +102,7 @@ This section isolates findings that come directly from `packages/core/src` imple
    - `packages/core/src/engine/integrator.ts` (`frameN % 40` wander kick)
 
 ### Core concerns
-1. `core/field.ts` is a monolithic hotspot.
+1. `engine/field.ts` is a monolithic hotspot.
    - High coupling of simulation loop, rendering modes, overlay drawing, event orchestration, host wiring, and API surface in one file.
 2. Determinism seam is not fully uniform.
    - RNG injection is present in many paths, but some behavior still depends on global-random pathways.
@@ -114,14 +114,14 @@ This section isolates findings that come directly from `packages/core/src` imple
    - Runtime contracts in `packages/core/src/engine/types.ts` and behavior in `packages/core/src/engine/integrator.ts` diverge from some in-repo docs.
 
 ### Suggested core refactors (ranked)
-1. Split `core/field.ts` by responsibility (loop, render, overlays, event wiring, lifecycle).
+1. Split `engine/field.ts` by responsibility (loop, render, overlays, event wiring, lifecycle).
 2. Standardize RNG pathway so all stochastic behavior is driven by injected RNG.
 3. Reduce spatial-hash rebuild allocations (bin reuse/pooling strategy).
 4. Add targeted integrator conformance tests that pin fixed vs verlet caveats.
 5. Add doc-truth CI checks specifically for integrator/mode/type contract drift.
 
 ### Evidence index (core concerns)
-1. `core/field.ts` concentration / central orchestration surface
+1. `engine/field.ts` concentration / central orchestration surface
    - `packages/core/src/engine/field.ts:315` (`createField requires opts.host` path in central constructor)
    - `packages/core/src/engine/field.ts:2459` (main frame loop cadence + orchestration)
    - `packages/core/src/engine/field.ts:430` (event coalescer wiring in same module)
@@ -177,7 +177,7 @@ This section isolates findings that come directly from `packages/core/src` imple
 3. Add focused conformance tests for fixed/velocity-verlet expectations and documented caveats.
 
 ### Priority 2 (maintainability)
-1. Split `core/field.ts` into narrower modules (runtime loop, overlay renderers, engagement/event wiring, teardown, API assembly).
+1. Split `engine/field.ts` into narrower modules (runtime loop, overlay renderers, engagement/event wiring, teardown, API assembly).
 2. Add targeted contract tests to keep passport metadata aligned with force implementations.
 
 ### Priority 3 (performance + ergonomics)

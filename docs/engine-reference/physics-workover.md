@@ -78,7 +78,7 @@ substrate already ships. Do not re-implement these:
 - **`magnetism`**: the 2D Lorentz force on charged, moving matter. `natural.ts`.
 - **First-class inertial mass `p.m` with `a = F/m`.** The integrator captures the
   pre-force velocity and divides the force-induced delta by `p.m`
-  (`core/integrator.ts:92-151`). A `mass` field option exists. Shipped and
+  (`engine/integrator.ts:92-151`). A `mass` field option exists. Shipped and
   conformance-tested (`integrator.test.ts`); default is unit mass (opt-in via `FieldOptions.mass`).
 - **`b.accreted`**: the sink captured-count field (`forces/index.ts:188`),
   with `capacity` and a conserved `supernova` release. (The `b.mass` to
@@ -260,7 +260,7 @@ has no budget. Hard invariant: particle count may drift only while a registered,
 budgeted [S] force is active. The source pass and age sink already exist; this
 formalizes the guard and the defaults.
 
-**As built (v0.3):** the guard is `guardSourceBudget` in `core/scanner.ts`, run for
+**As built (v0.3):** the guard is `guardSourceBudget` in `engine/scanner.ts`, run for
 every parsed body (light-DOM scan, presets, shadow registration). The warn is gated by
 the same dev flag as the contract guards (`contractChecksEnabled()`); the safe cap is
 applied in production too — the safety net is not dev-only, only the noise is.
@@ -290,7 +290,7 @@ Attributes: `data-strength`, `data-range`, `data-screen-min`, `data-screen-mode`
 
 **As built (v0.3):** truth mode designed; registered as the token `screen`
 (`forces/extended.ts`, passported `klass: modifier`), with the pure math
-(`screenFactor`) in `core/math.ts` and the attenuation applied in the integrator's
+(`screenFactor`) in `math/math.ts` and the attenuation applied in the integrator's
 force pass — the only place per-particle, per-body forces compose. It is *cross-body*:
 a screen damps OTHER bodies' forces on matter inside `data-range` and never its own
 sibling tokens (the brief's "sibling forces" reads as *sibling bodies'* forces — the
@@ -341,7 +341,7 @@ scale open. The shipped definitions are the cheap, honest **local** versions —
 measured per `data-feedback` body over the same `range/2` sample window that already
 feeds the density count (no new O(particles × bodies) pass; the integrator accumulates
 the sums in `Body.thermo` during the existing pass). The math is pure
-(`core/thermo.ts`), unit-tested without an engine:
+(`engine/thermo.ts`), unit-tested without an engine:
 
 ```
 R           = |Σv| / Σ|v|                 // velocity alignment (mean resultant length)

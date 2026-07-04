@@ -322,7 +322,7 @@ fatal
 
 `@fundamental-engine/dom` binds the renderer-agnostic core to the DOM. As of the platform-runtime phase
 (Phase D) it is the default runtime for `<field-root>`: the platform owns DOM participation
-(measurement, feedback writes, shadow registration, relationships) while the legacy `core/field.ts`
+(measurement, feedback writes, shadow registration, relationships) while the legacy `engine/field.ts`
 still simulates and renders the canvas. `createFieldPlatform(root)` wires the six registries onto the
 scheduler. Each registry needs coverage:
 
@@ -340,7 +340,7 @@ opting out (experimental-platform="off" / usePlatformRuntime(false)) restores pu
 ### DOM-boundary (renderer-agnostic core)
 
 `core/dom-boundary.test.ts` guards the boundary: core stays renderer-agnostic and only the allowlist
-(`core/field.ts`, `export.ts`) may touch DOM APIs.
+(`engine/field.ts`, `export.ts`) may touch DOM APIs.
 
 ```txt
 core modules outside the allowlist reference no DOM globals

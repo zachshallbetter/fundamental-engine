@@ -164,7 +164,7 @@ This directory serves as the centralized repository of color tokens, composite p
 * **Token Exportation**: `cssTokens()` formats these definitions programmatically into standard CSS custom properties (e.g., `--f-attract`), ensuring that the browser stylesheet's visual cues remain synchronized with registry colors.
 
 #### 2.23.2 Field Manual Registry: [manual.ts](../../packages/core/src/config/manual.ts)
-* **Mechanics**: Houses the complete developer-facing catalog of all 27 forces across the three families (canonical, natural, extended). Each entry logs the periodic-table style abbreviation symbol (e.g., `At` for attract), mathematical formula descriptions, and calibration values (approximate $\Delta v$ velocity output at a $100\text{px}$ reference distance).
+* **Mechanics**: Houses the complete developer-facing catalog of all 36 forces across the three families (canonical, natural, extended). Each entry logs the periodic-table style abbreviation symbol (e.g., `At` for attract), mathematical formula descriptions, and calibration values (approximate $\Delta v$ velocity output at a $100\text{px}$ reference distance).
 * **Drift Protection**: Validated by `manual.test.ts`, which asserts that every entry is matched by a registered force in the active engine core, preventing un-passported or dead configurations.
 
 #### 2.23.3 Composite Presets: [presets.ts](../../packages/core/src/config/presets.ts)
@@ -382,20 +382,20 @@ An audit of the Three.js integration door (`packages/three/src`) reveals how Web
 
 A comprehensive code audit of the core engine implementation (`packages/core/src/core`, `forces`, and `recipes`) identifies key design invariants, mathematical kernels, and integration lanes.
 
-### 10.1 Physics Integration Schemes: [core/integrator.ts](../../packages/core/src/engine/integrator.ts)
+### 10.1 Physics Integration Schemes: [engine/integrator.ts](../../packages/core/src/engine/integrator.ts)
 * **Verlet Scheme**: Opt-in `velocity-verlet` implements the stored-acceleration formulation. To handle discontinuous forces correctly, any kinematic force application resets stored acceleration and marks `kinTouch` to prevent invalid position extrapolations.
 * **Massive Scaling**: Additive forces scale velocity changes by `inv = 1 / p.m`, while kinematic forces bypass mass scaling to reflect, rotate, or relaunch matter unconditionally.
 * **Frictional Cadence**: Step friction (`FRICTION = 0.95`) and heat decay (`HEAT_DECAY = 0.972`) are applied out-of-scheme. Under `fixed` or `verlet` modes, decays are scaled exponentially by `dt` (`Math.pow(FRICTION, dt)`) to prevent simulation speed dependencies.
 
-### 10.2 Natural Force Laws: [forces/natural.ts](../../packages/core/src/forces/natural.ts) & [core/geometry.ts](../../packages/core/src/math/geometry.ts)
+### 10.2 Natural Force Laws: [forces/natural.ts](../../packages/core/src/forces/natural.ts) & [math/geometry.ts](../../packages/core/src/math/geometry.ts)
 * **Plummer Softening**: Monopole gravity and charges use Plummer softening based on the Schwarzschild radius $r_s = 2GM/c^2$ to bypass singularities ($d = 0$) at the core.
 * **Dipole Synthesis**: Chargeable and magnetic bodies map dipole vectors along the heading if spatial dimension scales are too small ($d < 8\text{px}$), maintaining readable fields.
 
-### 10.3 Log-Normalized Page Weights: [core/weights.ts](../../packages/core/src/engine/weights.ts)
+### 10.3 Log-Normalized Page Weights: [engine/weights.ts](../../packages/core/src/engine/weights.ts)
 * **Heavy-Tailed Compression**: Compresses values via a log-normalization curve $\ln(x+1) / \ln(\text{max}+1)$ to avoid scaling extremes.
 * **Engine Strength Mapping**: Maps weights onto attract-body forces using $0.4 + w \cdot 1.6$, capping strengths between $0.4$ (always active) and $2.0$.
 
-### 10.4 Local Thermodynamics: [core/thermo.ts](../../packages/core/src/engine/thermo.ts)
+### 10.4 Local Thermodynamics: [engine/thermo.ts](../../packages/core/src/engine/thermo.ts)
 * **Alignment R-ratio**: Measures velocity alignment ($R \in [0,1]$) to evaluate direction dispersion.
 * **Agitation-Gating**: Gates entropy by agitation to treat near-still states as highly ordered.
 

@@ -752,7 +752,7 @@ In the platform-runtime phase the layers are unified as follows:
 
 ```txt
 The platform runtime is the DEFAULT for <field-root>.
-Fundamental is renderer-agnostic and imports no DOM globals (a legacy element write-back path still lives in core/field.ts, pending migration).
+Fundamental is renderer-agnostic and imports no DOM globals (a legacy element write-back path still lives in engine/field.ts, pending migration).
 The platform owns DOM participation: measurement, feedback writes, shadow registration, relationships.
 The legacy core path still simulates and renders the canvas surface.
 The DOM boundary is guarded by a test allowlist; core must not reach into the DOM outside it.

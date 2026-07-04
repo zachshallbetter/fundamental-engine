@@ -107,7 +107,7 @@ const coherent = checks.filter((c) => c.ok).length / checks.length;
   interface File { id: string; name: string; delta: string; heat: number; tension: number; blocked?: boolean; }
   interface Reviewer { id: string; name: string; attention: number; }
   const files: File[] = [
-    { id: 'f-core', name: 'core/field.ts', delta: '+82 −14', heat: 0.9, tension: 0.8, blocked: true },
+    { id: 'f-core', name: 'engine/field.ts', delta: '+82 −14', heat: 0.9, tension: 0.8, blocked: true },
     { id: 'f-feedback', name: 'platform/feedback.ts', delta: '+20 −3', heat: 0.45, tension: 0.35 },
     { id: 'f-schema', name: 'recipes/schema.ts', delta: '+11 −2', heat: 0.3, tension: 0.2 },
     { id: 'f-gallery', name: 'site/gallery.astro', delta: '+60 −1', heat: 0.55, tension: 0.4 },

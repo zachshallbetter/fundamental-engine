@@ -22,7 +22,7 @@ the native Swift/Kotlin ports).
 Fundamental
   renderer-agnostic field, force, particle, metric, diagnostic, and conformance logic.
   Computes field behavior against plain data. Touches no DOM globals (guarded by
-  core/dom-boundary.test.ts; the canvas renderer in core/field.ts and the download helper in
+  core/dom-boundary.test.ts; the canvas renderer in engine/field.ts and the download helper in
   export.ts are the two allowlisted, quarantined exceptions).
 
 @fundamental-engine/dom
@@ -157,7 +157,7 @@ Lint reads. It never mutates state, physics, or the DOM.
 ## The live runtime (Phase D)
 
 Since Phase D the platform runtime is the **default** for every `<field-root>`. The legacy engine
-(`core/field.ts`) still simulates and renders the canvas, while the platform owns DOM participation:
+(`engine/field.ts`) still simulates and renders the canvas, while the platform owns DOM participation:
 
 - **D1** — a platform-backed `<field-root>` path behind an experimental flag.
 - **D2** — body discovery/measurement routed through MeasurementRegistry (`bodyElements` is the one
@@ -166,7 +166,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
   `createField`; the eased density signal is unchanged, only the write target moves. Since #228 the
   sink contract is the engine's **only** feedback write path: when no platform sink is configured
   (raw `createField`, `@fundamental-engine/vanilla`, recipe-scoped engines), the engine installs an internal
-  default sink (`core/feedback-sink.ts`) whose direct writes are byte-identical to the historical
+  default sink (`engine/feedback-sink.ts`) whose direct writes are byte-identical to the historical
   behavior — same variables (`--d`/`--field-density`, the heatmap mirror pair,
   `--load`/`--mass`, `--lit`), same three-decimal formatting, same `field:lit`/`field:dim`
   hysteresis. There is no direct-write branch left in the engine loop.
@@ -178,7 +178,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
 - **D7** — the legacy DOM glue quarantined behind a renderer-agnostic boundary guard
   (`core/dom-boundary.test.ts`), so core stays DOM-free outside the two allowlisted modules.
 
-**Frontier — done:** `core/field.ts` (the engine + canvas render loop) no longer touches any DOM
+**Frontier — done:** `engine/field.ts` (the engine + canvas render loop) no longer touches any DOM
 globals. It routes every environment touchpoint (viewport, scroll, rAF, reduced-motion, visibility,
 scan root, events) through an injected `FieldHost`; `browserHost()` and the DOM download helpers moved
 to `@fundamental-engine/dom`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every

@@ -2036,7 +2036,7 @@ I  = clamp(k · ΔE, 0, I_max)                  // reaction intensity
 ```
 `I` drives spark count, flash magnitude, flash radius, recoil, (optional) sound. A
 glancing touch barely flickers; a hard hit erupts. **The budget kit shipped** in
-`core/reactions.ts`: `energyDelta` (ΔE), `reactionIntensity` (I), `sparkCount`, and
+`engine/reactions.ts`: `energyDelta` (ΔE), `reactionIntensity` (I), `sparkCount`, and
 `recoilImpulse` (the element-recoil side, §23.5). `wall` ships the canonical slice
 (spark when `speed > 0.7`, `heat = min(0.85, speed·0.4)`); §23 generalizes it across
 dissipative interactions.
