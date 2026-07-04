@@ -13,7 +13,7 @@ tools, over data records, or through custom render surfaces.
 ![Core runtime dependencies: 0](https://img.shields.io/badge/core%20runtime%20deps-0-2dd4bf)
 ![TypeScript: strict](https://img.shields.io/badge/TypeScript-strict-3178c6)
 ![Tests: 900+ passing](https://img.shields.io/badge/tests-900%2B%20passing-2dd4bf)
-![API: frozen + additive](https://img.shields.io/badge/API-frozen%20%2B%20additive-4da3ff)
+![API: stable core · pre-1.0](https://img.shields.io/badge/API-stable%20core%20%C2%B7%20pre--1.0-4da3ff)
 
 Mark any semantic object as a body and it can pull, push, swirl, bind, hold, emit, or respond to the
 field around it. On the web, that object is usually a DOM element. In a headless, native, AI, data, or
@@ -460,11 +460,13 @@ release-readiness gates are pinned too: a [lifecycle contract](docs/canonical/li
 README truth guard, recipe-catalog validation, custom-elements-manifest validation, and internal-link
 validation.
 
-**The stable public surface is frozen; new surface is added additively.** `pnpm check:api` fails the build
-if a stable export changes, `pnpm check:dist` verifies every package's entry points resolve, and
-`pnpm check:readme` keeps these READMEs true to the code. New options and methods (including the
-experimental substrate API — `query`/`snapshot`/`diff`/`replay`/`forAgent`/projections) may be **added**;
-nothing stable is renamed or removed without a major. See [API stability](docs/canonical/api-stability.md) and the
+**A `check:api`-gated stable subset is protected; the rest of the surface is still moving pre-1.0.**
+`pnpm check:api` fails the build if a frozen export changes, `pnpm check:dist` verifies every package's
+entry points resolve, and `pnpm check:readme` keeps these READMEs true to the code. New options and
+methods (including the experimental substrate API — `query`/`snapshot`/`diff`/`replay`/`forAgent`/projections)
+are **added freely**; deprecated aliases and unfrozen surface can change in any release, so **pin an exact
+version pre-1.0** and read the [CHANGELOG](CHANGELOG.md). Full SemVer stability arrives at 1.0. See
+[API stability](docs/canonical/api-stability.md) and the
 [1.0 surface record](docs/planning/1.0-surface.md) for the full tiering.
 
 ## Packages
