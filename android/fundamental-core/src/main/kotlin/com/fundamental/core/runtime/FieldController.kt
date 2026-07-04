@@ -4,7 +4,7 @@ import com.fundamental.core.engine.AtomPayload
 import com.fundamental.core.engine.AttnInput
 import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.BoundParticle
-import com.fundamental.core.engine.CANONICAL_FORCE_COLORS
+import com.fundamental.core.config.CANONICAL_FORCE_COLORS
 import com.fundamental.core.engine.Env
 import com.fundamental.core.engine.FieldBodyIdentity
 import com.fundamental.core.engine.FieldPolicy

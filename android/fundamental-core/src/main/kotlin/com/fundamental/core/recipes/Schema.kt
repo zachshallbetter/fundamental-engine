@@ -1,4 +1,4 @@
-package com.fundamental.core.recipe
+package com.fundamental.core.recipes
 
 import com.fundamental.core.engine.ForceRegistry
 import kotlinx.serialization.Serializable

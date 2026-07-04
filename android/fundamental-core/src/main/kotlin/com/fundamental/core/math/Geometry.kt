@@ -1,7 +1,8 @@
-package com.fundamental.core.engine
+package com.fundamental.core.math
 
-import com.fundamental.core.math.EPS
-import com.fundamental.core.math.Vec3
+import com.fundamental.core.engine.Body
+import com.fundamental.core.engine.Box
+import com.fundamental.core.engine.ForceRegistry
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

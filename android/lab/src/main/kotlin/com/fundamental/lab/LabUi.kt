@@ -6,7 +6,7 @@ import com.fundamental.core.engine.energyReport
 import com.fundamental.core.overlay.Overlays
 import com.fundamental.core.overlay.energyContours
 import com.fundamental.core.overlay.temperatureContours
-import com.fundamental.core.recipe.FieldRecipes
+import com.fundamental.core.recipes.FieldRecipes
 import com.fundamental.core.runtime.FieldController
 import javax.swing.JCheckBox
 import java.awt.BorderLayout
@@ -114,14 +114,14 @@ class LabCanvas : JPanel() {
     private val timer = Timer(16) { tickOnce() }
     // Path traces: a rolling buffer of recent sampled particle positions (the `path` reading machinery).
     private val pathHistory = ArrayDeque<FloatArray>()
-    private var currentRecipe: com.fundamental.core.recipe.FieldRecipe? = null
+    private var currentRecipe: com.fundamental.core.recipes.FieldRecipe? = null
 
     fun toggleReading(r: Reading, on: Boolean) {
         if (on) readings.add(r) else { readings.remove(r); if (r == Reading.PATH) pathHistory.clear() }
     }
 
     /** The recipe backing the loaded scene, if any (drives the inspector's Export). */
-    fun currentRecipe(): com.fundamental.core.recipe.FieldRecipe? = currentRecipe
+    fun currentRecipe(): com.fundamental.core.recipes.FieldRecipe? = currentRecipe
     fun setAttention(on: Boolean) { attentionOn = on; controller?.attentionEnabled = on }
     fun setCausality(on: Boolean) { causalityOn = on; controller?.causalityEnabled = on }
     fun setHeatmap(on: Boolean) { heatmapOn = on; controller?.heatmapEnabled = on }

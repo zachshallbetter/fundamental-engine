@@ -1,6 +1,6 @@
 package com.fundamental.lab
 
-import com.fundamental.core.recipe.FieldRecipe
+import com.fundamental.core.recipes.FieldRecipe
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File

@@ -1,7 +1,7 @@
 package com.fundamental.core.forces
 
 import com.fundamental.core.engine.Body
-import com.fundamental.core.engine.CANONICAL_FORCE_COLORS
+import com.fundamental.core.config.CANONICAL_FORCE_COLORS
 import com.fundamental.core.engine.Env
 import com.fundamental.core.engine.Force
 import com.fundamental.core.engine.Particle

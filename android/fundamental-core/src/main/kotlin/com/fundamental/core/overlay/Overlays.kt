@@ -4,7 +4,7 @@ import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.FieldLineOpts
 import com.fundamental.core.engine.ForceRegistry
 import com.fundamental.core.engine.forceAt
-import com.fundamental.core.engine.netField
+import com.fundamental.core.math.netField
 import com.fundamental.core.engine.traceFieldLines
 import com.fundamental.core.math.Vec3
 import com.fundamental.core.math.clamp
