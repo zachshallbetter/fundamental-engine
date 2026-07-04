@@ -6,7 +6,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runScenario } from '../conformance/run.ts';
-import { sdfRect } from './geometry.ts';
+import { sdfRect } from '../math/geometry.ts';
 import type { Scenario } from '../conformance/types.ts';
 
 function ring(n: number, r: number): { x: number; y: number; vx: number; vy: number }[] {

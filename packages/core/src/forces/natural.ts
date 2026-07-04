@@ -13,7 +13,7 @@
 
 import type { Body, Particle, Env, Force } from '../core/types.ts';
 import type { Registry } from '../core/registry.ts';
-import { polePair, dipoleField, monopoleField, EPS, type Pole } from '../core/geometry.ts';
+import { polePair, dipoleField, monopoleField, EPS, type Pole } from '../math/geometry.ts';
 
 /**
  * The body's dipole field at a world point (the visual/structure field, Stage B): the

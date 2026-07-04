@@ -34,7 +34,7 @@ import type { FieldStore } from './field-store.ts';
 import { accretionTarget } from './formations.ts';
 import { waveYat, waveSlope, waveDistance, type Wave } from './currents.ts';
 import { netField } from './streamlines.ts';
-import { screenFactor } from './math.ts';
+import { screenFactor } from '../math/math.ts';
 import { classifyBodyTokens, type ClassifiedTokens } from '../config/forces.config.ts';
 
 export const FRICTION = 0.95;

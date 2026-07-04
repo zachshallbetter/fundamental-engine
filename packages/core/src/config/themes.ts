@@ -6,7 +6,7 @@
  * `gradientCool`/`gradientWarm`/`waveBaseline` override individual lanes — additive, the frozen surface
  * intact, and `theme: 'warm'` reproduces the shipped defaults byte-for-byte.
  */
-import type { RGB } from '../core/math.ts';
+import type { RGB } from '../math/math.ts';
 
 export interface FieldTheme {
   /** the resting (cool) end of the free-particle heat ramp. */

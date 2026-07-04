@@ -5,7 +5,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lerp } from '../core/math.ts';
+import { lerp } from '../math/math.ts';
 import { clamp01, mapRange, falloff, curve } from './mapping.ts';
 import { typography, typographyCss, fieldColor, hslString, emission, DEFAULT_COLOR_CAPS, type Hsl } from './channels.ts';
 import { runVisualLint } from './lint.ts';

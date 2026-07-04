@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildWaves, buildBound, waveYat, waveSlope, waveRAt, waveDistance, type Wave } from './currents.ts';
-import type { RGB } from './math.ts';
+import type { RGB } from '../math/math.ts';
 
 const palette: RGB[] = [
   [77, 163, 255],

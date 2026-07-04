@@ -103,13 +103,13 @@ These are areas where the codebase and the documentation specifications have dri
 * **Mechanics**: Curves streamlines and pulls particles toward a transient focus point.
 * **Compliance**: Optimization-safe; [flowBiasInto](../../packages/core/src/core/flow.ts#L58) writes coordinates into a caller-owned scratchpad, avoiding allocating coordinate object structures in high-frequency hot loops.
 
-### 2.10 Math and Colors: [math.ts](../../packages/core/src/core/math.ts)
+### 2.10 Math and Colors: [math.ts](../../packages/core/src/math/math.ts)
 * **Mechanics**: Implements hex parser, linear interpolation (lerp), pigment mixing, and HSL mapping helper formulas.
-* **Compliance**: Reuses shared RGB arrays on hot rendering loops ([particleRGBInto](../../packages/core/src/core/math.ts#L39)) to keep allocation count zero.
+* **Compliance**: Reuses shared RGB arrays on hot rendering loops ([particleRGBInto](../../packages/core/src/math/math.ts#L39)) to keep allocation count zero.
 
-### 2.11 Core Geometries: [geometry.ts](../../packages/core/src/core/geometry.ts)
-* **Mechanics**: Calculates 2D bounding boxes and signed distance functions ([sdfRect](../../packages/core/src/core/geometry.ts#L61)) for bodies.
-* **Compliance**: Correctly resolves dipole vectors and poles ([polePair](../../packages/core/src/core/geometry.ts#L76)) along the heading axis for non-point magnetic/charge sources.
+### 2.11 Core Geometries: [geometry.ts](../../packages/core/src/math/geometry.ts)
+* **Mechanics**: Calculates 2D bounding boxes and signed distance functions ([sdfRect](../../packages/core/src/math/geometry.ts#L61)) for bodies.
+* **Compliance**: Correctly resolves dipole vectors and poles ([polePair](../../packages/core/src/math/geometry.ts#L76)) along the heading axis for non-point magnetic/charge sources.
 
 ### 2.12 Built-in Conditions: [conditions.ts](../../packages/core/src/core/conditions.ts)
 * **Mechanics**: Standard filters (`fast`, `slow`, `hot`, `cool`) that selectively gate particle movements.
@@ -387,7 +387,7 @@ A comprehensive code audit of the core engine implementation (`packages/core/src
 * **Massive Scaling**: Additive forces scale velocity changes by `inv = 1 / p.m`, while kinematic forces bypass mass scaling to reflect, rotate, or relaunch matter unconditionally.
 * **Frictional Cadence**: Step friction (`FRICTION = 0.95`) and heat decay (`HEAT_DECAY = 0.972`) are applied out-of-scheme. Under `fixed` or `verlet` modes, decays are scaled exponentially by `dt` (`Math.pow(FRICTION, dt)`) to prevent simulation speed dependencies.
 
-### 10.2 Natural Force Laws: [forces/natural.ts](../../packages/core/src/forces/natural.ts) & [core/geometry.ts](../../packages/core/src/core/geometry.ts)
+### 10.2 Natural Force Laws: [forces/natural.ts](../../packages/core/src/forces/natural.ts) & [core/geometry.ts](../../packages/core/src/math/geometry.ts)
 * **Plummer Softening**: Monopole gravity and charges use Plummer softening based on the Schwarzschild radius $r_s = 2GM/c^2$ to bypass singularities ($d = 0$) at the core.
 * **Dipole Synthesis**: Chargeable and magnetic bodies map dipole vectors along the heading if spatial dimension scales are too small ($d < 8\text{px}$), maintaining readable fields.
 

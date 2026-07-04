@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { traceFieldLine, traceFieldLines, dipoleSeeds, monopoleSeeds } from './fieldlines.ts';
-import { dipoleField, type Pole } from './geometry.ts';
+import { dipoleField, type Pole } from '../math/geometry.ts';
 
 // a dipole in positive canvas space: + pole at (100, 200), − pole at (300, 200)
 const poles: Pole[] = [

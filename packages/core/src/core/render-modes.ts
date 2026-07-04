@@ -1,4 +1,4 @@
-import type { RGB } from './math.ts';
+import type { RGB } from '../math/math.ts';
 
 /** Opacity of a particle↔particle link by separation (§20.6 links mode). */
 export function linkAlpha(d: number, r: number, max = 0.12): number {

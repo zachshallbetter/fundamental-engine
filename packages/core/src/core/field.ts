@@ -41,7 +41,7 @@ import { healWaves, tearBoundNear, tearBoundByForces, induceCharges } from './re
 import { FORMATION_BY, PALETTE, type FormationId } from '../config/forces.config.ts';
 import { resolvePalette } from '../config/palettes.ts';
 import { THEMES, DEFAULT_THEME } from '../config/themes.ts';
-import { clamp, hexToRgb, particleRGBInto, rgbToHex, sampleStops, type RGB } from './math.ts';
+import { clamp, hexToRgb, particleRGBInto, rgbToHex, sampleStops, type RGB } from '../math/math.ts';
 import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { defaultFeedbackSink } from './feedback-sink.ts';
 import { thermoMetrics } from './thermo.ts';
