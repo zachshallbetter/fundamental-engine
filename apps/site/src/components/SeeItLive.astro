@@ -16,7 +16,7 @@ const ex = INVISIBLE_FIELDS.find((f) => f.slug === slug);
 if (!ex) throw new Error(`[SeeItLive] unknown example slug "${slug}" — not in lib/invisible-fields.ts`);
 ---
 
-<aside class="see-it-live" data-body="attract" data-strength="0.45" data-range="240" data-feedback data-hot>
+<aside class="see-it-live" data-body="attract swirl" data-strength="0.45" data-range="240" data-spin="1.1" data-feedback data-hot>
   <a href={ex.href}>
     <span class="sil-kicker">See it live</span>
     <b class="sil-name">{ex.name} →</b>

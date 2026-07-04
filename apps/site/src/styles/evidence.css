@@ -36,19 +36,35 @@ body:has(.ev-page) {
   position: sticky;
   top: 0;
   max-height: 100svh;
+  /* flex column: the title + note stay pinned (clear of the nav); only .ev-side-list
+     scrolls, so list items no longer slide up under the top navigation */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 7.2rem 0 0 clamp(1.2rem, 2vw, 2rem);
+}
+.ev-side-title,
+.ev-side-note {
+  flex: 0 0 auto; /* pinned — do not scroll with the sibling list */
+}
+.ev-side-list {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
-  padding: 7.2rem 0 2.5rem clamp(1.2rem, 2vw, 2rem);
+  padding: 0 6px 2.5rem 0;
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
+  --fade: 1.1rem;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade), #000 100%);
 }
-.ev-side::-webkit-scrollbar {
-  width: 6px;
+.ev-side-list::-webkit-scrollbar {
+  width: 4px;
 }
-.ev-side::-webkit-scrollbar-thumb {
+.ev-side-list::-webkit-scrollbar-thumb {
   background: var(--line);
   border-radius: 999px;
 }
-.ev-side::-webkit-scrollbar-track {
+.ev-side-list::-webkit-scrollbar-track {
   background: transparent;
 }
 .ev-side-title {

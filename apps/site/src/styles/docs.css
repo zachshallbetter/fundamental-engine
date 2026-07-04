@@ -26,19 +26,41 @@
   top: 58px;
   align-self: start;
   max-height: calc(100svh - 58px);
+  /* flex column: the head (search) and foot (field toggle) stay fixed; only #docsSide scrolls */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: clamp(1.4rem, 3.5vh, 2.2rem) 0 0;
+}
+/* only the nav list scrolls — search stays pinned at the top, toggle pinned at the bottom */
+#docsSide {
+  flex: 1 1 auto;
+  min-height: 0; /* required so the flex child can shrink and scroll */
   overflow-y: auto;
-  padding: clamp(1.6rem, 4vh, 2.6rem) 0 2rem;
+  padding-right: 6px;
   scrollbar-width: thin;
   scrollbar-color: var(--line-2) transparent;
+  /* minimal fade: nav items dissolve as they pass under the fixed head/foot */
+  --fade: 1.1rem;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--fade),
+    #000 calc(100% - var(--fade)),
+    transparent 100%
+  );
 }
-.docs-sidebar::-webkit-scrollbar {
-  width: 5px;
+#docsSide::-webkit-scrollbar {
+  width: 4px;
 }
-.docs-sidebar::-webkit-scrollbar-thumb {
+#docsSide::-webkit-scrollbar-thumb {
   background: var(--line-2);
   border-radius: 3px;
 }
-.docs-sidebar::-webkit-scrollbar-track {
+#docsSide:hover::-webkit-scrollbar-thumb {
+  background: var(--line-3, var(--text-4));
+}
+#docsSide::-webkit-scrollbar-track {
   background: transparent;
 }
 .docs-side-toggle {
@@ -47,7 +69,8 @@
 .docs-side-head {
   display: grid;
   gap: 0.6rem;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1rem;
+  flex: 0 0 auto; /* pinned — does not scroll with the nav */
 }
 
 /* search button (the dialog itself is styled at the bottom of this file) */
@@ -163,9 +186,10 @@
 
 /* sidebar footer — the docs-field toggle (DocsRuntime persists + honors it) */
 .docs-side-foot {
-  margin-top: 0.4rem;
+  margin-top: 0;
   padding-top: 0.9rem;
   border-top: 1px solid var(--line);
+  flex: 0 0 auto; /* pinned — does not scroll with the nav */
 }
 .docs-field-toggle {
   display: inline-flex;
