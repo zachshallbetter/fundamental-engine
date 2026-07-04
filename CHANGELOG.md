@@ -7,46 +7,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
-## [0.9.3] — 2026-07-03
-
 ### Changed
 
 - **`@fundamental-engine/core` (internal, no API change):** renamed `src/core/` → `src/engine/` to match the port layout (Swift `Engine/`, Kotlin `engine/`) — step 2 of the cross-plane folder standardization. 127 files moved with history; imports, the barrel, hardcoded read-paths in `contract-coverage.test.ts` / `check-docs.mjs` / `gen-parity-matrix.mjs`, and 26 doc links all repointed. Public exports unchanged; `check:api` 17-frozen intact.
 
-### Changed
-
 - **`@fundamental-engine/core` (internal, no API change):** extracted the pure-math modules (`math.ts`, `geometry.ts`) from `src/core/` into a dedicated `src/math/` folder — step 1 of standardizing the core folder layout across all planes (`engine · forces · math · recipes` + the finer concern folders). Public exports and the barrel are unchanged; `check:api` intact.
 
-### Fixed
+## [0.9.3] — 2026-07-03
 
-- `packages/react/tsconfig.json` now excludes `*.test.tsx`/`*.spec.*` (not just `*.test.ts`), so a JSX test file no longer compiles into `dist/` and gets picked up as a stale `node --test` artifact (#1006).
-- **`@fundamental-engine/core` — rescan continuity follow-ups (#970, builds on #966/#969).** Two
-  more rescan discontinuities carried in `scan()`'s reconciliation, keyed by the same (element,
-  per-element body index):
-  - **Anonymous-id churn.** A body with no DOM id resolves to a synthetic `body-N`. That id lived
-    only on the rebuilt `Body` object, so any rescan minted a fresh id for the same element — the id
-    churned, breaking every consumer that keys on it (snapshot/diff/replay, captures, relationship
-    edges). The reconciliation now carries `identity` onto the replacement, so the same element keeps
-    its id even when its scan index shifts under an add/remove.
-  - **Dynamic-body motion reset.** A `data-authority="dynamic"` body's engine-owned position/velocity
-    (`bx/by/bvx/bvy`) were undefined on the rebuilt `Body`, so a rescan re-adopted the freshly-measured
-    DOM centre and zeroed velocity — a drifting body teleported back to its authored slot when any
-    body was added/removed. The reconciliation now carries the kinematic state, so the body resumes
-    on its trajectory. The ports (Swift/Kotlin) register bodies explicitly rather than rescanning the
-    document, so neither discontinuity exists there — no port follow-up.
-### Changed
-
-- **`@fundamental-engine/core` (breaking, pre-1.0 window, #988):** renamed the discrete event-bus keys
-  `absorb` → `captured` and `release` → `released` (`field.on(...)` / `FieldEventMap`). `absorb` was a
-  naming-lane violation — concept language in the execution/event lane (the token is `sink`) — and the
-  new past-tense occurrence verbs match the native ports (Swift `CaptureEvent.captured/released`,
-  Kotlin `CaptureEvent.CAPTURED/RELEASED`). Only the bus keys change; the `data-absorb` body attribute,
-  the `--load` channel, and the DOM `field:captured`/`field:released` CustomEvents are unaffected.
-  Migrate `field.on('absorb'|'release', …)` → `field.on('captured'|'released', …)`.
-
-### Documentation
-
-- Correct `packages/core/README.md` feedback wording: `--d` and `--field-density` are consistent twins (same live value, read either), not legacy aliases; only `--forces-density` is the removed legacy variable — matching `docs/canonical/feedback-channels.md`.
 ### Added
 
 - **`@fundamental-engine/core` — DECLARED four render reference points (Wallpaper Rule, #975).** Four
@@ -83,33 +51,6 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   - **`@fundamental-engine/create`:** template deps are pinned to a bounded range (`^0.9.2`) instead
     of `latest`; the CLI now handles `--help`/`-h` and `--version`/`-v`; added non-interactive CLI
     smoke tests.
-### Removed
-
-- **The migration-alias surface, per the 1.0 removal checklist (#939):** the `forces:*` event alias
-  (use the canonical `field:*` events), the `--mass` CSS variable (use `--load`), and the deprecated
-  `@fundamental-engine/platform` alias package (import `@fundamental-engine/dom` directly). The
-  publishable set is now six packages. Dev-console deprecation warnings shipped one cycle ahead (#930);
-  the migration table is `docs/migration-0.x-to-1.0.md`.
-
-### Docs
-
-- **`<field-cell>` boundary statement (#993):** documented that a cell is a demo pool, not the engine
-  — own particle pool, local `Math.random()`, and **none** of the core guarantees (no determinism,
-  snapshot/causal replay, cross-plane conformance, or physics parity). Added to the
-  `@fundamental-engine/elements` README and `docs/engine-reference/shadow-dom.md`. Also aligned the
-  Next.js example's SSR guidance (`examples/nextjs/app/components/FieldCanvas.tsx`) with the README:
-  a `'use client'` import from a Server Component IS the App Router SSR boundary — no
-  `dynamic(…, { ssr: false })` wrapper (that pattern is Pages-Router-only and throws in an RSC).
-
-- **`@fundamental-engine/dom`:** corrected the stale `QualityGovernor` header comment
-  (`packages/dom/src/governor.ts`) — it still said the engine-side quality responses were "NOT
-  automatic yet", but since #413 the `<field-root>` runtime forwards each tier change to
-  `handle.setQualityTier` (DPR cap + heatmap drop applied automatically); only *further* responses
-  (render simplification, particle caps) remain the embedder's via `field:quality-tier`. Comment
-  only — no runtime change. Part of the #588 docs pass (the createField unguarded-path guidance on
-  the performance page, the TypeScript/core guides, and `docs/canonical/platform-architecture.md`).
-
-### Added
 
 - **`@fundamental-engine/core` + `@fundamental-engine/elements`:** **declared the resting
   `ambient` formation's swirl + drift (Wallpaper Rule, #978).** The default `ambient` formation
@@ -122,6 +63,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   for a purely radial resting attract (no spiral). Applies to the `ambient` formation only (the
   section formations keep their authored presets). Proven default-unchanged in
   `ambient-formation-declared.test.ts`.
+
 - **`@fundamental-engine/core` + `@fundamental-engine/elements`:** **four new underlay render
   modes — `knockout`, `redshift`, `blackbody`, `depth` (#667, #668, #669, #670).** All are
   additive values on the existing `render` option / `setRender(mode)` /
@@ -145,6 +87,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   per-frame allocation (the depth sort reuses a persistent index scratch). The four modes
   join the `RENDER_MODES` catalog (now 20 entries), the recipe render layers, and the
   `<field-root>` CEM. JS core only; Swift/Kotlin port parity is a follow-up.
+
 - **`@fundamental-engine/core`:** **`BURST_RADIUS` and `monopoleField` exports (#977, Wallpaper
   Rule).** `BURST_RADIUS` is the reach a one-shot `field.burst()` touches (formerly a private
   literal in the burst glue), exported so a UI affordance that visualizes a burst sizes itself to
@@ -168,192 +111,6 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   per-step decay keeps the scheme non-symplectic; particle count stays the invariant. Purely
   opt-in: the default `'legacy'` path is byte-identical and the cross-plane conformance golden
   (generated at defaults) is unchanged. JS core only; Swift/Kotlin port parity is a follow-up.
-
-### Fixed
-
-- **`@fundamental-engine/core`:** **the last two unseeded randomness sites now flow through the
-  injected rng (#976).** The `thermal` force's four Box–Muller draws (`forces/natural.ts`) and the
-  spark-burst COUNT (`sparkCount` in `field.ts`'s `spawnSpark` — the directions were already
-  seeded) drew raw `Math.random`, so a seeded field with a thermal body was non-reproducible and
-  any discharge shifted the shared rng stream by a run-varying number of draws, diverging every
-  draw after it. Both now use the #371 `(e.rng ?? Math.random)` pattern; a field-level determinism
-  test pins a seeded thermal + discharge run to a bit-identical fingerprint across runs. Default
-  (unseeded) behavior is unchanged; the conformance harness's global-swap seeding still applies
-  through the fallback.
-- **`@fundamental-engine/dom` + `@fundamental-engine/react`:** hardening pass on the X-Ray overlay
-  and `useForcesData` (#989). **`mountXRay`** (`packages/dom/src/x-ray.ts`) no longer builds its panel
-  with `innerHTML` — an interpolated `hotkey` value (or any readout) was an injection surface; the
-  panel is now assembled from typed element/`textContent` nodes, so a hotkey like `<img onerror=…>`
-  renders as inert text and injects no element. It also mounts against the container's own document
-  (`ownerDocument`) instead of the global `document`/`body` (works in an iframe / popup / test DOM),
-  and probes the optional `sample`/`energy` readouts through typed structural guards rather than
-  `(field as any)`. **`useForcesData`** (`packages/react/src/index.tsx`) no longer skips binding
-  forever when `containerRef.current` is null on the first effect pass: the host node is tracked in
-  state and the mount effect re-runs the moment the container attaches. New mount/teardown +
-  injection-inert tests for X-Ray; new null-first-pass retry tests for the hook.
-
-- **`@fundamental-engine/core` + `@fundamental-engine/dom`:** **bodies belong to the nearest
-  enclosing field — contained fields stop double-adoption (#980).** A contained field
-  (`containerHost(el)` / the `bounds:` option) and the document-rooted page `<field-root>` both
-  adopted the same `[data-body]` elements, so two engines alternated `--d`/`--field-density`
-  writes on them every frame (a visible per-frame flicker between the contained field's values
-  and the page field's near-zero ones — verified on /docs/reactive-component). Ownership is now
-  nearest-enclosing-field: `containerHost` marks its bounds element with the reserved, engine-set
-  `data-field-boundary` attribute at attach (idempotent) and removes it via the new optional
-  `FieldHost.detach()` hook (called once by `FieldHandle.destroy()`); the scanner
-  (`scanBodies`/`bodyElements`, shared with platform measurement) skips any body whose closest
-  boundary marker is not the scan root — the page field only adopts bodies whose nearest boundary
-  is the document, each contained field owns exactly its subtree, nesting resolves to the nearest
-  boundary, and destroying a contained field hands its bodies back to the page field on rescan.
-  New exports: `FIELD_BOUNDARY_ATTR`, `FIELD_BOUNDARY_SELECTOR`, `ownedByScanRoot`. DOM-plane
-  fix only: the Swift/Kotlin hosts register bodies explicitly (no document-wide scan), so the
-  double-adoption class does not exist there.
-- **`@fundamental-engine/core`:** **the conformance runner injects its seeded PRNG through the
-  `Env.rng` seam instead of monkey-patching the global `Math.random` (#992, post-#981).** `thermal`'s
-  Box–Muller kicks now draw from `e.rng ?? Math.random` like `jet`/`spawn` already did, and
-  `conformance/run.ts` threads one seeded `mulberry` instance through the frame-0 delta env and the
-  trajectory env — so a seeded scenario is reproducible with no global side effect. Production behavior
-  is byte-identical (no `Env.rng` set ⇒ `Math.random`); the cross-plane conformance golden is unchanged.
-
-- **`@fundamental-engine/three`:** **`threeBackend`'s overlay `z` now offsets the projected field
-  plane instead of being an absolute world z (#949).** The backend pinned every overlay vertex —
-- **`@fundamental-engine/core`:** **rescan no longer discards body feedback state or strands
-  captured matter (#966).** `scan()` rebuilds every Body on any add/remove/register, and the
-  rebuilt bodies started from zeroed runtime state — so every `data-feedback` body's `--d`
-  hard-dropped (measured 1.000 → 0.080) and eased back over ~1s on ANY rescan, while matter a
-  sink had captured stayed pinned to the old (ghost) Body object — frozen centre, never
-  released — as the rebuilt sink re-captured a second full capacity. `scan()` now reconciles
-  the new generation against the old (the same pattern the movers/emitters already used), keyed
-  by (element, per-element body index) so `data-preset` expansions carry per virtual body:
-  persisting bodies keep `d`, `attn`, `accreted`, `count`, and `wasOn`; captured particles and
-  docked elements are remapped to the replacement Body (one O(P) pass, only when a persisting
-  body actually held matter); the Body-keyed `sinkPeak` + `bodyThresholds` side tables are
-  re-keyed (so a mid-cycle sink still reports its release count and carried density doesn't
-  re-fire an already-announced threshold edge), while proximity membership and the measured
-  thermodynamic windows still reset by design (they re-derive within a frame). Removed elements
-  still drop all their state. No public API change; measure cadence untouched.
-  lines/arrows (`segments`/`polyline`), the data-chip plates (`rect`), and the #921 label sprites
-  (`text`) — at `z` in world space, so overlay readings mis-registered under a
-  `VolumeProjection({ centerZ: true })`, whose field plane sits at `-depth/2 · depthScale`, not at
-  the world origin. Each draw path now projects the field point through the injected projection and
-  applies `z` as an offset off the projected plane — the same contract the native field visuals
-  (samplers) hold. `PlaneProjection` and an uncentered `VolumeProjection` put that plane at world-z
-  0, so default scenes are pixel-identical; tests pin the centered-volume registration and the
-  default-unchanged invariant across all three draw paths.
-- **`@fundamental-engine/core`:** **reduced-motion no longer leaves body density stale (#967).**
-  Under `prefers-reduced-motion` (or `maxMotionBudget`/`budgets.motion` = 0) the sim freezes with
-  `env.dt = 0` and the integrator's `step()` early-returns — but it returned *before* the per-pass
-  `b.count = 0` reset, so the density counts held their last live value while `writeFeedback()` kept
-  running every frame, easing `--d`/`--field-density` (and the font-weight channel) toward a stale,
-  permanently-elevated count. A frozen field reported particle presence from a simulation that was
-  no longer running. The count/thermo reset is now hoisted into a shared `resetDensity()` that runs
-  on both the live and the `dt === 0` paths, so a frozen body's `b.count` re-zeros and `b.d` eases
-  down to `feedbackTarget(0, b.on)` — the engagement-only baseline. Engagement (`b.on`, which is
-  dt-independent) still reads truthfully: motion freezes, but the signals stay honest. Fixed in all
-  three planes (JS core + Swift + Kotlin, which shared the same integrator-seam ordering bug).
-
-- **`@fundamental-engine/three`:** **`threeBackend`'s line/rect vertex data actually reaches the GPU
-  again** — writing the registration tests above exposed that the #463 persistent-buffer refactor
-  never uploaded a single overlay vertex: `flush` wrote each frame into a kept `Float32Array`, but
-  the `Float32BufferAttribute` wrapping it **copies** its input at construction, so the attribute
-  held its own zeroed array and every in-place write landed in memory the GPU never saw (all line +
-  rect geometry silently drew degenerate points at the origin; the #921 label sprites, which don't
-  ride these buffers, were unaffected). The attributes are now plain `BufferAttribute`s, which hold
-  the typed array by reference — the write-in-place + `needsUpdate` design of #463 as intended. The
-  new registration tests double as the guard: they read the vertices back out of the attributes.
-
-- **`@fundamental-engine/core`:** **keyboard focus now engages a `[data-hot]` body at mouse
-  parity (#665, a11y).** Engagement bound `focus`/`blur`, which do not bubble — so when a keyboard
-  user tabbed to a focusable *descendant* of a `[data-hot]` container (a card's `<a>`, a row's
-  `<button>`, an `<li>`/`<aside>` wrapper), the container's body never engaged, while a mouse user
-  got the reaction via `pointerenter`. Engagement now binds the bubbling `focusin`/`focusout`, so
-  tabbing into (or out of) any focusable content inside a `[data-hot]` element drives the same
-  engaged state — `data-active="1"`, `b.on`, wave-spine bend, `--d` gather — that hover produces
-  (the RC-8 principle: keyboard users get the same field reactions as the mouse). A directly
-  focusable `[data-hot]` element (a `[data-hot]` button/link) is unaffected — `focusin` still fires
-  on it. Engagement only sets state; the integrator (which reduced-motion already freezes) drives the
-  motion, so focus engagement is reduced-motion-safe by the same path hover is. DOM plane only — the
-  native ports set engagement from the body model and have no DOM focus event. The speculative
-  "tab order forms a current" half of #665 (a directional flow along the tab sequence) is deferred.
-
-### Tests
-
-- **`@fundamental-engine/{core,elements,vanilla}`:** **five permanent drift-guard tests (#992).**
-  (1) `<field-root>`'s option-forwarding reverse guard now DERIVES its checked set from
-  `observedAttributes`/`OPTIONS` instead of a stale hand-maintained literal (it had fallen behind
-  `grid-warp`/`theme`/`gradient*`/`wave-baseline`/`separation`). (2) A vanilla delegation-drift guard
-  compares a real headless `FieldHandle`'s method surface to `FieldField.prototype`. (3) A `forAgent`
-  facade-completeness guard requires every `FieldHandle` method to be explicitly exposed OR withheld
-  (safety: no accidental agent exposure). (4) A passport-vs-implementation guard (in
-  `validatePassports`) asserts any force whose live object defines `modify()` is passported as a
-  non-moving modifier. (5) Conformance-runner determinism guards prove a seeded scenario reproduces
-  exactly and never touches the global `Math.random`. Each was verified non-vacuous (fails when its
-  invariant is deliberately broken).
-
-### Changed
-
-- **`@fundamental-engine/core` + `@fundamental-engine/elements`:** **the Currents (`waves`) default
-  to OFF — explicit opt-in on every plane (#979, doc-06 Step 0).** **Behavior change:** a bare field
-  no longer builds or draws the background carrier waves (the five wave layers + the bound shimmer
-  reservoir). `createField`'s `waves` option now defaults to `false`, and the `<field-root waves>`
-  attribute becomes a true opt-in boolean (absent = off; present and not `"false"` = on — the same
-  semantics as `attention`/`causality`/`mass`; previously absence meant ON). Opt back in with
-  `waves: true` / the `waves` attribute — the opted-in field is unchanged. This is the signals-first
-  companion to the `render: 'none'` flip (#538): hardcoded ambient structure painted identically
-  over every host is wallpaper, not substrate — the resting look is now declared where it is wanted
-  (the starter pins `waves`; the site's `<field-root>` already declared `waves="false"`). The Swift
-  port takes the same flip **plus** the `render: .dots → .none_` default it had retained from
-  pre-#538 (`FieldOptions` in `FieldHandle.swift`); the Kotlin port already had both defaults off
-  (`wavesEnabled = false`, `RenderMode.NONE`) and gains a pin test. The cross-plane conformance
-  golden never passes waves and is byte-unchanged.
-- **`@fundamental-engine/core` + `@fundamental-engine/dom`:** **allocation/lookup refactors on the
-  per-frame hot paths (#991)** — correctness-preserving, aimed at GC churn rather than a headline
-  fps win (the field is fill-rate-bound; see the performance notes). (1) `SpatialHash`
-  (`packages/core/src/core/spatial-hash.ts`) now pools bin arrays across the every-frame `reindex`
-  rebuild — `clear()` empties live bins (`length = 0`) onto a free-list instead of discarding them,
-  so a re-populated cell reuses its backing array instead of allocating a fresh one per non-empty
-  cell per frame. An equivalence test pins neighbour-query results byte-identical to brute force
-  across 60 churning rebuilds. (2) `MeasurementRegistry.for()`
-  (`packages/dom/src/measurement.ts`) is now O(1) via an identity-keyed `Map` built during
-  `measure()`, replacing a linear `snapshot.find()` scan (was O(M×N)/frame when forces looked up
-  per element); the self-healing prune of disconnected elements is unchanged. (3) the off-thread
-  render bridge (`packages/dom/src/worker/offthread-bridge.ts` + `render-worker.ts`) transfers a
-  pooled particle buffer to the worker and back each frame instead of `buf.slice(...)` copying it,
-  removing the per-tick allocation. Public behaviour unchanged; benchmark deltas are indicative only
-  (headless software-raster) — confirm on real hardware.
-
-- **`@fundamental-engine/core`:** **the RC-6 contract-coverage guard now guards body attributes**
-  (`packages/core/src/contract-coverage.test.ts`, #323). The meta-test already asserted every public
-  `FieldOptions` key and the readable metric surface are exercised by a test; it now adds the third leg
-  of the RC-6 predicate — every documented body `data-*` attribute must be referenced by a test. The
-  documented set is derived from the same `apps/site/src/lib/docs-api.ts` `ATTRS[]` surface `check:docs`
-  treats as authoritative (so the two can't drift), and the attribute leg scans the package test corpus
-  recursively (attribute coverage lives in sub-directory tests). Closed the coverage gaps this exposed
-  with minimal `parseBodyParams`/`bodyFromElement` tests for `data-fmin`/`data-fmax`/`data-opsz`,
-  `data-scale`, `data-charge-gated`, and `data-color`. Test-only; no runtime change.
-
-### Deprecated
-
-- **`@fundamental-engine/core` + `@fundamental-engine/platform`:** **documented sunset + dev-only
-  deprecation warnings for the migration aliases (#709).** The `forces-ui → field-ui → Fundamental`
-  rename left a few living aliases; they ship through RC1 and are **removed at `1.0`**. The
-  runtime-observable ones now warn in dev (`NODE_ENV !== 'production'`), deduped so they warn at most
-  once: (1) the `forces:*` capture/release/relocate **events** (mirror of `field:*`) warn once per event
-  name at the dispatch site in core; (2) importing the **`@fundamental-engine/platform`** package (a thin
-  re-export of `@fundamental-engine/dom`) warns once on import. The `--mass` CSS var (alias of `--load`)
-  is doc-only — a CSS-var write is not interceptable from JS. **Kept permanently, NOT deprecated:**
-  `--d`/`--field-density` (canonical dual density naming) and `--load`. The full policy is in
-  [`docs/canonical/api-stability.md`](docs/canonical/api-stability.md) ("Deprecation & removal policy")
-  and [`docs/canonical/deprecation-plan.md`](docs/canonical/deprecation-plan.md).
-
-### Removed
-
-- **Removed the historical `ROADMAP.md` and `BACKLOG.md` root docs.** The pre-1.0 refactor roadmap and the
-  manually-maintained backlog lagged `main` and duplicated the RC1 board (user Project #24); planned work
-  now lives on the board, and shipped work in `CHANGELOG.md` + per-version `docs/release-notes/`. Inbound
-  references (docs, the catalog-count doc guard, the `llms` corpus generator) were updated accordingly.
-
-### Added
 
 - **`@fundamental-engine/elements`:** **per-cell particle budgets + isolation on `<field-cell>`
   (#685, shadow-dom.md §31.19).** Two new attributes cap a standalone local cell's resource use so a
@@ -447,6 +204,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   closes the agent surface to the most-restricted view (the fractional `0 < agentRead < 1` gradient is a
   declared seam). Purely additive to the (unfrozen) handle + snapshot options; Swift/Kotlin ports are a
   batched follow-up.
+
 - **`@fundamental-engine/core`:** **runtime FIELD POLICY + a FIELD BUDGET model.** A new `FieldPolicy`
   (`{ allowBodyDataInSnapshots?, allowMotionProjection?, maxMotionBudget?, budgets?: Partial<FieldBudgets> }`)
   expresses what THIS host/session/user/app **permits** at runtime — a distinct lane from governance
@@ -474,6 +232,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   and `defineHost(minimal & partial)` builds a full `FieldHost` with no-op subscription defaults. Purely
   additive and a **widening** of the (frozen) `FieldHost` type — every existing host (`browserHost`,
   `containerHost`, `headlessHost`, `threeHost`) still satisfies it unchanged. Swift/Kotlin ports follow.
+
 - **`@fundamental-engine/core`:** first-class **body identity** — a stable, structured `FieldBodyIdentity`
   (`{ id, namespace?, kind?, host? }`) for every body, so `query`/`snapshot`/`diff`/`replay`/relationships
   reference bodies by identity instead of object reference or display text. Supply it via
@@ -482,6 +241,246 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   (the element DOM id, else a monotonic `body-N` — never `Math.random`). The resolved identity is surfaced on
   `FieldBodyReading.identity` and `FieldBodySnapshot.identity`; the existing top-level `id` is unchanged
   (`identity.id === id`) and diff/replay continue to key on it. Purely additive. Swift/Kotlin ports follow.
+
+### Changed
+
+- **`@fundamental-engine/core` (breaking, pre-1.0 window, #988):** renamed the discrete event-bus keys
+  `absorb` → `captured` and `release` → `released` (`field.on(...)` / `FieldEventMap`). `absorb` was a
+  naming-lane violation — concept language in the execution/event lane (the token is `sink`) — and the
+  new past-tense occurrence verbs match the native ports (Swift `CaptureEvent.captured/released`,
+  Kotlin `CaptureEvent.CAPTURED/RELEASED`). Only the bus keys change; the `data-absorb` body attribute,
+  the `--load` channel, and the DOM `field:captured`/`field:released` CustomEvents are unaffected.
+  Migrate `field.on('absorb'|'release', …)` → `field.on('captured'|'released', …)`.
+
+- **`@fundamental-engine/core` + `@fundamental-engine/elements`:** **the Currents (`waves`) default
+  to OFF — explicit opt-in on every plane (#979, doc-06 Step 0).** **Behavior change:** a bare field
+  no longer builds or draws the background carrier waves (the five wave layers + the bound shimmer
+  reservoir). `createField`'s `waves` option now defaults to `false`, and the `<field-root waves>`
+  attribute becomes a true opt-in boolean (absent = off; present and not `"false"` = on — the same
+  semantics as `attention`/`causality`/`mass`; previously absence meant ON). Opt back in with
+  `waves: true` / the `waves` attribute — the opted-in field is unchanged. This is the signals-first
+  companion to the `render: 'none'` flip (#538): hardcoded ambient structure painted identically
+  over every host is wallpaper, not substrate — the resting look is now declared where it is wanted
+  (the starter pins `waves`; the site's `<field-root>` already declared `waves="false"`). The Swift
+  port takes the same flip **plus** the `render: .dots → .none_` default it had retained from
+  pre-#538 (`FieldOptions` in `FieldHandle.swift`); the Kotlin port already had both defaults off
+  (`wavesEnabled = false`, `RenderMode.NONE`) and gains a pin test. The cross-plane conformance
+  golden never passes waves and is byte-unchanged.
+
+- **`@fundamental-engine/core` + `@fundamental-engine/dom`:** **allocation/lookup refactors on the
+  per-frame hot paths (#991)** — correctness-preserving, aimed at GC churn rather than a headline
+  fps win (the field is fill-rate-bound; see the performance notes). (1) `SpatialHash`
+  (`packages/core/src/core/spatial-hash.ts`) now pools bin arrays across the every-frame `reindex`
+  rebuild — `clear()` empties live bins (`length = 0`) onto a free-list instead of discarding them,
+  so a re-populated cell reuses its backing array instead of allocating a fresh one per non-empty
+  cell per frame. An equivalence test pins neighbour-query results byte-identical to brute force
+  across 60 churning rebuilds. (2) `MeasurementRegistry.for()`
+  (`packages/dom/src/measurement.ts`) is now O(1) via an identity-keyed `Map` built during
+  `measure()`, replacing a linear `snapshot.find()` scan (was O(M×N)/frame when forces looked up
+  per element); the self-healing prune of disconnected elements is unchanged. (3) the off-thread
+  render bridge (`packages/dom/src/worker/offthread-bridge.ts` + `render-worker.ts`) transfers a
+  pooled particle buffer to the worker and back each frame instead of `buf.slice(...)` copying it,
+  removing the per-tick allocation. Public behaviour unchanged; benchmark deltas are indicative only
+  (headless software-raster) — confirm on real hardware.
+
+- **`@fundamental-engine/core`:** **the RC-6 contract-coverage guard now guards body attributes**
+  (`packages/core/src/contract-coverage.test.ts`, #323). The meta-test already asserted every public
+  `FieldOptions` key and the readable metric surface are exercised by a test; it now adds the third leg
+  of the RC-6 predicate — every documented body `data-*` attribute must be referenced by a test. The
+  documented set is derived from the same `apps/site/src/lib/docs-api.ts` `ATTRS[]` surface `check:docs`
+  treats as authoritative (so the two can't drift), and the attribute leg scans the package test corpus
+  recursively (attribute coverage lives in sub-directory tests). Closed the coverage gaps this exposed
+  with minimal `parseBodyParams`/`bodyFromElement` tests for `data-fmin`/`data-fmax`/`data-opsz`,
+  `data-scale`, `data-charge-gated`, and `data-color`. Test-only; no runtime change.
+
+### Deprecated
+
+- **`@fundamental-engine/core` + `@fundamental-engine/platform`:** **documented sunset + dev-only
+  deprecation warnings for the migration aliases (#709).** The `forces-ui → field-ui → Fundamental`
+  rename left a few living aliases; they ship through RC1 and are **removed at `1.0`**. The
+  runtime-observable ones now warn in dev (`NODE_ENV !== 'production'`), deduped so they warn at most
+  once: (1) the `forces:*` capture/release/relocate **events** (mirror of `field:*`) warn once per event
+  name at the dispatch site in core; (2) importing the **`@fundamental-engine/platform`** package (a thin
+  re-export of `@fundamental-engine/dom`) warns once on import. The `--mass` CSS var (alias of `--load`)
+  is doc-only — a CSS-var write is not interceptable from JS. **Kept permanently, NOT deprecated:**
+  `--d`/`--field-density` (canonical dual density naming) and `--load`. The full policy is in
+  [`docs/canonical/api-stability.md`](docs/canonical/api-stability.md) ("Deprecation & removal policy")
+  and [`docs/canonical/deprecation-plan.md`](docs/canonical/deprecation-plan.md).
+
+### Removed
+
+- **The migration-alias surface, per the 1.0 removal checklist (#939):** the `forces:*` event alias
+  (use the canonical `field:*` events), the `--mass` CSS variable (use `--load`), and the deprecated
+  `@fundamental-engine/platform` alias package (import `@fundamental-engine/dom` directly). The
+  publishable set is now six packages. Dev-console deprecation warnings shipped one cycle ahead (#930);
+  the migration table is `docs/migration-0.x-to-1.0.md`.
+
+- **Removed the historical `ROADMAP.md` and `BACKLOG.md` root docs.** The pre-1.0 refactor roadmap and the
+  manually-maintained backlog lagged `main` and duplicated the RC1 board (user Project #24); planned work
+  now lives on the board, and shipped work in `CHANGELOG.md` + per-version `docs/release-notes/`. Inbound
+  references (docs, the catalog-count doc guard, the `llms` corpus generator) were updated accordingly.
+
+### Fixed
+
+- `packages/react/tsconfig.json` now excludes `*.test.tsx`/`*.spec.*` (not just `*.test.ts`), so a JSX test file no longer compiles into `dist/` and gets picked up as a stale `node --test` artifact (#1006).
+
+- **`@fundamental-engine/core` — rescan continuity follow-ups (#970, builds on #966/#969).** Two
+  more rescan discontinuities carried in `scan()`'s reconciliation, keyed by the same (element,
+  per-element body index):
+  - **Anonymous-id churn.** A body with no DOM id resolves to a synthetic `body-N`. That id lived
+    only on the rebuilt `Body` object, so any rescan minted a fresh id for the same element — the id
+    churned, breaking every consumer that keys on it (snapshot/diff/replay, captures, relationship
+    edges). The reconciliation now carries `identity` onto the replacement, so the same element keeps
+    its id even when its scan index shifts under an add/remove.
+  - **Dynamic-body motion reset.** A `data-authority="dynamic"` body's engine-owned position/velocity
+    (`bx/by/bvx/bvy`) were undefined on the rebuilt `Body`, so a rescan re-adopted the freshly-measured
+    DOM centre and zeroed velocity — a drifting body teleported back to its authored slot when any
+    body was added/removed. The reconciliation now carries the kinematic state, so the body resumes
+    on its trajectory. The ports (Swift/Kotlin) register bodies explicitly rather than rescanning the
+    document, so neither discontinuity exists there — no port follow-up.
+
+- **`@fundamental-engine/core`:** **the last two unseeded randomness sites now flow through the
+  injected rng (#976).** The `thermal` force's four Box–Muller draws (`forces/natural.ts`) and the
+  spark-burst COUNT (`sparkCount` in `field.ts`'s `spawnSpark` — the directions were already
+  seeded) drew raw `Math.random`, so a seeded field with a thermal body was non-reproducible and
+  any discharge shifted the shared rng stream by a run-varying number of draws, diverging every
+  draw after it. Both now use the #371 `(e.rng ?? Math.random)` pattern; a field-level determinism
+  test pins a seeded thermal + discharge run to a bit-identical fingerprint across runs. Default
+  (unseeded) behavior is unchanged; the conformance harness's global-swap seeding still applies
+  through the fallback.
+
+- **`@fundamental-engine/dom` + `@fundamental-engine/react`:** hardening pass on the X-Ray overlay
+  and `useForcesData` (#989). **`mountXRay`** (`packages/dom/src/x-ray.ts`) no longer builds its panel
+  with `innerHTML` — an interpolated `hotkey` value (or any readout) was an injection surface; the
+  panel is now assembled from typed element/`textContent` nodes, so a hotkey like `<img onerror=…>`
+  renders as inert text and injects no element. It also mounts against the container's own document
+  (`ownerDocument`) instead of the global `document`/`body` (works in an iframe / popup / test DOM),
+  and probes the optional `sample`/`energy` readouts through typed structural guards rather than
+  `(field as any)`. **`useForcesData`** (`packages/react/src/index.tsx`) no longer skips binding
+  forever when `containerRef.current` is null on the first effect pass: the host node is tracked in
+  state and the mount effect re-runs the moment the container attaches. New mount/teardown +
+  injection-inert tests for X-Ray; new null-first-pass retry tests for the hook.
+
+- **`@fundamental-engine/core` + `@fundamental-engine/dom`:** **bodies belong to the nearest
+  enclosing field — contained fields stop double-adoption (#980).** A contained field
+  (`containerHost(el)` / the `bounds:` option) and the document-rooted page `<field-root>` both
+  adopted the same `[data-body]` elements, so two engines alternated `--d`/`--field-density`
+  writes on them every frame (a visible per-frame flicker between the contained field's values
+  and the page field's near-zero ones — verified on /docs/reactive-component). Ownership is now
+  nearest-enclosing-field: `containerHost` marks its bounds element with the reserved, engine-set
+  `data-field-boundary` attribute at attach (idempotent) and removes it via the new optional
+  `FieldHost.detach()` hook (called once by `FieldHandle.destroy()`); the scanner
+  (`scanBodies`/`bodyElements`, shared with platform measurement) skips any body whose closest
+  boundary marker is not the scan root — the page field only adopts bodies whose nearest boundary
+  is the document, each contained field owns exactly its subtree, nesting resolves to the nearest
+  boundary, and destroying a contained field hands its bodies back to the page field on rescan.
+  New exports: `FIELD_BOUNDARY_ATTR`, `FIELD_BOUNDARY_SELECTOR`, `ownedByScanRoot`. DOM-plane
+  fix only: the Swift/Kotlin hosts register bodies explicitly (no document-wide scan), so the
+  double-adoption class does not exist there.
+
+- **`@fundamental-engine/core`:** **the conformance runner injects its seeded PRNG through the
+  `Env.rng` seam instead of monkey-patching the global `Math.random` (#992, post-#981).** `thermal`'s
+  Box–Muller kicks now draw from `e.rng ?? Math.random` like `jet`/`spawn` already did, and
+  `conformance/run.ts` threads one seeded `mulberry` instance through the frame-0 delta env and the
+  trajectory env — so a seeded scenario is reproducible with no global side effect. Production behavior
+  is byte-identical (no `Env.rng` set ⇒ `Math.random`); the cross-plane conformance golden is unchanged.
+
+- **`@fundamental-engine/three`:** **`threeBackend`'s overlay `z` now offsets the projected field
+  plane instead of being an absolute world z (#949).** The backend pinned every overlay vertex —
+
+- **`@fundamental-engine/core`:** **rescan no longer discards body feedback state or strands
+  captured matter (#966).** `scan()` rebuilds every Body on any add/remove/register, and the
+  rebuilt bodies started from zeroed runtime state — so every `data-feedback` body's `--d`
+  hard-dropped (measured 1.000 → 0.080) and eased back over ~1s on ANY rescan, while matter a
+  sink had captured stayed pinned to the old (ghost) Body object — frozen centre, never
+  released — as the rebuilt sink re-captured a second full capacity. `scan()` now reconciles
+  the new generation against the old (the same pattern the movers/emitters already used), keyed
+  by (element, per-element body index) so `data-preset` expansions carry per virtual body:
+  persisting bodies keep `d`, `attn`, `accreted`, `count`, and `wasOn`; captured particles and
+  docked elements are remapped to the replacement Body (one O(P) pass, only when a persisting
+  body actually held matter); the Body-keyed `sinkPeak` + `bodyThresholds` side tables are
+  re-keyed (so a mid-cycle sink still reports its release count and carried density doesn't
+  re-fire an already-announced threshold edge), while proximity membership and the measured
+  thermodynamic windows still reset by design (they re-derive within a frame). Removed elements
+  still drop all their state. No public API change; measure cadence untouched.
+  lines/arrows (`segments`/`polyline`), the data-chip plates (`rect`), and the #921 label sprites
+  (`text`) — at `z` in world space, so overlay readings mis-registered under a
+  `VolumeProjection({ centerZ: true })`, whose field plane sits at `-depth/2 · depthScale`, not at
+  the world origin. Each draw path now projects the field point through the injected projection and
+  applies `z` as an offset off the projected plane — the same contract the native field visuals
+  (samplers) hold. `PlaneProjection` and an uncentered `VolumeProjection` put that plane at world-z
+  0, so default scenes are pixel-identical; tests pin the centered-volume registration and the
+  default-unchanged invariant across all three draw paths.
+
+- **`@fundamental-engine/core`:** **reduced-motion no longer leaves body density stale (#967).**
+  Under `prefers-reduced-motion` (or `maxMotionBudget`/`budgets.motion` = 0) the sim freezes with
+  `env.dt = 0` and the integrator's `step()` early-returns — but it returned *before* the per-pass
+  `b.count = 0` reset, so the density counts held their last live value while `writeFeedback()` kept
+  running every frame, easing `--d`/`--field-density` (and the font-weight channel) toward a stale,
+  permanently-elevated count. A frozen field reported particle presence from a simulation that was
+  no longer running. The count/thermo reset is now hoisted into a shared `resetDensity()` that runs
+  on both the live and the `dt === 0` paths, so a frozen body's `b.count` re-zeros and `b.d` eases
+  down to `feedbackTarget(0, b.on)` — the engagement-only baseline. Engagement (`b.on`, which is
+  dt-independent) still reads truthfully: motion freezes, but the signals stay honest. Fixed in all
+  three planes (JS core + Swift + Kotlin, which shared the same integrator-seam ordering bug).
+
+- **`@fundamental-engine/three`:** **`threeBackend`'s line/rect vertex data actually reaches the GPU
+  again** — writing the registration tests above exposed that the #463 persistent-buffer refactor
+  never uploaded a single overlay vertex: `flush` wrote each frame into a kept `Float32Array`, but
+  the `Float32BufferAttribute` wrapping it **copies** its input at construction, so the attribute
+  held its own zeroed array and every in-place write landed in memory the GPU never saw (all line +
+  rect geometry silently drew degenerate points at the origin; the #921 label sprites, which don't
+  ride these buffers, were unaffected). The attributes are now plain `BufferAttribute`s, which hold
+  the typed array by reference — the write-in-place + `needsUpdate` design of #463 as intended. The
+  new registration tests double as the guard: they read the vertices back out of the attributes.
+
+- **`@fundamental-engine/core`:** **keyboard focus now engages a `[data-hot]` body at mouse
+  parity (#665, a11y).** Engagement bound `focus`/`blur`, which do not bubble — so when a keyboard
+  user tabbed to a focusable *descendant* of a `[data-hot]` container (a card's `<a>`, a row's
+  `<button>`, an `<li>`/`<aside>` wrapper), the container's body never engaged, while a mouse user
+  got the reaction via `pointerenter`. Engagement now binds the bubbling `focusin`/`focusout`, so
+  tabbing into (or out of) any focusable content inside a `[data-hot]` element drives the same
+  engaged state — `data-active="1"`, `b.on`, wave-spine bend, `--d` gather — that hover produces
+  (the RC-8 principle: keyboard users get the same field reactions as the mouse). A directly
+  focusable `[data-hot]` element (a `[data-hot]` button/link) is unaffected — `focusin` still fires
+  on it. Engagement only sets state; the integrator (which reduced-motion already freezes) drives the
+  motion, so focus engagement is reduced-motion-safe by the same path hover is. DOM plane only — the
+  native ports set engagement from the body model and have no DOM focus event. The speculative
+  "tab order forms a current" half of #665 (a directional flow along the tab sequence) is deferred.
+
+### Documentation
+
+- Correct `packages/core/README.md` feedback wording: `--d` and `--field-density` are consistent twins (same live value, read either), not legacy aliases; only `--forces-density` is the removed legacy variable — matching `docs/canonical/feedback-channels.md`.
+
+- **`<field-cell>` boundary statement (#993):** documented that a cell is a demo pool, not the engine
+  — own particle pool, local `Math.random()`, and **none** of the core guarantees (no determinism,
+  snapshot/causal replay, cross-plane conformance, or physics parity). Added to the
+  `@fundamental-engine/elements` README and `docs/engine-reference/shadow-dom.md`. Also aligned the
+  Next.js example's SSR guidance (`examples/nextjs/app/components/FieldCanvas.tsx`) with the README:
+  a `'use client'` import from a Server Component IS the App Router SSR boundary — no
+  `dynamic(…, { ssr: false })` wrapper (that pattern is Pages-Router-only and throws in an RSC).
+
+- **`@fundamental-engine/dom`:** corrected the stale `QualityGovernor` header comment
+  (`packages/dom/src/governor.ts`) — it still said the engine-side quality responses were "NOT
+  automatic yet", but since #413 the `<field-root>` runtime forwards each tier change to
+  `handle.setQualityTier` (DPR cap + heatmap drop applied automatically); only *further* responses
+  (render simplification, particle caps) remain the embedder's via `field:quality-tier`. Comment
+  only — no runtime change. Part of the #588 docs pass (the createField unguarded-path guidance on
+  the performance page, the TypeScript/core guides, and `docs/canonical/platform-architecture.md`).
+
+### Tests
+
+- **`@fundamental-engine/{core,elements,vanilla}`:** **five permanent drift-guard tests (#992).**
+  (1) `<field-root>`'s option-forwarding reverse guard now DERIVES its checked set from
+  `observedAttributes`/`OPTIONS` instead of a stale hand-maintained literal (it had fallen behind
+  `grid-warp`/`theme`/`gradient*`/`wave-baseline`/`separation`). (2) A vanilla delegation-drift guard
+  compares a real headless `FieldHandle`'s method surface to `FieldField.prototype`. (3) A `forAgent`
+  facade-completeness guard requires every `FieldHandle` method to be explicitly exposed OR withheld
+  (safety: no accidental agent exposure). (4) A passport-vs-implementation guard (in
+  `validatePassports`) asserts any force whose live object defines `modify()` is passported as a
+  non-moving modifier. (5) Conformance-runner determinism guards prove a seeded scenario reproduces
+  exactly and never touches the global `Math.random`. Each was verified non-vacuous (fails when its
+  invariant is deliberately broken).
 
 ## [0.9.2] — 2026-07-01
 
