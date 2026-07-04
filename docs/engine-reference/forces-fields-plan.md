@@ -76,7 +76,7 @@ Three pillars, plus the accumulator threaded through:
 
 ## Shared engine primitives
 
-- **`core/geometry.ts` (new).** Pure helpers: `nearestOnRect(px, py, body)`, `sdfRect(px, py,
+- **`math/geometry.ts` (new).** Pure helpers: `nearestOnRect(px, py, body)`, `sdfRect(px, py,
   body)` (signed, negative inside), `polePair(body)` (two poles along `ux/uy` separated by the
   element extent, signed by `spin`), and `EPS = 1` for divide-by-zero guards. Fully golden-tested.
 - **`Force.field?(b, x, y): Vec2` (new optional hook in `types.ts`).** The visual/structure
@@ -102,7 +102,7 @@ Three pillars, plus the accumulator threaded through:
 
 ## Stage A — Shaped-source geometry primitives
 
-- Implement `core/geometry.ts` (above) with golden tests: nearest point on a box from inside,
+- Implement `math/geometry.ts` (above) with golden tests: nearest point on a box from inside,
   outside, and at the corners; signed distance sign flips across the edge; pole pair lies on the
   heading axis at the expected separation and flips with `spin`.
 - No behavior change. This stage is pure groundwork the next stages consume.
@@ -112,7 +112,7 @@ Three pillars, plus the accumulator threaded through:
 - Implement `Force.field()` for `magnetism` and `charge` as a two-pole superposition built from
   `polePair(body)`. Magnetic uses the bar-magnet dipole; electric uses the +/− dipole. `Q`
   (Stage C) scales pole strength; until then it reads `strength · M`.
-- Field-line tracer (extend `streamlines.ts` or add `core/fieldlines.ts`): prefer `f.field()`
+- Field-line tracer (extend `streamlines.ts` or add `engine/fieldlines.ts`): prefer `f.field()`
   when present, else `forceAt`. Seed around the poles, integrate the streamline forward and
   backward, and stop on loop closure, min strength, viewport exit, max steps, or line spacing
   (defaults from the spec: step 4–8px, maxSteps 200–600, minStrength 0.01, spacing 12–24px).
@@ -201,13 +201,13 @@ Build order: **Stage 0 → A → B → C → H1 → H2 → H3.** Stage B (dipole
 
 - `forces/natural.ts` — magnetism falloff, magnetism `field()`.
 - `forces/index.ts` / `forces/extended.ts` — charge `field()`, electric flow.
-- `core/geometry.ts` — new, shaped-source primitives.
-- `core/types.ts` — `Force.field?`, `Body.q`/`chargeable`, any `Env` shaped fields.
-- `core/integrator.ts` — shaped sampling at the body-force loop.
-- `core/field.ts` — chargeable accumulator in `writeFeedback`, heatmap manager, render dispatch.
-- `core/streamlines.ts` / `core/fieldlines.ts` — field-line tracer using `field()`.
+- `math/geometry.ts` — new, shaped-source primitives.
+- `engine/types.ts` — `Force.field?`, `Body.q`/`chargeable`, any `Env` shaped fields.
+- `engine/integrator.ts` — shaped sampling at the body-force loop.
+- `engine/field.ts` — chargeable accumulator in `writeFeedback`, heatmap manager, render dispatch.
+- `engine/streamlines.ts` / `engine/fieldlines.ts` — field-line tracer using `field()`.
 - `core/scalar-grid.ts` — heatmap layers, blur/upscale helpers.
-- `core/scanner.ts`, `packages/elements` — new attributes.
+- `engine/scanner.ts`, `packages/elements` — new attributes.
 - `config/manual.ts`, `config/forces.config.ts` — catalog and render-mode entries.
 - `conformance/*` — tests per stage.
 - `apps/site` — demos (examples page, Lab); `docs/*` — spec and API updates.

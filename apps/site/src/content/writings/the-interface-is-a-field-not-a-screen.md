@@ -457,7 +457,7 @@ consumes the variable. The field is not broken; it is reacting invisibly — whi
 you asked for and exactly what bites you. Linting catches one half of the gap; discipline catches
 the other.
 
-**And the honest one: it is early.** The packages are published — 0.9.2 is live on npm, and the
+**And the honest one: it is early.** The packages are published — 0.9.3 is live on npm, and the
 [road to 1.0](/writings/the-road-to-1-0) tracks the release gates that still stand — but it is a
 0.x preview, a substrate to build on, with no outside users yet. And there is no user study — the
 claim that a reading field helps you orient, or that an evidence field calibrates trust rather

@@ -13,7 +13,7 @@ runtime implements it; the live page tracks which callable methods exist on each
 - **Methods:** `packages/core/src/engine/types.ts` — the `FieldHandle` interface.
 - **Three.js:** `packages/three/src/layer.ts` — `FieldLayer` delegates all 44 to the wrapped handle.
 - **Swift:** `swift/Sources/FundamentalVanilla/FieldEngine.swift`.
-- **Kotlin:** `android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/FieldHandle.kt`.
+- **Kotlin:** `android/fundamental-core/src/main/kotlin/com/fundamental/core/engine/FieldHandle.kt`.
 
 ## Two different "parity" claims — keep them separate
 

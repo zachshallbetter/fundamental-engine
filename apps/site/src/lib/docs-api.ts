@@ -1,4 +1,4 @@
-// Hand-authored API tables drawn from packages/core/src/core/types.ts. These
+// Hand-authored API tables drawn from packages/core/src/engine/types.ts. These
 // interfaces are type-erased at build time, so the option/method/attribute lists
 // live here. They change rarely; keep them in step with types.ts.
 

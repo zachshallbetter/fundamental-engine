@@ -605,7 +605,7 @@ build-time tool and ships no runtime JavaScript by default.
 
 If you use this work, please cite it via its concept DOI:
 
-> Shallbetter, Z. (2026). *Fundamental* (Version 0.9.2) [Computer software].
+> Shallbetter, Z. (2026). *Fundamental* (Version 0.9.3) [Computer software].
 > Zenodo. https://doi.org/10.5281/zenodo.XXXXXXX
 
 <details>
@@ -617,7 +617,7 @@ If you use this work, please cite it via its concept DOI:
   title     = {Fundamental},
   year      = {2026},
   publisher = {Zenodo},
-  version   = {0.9.2},
+  version   = {0.9.3},
   doi       = {10.5281/zenodo.XXXXXXX},
   url       = {https://doi.org/10.5281/zenodo.XXXXXXX}
 }

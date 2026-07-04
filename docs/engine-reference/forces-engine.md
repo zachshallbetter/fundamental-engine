@@ -39,7 +39,7 @@ Section refs (§) point into [forces-system.md](forces-system.md) and the canoni
 
 ## 1. The frame pipeline
 
-`createField(canvas, opts)` (`core/field.ts`) needs a `FieldHost` (`core/host.ts`) — the seam
+`createField(canvas, opts)` (`engine/field.ts`) needs a `FieldHost` (`engine/host.ts`) — the seam
 that abstracts every DOM-global (viewport, scroll, rAF, reduced-motion, scan root). In the
 browser the host is `browserHost()` from `@fundamental-engine/dom` (or the `createBrowserField`
 convenience). Under the platform runtime (Phase D, the default for `<field-root>`) the DOM-facing
@@ -68,27 +68,27 @@ Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platf
 | Module | Key symbols | Purpose | Pure |
 |---|---|---|---|
 | `index.ts` / `export.ts` | (re-exports) / `segmentsToSvg`, `canvasToPng` | Package entry; field export serializers (SVG vector / PNG). | mixed |
-| `core/field.ts` | `createField` | Mounts the canvas, runs the sim + render. The one DOM-touching engine module. | no |
-| `core/host.ts` | `FieldHost`, `browserHost` (re-exported from platform) | The renderer/environment seam — every DOM-global goes through the injected host. | yes |
+| `engine/field.ts` | `createField` | Mounts the canvas, runs the sim + render. The one DOM-touching engine module. | no |
+| `engine/host.ts` | `FieldHost`, `browserHost` (re-exported from platform) | The renderer/environment seam — every DOM-global goes through the injected host. | yes |
 | `core/surface.ts` | `FIELD_CANVAS_STYLE` | One source of truth for the fixed, click-through canvas styling. | yes |
 
 ### Contracts & registry
 
 | Module | Key symbols | Purpose |
 |---|---|---|
-| `core/types.ts` | `Particle`, `Body`, `Env`, `Force`, `Formation`, `Token`, `AgentKind` | The data model + force/agent contract (§3/§4/§22). |
-| `core/registry.ts` | `Registry`, `createRegistry` | Force + condition registry; seeds built-in conditions. |
+| `engine/types.ts` | `Particle`, `Body`, `Env`, `Force`, `Formation`, `Token`, `AgentKind` | The data model + force/agent contract (§3/§4/§22). |
+| `engine/registry.ts` | `Registry`, `createRegistry` | Force + condition registry; seeds built-in conditions. |
 | `contracts/passport.ts` | `ForcePassport`, passports | Every force declares what it mutates, whether it does work / needs charge or velocity / touches neutral matter, and how it visualizes (system-contracts §3). |
 | `contracts/guards.ts` | contract guards | Dev-mode runtime assertions: sources must be budgeted, visualizations must not mutate physics, particles stay finite (§17/§18). |
-| `core/math.ts` | `clamp`, `lerp`, `hexToRgb`, `RGB` | Dependency-free math/color helpers. |
+| `math/math.ts` | `clamp`, `lerp`, `hexToRgb`, `RGB` | Dependency-free math/color helpers. |
 
 ### Simulation core (all pure)
 
 | Module | Key symbols | Purpose |
 |---|---|---|
-| `core/integrator.ts` | `step`, `FRICTION`, `HEAT_DECAY` | One tick: body forces → formation bias → integrate + damp. Additive forces ×`1/m`; `kinematic` forces replace velocity; `dt=0` freezes (reduced motion). |
-| `core/field-store.ts` | `FieldStore` | Owns the particle pool + spatial index; count is the conserved quantity (§2.4). |
-| `core/spatial-hash.ts` | `SpatialHash` | Uniform-grid neighbour index — class-[B] forces O(n·k) not O(n²). |
+| `engine/integrator.ts` | `step`, `FRICTION`, `HEAT_DECAY` | One tick: body forces → formation bias → integrate + damp. Additive forces ×`1/m`; `kinematic` forces replace velocity; `dt=0` freezes (reduced motion). |
+| `engine/field-store.ts` | `FieldStore` | Owns the particle pool + spatial index; count is the conserved quantity (§2.4). |
+| `engine/spatial-hash.ts` | `SpatialHash` | Uniform-grid neighbour index — class-[B] forces O(n·k) not O(n²). |
 | `core/scalar-grid.ts` | `ScalarGridImpl` | Class-[C] backing store: `diffuse` (`∂φ/∂t=D∇²φ`) and `wave` (leapfrog) fields. |
 | `core/accretion.ts` | accretion core | Pure sink submodel (§6.9): capture → hold (`cap=b`) → release exactly what was held. |
 
@@ -104,24 +104,24 @@ Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platf
 
 | Module | Key symbols | Purpose |
 |---|---|---|
-| `core/geometry.ts` | `nearestOnRect`, `sdfRect`, `dipoleField`, `polePair` | Shaped-source geometry: nearest box point, signed distance, dipole poles — so `magnetism`/`charge` act/draw as real N→S / +→− fields. |
-| `core/fieldlines.ts` | `traceFieldLine(s)` | Field-line tracer: step along any normalized `sample(x,y)` vector field. |
-| `core/streamlines.ts` | `forceAt`, `netField` | Vector-field probe: net push on a still probe; `netField` = Σ of every body's `field()` (drives `fieldflow` via `env.fieldAt`). |
-| `core/heatmap.ts` | `Heatmap` | Density scalar buffer drawn as a glow underlay, sampled back as `--field-heatmap-density`. Measures, never pushes. |
-| `core/flow.ts` | `flowTo` | A movable *flow focus* the field bends toward (pull + curved streamlines), retargetable each frame (`field.flowTo()`). |
+| `math/geometry.ts` | `nearestOnRect`, `sdfRect`, `dipoleField`, `polePair` | Shaped-source geometry: nearest box point, signed distance, dipole poles — so `magnetism`/`charge` act/draw as real N→S / +→− fields. |
+| `engine/fieldlines.ts` | `traceFieldLine(s)` | Field-line tracer: step along any normalized `sample(x,y)` vector field. |
+| `engine/streamlines.ts` | `forceAt`, `netField` | Vector-field probe: net push on a still probe; `netField` = Σ of every body's `field()` (drives `fieldflow` via `env.fieldAt`). |
+| `engine/heatmap.ts` | `Heatmap` | Density scalar buffer drawn as a glow underlay, sampled back as `--field-heatmap-density`. Measures, never pushes. |
+| `engine/flow.ts` | `flowTo` | A movable *flow focus* the field bends toward (pull + curved streamlines), retargetable each frame (`field.flowTo()`). |
 | `core/dock.ts` | dock decision | Element-level capture: a `[data-move][data-dock]` element inside a `sink`'s radius docks to the core (§22.3). |
 
 ### Field structure & exchange (all pure)
 
 | Module | Key symbols | Purpose |
 |---|---|---|
-| `core/currents.ts` | `buildWaves`, `buildBound`, `waveYat` | Five carrier waveforms — the resting structure that carries bound particles, biases free ones (§24). |
-| `core/reservoir.ts` | `healWaves`, `tearBound*`, `induceCharges` | Bound↔free exchange (§2.4); `induceCharges` polarizes neutral matter near charge/magnetism. |
-| `core/formations.ts` | `easeFormation`, `accretionTarget` | Global per-particle bias, eased toward target so transitions glide (§7). |
-| `core/conditions.ts` | `conditions`, `passes` | `data-when` gate predicates: active, fast, slow, hot, cool, scrolling (§5). |
-| `core/attention.ts` | `attentionMuls` | Conserved attention: one finite strength budget; engaging a body pulls allocation off the rest (§2.4). |
-| `core/causality.ts` | `spillover` | Cross-boundary causality: a saturated body spills excess density to neighbours (conserved). |
-| `core/reactions.ts` | `sparkCount`, `burstImpulse` | Micro-reactions: energy removed at an interaction → sparks/flash (§23). |
+| `engine/currents.ts` | `buildWaves`, `buildBound`, `waveYat` | Five carrier waveforms — the resting structure that carries bound particles, biases free ones (§24). |
+| `engine/reservoir.ts` | `healWaves`, `tearBound*`, `induceCharges` | Bound↔free exchange (§2.4); `induceCharges` polarizes neutral matter near charge/magnetism. |
+| `engine/formations.ts` | `easeFormation`, `accretionTarget` | Global per-particle bias, eased toward target so transitions glide (§7). |
+| `engine/conditions.ts` | `conditions`, `passes` | `data-when` gate predicates: active, fast, slow, hot, cool, scrolling (§5). |
+| `engine/attention.ts` | `attentionMuls` | Conserved attention: one finite strength budget; engaging a body pulls allocation off the rest (§2.4). |
+| `engine/causality.ts` | `spillover` | Cross-boundary causality: a saturated body spills excess density to neighbours (conserved). |
+| `engine/reactions.ts` | `sparkCount`, `burstImpulse` | Micro-reactions: energy removed at an interaction → sparks/flash (§23). |
 | `core/render-modes.ts` | `marchingCell`, `splatDensity`, `nearestSite`, `linkAlpha` | Draw-pass helpers for the non-`dots` base modes (links, metaballs, voronoi). |
 
 ### Agents (§22 — field participants beyond particles)
@@ -133,7 +133,7 @@ Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platf
 | `agents/relationship.ts` | `RelationshipAgent` | An active connection between two bodies — strength/tension/memory; strengthens with use, decays, transfers attention, emits events (§7). |
 | `agents/user-agent.ts` | `UserAgent` | User input as participation: pointer = wake, focus = attention source, selection = capture, scroll = current (a11y-aware). |
 | `agents/region-agents.ts` | `LayoutAgent`, `DataAgent` | Region-level (a column/card aggregates the metrics under it) and record-level (a semantic record with decaying salience) participants. |
-| `core/events.ts` / `agents/event-agent.ts` | `EventAgent`, `Thresholder` | Thresholded, debounced, hysteresis edges (`entered`/`exited`) → discrete `field:*` events, not per-frame noise (§9). |
+| `engine/events.ts` / `agents/event-agent.ts` | `EventAgent`, `Thresholder` | Thresholded, debounced, hysteresis edges (`entered`/`exited`) → discrete `field:*` events, not per-frame noise (§9). |
 
 ### Diagnostics (reveal state, never mutate physics)
 
@@ -172,8 +172,8 @@ Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platf
 | `inspect/snapshot.ts` | Deterministic seeded-scenario fingerprint (count + mean speed/heat) → catches accidental physics change (§12). |
 | `inspect/report.ts` | Aggregates the whole model (contracts, passports, experiments, agents, recipes) + "is every force passported AND conformance-covered?". |
 | `inspect/budget.ts` | Live counts vs a `PerformanceBudget`; reports every metric over its limit (§15). |
-| `core/scanner.ts` | `[data-body]`/`[data-preset]` → bodies (parsing pure; measurement runs in the platform read-phase). |
-| `core/shadow.ts` | `FieldController` / `ShadowRegistry` — host-first shadow-DOM registration (register the HOST, never the shadow tree). |
+| `engine/scanner.ts` | `[data-body]`/`[data-preset]` → bodies (parsing pure; measurement runs in the platform read-phase). |
+| `engine/shadow.ts` | `FieldController` / `ShadowRegistry` — host-first shadow-DOM registration (register the HOST, never the shadow tree). |
 | `core/feedback.ts` | The density→`--field-density` write math (platform's `FeedbackRegistry` owns *when* it runs). |
 
 ### Catalog / config & conformance
@@ -274,7 +274,7 @@ The tier each force needs from `Env` (§20.1/§22). Most forces are class [A].
 
 ## 6. The `Env` services
 
-Shared per-frame environment (`core/types.ts`), filled by the engine: `dx/dy/dist`, `form`,
+Shared per-frame environment (`engine/types.ts`), filled by the engine: `dx/dy/dist`, `form`,
 `t/frameN/dt`, `c/G`, `scrollV`, and services `spark`, `supernova`, `spawn`, `neighbors(p,r)`
 (class B), `grid(name)` (class C), `fieldAt(x,y)` (net `field()` superposition — drives `fieldflow`).
 
@@ -316,7 +316,7 @@ Shared per-frame environment (`core/types.ts`), filled by the engine: `dx/dy/dis
 
 ---
 
-## 9. Key types (`core/types.ts`)
+## 9. Key types (`engine/types.ts`)
 
 `Particle` (`x,y,vx,vy,m,heat,size`, optional `charge`/`age`/`cap`, plus warp fields), `Body`
 (tokens + geometry + `strength/range/spin/M/d/on/shaped/attn` + warp params), `Env` (§6), `Force`

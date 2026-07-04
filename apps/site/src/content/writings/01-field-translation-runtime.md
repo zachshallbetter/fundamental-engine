@@ -279,7 +279,7 @@ Canvas, WebGL, WebGPU, a native target, or a headless harness by supplying a dif
 
 ### 4.2 The DOM boundary, proven
 
-The renderer-agnostic claim is not asserted; it is *enforced*. `packages/core/src/core/dom-boundary.test.ts`
+The renderer-agnostic claim is not asserted; it is *enforced*. `packages/core/src/engine/dom-boundary.test.ts`
 scans every source file in the core against a denylist of DOM globals (`document.querySelector`,
 `window.innerWidth`, `requestAnimationFrame`, `new ResizeObserver`, …) and **runs with an empty
 allowlist** — meaning no core file is permitted any DOM *global*. (The core still operates on DOM
@@ -394,7 +394,7 @@ scheduler), which we use as a running example and study substrate in Paper 2.
 ### 6.1 A force is a small contract
 
 In code, a force is a registry entry implementing a compact interface (defined in
-`packages/core/src/core/types.ts`, registered via `registry.ts`; simplified here):
+`packages/core/src/engine/types.ts`, registered via `registry.ts`; simplified here):
 
 ```ts
 interface Force {
@@ -805,15 +805,15 @@ reading (Paper 2), evidence and trust in AI interfaces (Paper 3), reduced-motion
 Every architectural claim in this paper is checkable against the repository. The load-bearing
 anchors:
 
-- Renderer-agnostic core: `packages/core/src/core/dom-boundary.test.ts` (empty allowlist).
+- Renderer-agnostic core: `packages/core/src/engine/dom-boundary.test.ts` (empty allowlist).
 - The scheduler and registries: `packages/dom/src/schedule.ts`, `platform.ts`,
   `measurement.ts`, `state.ts`, `feedback.ts`, `relationships.ts`, `visual-bindings.ts`,
   `overlays.ts`, `lint.ts`.
-- The force contract and passports: `packages/core/src/core/registry.ts`,
+- The force contract and passports: `packages/core/src/engine/registry.ts`,
   `packages/core/src/contracts/passport.ts`.
-- The integrator and the unit-mass / opt-in-mass behavior: `packages/core/src/core/integrator.ts`.
+- The integrator and the unit-mass / opt-in-mass behavior: `packages/core/src/engine/integrator.ts`.
 - The canonical force/feedback catalog: `packages/core/src/config/manual.ts`.
-- Authoring/scan and the `[data-body]` contract: `packages/core/src/core/scanner.ts`.
+- Authoring/scan and the `[data-body]` contract: `packages/core/src/engine/scanner.ts`.
 
 The canonical design documents corroborate the framing: the system contracts, the platform
 architecture, the fundamental field-behavior table, and the natural-fields classification under

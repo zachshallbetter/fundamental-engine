@@ -1,7 +1,7 @@
 // Gallery runtime — wires the "What it can do" exploration chapter on the home. Each helper guards
 // on its own markup, so the whole thing no-ops on pages without the gallery (e.g. /eli5). Returns a
 // single teardown. Reuses only proven engine surfaces:
-//   · field:captured / field:released — real bubbling CustomEvents the sink dispatches (core/field.ts).
+//   · field:captured / field:released — real bubbling CustomEvents the sink dispatches (engine/field.ts).
 //   · --field-density — the metric the platform writes back onto a [data-feedback] body (feedback.ts).
 //   · field.setRender(mode) — the Field Surfaces underlay switch on <field-root>.
 
