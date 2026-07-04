@@ -185,7 +185,7 @@ it turns on.
 ### 3.2 The `FieldHost` interface
 
 The core reaches the environment through exactly one injected interface,
-`FieldHost` (`packages/core/src/core/host.ts`). It is *pure types — no globals* — so the file that
+`FieldHost` (`packages/core/src/engine/host.ts`). It is *pure types — no globals* — so the file that
 imports it imports no DOM:
 
 ```ts
@@ -212,7 +212,7 @@ scroll position and page height, reduced-motion and visibility preferences, fram
 canvas factory for the heatmap buffer, and the event subscriptions for resize, scroll, visibility,
 input, and composed shadow-DOM body events — is a *method on the host*, not a global the engine calls.
 The engine's entry point, `createField(canvas, opts)`, makes the dependency mandatory: it throws if
-`opts.host` is absent (`packages/core/src/core/field.ts`), so there is no silent fallback to `window`.
+`opts.host` is absent (`packages/core/src/engine/field.ts`), so there is no silent fallback to `window`.
 
 ### 3.3 `browserHost()`: one implementation among possible many
 
@@ -243,7 +243,7 @@ different object with the same shape. `createBrowserField()` is the convenience 
 ### 3.4 The proof: an empty-allowlist boundary test
 
 The renderer-agnostic claim is not asserted; it is *enforced* by
-`packages/core/src/core/dom-boundary.test.ts`, the architectural keystone. The test walks every
+`packages/core/src/engine/dom-boundary.test.ts`, the architectural keystone. The test walks every
 non-test source file in `Fundamental` and fails if any of them contains a DOM-global *call-site*,
 matched as access/construction patterns so that ordinary prose ("scan the document", "debounce
 window") does not trip it:
@@ -722,13 +722,13 @@ paradigm itself.
 
 Every architectural claim in this paper is checkable against the repository. The load-bearing anchors:
 
-- **The host boundary.** The `FieldHost` interface: `packages/core/src/core/host.ts`. The browser
+- **The host boundary.** The `FieldHost` interface: `packages/core/src/engine/host.ts`. The browser
   adapter: `packages/dom/src/browser-host.ts` (`browserHost()`). The shipped DOM-free reference host:
   `headlessHost()`, exported from `@fundamental-engine/core` (#600). The mandatory-host entry point:
-  `packages/core/src/core/field.ts` (`createField` throws without `opts.host`).
-- **The proof.** The empty-allowlist boundary test: `packages/core/src/core/dom-boundary.test.ts`
+  `packages/core/src/engine/field.ts` (`createField` throws without `opts.host`).
+- **The proof.** The empty-allowlist boundary test: `packages/core/src/engine/dom-boundary.test.ts`
   (`const ALLOW = new Set<string>()`). The legacy element write-back path it documents:
-  `packages/core/src/core/field.ts` (the `--field-density` / `transform` / `data-*` writes and the
+  `packages/core/src/engine/field.ts` (the `--field-density` / `transform` / `data-*` writes and the
   `feedbackSink` seam).
 - **The scheduler and registries.** `packages/dom/src/schedule.ts` (`FrameScheduler`, `PHASES`,
   `READ_PHASES`, `readGuard`, `assertPhase`), `platform.ts` (`createFieldPlatform`), and the six

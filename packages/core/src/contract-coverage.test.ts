@@ -106,7 +106,7 @@ function documentedBodyAttrs(): string[] {
 
 /** the keys declared inside an `export interface <name> { … }` block in core/types.ts. */
 function interfaceKeys(name: string): string[] {
-  const src = readFileSync(join(here, 'core', 'types.ts'), 'utf8');
+  const src = readFileSync(join(here, 'engine', 'types.ts'), 'utf8');
   const start = src.indexOf(`export interface ${name}`);
   assert.notEqual(start, -1, `interface ${name} not found in core/types.ts`);
   const open = src.indexOf('{', start);

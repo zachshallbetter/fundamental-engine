@@ -45,7 +45,7 @@ forever. They are not migration cruft and get **no** deprecation warning:
 
 | # | Alias | Canonical form | Where it lives | Dev warn? | Removal |
 |---|---|---|---|---|---|
-| 1 | `--mass` CSS var — *written* alongside `--load` (back-compat alias) | `--load` | `packages/core/src/core/feedback-sink.ts` (~L47); also mirrored by `packages/elements/src/platform-runtime.ts` | No — a CSS var write is not runtime-observable to JS (CSS reads can't be intercepted); docs + release notes are the signal | **`1.0`** — stop writing `--mass` |
+| 1 | `--mass` CSS var — *written* alongside `--load` (back-compat alias) | `--load` | `packages/core/src/engine/feedback-sink.ts` (~L47); also mirrored by `packages/elements/src/platform-runtime.ts` | No — a CSS var write is not runtime-observable to JS (CSS reads can't be intercepted); docs + release notes are the signal | **`1.0`** — stop writing `--mass` |
 | 2 | `<field-field>` custom element — *registered* alongside `<field-root>` | `<field-root>` | `packages/elements/src/index.ts` (~L702) | Feasible (a `connectedCallback` warn) but not wired — low-cost registration mirror | **`1.0`** — stop registering (maintainer may bless it as permanent instead; call it at `1.0`) |
 | 3 | `@fundamental-engine/platform` package — re-exports `@fundamental-engine/dom` | `@fundamental-engine/dom` | `packages/platform/` (thin alias; `package.json` `description` says DEPRECATED) | **Yes** — one-time dev-only `console.warn` from the entry module on import | **`1.0`** — stop publishing |
 
@@ -69,7 +69,7 @@ The absence of the above is asserted by the test suite; this plan does not chang
 
 For the record: event names are canonicalized as `field:*`. The Shadow-DOM body-registration events
 (`REGISTER_BODY` = `field:register-body`, `UNREGISTER_BODY`, `UPDATE_BODY` in
-`packages/core/src/core/shadow.ts`) were introduced under the `field:*` namespace and should stay there.
+`packages/core/src/engine/shadow.ts`) were introduced under the `field:*` namespace and should stay there.
 
 ## Console-deprecation path (what warns at runtime vs. doc-only)
 

@@ -9,9 +9,9 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createField } from './core/field.ts';
-import type { FieldHost } from './core/host.ts';
-import type { FieldOptions } from './core/types.ts';
+import { createField } from './engine/field.ts';
+import type { FieldHost } from './engine/host.ts';
+import type { FieldOptions } from './engine/types.ts';
 
 function tickHost(width: number, height: number): { host: FieldHost; tick: (t?: number) => void } {
   let frame: ((t: number) => void) | null = null;

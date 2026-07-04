@@ -10,7 +10,7 @@ property writer and the page is a CSS property reader.
 
 > **Density is one value on two variables — they are CONSISTENT.** `--d` and `--field-density`
 > hold the **same** eased live-density number, written together by the feedback sink
-> (`packages/core/src/core/feedback-sink.ts` — both `setProperty` off the one `ch.density`).
+> (`packages/core/src/engine/feedback-sink.ts` — both `setProperty` off the one `ch.density`).
 > `--d` is the canonical, compact working channel; `--field-density` is its namespaced twin.
 > Read **either** — they never disagree.
 >

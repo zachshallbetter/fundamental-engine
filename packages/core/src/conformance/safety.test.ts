@@ -13,9 +13,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EXPERIMENTS, COMPOSITE_EXPERIMENTS } from './experiments.ts';
 import { allForces, runScenario } from './run.ts';
-import { parseBodyParams, guardSourceBudget, type BodyAttrs } from '../core/scanner.ts';
+import { parseBodyParams, guardSourceBudget, type BodyAttrs } from '../engine/scanner.ts';
 import { SOURCE_DEFAULT_CAP, SOURCE_DEFAULT_LIFE } from '../config/forces.config.ts';
-import type { Particle } from '../core/types.ts';
+import type { Particle } from '../engine/types.ts';
 
 // ── snap() round-trip: every meaningful Particle field must survive serialization ──
 // The class of bug: a field present on Particle but absent on FrameState means

@@ -3,7 +3,7 @@
  * heatmap; these are the per-particle samplers + a pure grid accumulator for the other documented
  * variants (heat, velocity). A heatmap is a scalar buffer — pick what each particle deposits.
  */
-import type { Particle } from '../core/types.ts';
+import type { Particle } from '../engine/types.ts';
 
 export type HeatmapKind = 'density' | 'heat' | 'velocity';
 

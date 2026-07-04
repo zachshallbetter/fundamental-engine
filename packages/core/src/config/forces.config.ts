@@ -11,7 +11,7 @@
  * physical, and cosmology forces (§20) live in their own modules once built.
  */
 
-import type { Formation } from '../core/types.ts';
+import type { Formation } from '../engine/types.ts';
 
 /** The canonical nine force ids (the implemented set). */
 export type ForceId =

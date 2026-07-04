@@ -8,7 +8,7 @@
  * full force set (canonical · natural · designed-extended). Zero runtime dependencies.
  */
 
-export * from './core/types.ts';
+export * from './engine/types.ts';
 export * from './version.ts';
 export * from './config/forces.config.ts';
 export * from './config/manual.ts';
@@ -17,48 +17,48 @@ export * from './config/themes.ts';
 export * from './config/tokens.ts';
 export * from './math/math.ts';
 export * from './math/geometry.ts';
-export * from './core/feedback.ts';
-export * from './core/attention.ts';
-export * from './core/causality.ts';
-export * from './core/field-snapshot.ts';
-export * from './core/governance.ts';
-export * from './core/lane-registry.ts';
-export * from './core/projection-agent-json.ts';
-export * from './core/query-lens.ts';
-export * from './core/streamlines.ts';
-export * from './core/flow.ts';
-export * from './core/fieldlines.ts';
-export * from './core/fieldline-seeds.ts';
-export * from './core/reactions.ts';
-export * from './core/agents.ts';
-export * from './core/currents.ts';
-export * from './core/reservoir.ts';
-export * from './core/spatial-hash.ts';
-export * from './core/temporal.ts';
-export * from './core/weights.ts';
-export * from './core/thermo.ts';
-export * from './core/field-store.ts';
-export * from './core/conditions.ts';
-export * from './core/events.ts';
-export * from './core/registry.ts';
-export * from './core/integrator.ts';
-export * from './core/formations.ts';
-export * from './core/scanner.ts';
-export * from './core/shadow.ts';
-export * from './core/render-modes.ts';
-export * from './core/heatmap.ts';
-export * from './core/surface.ts';
-export * from './core/host.ts';
+export * from './engine/feedback.ts';
+export * from './engine/attention.ts';
+export * from './engine/causality.ts';
+export * from './engine/field-snapshot.ts';
+export * from './engine/governance.ts';
+export * from './engine/lane-registry.ts';
+export * from './engine/projection-agent-json.ts';
+export * from './engine/query-lens.ts';
+export * from './engine/streamlines.ts';
+export * from './engine/flow.ts';
+export * from './engine/fieldlines.ts';
+export * from './engine/fieldline-seeds.ts';
+export * from './engine/reactions.ts';
+export * from './engine/agents.ts';
+export * from './engine/currents.ts';
+export * from './engine/reservoir.ts';
+export * from './engine/spatial-hash.ts';
+export * from './engine/temporal.ts';
+export * from './engine/weights.ts';
+export * from './engine/thermo.ts';
+export * from './engine/field-store.ts';
+export * from './engine/conditions.ts';
+export * from './engine/events.ts';
+export * from './engine/registry.ts';
+export * from './engine/integrator.ts';
+export * from './engine/formations.ts';
+export * from './engine/scanner.ts';
+export * from './engine/shadow.ts';
+export * from './engine/render-modes.ts';
+export * from './engine/heatmap.ts';
+export * from './engine/surface.ts';
+export * from './engine/host.ts';
 // headlessHost — the DOM-free reference host for non-visual consumers (agents, native sidecars, tests).
-export * from './core/host-headless.ts';
+export * from './engine/host-headless.ts';
 // RenderBackend (#373): the structural drawing seam alongside FieldHost. Exported so an external
 // surface (WebGL/WebGPU/Three.js — see @fundamental-engine/three) can implement the contract by name and
 // inject it via `createField({ overlayBackend })`.
-export * from './core/render-backend.ts';
+export * from './engine/render-backend.ts';
 // The CSS feedback adapter — feedback is plain data first; this writes channels to CSS vars (the
 // DOM door's default). Non-DOM hosts pass their own FeedbackSink instead.
-export { cssFeedbackSink } from './core/feedback-sink.ts';
-export * from './core/field.ts';
+export { cssFeedbackSink } from './engine/feedback-sink.ts';
+export * from './engine/field.ts';
 export * from './forces/index.ts';
 // physics conformance — the Lab-as-detector framework (shared by tests + the Lab UI)
 export * from './conformance/types.ts';

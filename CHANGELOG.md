@@ -11,6 +11,10 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Changed
 
+- **`@fundamental-engine/core` (internal, no API change):** renamed `src/core/` → `src/engine/` to match the port layout (Swift `Engine/`, Kotlin `engine/`) — step 2 of the cross-plane folder standardization. 127 files moved with history; imports, the barrel, hardcoded read-paths in `contract-coverage.test.ts` / `check-docs.mjs` / `gen-parity-matrix.mjs`, and 26 doc links all repointed. Public exports unchanged; `check:api` 17-frozen intact.
+
+### Changed
+
 - **`@fundamental-engine/core` (internal, no API change):** extracted the pure-math modules (`math.ts`, `geometry.ts`) from `src/core/` into a dedicated `src/math/` folder — step 1 of standardizing the core folder layout across all planes (`engine · forces · math · recipes` + the finer concern folders). Public exports and the barrel are unchanged; `check:api` intact.
 
 ### Fixed

@@ -12,7 +12,7 @@ import {
   sink,
   coreForces,
 } from './index.ts';
-import type { Body, Env, Particle } from '../core/types.ts';
+import type { Body, Env, Particle } from '../engine/types.ts';
 
 const body = (o: Partial<Body> = {}): Body => ({
   el: {} as HTMLElement,

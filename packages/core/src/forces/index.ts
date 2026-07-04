@@ -7,8 +7,8 @@
  * On-state (`b.on`) widens range and boosts strength per the spec.
  */
 
-import type { Force } from '../core/types.ts';
-import type { Registry } from '../core/registry.ts';
+import type { Force } from '../engine/types.ts';
+import type { Registry } from '../engine/registry.ts';
 import { FORCE_BY } from '../config/forces.config.ts';
 
 /** §6.1 — a soft gravity-like well, with optional orbital swirl. */

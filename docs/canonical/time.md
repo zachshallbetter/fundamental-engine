@@ -2,7 +2,7 @@
 > How Fundamental handles time: the three clocks (simulation, experiential, world), the temporal
 > kernels, and the declared-timestamp contract (`data-field-at`). Everything here is shipped
 > and verified against code except where marked; the kernels live in
-> `packages/core/src/core/temporal.ts`, the derivation in the platform metric pipeline, and
+> `packages/core/src/engine/temporal.ts`, the derivation in the platform metric pipeline, and
 > the reference consumers are the Calendar, Memory, Backlog, and Inbox examples.
 
 # Time in the Field

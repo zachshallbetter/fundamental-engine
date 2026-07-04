@@ -2,7 +2,7 @@
 > The substrate API: the read-only, structured surface that makes the field an *inspectable,
 > queryable, time-travelable, projectable* substrate — not just a thing that draws or writes CSS
 > variables. Every method below is **shipped** in `@fundamental-engine/core` (verified against
-> `packages/core/src/core/types.ts` + `field.ts`), but the whole surface is **EXPERIMENTAL**: it is
+> `packages/core/src/engine/types.ts` + `field.ts`), but the whole surface is **EXPERIMENTAL**: it is
 > *not* part of the frozen 17 (see [api-stability.md](api-stability.md)) and may change shape or be
 > removed in any release. Use it; don't pin a contract to it yet. Follows the
 > [status rule](documentation-standards.md): nothing here is called shipped unless code confirms it.
@@ -372,7 +372,7 @@ The integration scheme. `'legacy'` (default) is the shipped semi-implicit Euler 
 does **not** yet dt-scale force impulses — the single-particle rescale trick is unsound for forces that
 also mutate a neighbour in the same pass (`collide`/`link` apply an equal-and-opposite impulse the path
 can't see), so frame-rate-correct impulses wait for the force-contract change where every contribution
-flows through the accumulator (see `packages/core/src/core/integrator.ts` `applyForce`, doc-04 §Step 3).
+flows through the accumulator (see `packages/core/src/engine/integrator.ts` `applyForce`, doc-04 §Step 3).
 
 ```ts
 type IntegratorMode = 'legacy' | 'fixed';

@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { contourSegments } from './render.ts';
 import { sampleScalarGrid, netPotentialAt } from './potential.ts';
-import type { Body } from '../core/types.ts';
+import type { Body } from '../engine/types.ts';
 import type { ScalarGridData } from './potential.ts';
 
 const grid = (values: number[], cols: number, rows: number, res = 10): ScalarGridData => ({

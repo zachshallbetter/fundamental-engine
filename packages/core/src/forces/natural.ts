@@ -11,8 +11,8 @@
  * so registering them changes nothing on a page that doesn't ask for them.
  */
 
-import type { Body, Particle, Env, Force } from '../core/types.ts';
-import type { Registry } from '../core/registry.ts';
+import type { Body, Particle, Env, Force } from '../engine/types.ts';
+import type { Registry } from '../engine/registry.ts';
 import { polePair, dipoleField, monopoleField, EPS, type Pole } from '../math/geometry.ts';
 
 /**

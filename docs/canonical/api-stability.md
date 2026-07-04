@@ -137,7 +137,7 @@ summary.
 
 | Alias | Replacement | Where it lives | Dev warn? |
 |---|---|---|---|
-| `--mass` CSS var | `--load` | `packages/core/src/core/feedback-sink.ts`; mirrored in `packages/elements/src/platform-runtime.ts` | No — a CSS-var write is not runtime-observable to JS; doc-only |
+| `--mass` CSS var | `--load` | `packages/core/src/engine/feedback-sink.ts`; mirrored in `packages/elements/src/platform-runtime.ts` | No — a CSS-var write is not runtime-observable to JS; doc-only |
 | `--forces-*` CSS vars | `--field-*` | *already removed* (`0.7.0`) — listed for the record | n/a |
 | `compat-*` packages (`compat-core`/`-elements`/`-react`/`-vanilla`) | the real `@fundamental-engine/*` packages | *already removed* (`0.7.0`); the only living compat package is `@fundamental-engine/platform` → `@fundamental-engine/dom`, which warns on import | Platform alias: **Yes** — one-time dev-only warn on import |
 

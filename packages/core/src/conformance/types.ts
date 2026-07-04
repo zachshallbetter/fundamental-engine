@@ -9,7 +9,7 @@
  * force "reacts appropriately" iff every expectation passes. The same catalog drives
  * the test suite and the Lab instrument.
  */
-import type { Body } from '../core/types.ts';
+import type { Body } from '../engine/types.ts';
 
 /** A force's input class — decides how the runner wires the env (§20.1). */
 export type ForceClass =

@@ -12,7 +12,7 @@
  * requiresCharge/Velocity, affectsNeutralMatter, usesFieldAt) are declared here and, where the
  * conformance catalog proves them, cross-checked too.
  */
-import type { Token, Force } from '../core/types.ts';
+import type { Token, Force } from '../engine/types.ts';
 import type { ForceClass, ForceConformance } from '../conformance/types.ts';
 import { EXPERIMENTS } from '../conformance/experiments.ts';
 

@@ -8,7 +8,7 @@
  * defines `process.env.NODE_ENV` can dead-code-eliminate the check bodies, and behaviour is never
  * affected in production.
  */
-import type { Particle, Vec2 } from '../core/types.ts';
+import type { Particle, Vec2 } from '../engine/types.ts';
 import type { ForcePassport } from './passport.ts';
 import type { SourceBudget } from './types.ts';
 

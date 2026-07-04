@@ -10,7 +10,7 @@
  * Nothing here touches particles or velocity. Stage B (the field-line render) and Stage C
  * (shaped force sampling) consume these; this stage is groundwork with golden tests.
  */
-import type { Vec2 } from '../core/types.ts';
+import type { Vec2 } from '../engine/types.ts';
 import { clamp } from './math.ts';
 
 /** Guard against divide-by-zero when sampling a field at a pole (1px, sub-pixel). */

@@ -32,10 +32,10 @@ behavior on top and hands results back. The host model is neither an OS nor a da
 reach for — viewport size, scroll, `requestAnimationFrame`, reduced-motion, visibility, the scan root,
 event wiring — is routed through this injected interface instead of `window` / `document` directly.
 Because the interface is pure types with no globals, the core imports **zero DOM** (enforced by
-`packages/core/src/core/dom-boundary.test.ts`, empty allowlist).
+`packages/core/src/engine/dom-boundary.test.ts`, empty allowlist).
 
 The SPI itself is the **stable injection seam** — the mechanism by which the engine is renderer-agnostic.
-The interface lives in `packages/core/src/core/host.ts`.
+The interface lives in `packages/core/src/engine/host.ts`.
 
 ## MinimalFieldHost — the smallest conformant host
 
@@ -49,7 +49,7 @@ The interface lives in `packages/core/src/core/host.ts`.
 
 A host that supplies only these four members runs the **full simulation + feedback pipeline headlessly**
 — it just never scrolls, never pauses on visibility, and cannot draw a heatmap. This floor is pinned by
-`packages/core/src/core/minimal-host.test.ts` (a field runs against a host with none of the optional
+`packages/core/src/engine/minimal-host.test.ts` (a field runs against a host with none of the optional
 capabilities). The native ports mirror it: `swift/Sources/FundamentalCore/Engine/FieldHost.swift` and
 `android/fundamental-core/src/main/kotlin/com/fundamental/core/engine/FieldHost.kt`.
 
@@ -100,7 +100,7 @@ optional rows are the capability ladder above, restated as certification questio
 | Preserves an a11y equivalent? | host-specific | the embedder wires ARIA/semantics on its plane |
 
 `hostCapabilities(host)` is the machine-readable form of this checklist; the graceful-degradation
-floor is pinned by `packages/core/src/core/minimal-host.test.ts` (a field runs against a host with
+floor is pinned by `packages/core/src/engine/minimal-host.test.ts` (a field runs against a host with
 **none** of the optional capabilities). The accessibility row is host-specific by design: the field
 state is a behavior layer over the host's source of meaning, not a replacement for it — wire ARIA /
 semantics on your plane.
@@ -126,7 +126,7 @@ semantic-not-spatial discipline for non-DOM hosts): → [coordinate-spaces.md](c
 
 ## Body identity
 
-`FieldBodyIdentity` (`packages/core/src/core/types.ts`) is a body's first-class identity: a stable primary
+`FieldBodyIdentity` (`packages/core/src/engine/types.ts`) is a body's first-class identity: a stable primary
 `id` (unique in the field, constant for the body's life) plus optional `namespace`, `kind`, and `host`
 tags (free-form, opaque to the engine). Snapshots, diffs, replay, and relationships all key on
 `identity.id`; when a body carries no supplied identity the engine derives one deterministically (never

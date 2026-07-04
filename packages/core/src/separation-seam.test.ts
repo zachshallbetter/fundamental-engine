@@ -5,8 +5,8 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createField } from './core/field.ts';
-import type { FieldHost } from './core/host.ts';
+import { createField } from './engine/field.ts';
+import type { FieldHost } from './engine/host.ts';
 
 const noopCtx = new Proxy({}, { get: () => () => {} }) as unknown as CanvasRenderingContext2D;
 

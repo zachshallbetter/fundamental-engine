@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { topologyEdges, inspectorRows, causalityBars, ghostTrajectory } from './modes.ts';
 import type { RelationshipAgent } from '../agents/relationship.ts';
-import type { Body, Force, ForceRegistry } from '../core/types.ts';
+import type { Body, Force, ForceRegistry } from '../engine/types.ts';
 import type { CausalContribution } from './probes.ts';
 
 test('topologyEdges resolves placed agents and drops unplaced endpoints', () => {

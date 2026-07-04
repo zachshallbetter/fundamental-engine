@@ -95,7 +95,7 @@ These fell out of the comparison and are filed as Backlog briefs:
 ## Resolved factual notes
 
 - **Neighbor lookup is already binned.** `FieldStore.neighbors()` is backed by a `SpatialHash`
-  (`packages/core/src/core/spatial-hash.ts`, cellSize 64, rebuilt once per frame), not brute force. So
+  (`packages/core/src/engine/spatial-hash.ts`, cellSize 64, rebuilt once per frame), not brute force. So
   **Reynolds' lattice-binning performance lesson is already absorbed** — the O(N²) flocking cost he
   warned about does not apply to Fundamental's pairwise forces. One fewer axis of difference; an
   unforced point in Fundamental's favor (it independently arrived at his spatial-partition answer).

@@ -144,7 +144,7 @@ not loose analogies imposed after the fact; the source names Reynolds' rules dir
 
 **Locality is via neighborhood, and the neighborhood is spatially hashed.** Fundamental's
 neighbor-coupling forces query `env.neighbors(p, r)`, backed by a `SpatialHash` (cell size 64, rebuilt
-once per frame; `packages/core/src/core/spatial-hash.ts`, `field-store.ts`). Reynolds' O(N²)→lattice
+once per frame; `packages/core/src/engine/spatial-hash.ts`, `field-store.ts`). Reynolds' O(N²)→lattice
 optimization (B1's perception, his §"Algorithmic Considerations") is therefore *already absorbed*:
 Fundamental independently arrived at his spatial-partition answer, so the quadratic flocking cost he
 warned about does not apply to its pairwise forces.
@@ -165,7 +165,7 @@ We fix the objective per axis and report the verdict, including the losses.
 
 **Arbitration — Boids better.** Fundamental sums forces: the integrator walks each body's tokens and
 accumulates every force's Δv onto one velocity, then applies friction (`FRICTION = 0.95`) and clamps
-`|v| ≤ c` (`packages/core/src/core/integrator.ts`). There is no priority and no per-agent budget. The
+`|v| ≤ c` (`packages/core/src/engine/integrator.ts`). There is no priority and no per-agent budget. The
 conformance suite states the contract plainly — `attract swirl` "composes to the **sum** of the parts"
 (`docs/engine-reference/forces-tests.md`). This is precisely the weighted combination Reynolds
 rejected, and its failure mode is observable: stacking `attract` against a radial `repel`/separation
@@ -363,7 +363,7 @@ Every claim above is checkable against source as of 2026-07-01 (re-verified afte
 line; the paper's arbitration/explainability analysis is unchanged — the **default** is still linear
 summation, and the additions below are opt-in):
 
-- **Linear summation:** `packages/core/src/core/integrator.ts` (token loop, `v += F`, `FRICTION = 0.95`,
+- **Linear summation:** `packages/core/src/engine/integrator.ts` (token loop, `v += F`, `FRICTION = 0.95`,
   `|v| ≤ c`); `docs/engine-reference/forces-tests.md` (`attract swirl` = sum of parts).
 - **Opt-in fixed-timestep integrator + per-force attribution (0.9.x):** `integrator.ts`
   (`applyAndRecord` — every force's contribution captured through one canonical path across five
@@ -375,7 +375,7 @@ summation, and the additions below are opt-in):
 - **No max-acceleration truncation:** the only clamp is on velocity (`c`), never on Δv — `integrator.ts`.
 - **Boids rules in source, by name:** `packages/core/src/contracts/passport.ts` (`align` = "boids
   alignment", `cohesion` = "boids cohesion"); `packages/core/src/forces/extended.ts`.
-- **Spatial-hash neighbors:** `packages/core/src/core/spatial-hash.ts`, `field-store.ts` (cell size 64,
+- **Spatial-hash neighbors:** `packages/core/src/engine/spatial-hash.ts`, `field-store.ts` (cell size 64,
   per-frame rebuild).
 - **Radial vs tangential avoidance:** `packages/core/src/forces/index.ts` (`repel`, `swirl`),
   `extended.ts` (`lens`); canon principle in `docs/canonical/fundamental-field-behavior-table.md`.

@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fieldflow } from './extended.ts';
-import type { Body, Env, Particle, Vec2 } from '../core/types.ts';
+import type { Body, Env, Particle, Vec2 } from '../engine/types.ts';
 
 const body = (over: Partial<Body> = {}): Body =>
   ({ range: 0, strength: 1, on: false, ...over }) as unknown as Body;

@@ -13,7 +13,7 @@ These are areas where the codebase and the documentation specifications have dri
   ```typescript
   type IntegratorMode = 'legacy' | 'fixed';
   ```
-* **The Code ([types.ts](../../packages/core/src/core/types.ts#L447))**:
+* **The Code ([types.ts](../../packages/core/src/engine/types.ts#L447))**:
   ```typescript
   export type IntegratorMode = 'legacy' | 'fixed' | 'velocity-verlet';
   ```
@@ -29,12 +29,12 @@ These are areas where the codebase and the documentation specifications have dri
   type DragMode = 'linear' | 'quadratic' | 'mixed';
   type MediumConfig = { ... };
   ```
-* **The Code**: There is no implementation of `MediumMode`, `DragMode`, or `MediumConfig` in `packages/core`. Damping remains hardcoded to `FRICTION = 0.95` inside [integrator.ts](../../packages/core/src/core/integrator.ts#L40).
+* **The Code**: There is no implementation of `MediumMode`, `DragMode`, or `MediumConfig` in `packages/core`. Damping remains hardcoded to `FRICTION = 0.95` inside [integrator.ts](../../packages/core/src/engine/integrator.ts#L40).
 * **Impact**: The published reference documentation details API specifications that do not exist at runtime.
 
 ### 1.3 Fixed Mode Force Impulse $dt$-Scaling
 * **The Spec**: Asserts that under the `'fixed'` integrator mode, force impulses and friction decays scale with $dt$ to make motion consistent across varying frame rates.
-* **The Code ([integrator.ts:applyForce](../../packages/core/src/core/integrator.ts#L157-L164))**:
+* **The Code ([integrator.ts:applyForce](../../packages/core/src/engine/integrator.ts#L157-L164))**:
   Explains that the engine **does not** scale force impulses in the integrator loop due to pairwise momentum constraints:
   ```typescript
   // NOTE (doc 04 §Step 3): the fixed-timestep integrator does NOT dt-scale force impulses here.
@@ -48,7 +48,7 @@ These are areas where the codebase and the documentation specifications have dri
 * **The Spec ([common-mistakes.md](../../docs/canonical/common-mistakes.md))**:
   Enforces a strict lane discipline separating descriptive concepts from execution names:
   > `absorb` is concept language; the token is `sink`. Concepts describe, tokens execute — never mix them.
-* **The Code ([events.ts](../../packages/core/src/core/events.ts#L18))**:
+* **The Code ([events.ts](../../packages/core/src/engine/events.ts#L18))**:
   The discrete event bus still uses `'absorb'` as the event type key:
   ```typescript
   export interface FieldEventMap {
@@ -63,45 +63,45 @@ These are areas where the codebase and the documentation specifications have dri
 
 ## 2. File-by-File Core System Analysis
 
-### 2.1 Physics and Integrator: [integrator.ts](../../packages/core/src/core/integrator.ts)
+### 2.1 Physics and Integrator: [integrator.ts](../../packages/core/src/engine/integrator.ts)
 * **Mechanics**: Implements standard Verlet and Semi-Implicit Euler integration loops, handles boundary collisions (toroidal wrapping, screen borders), and decays kinetic energy and heat.
 * **Review**: Correctly scales decay rates ($Math.pow(FRICTION, dt)$) and Langevin kicks ($Math.sqrt(dt)$) to support frame-rate independent metrics under the `fixed` step mode. However, as noted in §1.3, individual force impulses are not scaled by $dt$.
 
-### 2.2 Domain Scanner & Preset Compiler: [scanner.ts](../../packages/core/src/core/scanner.ts)
-* **Mechanics**: Scans subtrees matching [BODY_SELECTOR](../../packages/core/src/core/scanner.ts#L279), expands presets from [PRESETS](../../packages/core/src/config/presets.ts), and parses variables (`data-strength`, `data-range`, `data-spin`, `data-angle`).
+### 2.2 Domain Scanner & Preset Compiler: [scanner.ts](../../packages/core/src/engine/scanner.ts)
+* **Mechanics**: Scans subtrees matching [BODY_SELECTOR](../../packages/core/src/engine/scanner.ts#L279), expands presets from [PRESETS](../../packages/core/src/config/presets.ts), and parses variables (`data-strength`, `data-range`, `data-spin`, `data-angle`).
 * **Compliance**: Handled purely DOM-free using a `BodyAttrs` adapter interface. Correctly enforces the *Source Budget Contract* by warning on unbudgeted Class-[S] spawning bodies and falling back to safe limits.
 * **Precedence Order**: Explicit element attributes override intent/role compiled configurations:
   ```typescript
   get: (name) => el.getAttribute('data-' + name) ?? defaults[name] ?? null
   ```
 
-### 2.3 Conserved Attention Allocator: [attention.ts](../../packages/core/src/core/attention.ts)
-* **Mechanics**: Allocates attention budget among competing bodies using a water-filling algorithm in [allocateAttention](../../packages/core/src/core/attention.ts#L70).
+### 2.3 Conserved Attention Allocator: [attention.ts](../../packages/core/src/engine/attention.ts)
+* **Mechanics**: Allocates attention budget among competing bodies using a water-filling algorithm in [allocateAttention](../../packages/core/src/engine/attention.ts#L70).
 * **Compliance**: Perfectly matches the conserved-attention budget theorem ($\Sigma w_i = \text{budget}$). Supplying a pinned state correctly reserves `cap` space off the top, allocating remaining margins across active contenders.
 
-### 2.4 Proximity Density Spillover: [causality.ts](../../packages/core/src/core/causality.ts)
-* **Mechanics**: Transports excess density ($d_i > \theta$) to nearby bodies via a Gaussian falloff calculation in [spillover](../../packages/core/src/core/causality.ts#L40).
+### 2.4 Proximity Density Spillover: [causality.ts](../../packages/core/src/engine/causality.ts)
+* **Mechanics**: Transports excess density ($d_i > \theta$) to nearby bodies via a Gaussian falloff calculation in [spillover](../../packages/core/src/engine/causality.ts#L40).
 * **Compliance**: Strictly conserved ($\Sigma \Delta_i = 0$), preventing phantom density creation across borders.
 
-### 2.5 Local Thermodynamics Metrics: [thermo.ts](../../packages/core/src/core/thermo.ts)
+### 2.5 Local Thermodynamics Metrics: [thermo.ts](../../packages/core/src/engine/thermo.ts)
 * **Mechanics**: Transforms neighbor sample counts, speeds, and kinetic energies into macro indicators (`entropy`, `coherence`, `temperature`).
 * **Compliance**: Bilinear velocity alignment $R = |\Sigma v| / \Sigma |v|$ maps direction dispersion accurately. Low-speed neighborhoods drop entropy, meaning order naturally emerges when motion freezes under `prefers-reduced-motion`.
 
-### 2.6 Bound and Free Reservoirs: [reservoir.ts](../../packages/core/src/core/reservoir.ts)
-* **Mechanics**: Manages particle snapping ([healWaves](../../packages/core/src/core/reservoir.ts#L19)) onto wave structures and tearing ([tearBoundByForces](../../packages/core/src/core/reservoir.ts#L105)) them back into the free particle pool.
-* **Compliance**: Conserves particle identity and count throughout snapping/tearing phases. [induceCharges](../../packages/core/src/core/reservoir.ts#L214) seeds electric charges based on the entry hemisphere relative to the heading axis, unlocking charge/magnetism dynamics for neutral matter.
+### 2.6 Bound and Free Reservoirs: [reservoir.ts](../../packages/core/src/engine/reservoir.ts)
+* **Mechanics**: Manages particle snapping ([healWaves](../../packages/core/src/engine/reservoir.ts#L19)) onto wave structures and tearing ([tearBoundByForces](../../packages/core/src/engine/reservoir.ts#L105)) them back into the free particle pool.
+* **Compliance**: Conserves particle identity and count throughout snapping/tearing phases. [induceCharges](../../packages/core/src/engine/reservoir.ts#L214) seeds electric charges based on the entry hemisphere relative to the heading axis, unlocking charge/magnetism dynamics for neutral matter.
 
-### 2.7 Shadow DOM Boundary Integration: [shadow.ts](../../packages/core/src/core/shadow.ts)
-* **Mechanics**: Integrates encapsulated web components using composed, bubbling DOM events ([field:register-body](../../packages/core/src/core/shadow.ts#L17)).
+### 2.7 Shadow DOM Boundary Integration: [shadow.ts](../../packages/core/src/engine/shadow.ts)
+* **Mechanics**: Integrates encapsulated web components using composed, bubbling DOM events ([field:register-body](../../packages/core/src/engine/shadow.ts#L17)).
 * **Compliance**: Encapsulates component internal trees; registers only the custom host element, utilizing custom `getRect` callbacks for closed roots and directing CSS feedback writes to specified `writeTarget` elements.
 
-### 2.8 Diagnostic Visualizations: [streamlines.ts](../../packages/core/src/core/streamlines.ts) & [fieldlines.ts](../../packages/core/src/core/fieldlines.ts)
-* **Mechanics**: Generates net force vector arrows at grid points ([forceAt](../../packages/core/src/core/streamlines.ts#L19)) and traces field paths from magnetic/charge dipole seeds ([traceFieldLine](../../packages/core/src/core/fieldlines.ts#L99)).
+### 2.8 Diagnostic Visualizations: [streamlines.ts](../../packages/core/src/engine/streamlines.ts) & [fieldlines.ts](../../packages/core/src/engine/fieldlines.ts)
+* **Mechanics**: Generates net force vector arrows at grid points ([forceAt](../../packages/core/src/engine/streamlines.ts#L19)) and traces field paths from magnetic/charge dipole seeds ([traceFieldLine](../../packages/core/src/engine/fieldlines.ts#L99)).
 * **Compliance**: Implements a `maxTurns` orbit limit to prevent infinite loops and excessive stroke drawing costs on overlapping paths.
 
-### 2.9 Field Flow Transport: [flow.ts](../../packages/core/src/core/flow.ts)
+### 2.9 Field Flow Transport: [flow.ts](../../packages/core/src/engine/flow.ts)
 * **Mechanics**: Curves streamlines and pulls particles toward a transient focus point.
-* **Compliance**: Optimization-safe; [flowBiasInto](../../packages/core/src/core/flow.ts#L58) writes coordinates into a caller-owned scratchpad, avoiding allocating coordinate object structures in high-frequency hot loops.
+* **Compliance**: Optimization-safe; [flowBiasInto](../../packages/core/src/engine/flow.ts#L58) writes coordinates into a caller-owned scratchpad, avoiding allocating coordinate object structures in high-frequency hot loops.
 
 ### 2.10 Math and Colors: [math.ts](../../packages/core/src/math/math.ts)
 * **Mechanics**: Implements hex parser, linear interpolation (lerp), pigment mixing, and HSL mapping helper formulas.
@@ -111,15 +111,15 @@ These are areas where the codebase and the documentation specifications have dri
 * **Mechanics**: Calculates 2D bounding boxes and signed distance functions ([sdfRect](../../packages/core/src/math/geometry.ts#L61)) for bodies.
 * **Compliance**: Correctly resolves dipole vectors and poles ([polePair](../../packages/core/src/math/geometry.ts#L76)) along the heading axis for non-point magnetic/charge sources.
 
-### 2.12 Built-in Conditions: [conditions.ts](../../packages/core/src/core/conditions.ts)
+### 2.12 Built-in Conditions: [conditions.ts](../../packages/core/src/engine/conditions.ts)
 * **Mechanics**: Standard filters (`fast`, `slow`, `hot`, `cool`) that selectively gate particle movements.
 * **Compliance**: Evaluates threshold velocities and temperature levels, allowing bodies to filter out neutral/dormant matter.
 
-### 2.13 Registry Manager: [registry.ts](../../packages/core/src/core/registry.ts)
+### 2.13 Registry Manager: [registry.ts](../../packages/core/src/engine/registry.ts)
 * **Mechanics**: Exposes force and condition registration mappings.
 * **Compliance**: Allows external extensions or modules to plug custom forces dynamically into the active engine.
 
-### 2.14 Diagnostic Heatmaps: [heatmap.ts](../../packages/core/src/core/heatmap.ts)
+### 2.14 Diagnostic Heatmaps: [heatmap.ts](../../packages/core/src/engine/heatmap.ts)
 * **Mechanics**: Accumulates particle history and blurs paths using local diffusion steps.
 * **Compliance**: Eases normalizer peak value dynamically to avoid division-by-zero or flash spikes when the field empties.
 
@@ -181,7 +181,7 @@ This directory serves as the centralized repository of color tokens, composite p
 ## 3. Performance & Allocation Gaps
 
 ### 3.1 Spatial Hash Memory Allocations
-* **The Issue**: [spatial-hash.ts:insert](../../packages/core/src/core/spatial-hash.ts#L33) instantiates a new array literal whenever a grid cell/bin is empty:
+* **The Issue**: [spatial-hash.ts:insert](../../packages/core/src/engine/spatial-hash.ts#L33) instantiates a new array literal whenever a grid cell/bin is empty:
   ```typescript
   const bin = this.bins.get(k);
   if (bin) bin.push(item);
@@ -382,7 +382,7 @@ An audit of the Three.js integration door (`packages/three/src`) reveals how Web
 
 A comprehensive code audit of the core engine implementation (`packages/core/src/core`, `forces`, and `recipes`) identifies key design invariants, mathematical kernels, and integration lanes.
 
-### 10.1 Physics Integration Schemes: [core/integrator.ts](../../packages/core/src/core/integrator.ts)
+### 10.1 Physics Integration Schemes: [core/integrator.ts](../../packages/core/src/engine/integrator.ts)
 * **Verlet Scheme**: Opt-in `velocity-verlet` implements the stored-acceleration formulation. To handle discontinuous forces correctly, any kinematic force application resets stored acceleration and marks `kinTouch` to prevent invalid position extrapolations.
 * **Massive Scaling**: Additive forces scale velocity changes by `inv = 1 / p.m`, while kinematic forces bypass mass scaling to reflect, rotate, or relaunch matter unconditionally.
 * **Frictional Cadence**: Step friction (`FRICTION = 0.95`) and heat decay (`HEAT_DECAY = 0.972`) are applied out-of-scheme. Under `fixed` or `verlet` modes, decays are scaled exponentially by `dt` (`Math.pow(FRICTION, dt)`) to prevent simulation speed dependencies.
@@ -391,11 +391,11 @@ A comprehensive code audit of the core engine implementation (`packages/core/src
 * **Plummer Softening**: Monopole gravity and charges use Plummer softening based on the Schwarzschild radius $r_s = 2GM/c^2$ to bypass singularities ($d = 0$) at the core.
 * **Dipole Synthesis**: Chargeable and magnetic bodies map dipole vectors along the heading if spatial dimension scales are too small ($d < 8\text{px}$), maintaining readable fields.
 
-### 10.3 Log-Normalized Page Weights: [core/weights.ts](../../packages/core/src/core/weights.ts)
+### 10.3 Log-Normalized Page Weights: [core/weights.ts](../../packages/core/src/engine/weights.ts)
 * **Heavy-Tailed Compression**: Compresses values via a log-normalization curve $\ln(x+1) / \ln(\text{max}+1)$ to avoid scaling extremes.
 * **Engine Strength Mapping**: Maps weights onto attract-body forces using $0.4 + w \cdot 1.6$, capping strengths between $0.4$ (always active) and $2.0$.
 
-### 10.4 Local Thermodynamics: [core/thermo.ts](../../packages/core/src/core/thermo.ts)
+### 10.4 Local Thermodynamics: [core/thermo.ts](../../packages/core/src/engine/thermo.ts)
 * **Alignment R-ratio**: Measures velocity alignment ($R \in [0,1]$) to evaluate direction dispersion.
 * **Agitation-Gating**: Gates entropy by agitation to treat near-still states as highly ordered.
 
@@ -453,7 +453,7 @@ An audit of the custom elements runtime (`packages/elements`) and the project te
 3. **Correct the `'absorb'` Event Name**:
    Standardize event names to `'sink'` or `'captured'` on the core event bus to restore naming lane discipline.
 4. **Optimize Spatial Hash Buckets**:
-   Refactor [spatial-hash.ts](../../packages/core/src/core/spatial-hash.ts) to utilize an array pooling mechanism or flat index mappings, eliminating array allocations in the hot loop.
+   Refactor [spatial-hash.ts](../../packages/core/src/engine/spatial-hash.ts) to utilize an array pooling mechanism or flat index mappings, eliminating array allocations in the hot loop.
 5. **Verify Benchmark Execution**:
    Continue executing Node performance suites ([field-bench.ts](../../packages/core/bench/field-bench.ts) and [integrator.bench.ts](../../packages/core/bench/integrator.bench.ts)) to catch regression costs early before releasing production builds.
 6. **Harmonize Material Notes with Executable Tokens**:

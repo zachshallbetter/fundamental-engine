@@ -7,7 +7,7 @@
  * the declared primitives match the body tokens, and the natural field is one of the four — so a
  * recipe can't reference anything the engine doesn't have.
  */
-import type { Token } from '../core/types.ts';
+import type { Token } from '../engine/types.ts';
 import type { PerformanceBudget } from '../contracts/types.ts';
 import type { FundamentalField } from '../config/manual.ts';
 import { FUNDAMENTAL_FIELDS } from '../config/manual.ts';
@@ -15,7 +15,7 @@ import { passportFor } from '../contracts/passport.ts';
 
 /** A render layer in a scene's stack (matter / structure / scalar surfaces). */
 /** The engine's registered condition ids (core/conditions.ts) — the executable `when` gates. */
-import { conditions as ENGINE_CONDITION_REGISTRY } from '../core/conditions.ts';
+import { conditions as ENGINE_CONDITION_REGISTRY } from '../engine/conditions.ts';
 const ENGINE_CONDITIONS: ReadonlySet<string> = new Set(Object.keys(ENGINE_CONDITION_REGISTRY));
 
 export type RenderLayer =

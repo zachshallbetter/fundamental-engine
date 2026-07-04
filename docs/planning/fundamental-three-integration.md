@@ -10,10 +10,10 @@
 The engine is already the hard part, and it's done:
 
 1. **`@fundamental-engine/core` imports zero DOM** — all environment access goes through an injected
-   `FieldHost` (`packages/core/src/core/host.ts`), enforced by `core/dom-boundary.test.ts`
+   `FieldHost` (`packages/core/src/engine/host.ts`), enforced by `core/dom-boundary.test.ts`
    (empty allowlist). A Three.js binding is *another host*, not an engine fork.
 2. **The field is query-based, not a baked texture.** Sample it anywhere, at any resolution:
-   - `forceAt(bodies, forces, env, x, y) → {fx, fy}` (`packages/core/src/core/streamlines.ts:19`)
+   - `forceAt(bodies, forces, env, x, y) → {fx, fy}` (`packages/core/src/engine/streamlines.ts:19`)
    - `netField(bodies, forces, x, y) → {x, y}` — structure-only (field-line tracing)
    - `env.grid(name).sample(x,y)` / `.gradient(x,y)` — scalar grids; `heatmap.norm(x,y)` — density
 3. **Physics runs headless.** With `render: 'none'` the core never acquires a 2D context and never

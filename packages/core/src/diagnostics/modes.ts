@@ -9,9 +9,9 @@
  *   causality   per-force contribution to motion at a point (reuses causalityAt)
  *   prediction  a deterministic forward "ghost" trajectory of a probe under the body forces
  */
-import type { Body, ForceRegistry } from '../core/types.ts';
+import type { Body, ForceRegistry } from '../engine/types.ts';
 import type { RelationshipAgent } from '../agents/relationship.ts';
-import { FRICTION } from '../core/integrator.ts';
+import { FRICTION } from '../engine/integrator.ts';
 import { forceVectorAt, type CausalContribution } from './probes.ts';
 
 type Ctx = CanvasRenderingContext2D;

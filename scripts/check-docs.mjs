@@ -34,9 +34,9 @@ import {
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p) => readFileSync(resolve(root, p), 'utf8');
 
-const typesSrc = read('packages/core/src/core/types.ts');
-const feedbackSrc = read('packages/core/src/core/feedback-sink.ts');
-const scannerSrc = read('packages/core/src/core/scanner.ts');
+const typesSrc = read('packages/core/src/engine/types.ts');
+const feedbackSrc = read('packages/core/src/engine/feedback-sink.ts');
+const scannerSrc = read('packages/core/src/engine/scanner.ts');
 const docsApi = read('apps/site/src/lib/docs-api.ts');
 const atomsSrc = (() => { const d = JSON.parse(read('apps/site/src/data/atoms.json')); return Array.isArray(d) ? d : d.atoms ?? []; })();
 const cem = JSON.parse(read('packages/elements/custom-elements.json'));

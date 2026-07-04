@@ -10,7 +10,7 @@ The `FieldHandle` interface is the engine's public API contract. Every platform 
 runtime implements it; the live page tracks which callable methods exist on each platform.
 
 **Sources of truth:**
-- **Methods:** `packages/core/src/core/types.ts` — the `FieldHandle` interface.
+- **Methods:** `packages/core/src/engine/types.ts` — the `FieldHandle` interface.
 - **Three.js:** `packages/three/src/layer.ts` — `FieldLayer` delegates all 44 to the wrapped handle.
 - **Swift:** `swift/Sources/FundamentalVanilla/FieldEngine.swift`.
 - **Kotlin:** `android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/FieldHandle.kt`.

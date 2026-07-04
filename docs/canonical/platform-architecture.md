@@ -188,7 +188,7 @@ source file in `Fundamental` is provably DOM-global-free, so the engine is porta
 ## The host seam — `FieldHost`, the swappable environment SPI
 
 "Where, and in what coordinate space, does the field live?" is **one first-class, swappable abstraction**:
-the `FieldHost` (`packages/core/src/core/host.ts`). The engine never reads `window` / `document` /
+the `FieldHost` (`packages/core/src/engine/host.ts`). The engine never reads `window` / `document` /
 `requestAnimationFrame` directly — every environment touchpoint goes through the injected host, so a
 window-scoped field, a card-scoped field, a WebGL scene, and a headless test harness are *configurations
 of one contract*, not separate code paths. `createField(canvas, { host })` selects it; the convenience
@@ -259,7 +259,7 @@ does not?* The canonical checklist lives in
 question-form capability table (geometry and time **required**, every other rung degrading gracefully)
 plus the contract disciplines (coordinate mapping, body identity, lifecycle, teardown, accessibility).
 `hostCapabilities(host)` is its machine-readable form; the graceful-degradation floor is pinned by
-`packages/core/src/core/minimal-host.test.ts` (a field runs against a host with **none** of the
+`packages/core/src/engine/minimal-host.test.ts` (a field runs against a host with **none** of the
 optional capabilities).
 
 **The boundary holds.** `FieldHost` is pure types in core (zero DOM); the implementations live in the
