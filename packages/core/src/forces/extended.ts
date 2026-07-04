@@ -10,7 +10,7 @@
 
 import type { Force, Particle } from '../core/types.ts';
 import type { Registry } from '../core/registry.ts';
-import { mixHex } from '../core/math.ts';
+import { mixHex } from '../math/math.ts';
 
 /**
  * §20.3 — `lens`: rotate the velocity, preserving its magnitude. A gravitational

@@ -5,7 +5,7 @@
  * caller writes the strings to the DOM; nothing here touches it.
  */
 import type { ElementMetrics } from '../agents/element-agent.ts';
-import { clamp, lerp } from '../core/math.ts';
+import { clamp, lerp } from '../math/math.ts';
 import { clamp01, mapRange } from './mapping.ts';
 
 // ── Typography (§3) — generalizes the engine's density→weight mapping ───────────────────────────

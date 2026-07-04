@@ -9,7 +9,7 @@
  * field at all.
  */
 import type { Vec2 } from './types.ts';
-import { polePair, type AxisRect, type Pole } from './geometry.ts';
+import { polePair, type AxisRect, type Pole } from '../math/geometry.ts';
 
 export interface Pt {
   x: number;

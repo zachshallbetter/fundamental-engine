@@ -5,7 +5,7 @@
  * the distance falloff that turns a body's reach into a 0..1 influence. Zero dependencies —
  * `clamp`/`lerp` are reused from the engine's math module so there is one source of truth.
  */
-import { clamp, lerp } from '../core/math.ts';
+import { clamp, lerp } from '../math/math.ts';
 
 export type Curve = 'linear' | 'ease-in' | 'ease-out' | 'ease' | 'exp';
 

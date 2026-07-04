@@ -9,6 +9,10 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [0.9.3] — 2026-07-03
 
+### Changed
+
+- **`@fundamental-engine/core` (internal, no API change):** extracted the pure-math modules (`math.ts`, `geometry.ts`) from `src/core/` into a dedicated `src/math/` folder — step 1 of standardizing the core folder layout across all planes (`engine · forces · math · recipes` + the finer concern folders). Public exports and the barrel are unchanged; `check:api` intact.
+
 ### Fixed
 
 - `packages/react/tsconfig.json` now excludes `*.test.tsx`/`*.spec.*` (not just `*.test.ts`), so a JSX test file no longer compiles into `dist/` and gets picked up as a stale `node --test` artifact (#1006).

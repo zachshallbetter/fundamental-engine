@@ -10,7 +10,7 @@
  * existing class-[C] `ScalarGridImpl`, the same buffer the diffuse/wave/memory forces use.
  */
 import { ScalarGridImpl } from './scalar-grid.ts';
-import { clamp } from './math.ts';
+import { clamp } from '../math/math.ts';
 import type { Particle, Vec2 } from './types.ts';
 
 const CELL = 24; // grid resolution in px — coarse, so the per-frame deposit + render is cheap

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { THEMES, DEFAULT_THEME } from './themes.ts';
-import { COOL, WARM, particleRGBInto, type RGB } from '../core/math.ts';
+import { COOL, WARM, particleRGBInto, type RGB } from '../math/math.ts';
 
 test('THEMES.warm (the default) reproduces the shipped heat ramp byte-for-byte (#529)', () => {
   assert.equal(DEFAULT_THEME, 'warm');

@@ -7,7 +7,7 @@
  * the field loop.
  */
 
-import type { RGB } from './math.ts';
+import type { RGB } from '../math/math.ts';
 
 export interface Wave {
   /** vertical anchor as a fraction of viewport height. */
