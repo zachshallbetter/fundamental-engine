@@ -66,6 +66,7 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
     <meta name="twitter:image:alt" content={ogImageAlt ?? title} />
+    <meta name="twitter:site" content="@usefundamental" />
     <meta name="twitter:creator" content="@zachshallbetter" />
     <!-- self-hosted fonts (perf: no third-party request; prerequisite for glyph-outline
          generation — scripts/gen-contours.mjs parses the same family). display=swap in
