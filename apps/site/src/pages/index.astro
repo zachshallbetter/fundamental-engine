@@ -125,18 +125,39 @@ const ASKS = [
     </section>
 
     <section class="lp lp-ai">
-      <div class="wrap">
-        <span class="concept-no">The wedge</span>
-        <h2>Make model output you can read at a glance.</h2>
-        <p class="lp-lede">
-          A model hands you answers; it rarely shows how sure it is. Make each claim a body in the
-          field, and confidence becomes weight, agreement becomes proximity, and contradictions pull
-          apart — so a shaky answer <em>looks</em> shaky and its sources are one hop away, before anyone
-          acts on it. The interface projects that state as type and layout; an agent reads the same field as JSON through <code>field.query()</code>. The same deterministic math drives the Evidence and Search studies.
-        </p>
-        <div class="lp-cta-row">
-          <Button href="/ai-evidence" variant="primary">See AI Evidence →</Button>
-          <Button href="/docs/studies/evidence-field">How it works →</Button>
+      <div class="wrap lp-ai-grid">
+        <div class="lp-col">
+          <span class="concept-no">The wedge</span>
+          <h2>Make model output you can read at a glance.</h2>
+          <p class="lp-lede">
+            A model hands you answers; it rarely shows how sure it is. Make each claim a body in the
+            field, and confidence becomes weight, agreement becomes proximity, and contradictions pull
+            apart — so a shaky answer <em>looks</em> shaky and its sources are one hop away, before anyone
+            acts on it. The interface projects that state as type and layout; an agent reads the same field as JSON through <code>field.query()</code>. The same deterministic math drives the Evidence and Search studies.
+          </p>
+          <div class="lp-cta-row">
+            <Button href="/ai-evidence" variant="primary">See AI Evidence →</Button>
+            <Button href="/docs/studies/evidence-field">How it works →</Button>
+          </div>
+        </div>
+
+        {/* Live claims field — each chip is a REAL body the page field measures. Confidence sets
+            weight (data-strength + the --conf style), and --d (live field density, written back by
+            the engine onto data-feedback) drives the glow: a well-supported claim accretes field and
+            reads heavy; the contradiction uses `repel`, opening a visible gap. Honors the Wallpaper
+            Rule — no fake decoration; the chips are bodies and the emphasis is measured. */}
+        <div class="wedge-field" aria-hidden="true">
+          <div class="wf-plane">
+            <span class="claim claim-hi" data-body="attract swirl" data-feedback data-strength="1.3" data-range="150" data-spin="1.1"
+              style="--x:16%; --y:20%; --conf:0.94"><b>Confirmed</b><i>0.94</i></span>
+            <span class="claim claim-hi" data-body="attract swirl" data-feedback data-strength="1.1" data-range="140" data-spin="1.1"
+              style="--x:36%; --y:42%; --conf:0.87"><b>Corroborated</b><i>0.87</i></span>
+            <span class="claim claim-mid" data-body="attract swirl" data-feedback data-strength="0.6" data-range="120" data-spin="1.1"
+              style="--x:58%; --y:26%; --conf:0.41"><b>One source</b><i>0.41</i></span>
+            <span class="claim claim-lo" data-body="repel" data-feedback data-strength="0.95" data-range="165"
+              style="--x:74%; --y:70%; --conf:0.18"><b>Contradicted</b><i>0.18</i></span>
+          </div>
+          <p class="wf-legend"><span class="wf-k">weight</span> = confidence · <span class="wf-k">proximity</span> = agreement · <span class="wf-k">repel</span> = contradiction</p>
         </div>
       </div>
     </section>
