@@ -8,8 +8,8 @@
  * nine. Opt-in via `data-body="lens"` etc.; a page that doesn't ask is unaffected.
  */
 
-import type { Force, Particle } from '../core/types.ts';
-import type { Registry } from '../core/registry.ts';
+import type { Force, Particle } from '../engine/types.ts';
+import type { Registry } from '../engine/registry.ts';
 import { mixHex } from '../math/math.ts';
 
 /**

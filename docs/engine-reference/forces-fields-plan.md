@@ -23,7 +23,7 @@ monopole fields and `fieldlines.ts` (Stage B), `data-shaped` sampling (Stage C),
 > renders today.
 
 The grounding facts below reference the current engine (commit at time of writing):
-`Force`/`Env`/`Body` in `packages/core/src/core/types.ts`, the body-force loop in
+`Force`/`Env`/`Body` in `packages/core/src/engine/types.ts`, the body-force loop in
 `integrator.ts` (lines ~114–129 compute `dx/dy/dist` toward `b.cx/b.cy`), `writeFeedback`
 and `forceAt` (the streamlines probe), and `ScalarGridImpl` (`scalar-grid.ts`, already
 backing the `diffuse`/`propagate`/`memory` class-[C] forces).

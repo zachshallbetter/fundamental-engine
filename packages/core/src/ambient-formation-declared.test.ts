@@ -14,11 +14,11 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createField } from './core/field.ts';
+import { createField } from './engine/field.ts';
 import { attract } from './forces/index.ts';
 import { FORMATION_BY } from './config/forces.config.ts';
-import type { FieldHost } from './core/host.ts';
-import type { Body, Particle, Env } from './core/types.ts';
+import type { FieldHost } from './engine/host.ts';
+import type { Body, Particle, Env } from './engine/types.ts';
 
 const noopCtx = new Proxy({}, { get: () => () => {} }) as unknown as CanvasRenderingContext2D;
 

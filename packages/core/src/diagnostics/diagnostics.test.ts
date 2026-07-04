@@ -5,7 +5,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { Body, Particle, ForceRegistry } from '../core/types.ts';
+import type { Body, Particle, ForceRegistry } from '../engine/types.ts';
 import { kineticEnergy, thermalEnergy, energyReport, energyDrift } from './energy.ts';
 import { potentialAt, netPotentialAt, sampleScalarGrid } from './potential.ts';
 import { forceVectorAt, causalityAt, PROBE_PRESETS } from './probes.ts';

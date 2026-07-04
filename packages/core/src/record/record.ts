@@ -24,10 +24,10 @@
  *     programmatic bodies (`addBody`) in the recorded config, and an on-disk serialization format.
  *     The metadata + buffer here are the substrate those build on. See the module's `RecordedRun`.
  */
-import { createField } from '../core/field.ts';
-import { headlessHost } from '../core/host-headless.ts';
-import { PARTICLE_STRIDE, PARTICLE_WIRE_VERSION } from '../core/types.ts';
-import type { FieldOptions } from '../core/types.ts';
+import { createField } from '../engine/field.ts';
+import { headlessHost } from '../engine/host-headless.ts';
+import { PARTICLE_STRIDE, PARTICLE_WIRE_VERSION } from '../engine/types.ts';
+import type { FieldOptions } from '../engine/types.ts';
 import { seededRng } from './rng.ts';
 
 /**

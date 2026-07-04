@@ -759,7 +759,7 @@ Every model claim in this paper is checkable against the repository as of the ve
   scheduler and six registries are documented in Paper 1 §5.
 - **The renderer-agnostic core** that computes the field behavior, including the memory metric and the
   attention model, free of DOM dependencies: `packages/core/` (the empty-allowlist DOM-boundary test
-  `packages/core/src/core/dom-boundary.test.ts`; Paper 1 §4.2).
+  `packages/core/src/engine/dom-boundary.test.ts`; Paper 1 §4.2).
 - **The Natural Field Translation classification** that places *gravity → priority* and *memory* as a
   metric: `packages/core/src/config/manual.ts`; `docs/canonical/natural-fields.md`.
 

@@ -14,32 +14,32 @@ Reviewed focus areas:
 ## High-confidence strengths
 ### 1) Strong renderer/environment seam (host abstraction)
 Core runtime is intentionally host-driven and avoids direct DOM-global coupling:
-- `packages/core/src/core/host.ts`
-- `packages/core/src/core/field.ts`
-- `packages/core/src/core/dom-boundary.test.ts`
+- `packages/core/src/engine/host.ts`
+- `packages/core/src/engine/field.ts`
+- `packages/core/src/engine/dom-boundary.test.ts`
 
 The boundary test enforces that core source does not introduce forbidden DOM-global call sites.
 
 ### 2) Clear force architecture and extensibility
 Core, natural, and extended force families are registered in one place and routed through a shared integrator path:
-- `packages/core/src/core/field.ts`
+- `packages/core/src/engine/field.ts`
 - `packages/core/src/forces/index.ts`
 - `packages/core/src/forces/natural.ts`
 - `packages/core/src/forces/extended.ts`
-- `packages/core/src/core/integrator.ts`
+- `packages/core/src/engine/integrator.ts`
 
 This structure makes token expansion straightforward while preserving centralized simulation control.
 
 ### 3) Rich read/diagnostic substrate
 The codebase exposes query/snapshot/replay/energy-style observability hooks with clear read pathways and policy-aware shaping:
-- `packages/core/src/core/field.ts`
-- `packages/core/src/core/field-snapshot.ts`
-- `packages/core/src/core/query-lens.ts`
+- `packages/core/src/engine/field.ts`
+- `packages/core/src/engine/field-snapshot.ts`
+- `packages/core/src/engine/query-lens.ts`
 - `packages/core/src/diagnostics/*`
 
 ### 4) Accessibility/interaction parity implemented in runtime behavior
 `[data-hot]` engagement includes pointer and keyboard-path parity via `focusin`/`focusout` alongside pointer events:
-- `packages/core/src/core/field.ts`
+- `packages/core/src/engine/field.ts`
 
 ## Primary risks and misalignments
 ### 1) Determinism seam inconsistency
@@ -55,22 +55,22 @@ Impact:
 This increases change risk and regression surface concentration.
 
 Key location:
-- `packages/core/src/core/field.ts`
+- `packages/core/src/engine/field.ts`
 
 ### 3) Spatial hash rebuild allocates per new bin
 `SpatialHash.insert` creates `this.bins.set(k, [item])`; since index rebuild occurs each tick, this introduces recurring allocation pressure:
-- `packages/core/src/core/spatial-hash.ts`
-- `packages/core/src/core/field-store.ts` (`reindex` each frame)
+- `packages/core/src/engine/spatial-hash.ts`
+- `packages/core/src/engine/field-store.ts` (`reindex` each frame)
 
 ### 4) Documentation drift in integrator/physics vocabulary
 Code and docs are not fully synchronized on integrator names and medium/drag model types:
-- Code: `packages/core/src/core/types.ts` (`'legacy' | 'fixed' | 'velocity-verlet'`)
+- Code: `packages/core/src/engine/types.ts` (`'legacy' | 'fixed' | 'velocity-verlet'`)
 - Canonical doc: `docs/canonical/substrate-api.md` (older integrator listing)
 - Physics workover doc: `docs/engine-reference/physics-workover.md` (draft `legacy-euler`, `semi-implicit-euler-dt`, `MediumMode`, `DragMode`, `MediumConfig` not implemented as runtime types)
 
 ### 5) Fixed integrator semantics are explicitly limited
 Current fixed mode dt-scales decays but not force impulses, by design and documented in code comments:
-- `packages/core/src/core/integrator.ts`
+- `packages/core/src/engine/integrator.ts`
 
 Impact:
 - Some user expectations of full frame-rate-independent impulse behavior in fixed mode are not currently met.
@@ -89,17 +89,17 @@ This section isolates findings that come directly from `packages/core/src` imple
 
 ### Core strengths
 1. Host boundary is strongly implemented and test-enforced.
-   - `packages/core/src/core/host.ts`
-   - `packages/core/src/core/dom-boundary.test.ts`
-   - `packages/core/src/core/field.ts`
+   - `packages/core/src/engine/host.ts`
+   - `packages/core/src/engine/dom-boundary.test.ts`
+   - `packages/core/src/engine/field.ts`
 2. Event model is structured and de-duplicated per frame.
-   - `packages/core/src/core/events.ts`
-   - `packages/core/src/core/field.ts` (coalescer usage and flush)
+   - `packages/core/src/engine/events.ts`
+   - `packages/core/src/engine/field.ts` (coalescer usage and flush)
 3. Teardown behavior is careful and broad.
-   - `packages/core/src/core/field.ts` (`destroy` path for listeners, docks, emitted clones, store clear)
+   - `packages/core/src/engine/field.ts` (`destroy` path for listeners, docks, emitted clones, store clear)
 4. Cadenced scheduling is consistently applied to expensive work.
-   - `packages/core/src/core/field.ts` (measure/regrid cadence)
-   - `packages/core/src/core/integrator.ts` (`frameN % 40` wander kick)
+   - `packages/core/src/engine/field.ts` (measure/regrid cadence)
+   - `packages/core/src/engine/integrator.ts` (`frameN % 40` wander kick)
 
 ### Core concerns
 1. `core/field.ts` is a monolithic hotspot.
@@ -107,11 +107,11 @@ This section isolates findings that come directly from `packages/core/src` imple
 2. Determinism seam is not fully uniform.
    - RNG injection is present in many paths, but some behavior still depends on global-random pathways.
 3. Spatial hash allocation churn remains in hot path.
-   - `this.bins.set(k, [item])` in `packages/core/src/core/spatial-hash.ts` with per-frame `reindex` in `packages/core/src/core/field-store.ts`.
+   - `this.bins.set(k, [item])` in `packages/core/src/engine/spatial-hash.ts` with per-frame `reindex` in `packages/core/src/engine/field-store.ts`.
 4. Integrator semantics are nuanced and easy to mis-assume.
-   - `packages/core/src/core/integrator.ts` explicitly documents that fixed mode currently dt-scales decays but not all force impulses.
+   - `packages/core/src/engine/integrator.ts` explicitly documents that fixed mode currently dt-scales decays but not all force impulses.
 5. Docs/runtime drift around integrator vocabulary and medium models increases cognitive load.
-   - Runtime contracts in `packages/core/src/core/types.ts` and behavior in `packages/core/src/core/integrator.ts` diverge from some in-repo docs.
+   - Runtime contracts in `packages/core/src/engine/types.ts` and behavior in `packages/core/src/engine/integrator.ts` diverge from some in-repo docs.
 
 ### Suggested core refactors (ranked)
 1. Split `core/field.ts` by responsibility (loop, render, overlays, event wiring, lifecycle).
@@ -122,23 +122,23 @@ This section isolates findings that come directly from `packages/core/src` imple
 
 ### Evidence index (core concerns)
 1. `core/field.ts` concentration / central orchestration surface
-   - `packages/core/src/core/field.ts:315` (`createField requires opts.host` path in central constructor)
-   - `packages/core/src/core/field.ts:2459` (main frame loop cadence + orchestration)
-   - `packages/core/src/core/field.ts:430` (event coalescer wiring in same module)
-   - `packages/core/src/core/field.ts:3323` (destroy/lifecycle cleanup in same module)
+   - `packages/core/src/engine/field.ts:315` (`createField requires opts.host` path in central constructor)
+   - `packages/core/src/engine/field.ts:2459` (main frame loop cadence + orchestration)
+   - `packages/core/src/engine/field.ts:430` (event coalescer wiring in same module)
+   - `packages/core/src/engine/field.ts:3323` (destroy/lifecycle cleanup in same module)
 2. Determinism seam inconsistency
    - `packages/core/src/forces/natural.ts:217` (`Math.random` usage in thermal pathway)
    - `packages/core/src/conformance/run.ts:235` (global `Math.random` patching in conformance harness)
-   - `packages/core/src/core/determinism.test.ts:74` (determinism assertions context)
+   - `packages/core/src/engine/determinism.test.ts:74` (determinism assertions context)
 3. Spatial hash allocation churn
-   - `packages/core/src/core/spatial-hash.ts:40` (`this.bins.set(k, [item])`)
-   - `packages/core/src/core/field-store.ts:43` (`reindex()` per-frame rebuild entrypoint)
+   - `packages/core/src/engine/spatial-hash.ts:40` (`this.bins.set(k, [item])`)
+   - `packages/core/src/engine/field-store.ts:43` (`reindex()` per-frame rebuild entrypoint)
 4. Integrator semantics (fixed mode caveat)
-   - `packages/core/src/core/integrator.ts:158` (explicit note: fixed mode does not dt-scale all force impulses)
-   - `packages/core/src/core/integrator.ts:581` (dt-scaled decays/wander handling context in runtime path)
-   - `packages/core/src/core/types.ts:447` (`IntegratorMode` runtime type contract)
+   - `packages/core/src/engine/integrator.ts:158` (explicit note: fixed mode does not dt-scale all force impulses)
+   - `packages/core/src/engine/integrator.ts:581` (dt-scaled decays/wander handling context in runtime path)
+   - `packages/core/src/engine/types.ts:447` (`IntegratorMode` runtime type contract)
 5. Docs/runtime vocabulary drift evidence
-   - Runtime: `packages/core/src/core/types.ts:447`
+   - Runtime: `packages/core/src/engine/types.ts:447`
    - Docs: `docs/canonical/substrate-api.md:374`
    - Docs draft terms: `docs/engine-reference/physics-workover.md:202`
 
@@ -425,12 +425,12 @@ This pass targets concrete executable claims from sampled sections (including `d
 
 ### Evidence index (alignment checks)
 1. Core host requirement
-   - `packages/core/src/core/field.ts:323`
+   - `packages/core/src/engine/field.ts:323`
 2. Vanilla host resolution wrapper
    - `packages/vanilla/src/create-field.ts:33`
    - `packages/vanilla/src/create-field.ts:35`
 3. Signals-first render default
-   - `packages/core/src/core/field.ts:363`
+   - `packages/core/src/engine/field.ts:363`
 4. `<field-root>` implementation + contained mode reference surface
    - `packages/elements/src/index.ts:729`
    - `packages/vanilla/src/create-field.ts:30`
@@ -440,10 +440,10 @@ This pass targets concrete executable claims from sampled sections (including `d
    - `packages/core/src/recipes/catalog.ts:1518`
    - `packages/core/src/recipes/catalog.ts:1527`
 6. Runtime event bus shape (no `settle`)
-   - `packages/core/src/core/events.ts:17`
-   - `packages/core/src/core/events.ts:21`
-   - `packages/core/src/core/events.ts:26`
-   - `packages/core/src/core/types.ts:1615`
+   - `packages/core/src/engine/events.ts:17`
+   - `packages/core/src/engine/events.ts:21`
+   - `packages/core/src/engine/events.ts:26`
+   - `packages/core/src/engine/types.ts:1615`
 7. Contradicting doc line in llms-full sample
    - `apps/site/public/llms-full.txt:1510`
 
@@ -466,18 +466,18 @@ Second pass focused on drift-prone executable claims in `apps/site/public/llms-f
 ### Evidence index (exhaustive addendum)
 1. `waves` default mismatch
    - Claim: `apps/site/public/llms-full.txt:11556` (“`waves` defaults off”)
-   - Runtime: `packages/core/src/core/field.ts:376` (`waves: opts.waves ?? true`)
+   - Runtime: `packages/core/src/engine/field.ts:376` (`waves: opts.waves ?? true`)
 2. `forces:*` event-alias claim drift
    - Claims: `apps/site/public/llms-full.txt:6723`, `apps/site/public/llms-full.txt:7968`, `apps/site/public/llms-full.txt:8388`, `apps/site/public/llms-full.txt:8484`, `apps/site/public/llms-full.txt:8840`
-   - Runtime dispatch examined: `packages/core/src/core/feedback-sink.ts:62`, `packages/core/src/core/feedback-sink.ts:65`, `packages/core/src/core/field.ts:1041`, `packages/core/src/core/field.ts:1060`, `packages/elements/src/platform-runtime.ts:160`
+   - Runtime dispatch examined: `packages/core/src/engine/feedback-sink.ts:62`, `packages/core/src/engine/feedback-sink.ts:65`, `packages/core/src/engine/field.ts:1041`, `packages/core/src/engine/field.ts:1060`, `packages/elements/src/platform-runtime.ts:160`
    - Repository-wide exact-name check over package TS sources found no concrete `forces:lit|dim|captured|released|relocated|register-body|unregister-body|update-body` event strings.
 3. CSS migration contradiction
    - Contradicting claim: `apps/site/public/llms-full.txt:8928` (“CSS variables write both old and new names”)
    - Counterclaims in same corpus: `apps/site/public/llms-full.txt:7988`, `apps/site/public/llms-full.txt:8480`
-   - Runtime write paths: `packages/core/src/core/feedback-sink.ts:45` (writes `--d`, `--field-density`, `--field-heatmap-density`, `--load`, `--lit`, bare thermodynamics), `packages/elements/src/platform-runtime.ts:139`
+   - Runtime write paths: `packages/core/src/engine/feedback-sink.ts:45` (writes `--d`, `--field-density`, `--field-heatmap-density`, `--load`, `--lit`, bare thermodynamics), `packages/elements/src/platform-runtime.ts:139`
 4. Host requirement remains accurate
    - Claim: `apps/site/public/llms-full.txt:6688`
-   - Runtime: `packages/core/src/core/field.ts:323`
+   - Runtime: `packages/core/src/engine/field.ts:323`
 
 ### Prioritized remediation for llms source set
 1. Correct the `waves` default statement to match current runtime (`true`) or explicitly annotate version/branch context if documenting historical behavior.

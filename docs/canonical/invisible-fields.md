@@ -45,7 +45,7 @@ This is the third **placement** in the Surfaces & Placement taxonomy:
 Two shipped mechanisms produce it:
 
 - **Engine, draw-skipped** — `FieldHandle.setVisible(false)` keeps the full simulation and its
-  feedback live while skipping all draw work (`packages/core/src/core/field.ts`). The
+  feedback live while skipping all draw work (`packages/core/src/engine/field.ts`). The
   `<field-root>` element wires this automatically from an IntersectionObserver, so a page that
   hides the element with CSS (`display: none`) gets a signals-only engine for free.
 - **Recipe, render-less** — `applyRecipe(root, { ...recipe, render: [] }, { bodies })` runs the

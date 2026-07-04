@@ -21,8 +21,8 @@ The papers treat the codebase and canonical docs as primary evidence, cited inli
 - `[fundamental-engine-formulas]` `docs/engine-reference/forces-formulas.md` — per-force math.
 - `[fundamental-engine-physics]` `docs/engine-reference/physics-workover.md` — the physics-correctness pass.
 
-Key shipped-code anchors cited by the papers: `packages/core/src/core/dom-boundary.test.ts` (empty
-allowlist), `packages/core/src/core/integrator.ts`, `packages/core/src/contracts/passport.ts`,
+Key shipped-code anchors cited by the papers: `packages/core/src/engine/dom-boundary.test.ts` (empty
+allowlist), `packages/core/src/engine/integrator.ts`, `packages/core/src/contracts/passport.ts`,
 `packages/core/src/config/manual.ts`, `packages/dom/src/schedule.ts`, `packages/dom/src/metrics.ts`,
 `packages/dom/src/bind-data.ts`, `packages/core/src/recipes/{catalog,schema}.ts`,
 `apps/site/src/pages/docs/reading-field.astro`, `apps/site/src/pages/docs/studies/evidence-field.astro`.

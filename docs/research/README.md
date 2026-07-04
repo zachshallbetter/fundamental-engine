@@ -154,7 +154,7 @@ generalizing expansion family.
   LaTeX-compatible notation so conversion to a LaTeX/PDF preprint is mechanical. Figures are
   described in prose + a `Figure N` caption; diagrams are produced at conversion time.
 - **Citations to the implementation.** Because the substrate *is* the code, papers cite real files
-  (e.g. `packages/core/src/core/integrator.ts`) as primary evidence. External literature lives in
+  (e.g. `packages/core/src/engine/integrator.ts`) as primary evidence. External literature lives in
   [`references.md`](references.md); unresolved claims must be phrased honestly until a real reference is
   located and verified — never fabricate one.
 - **Naming.** Use `Fundamental` for the project; `--field-*` / `field:*` for the current CSS-variable
@@ -172,7 +172,7 @@ about them. Each paper that touches the physics restates the relevant ones rathe
 
 1. **Mass is nominal by default.** The default integrator advances `v += F` (unit mass);
    "heavier particles swing wider" is aspirational. First-class inertial mass (`a = F/m`, `m ∝ size`)
-   is **opt-in** (`FieldOptions.mass`). See `packages/core/src/core/integrator.ts`.
+   is **opt-in** (`FieldOptions.mass`). See `packages/core/src/engine/integrator.ts`.
 2. **Energy is intentionally not conserved.** Friction and heat decay keep the interface calm; the
    dissipated energy is *accounted for* and rendered as micro-reactions (sparks scaled to `ΔE`),
    not silently dropped.

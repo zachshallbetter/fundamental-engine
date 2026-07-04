@@ -12,8 +12,8 @@ import {
   thermalSigma,
   naturalForces,
 } from './natural.ts';
-import type { ScalarGrid } from '../core/types.ts';
-import type { Body, Env, Particle } from '../core/types.ts';
+import type { ScalarGrid } from '../engine/types.ts';
+import type { Body, Env, Particle } from '../engine/types.ts';
 
 const body = (o: Partial<Body> = {}): Body => ({
   el: {} as HTMLElement,

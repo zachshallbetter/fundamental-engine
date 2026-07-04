@@ -4,7 +4,7 @@
  * marching-squares contour extraction is pure and testable; the `draw*` helpers are thin context
  * calls. These reveal state — they read, never mutate physics.
  */
-import type { Body, Particle, Force } from '../core/types.ts';
+import type { Body, Particle, Force } from '../engine/types.ts';
 import type { ScalarGridData } from './potential.ts';
 import { sampleScalarGrid } from './potential.ts';
 import { forceVectorAt, type Probe, PROBE_PRESETS } from './probes.ts';

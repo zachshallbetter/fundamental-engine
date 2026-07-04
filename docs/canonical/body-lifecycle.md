@@ -4,7 +4,7 @@
 > or over data records), so non-DOM usage is *official*, not bolted on. DOM bodies have this same
 > lifecycle *implicitly* (the scanner runs it); this doc makes it explicit for bodies with no element to
 > rescan. Follows the [status rule](documentation-standards.md): nothing here is called shipped unless
-> code confirms it (`packages/core/src/core/types.ts` — `BodySpec`/`BodyHandle`; `field.ts` — `addBody`).
+> code confirms it (`packages/core/src/engine/types.ts` — `BodySpec`/`BodyHandle`; `field.ts` — `addBody`).
 
 # Body lifecycle
 

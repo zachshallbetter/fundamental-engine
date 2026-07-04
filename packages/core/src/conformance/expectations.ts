@@ -6,7 +6,7 @@
  * the frame-0 force delta (pure force, before friction) or the trajectory; a few do a
  * controlled direct `apply` (cutoff, grid gradient, modifier gating) via the registry.
  */
-import type { Body, Env, Particle, ScalarGrid } from '../core/types.ts';
+import type { Body, Env, Particle, ScalarGrid } from '../engine/types.ts';
 import type { Expectation, ExpectationResult, ScenarioResult } from './types.ts';
 import { allForces } from './run.ts';
 

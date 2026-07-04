@@ -7,16 +7,16 @@
  * the `Env.rng` seam (no global `Math.random` monkey-patch). Returns the full trajectory plus each particle's
  * frame-0 force delta (one direct `apply`, before friction) for exact/invariant checks.
  */
-import type { Body, Env, ForceRegistry, Particle } from '../core/types.ts';
-import { FieldStore } from '../core/field-store.ts';
-import { step } from '../core/integrator.ts';
-import { netField } from '../core/streamlines.ts';
-import { ScalarGridImpl } from '../core/scalar-grid.ts';
-import { createRegistry } from '../core/registry.ts';
+import type { Body, Env, ForceRegistry, Particle } from '../engine/types.ts';
+import { FieldStore } from '../engine/field-store.ts';
+import { step } from '../engine/integrator.ts';
+import { netField } from '../engine/streamlines.ts';
+import { ScalarGridImpl } from '../engine/scalar-grid.ts';
+import { createRegistry } from '../engine/registry.ts';
 import { registerCoreForces } from '../forces/index.ts';
 import { registerNaturalForces } from '../forces/natural.ts';
 import { registerExtendedForces } from '../forces/extended.ts';
-import { conditions } from '../core/conditions.ts';
+import { conditions } from '../engine/conditions.ts';
 import type { ApplyDelta, FrameState, Scenario, ScenarioResult } from './types.ts';
 
 // A large field centred on the action: the integrator wraps toroidally at the field

@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import { recordRun, replayRun, verifyReplay, frameAt } from './record.ts';
 import type { RecordConfig } from './record.ts';
 import { seededRng } from './rng.ts';
-import { PARTICLE_STRIDE, PARTICLE_WIRE_VERSION } from '../core/types.ts';
+import { PARTICLE_STRIDE, PARTICLE_WIRE_VERSION } from '../engine/types.ts';
 
 const baseConfig = (over: Partial<RecordConfig> = {}): RecordConfig => ({
   width: 800,

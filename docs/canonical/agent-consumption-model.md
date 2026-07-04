@@ -4,7 +4,7 @@
 > owns a **consumer** that turns one influence into its own kind of change. Body Matter Interaction
 > (the sink/accretion behavior) is a submodel here, not a separate model. Every status label below was
 > verified against the code (`packages/core/src/agents`, `packages/core/src/forces`,
-> `packages/core/src/core/field.ts`, `packages/dom`) and follows the
+> `packages/core/src/engine/field.ts`, `packages/dom`) and follows the
 > [documentation standards](documentation-standards.md) status rule: nothing is called
 > *shipped* unless code confirms it. Deeper references:
 > [system-contracts §5–§9](system-contracts.md),

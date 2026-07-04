@@ -4,8 +4,8 @@
  * magnitude`), and the per-token *causality* breakdown of why motion happened. Works for body→
  * particle (class-A) forces; class-B/C/D forces need neighbours/grids the conformance runner wires.
  */
-import type { Body, Particle, Env, Force, ForceRegistry, Formation, Vec2, FieldImpulseAccumulator } from '../core/types.ts';
-import { applyAndRecord, makeAccumulator } from '../core/integrator.ts';
+import type { Body, Particle, Env, Force, ForceRegistry, Formation, Vec2, FieldImpulseAccumulator } from '../engine/types.ts';
+import { applyAndRecord, makeAccumulator } from '../engine/integrator.ts';
 
 /** An instrument particle. */
 export interface Probe {

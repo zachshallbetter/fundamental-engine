@@ -60,7 +60,7 @@ const kebabSet = (set) => new Set([...set].map(kebab));
 
 // ── JS (reference) extractors ─────────────────────────────────────────────────────────────────────
 
-const jsTypes = read('packages/core/src/core/types.ts');
+const jsTypes = read('packages/core/src/engine/types.ts');
 const jsPassport = read('packages/core/src/contracts/passport.ts');
 
 function jsHandleMethods() {

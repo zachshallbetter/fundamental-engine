@@ -3,7 +3,7 @@
  * kinetic, thermal, and total energy, plus per-step drift. The data behind the "energy view": it
  * reads state, never mutates it (the energy view must not affect integration).
  */
-import type { Particle } from '../core/types.ts';
+import type { Particle } from '../engine/types.ts';
 
 /** Kinetic energy Σ ½·m·|v|² — the full 3D speed (vz is 0 in a flat field, z-axis.md). */
 export function kineticEnergy(particles: readonly Particle[]): number {

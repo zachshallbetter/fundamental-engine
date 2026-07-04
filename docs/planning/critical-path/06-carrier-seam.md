@@ -14,10 +14,10 @@ This document is the design for what replaces the *pattern*, not that flip.
 ## Purpose
 
 Every project pointed at the engine ships the same five sine curves. They are identical by
-construction: `buildWaves` (`packages/core/src/core/currents.ts:46`) derives every parameter —
+construction: `buildWaves` (`packages/core/src/engine/currents.ts:46`) derives every parameter —
 anchor, amplitude, frequency, phase, speed, direction, depth — as a fixed formula of the layer
 index, accepts no rng, and is on by default (`opts.waves ?? true`,
-`packages/core/src/core/field.ts:364`). The only per-project variation is palette and viewport.
+`packages/core/src/engine/field.ts:364`). The only per-project variation is palette and viewport.
 
 That is a doctrine violation, not a cosmetic bug. The first line of the project's own canon is
 *the field is a substrate, not wallpaper* — and hardcoded structure painted identically over

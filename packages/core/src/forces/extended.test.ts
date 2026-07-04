@@ -22,7 +22,7 @@ import {
   curlNoise,
   extendedForces,
 } from './extended.ts';
-import type { Body, Env, Particle } from '../core/types.ts';
+import type { Body, Env, Particle } from '../engine/types.ts';
 
 const body = (o: Partial<Body> = {}): Body => ({
   el: {} as HTMLElement,

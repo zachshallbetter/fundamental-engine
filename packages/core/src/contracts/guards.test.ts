@@ -4,7 +4,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { Particle } from '../core/types.ts';
+import type { Particle } from '../engine/types.ts';
 import {
   FieldUIError,
   setContractChecks,

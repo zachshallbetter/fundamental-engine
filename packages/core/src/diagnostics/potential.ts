@@ -3,7 +3,7 @@
  * body radiates (`Φ = -s / sqrt(d² + ε²)`), and a generic grid sampler that turns any scalar field
  * into a value grid for contour / potential / heatmap rendering. Pure; reads no live state.
  */
-import type { Body } from '../core/types.ts';
+import type { Body } from '../engine/types.ts';
 
 const EPS = 6; // softening, matches the engine's Plummer-style core
 
