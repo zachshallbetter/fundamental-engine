@@ -1,7 +1,7 @@
 package com.fundamental.lab
 
 import com.fundamental.core.math.Vec3
-import com.fundamental.core.recipe.FieldRecipes
+import com.fundamental.core.recipes.FieldRecipes
 import com.fundamental.core.runtime.FieldController
 import java.awt.image.BufferedImage
 import java.io.File

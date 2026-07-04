@@ -1,9 +1,9 @@
 package com.fundamental.lab
 
-import com.fundamental.core.recipe.AccessibilityRecipe
-import com.fundamental.core.recipe.BodyRecipe
-import com.fundamental.core.recipe.FieldRecipe
-import com.fundamental.core.recipe.RelationshipRecipe
+import com.fundamental.core.recipes.AccessibilityRecipe
+import com.fundamental.core.recipes.BodyRecipe
+import com.fundamental.core.recipes.FieldRecipe
+import com.fundamental.core.recipes.RelationshipRecipe
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals

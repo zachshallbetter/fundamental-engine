@@ -1,9 +1,9 @@
 package com.fundamental.core
 
 import com.fundamental.core.engine.Registry
-import com.fundamental.core.recipe.FieldRecipes
-import com.fundamental.core.recipe.compileRecipe
-import com.fundamental.core.recipe.validateRecipe
+import com.fundamental.core.recipes.FieldRecipes
+import com.fundamental.core.recipes.compileRecipe
+import com.fundamental.core.recipes.validateRecipe
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

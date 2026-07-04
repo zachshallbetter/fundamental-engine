@@ -1,13 +1,13 @@
 package com.fundamental.core.forces
 
-import com.fundamental.core.engine.AxisBox
+import com.fundamental.core.math.AxisBox
 import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.Env
 import com.fundamental.core.engine.Force
 import com.fundamental.core.engine.Particle
-import com.fundamental.core.engine.Pole
-import com.fundamental.core.engine.dipoleField
-import com.fundamental.core.engine.polePair
+import com.fundamental.core.math.Pole
+import com.fundamental.core.math.dipoleField
+import com.fundamental.core.math.polePair
 import com.fundamental.core.math.EPS
 import com.fundamental.core.math.Vec3
 import kotlin.math.PI

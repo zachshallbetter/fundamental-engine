@@ -1,4 +1,4 @@
-package com.fundamental.core.engine
+package com.fundamental.core.config
 
 // Canonical force colors (forces.config.ts FORCES catalog) — ported verbatim from
 // swift/Sources/FundamentalCore/Engine/ForceColors.swift. The nine designed forces each carry a

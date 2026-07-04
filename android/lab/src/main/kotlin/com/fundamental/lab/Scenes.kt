@@ -3,8 +3,8 @@ package com.fundamental.lab
 import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.Box
 import com.fundamental.core.math.Vec3
-import com.fundamental.core.recipe.FieldRecipe
-import com.fundamental.core.recipe.compileRecipe
+import com.fundamental.core.recipes.FieldRecipe
+import com.fundamental.core.recipes.compileRecipe
 import com.fundamental.core.runtime.FieldController
 import kotlin.math.PI
 import kotlin.math.cos

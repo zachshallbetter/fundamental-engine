@@ -1,4 +1,4 @@
-package com.fundamental.core.recipe
+package com.fundamental.core.recipes
 
 import com.fundamental.core.engine.Body
 import com.fundamental.core.math.Vec3
