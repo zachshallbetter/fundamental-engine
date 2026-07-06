@@ -1,0 +1,256 @@
+---
+// A live force carousel for the "full engine, live" section: one <field-cell> (the sanctioned
+// in-frame demo surface) auto-cycling through the seven forces cell-force.ts renders — attract,
+// repel, swirl, gravity, stream, buoyancy, tether. Real engine, interactive (cursor-repel is
+// built into the cell). Colors + labels come from the engine's own MANUAL_FORCES palette; captions
+// mirror the design-system live grid. Auto-advance is reduced-motion-aware (off under
+// prefers-reduced-motion) and pauses on hover/focus; dots + arrows drive it manually either way.
+import { MANUAL_FORCES } from '@fundamental-engine/core';
+
+const CELL_CAPTIONS: Record<string, string> = {
+  attract: 'pulls matter in',
+  repel: 'pushes it away',
+  swirl: 'orbits it around',
+  gravity: 'a true 1/d² fall-in',
+  stream: 'a uniform current',
+  buoyancy: 'a steady lift',
+  tether: 'a spring to a rest shell',
+};
+const FORCES = ['attract', 'repel', 'swirl', 'gravity', 'stream', 'buoyancy', 'tether'].map((t) => {
+  const f = MANUAL_FORCES.find((x) => x.token === t);
+  return { token: t, label: f?.label ?? t, color: f?.color ?? '#4da3ff', caption: CELL_CAPTIONS[t] };
+});
+const first = FORCES[0];
+---
+
+<figure
+  class="force-carousel"
+  aria-roledescription="carousel"
+  aria-label="Seven forces, rendered live"
+  data-force-carousel
+  data-forces={JSON.stringify(FORCES)}
+  style={`--fc:${first.color}`}
+>
+  <div class="fcx-frame">
+    <field-cell force={first.token} color={first.color} max-particles="220" data-fcx-cell></field-cell>
+    <span class="fcx-token" data-fcx-token aria-hidden="true">{first.token}</span>
+    <span class="fcx-of" aria-hidden="true">7 live · 36 in the catalog</span>
+  </div>
+  <figcaption class="fcx-cap" aria-live="polite">
+    <b data-fcx-label>{first.label}</b>
+    <span data-fcx-caption>{first.caption}</span>
+  </figcaption>
+  <div class="fcx-controls">
+    <button type="button" class="fcx-arrow" data-fcx-prev aria-label="Previous force">←</button>
+    <div class="fcx-dots" aria-label="Choose a force">
+      {
+        FORCES.map((f, i) => (
+          <button
+            type="button"
+            class="fcx-dot"
+            data-fcx-dot={i}
+            aria-label={f.token}
+            style={`--dc:${f.color}`}
+          />
+        ))
+      }
+    </div>
+    <button type="button" class="fcx-arrow" data-fcx-next aria-label="Next force">→</button>
+  </div>
+  <a class="fcx-more" href="/docs/api/catalog">See all 36 forces →</a>
+</figure>
+
+<script>
+  interface CF {
+    token: string;
+    label: string;
+    color: string;
+    caption: string;
+  }
+
+  function initForceCarousels() {
+    document.querySelectorAll<HTMLElement>('[data-force-carousel]').forEach((root) => {
+      if (root.dataset.fcxInit) return;
+      root.dataset.fcxInit = '1';
+
+      let forces: CF[] = [];
+      try {
+        forces = JSON.parse(root.dataset.forces || '[]');
+      } catch {
+        /* leave empty */
+      }
+      if (!forces.length) return;
+
+      const cell = root.querySelector('[data-fcx-cell]');
+      const tokenEl = root.querySelector('[data-fcx-token]');
+      const labelEl = root.querySelector('[data-fcx-label]');
+      const capEl = root.querySelector('[data-fcx-caption]');
+      const dots = Array.from(root.querySelectorAll<HTMLElement>('[data-fcx-dot]'));
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+      let i = 0;
+      let timer: number | undefined;
+
+      const show = (n: number) => {
+        i = (n + forces.length) % forces.length;
+        const f = forces[i];
+        cell?.setAttribute('force', f.token);
+        cell?.setAttribute('color', f.color);
+        root.style.setProperty('--fc', f.color);
+        if (tokenEl) tokenEl.textContent = f.token;
+        if (labelEl) labelEl.textContent = f.label;
+        if (capEl) capEl.textContent = f.caption;
+        dots.forEach((d, k) => {
+          d.classList.toggle('is-on', k === i);
+          d.setAttribute('aria-current', k === i ? 'true' : 'false');
+        });
+      };
+      const stop = () => {
+        if (timer) window.clearInterval(timer);
+        timer = undefined;
+      };
+      const start = () => {
+        stop();
+        if (reduce.matches) return;
+        timer = window.setInterval(() => show(i + 1), 3800);
+      };
+      const jump = (n: number) => {
+        show(n);
+        start();
+      };
+
+      root.querySelector('[data-fcx-prev]')?.addEventListener('click', () => jump(i - 1));
+      root.querySelector('[data-fcx-next]')?.addEventListener('click', () => jump(i + 1));
+      dots.forEach((d, k) => d.addEventListener('click', () => jump(k)));
+      root.addEventListener('pointerenter', stop);
+      root.addEventListener('pointerleave', start);
+      root.addEventListener('focusin', stop);
+      root.addEventListener('focusout', start);
+      reduce.addEventListener?.('change', start);
+
+      show(0);
+      start();
+    });
+  }
+
+  document.addEventListener('astro:page-load', initForceCarousels);
+  document.addEventListener('DOMContentLoaded', initForceCarousels);
+</script>
+
+<style>
+  .force-carousel {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .fcx-frame {
+    position: relative;
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.09));
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.015);
+  }
+  .fcx-frame field-cell {
+    display: block;
+    width: 100%;
+    height: 320px;
+  }
+  .fcx-token {
+    position: absolute;
+    top: 0.85rem;
+    left: 1rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--fc);
+    transition: color 0.4s;
+  }
+  .fcx-of {
+    position: absolute;
+    bottom: 0.85rem;
+    right: 1rem;
+    font-family: var(--mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-4, #6b7280);
+  }
+  .fcx-cap {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    min-height: 1.3rem;
+  }
+  .fcx-cap b {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fc);
+    transition: color 0.4s;
+  }
+  .fcx-cap span {
+    color: var(--text-3, #9aa3b2);
+    font-size: 0.9rem;
+  }
+  .fcx-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .fcx-dots {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1;
+  }
+  .fcx-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1px solid var(--dc);
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0.45;
+    transition:
+      opacity 0.2s,
+      background 0.2s;
+  }
+  .fcx-dot:hover {
+    opacity: 0.8;
+  }
+  .fcx-dot.is-on {
+    background: var(--dc);
+    opacity: 1;
+  }
+  .fcx-arrow {
+    background: transparent;
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+    border-radius: 8px;
+    color: var(--text-3, #9aa3b2);
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+  }
+  .fcx-arrow:hover {
+    color: var(--fc);
+    border-color: var(--fc);
+  }
+  .fcx-more {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-4, #6b7280);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .fcx-more:hover {
+    color: var(--fc);
+  }
+</style>

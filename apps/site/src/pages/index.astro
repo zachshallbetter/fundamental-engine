@@ -4,6 +4,7 @@ import SiteNav from "../components/SiteNav.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import ManualHero from "../components/ManualHero.astro";
 import Button from "../components/ui/Button.astro";
+import ForceCarousel from "../components/home/ForceCarousel.astro";
 import { MANUAL_FORCES } from "@fundamental-engine/core";
 import { currentVersion } from "../lib/changelog";
 import "../styles/manual.css";
@@ -357,22 +358,25 @@ const softwareLd = {
     </section>
 
     <section class="lp lp-engine-gate" id="engine">
-      <div class="wrap">
-        <span class="concept-no">The full engine, live</span>
-        <h2>{MANUAL_FORCES.length} forces. 64 recipes. 8 presets. One 0.x API.</h2>
-        <p class="lp-lede">
-          Everything above is built from one contract: <code>data-*</code> in, <code>--field-*</code> out.
-          The complete force-by-force manual — every force, preset, and system behaviour, each demo running
-          live on the real engine — now has its own page, so the homepage can stay about the substrate.
-        </p>
-        <div class="lp-cta-row">
-          <Button href="/engine-tour" variant="primary">Open the executable manual →</Button>
-          <Button href="/lab">Open the Lab →</Button>
+      <div class="wrap lp-engine-grid">
+        <div class="lp-engine-col">
+          <span class="concept-no">The full engine, live</span>
+          <h2>{MANUAL_FORCES.length} forces. 64 recipes. 8 presets. One 0.x API.</h2>
+          <p class="lp-lede">
+            Everything above is built from one contract: <code>data-*</code> in, <code>--field-*</code> out.
+            The complete force-by-force manual — every force, preset, and system behaviour, each demo running
+            live on the real engine — now has its own page, so the homepage can stay about the substrate.
+          </p>
+          <div class="lp-cta-row">
+            <Button href="/engine-tour" variant="primary">Open the executable manual →</Button>
+            <Button href="/lab">Open the Lab →</Button>
+          </div>
+          <p class="lp-note">
+            Or jump straight to a surface: <a href="/docs/api">the API</a> ·
+            <a href="/recipes">recipes</a> · <a href="/docs/api/catalog">the force catalog</a>.
+          </p>
         </div>
-        <p class="lp-note">
-          Or jump straight to a surface: <a href="/docs/api">the API</a> ·
-          <a href="/recipes">recipes</a> · <a href="/docs/api/catalog">the force catalog</a>.
-        </p>
+        <ForceCarousel />
       </div>
     </section>
 

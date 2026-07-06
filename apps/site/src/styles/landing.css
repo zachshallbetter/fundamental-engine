@@ -607,6 +607,21 @@ html[data-field='on'] .hero-antimass:hover {
 .lp-engine-gate .lp-lede {
   margin-bottom: 1.6rem;
 }
+/* Two columns: the engine claim + CTAs left, the live force carousel right. */
+.lp-engine-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+  gap: 2.6rem 3.4rem;
+  align-items: center;
+}
+.lp-engine-col {
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .lp-engine-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 @media (max-width: 640px) {
   .lp-ask {
