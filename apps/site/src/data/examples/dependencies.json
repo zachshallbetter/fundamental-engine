@@ -1,7 +1,7 @@
 {
   "source": "npm registry + api.npmjs.org downloads + OSV.dev advisories, over this monorepo’s real package.json files",
   "license": "public registry data",
-  "snapshotAt": "2026-06-10T04:35:47.913Z",
+  "snapshotAt": "2026-07-06T07:53:17.622Z",
   "workspace": [
     {
       "name": "core",
@@ -46,15 +46,37 @@
   ],
   "deps": [
     {
+      "name": "@types/node",
+      "weeklyDownloads": 357581789,
+      "version": "26.1.0",
+      "publishedAt": "2026-07-01T11:04:10.429Z",
+      "description": "TypeScript definitions for node",
+      "advisories": 0,
+      "usedBy": [
+        "core"
+      ]
+    },
+    {
+      "name": "esbuild",
+      "weeklyDownloads": 237262772,
+      "version": "0.28.1",
+      "publishedAt": "2026-06-11T22:47:05.085Z",
+      "description": "An extremely fast JavaScript and CSS bundler and minifier.",
+      "advisories": 2,
+      "usedBy": [
+        "vanilla"
+      ]
+    },
+    {
       "name": "typescript",
-      "weeklyDownloads": 205759155,
+      "weeklyDownloads": 211510203,
       "version": "6.0.3",
       "publishedAt": "2026-04-16T23:38:27.905Z",
       "description": "TypeScript is a language for application scale JavaScript development",
       "advisories": 0,
       "usedBy": [
         "core",
-        "platform",
+        "dom",
         "elements",
         "vanilla",
         "react"
@@ -62,7 +84,7 @@
     },
     {
       "name": "react",
-      "weeklyDownloads": 134410428,
+      "weeklyDownloads": 141560512,
       "version": "19.2.7",
       "publishedAt": "2026-06-01T18:00:48.323Z",
       "description": "React is a JavaScript library for building user interfaces.",
@@ -73,7 +95,7 @@
     },
     {
       "name": "@types/react",
-      "weeklyDownloads": 121081029,
+      "weeklyDownloads": 125585592,
       "version": "19.2.17",
       "publishedAt": "2026-06-05T20:10:24.692Z",
       "description": "TypeScript definitions for react",
@@ -83,8 +105,19 @@
       ]
     },
     {
+      "name": "@playwright/test",
+      "weeklyDownloads": 42534093,
+      "version": "1.61.1",
+      "publishedAt": "2026-06-23T19:49:12.825Z",
+      "description": "A high-level API to automate web browsers",
+      "advisories": 0,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
       "name": "katex",
-      "weeklyDownloads": 14021083,
+      "weeklyDownloads": 15545937,
       "version": "0.17.0",
       "publishedAt": "2026-05-22T08:06:26.967Z",
       "description": "Fast math typesetting for the web.",
@@ -94,10 +127,21 @@
       ]
     },
     {
+      "name": "three",
+      "weeklyDownloads": 11112826,
+      "version": "0.185.1",
+      "publishedAt": "2026-07-01T14:04:30.373Z",
+      "description": "JavaScript 3D library",
+      "advisories": 1,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
       "name": "mermaid",
-      "weeklyDownloads": 8533164,
-      "version": "11.15.0",
-      "publishedAt": "2026-05-11T11:15:09.824Z",
+      "weeklyDownloads": 9537406,
+      "version": "11.16.0",
+      "publishedAt": "2026-06-25T11:30:40.280Z",
       "description": "Markdown-ish syntax for generating flowcharts, mindmaps, sequence diagrams, class diagrams, gantt charts, git graphs and",
       "advisories": 11,
       "usedBy": [
@@ -105,8 +149,30 @@
       ]
     },
     {
+      "name": "react-test-renderer",
+      "weeklyDownloads": 7376386,
+      "version": "19.2.7",
+      "publishedAt": "2026-06-01T18:01:34.008Z",
+      "description": "React package for snapshot testing.",
+      "advisories": 0,
+      "usedBy": [
+        "react"
+      ]
+    },
+    {
+      "name": "@types/three",
+      "weeklyDownloads": 6751240,
+      "version": "0.185.0",
+      "publishedAt": "2026-06-25T18:41:23.023Z",
+      "description": "TypeScript definitions for three",
+      "advisories": 0,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
       "name": "remark-math",
-      "weeklyDownloads": 5103647,
+      "weeklyDownloads": 5620424,
       "version": "6.0.0",
       "publishedAt": "2023-09-19T11:38:59.221Z",
       "description": "remark plugin to parse and stringify math",
@@ -117,7 +183,7 @@
     },
     {
       "name": "rehype-katex",
-      "weeklyDownloads": 4876877,
+      "weeklyDownloads": 5259571,
       "version": "7.0.1",
       "publishedAt": "2024-08-19T12:09:21.818Z",
       "description": "rehype plugin to transform inline and block math with KaTeX",
@@ -128,22 +194,44 @@
     },
     {
       "name": "astro",
-      "weeklyDownloads": 3100154,
-      "version": "6.4.5",
-      "publishedAt": "2026-06-09T12:45:58.736Z",
+      "weeklyDownloads": 3514613,
+      "version": "7.0.6",
+      "publishedAt": "2026-07-02T19:27:22.444Z",
       "description": "Astro is a modern site builder with web best practices, performance, and DX front-of-mind.",
-      "advisories": 17,
+      "advisories": 20,
       "usedBy": [
         "site"
       ]
     },
     {
       "name": "@astrojs/sitemap",
-      "weeklyDownloads": 1461261,
+      "weeklyDownloads": 1692481,
       "version": "3.7.3",
       "publishedAt": "2026-05-26T14:23:48.946Z",
       "description": "Generate a sitemap for your Astro site",
       "advisories": 0,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
+      "name": "opentype.js",
+      "weeklyDownloads": 1366022,
+      "version": "2.0.0",
+      "publishedAt": "2026-05-06T16:44:19.718Z",
+      "description": "OpenType font parser",
+      "advisories": 0,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
+      "name": "pagefind",
+      "weeklyDownloads": 903988,
+      "version": "1.5.2",
+      "publishedAt": "2026-04-12T12:46:44.475Z",
+      "description": "Implement search on any static website.",
+      "advisories": 1,
       "usedBy": [
         "site"
       ]
