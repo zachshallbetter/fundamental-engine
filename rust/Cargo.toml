@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = ["crates/fundamental-core"]
+
+# The Fundamental Rust plane. Mirrors the JS/Swift/Kotlin cores at parity:
+#   core ← platform ← {surfaces}   (core never depends up)
+# Add `fundamental-platform`, surface crates, etc. as members as they land.
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/zachshallbetter/Fundamental"
+authors = ["Zach Shallbetter"]

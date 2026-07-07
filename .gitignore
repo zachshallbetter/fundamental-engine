@@ -40,6 +40,10 @@ swift/.swiftpm/xcode/
 *.xcuserdata/
 *.xcuserstate
 
+# Rust plane build artifacts (rust/ workspace); Cargo.lock IS tracked (workspace has bins/tests)
+rust/target/
+**/*.rs.bk
+
 # Turborepo
 .turbo/
 

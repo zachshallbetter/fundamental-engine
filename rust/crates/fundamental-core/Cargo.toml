@@ -1,0 +1,19 @@
+[package]
+name = "fundamental-core"
+version = "0.0.0"
+description = "The Fundamental relational field engine — Rust core. DOM-free, renderer-agnostic, f64."
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+# The core imports ZERO runtime dependencies — same contract as the JS core
+# (packages/core, enforced by dom-boundary.test.ts) and the native ports.
+[dependencies]
+
+# Dev-only: the cross-plane conformance test parses the shared golden JSON.
+# These never leak into the published crate.
+[dev-dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
