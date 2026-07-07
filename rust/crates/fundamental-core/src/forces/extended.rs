@@ -9,7 +9,7 @@
 //! scalar grid → (natural) `diffuse`/`propagate`/`memory`; integrator modifier pass → `resonate`,
 //! `spotlight`, `screen`; source/scatter state → `spawn`, `morph`; net field-line hook → `fieldflow`.
 
-use crate::engine::{Body, Env, Force, Particle};
+use crate::engine::{Body, Env, Force, ForceModification, Particle};
 use crate::math::{mix_hex, Vec3};
 
 const FREEZE: f64 = 0.5; // heat below which crystallize solidifies matter
@@ -433,4 +433,59 @@ impl Force for Hunt {
         let dir = if me == 0 { 1.0 } else { -1.0 }; // predator seeks, prey flees
         p.velocity += delta * (b.strength * dir / d);
     }
+}
+
+// ── modifiers (§20.3): no force of their own — they bend their sibling forces ──────────────────────
+
+const RESONATE_OMEGA: f64 = 3.0;
+const SPOTLIGHT_COS: f64 = 0.5; // cone half-angle ~60°
+
+/// §20.3 — `resonate`: a modifier that pulses its sibling forces with a time-varying strength
+/// `S(t) = S₀·(1 + sin(ω·t·spin))`, so e.g. `resonate attract` is a well that breathes.
+pub struct Resonate;
+
+impl Force for Resonate {
+    fn token(&self) -> &'static str {
+        "resonate"
+    }
+    fn label(&self) -> &'static str {
+        "Resonate"
+    }
+    fn is_modifier(&self) -> bool {
+        true
+    }
+    fn modify(&self, b: &Body, _p: &Particle, e: &Env) -> Option<ForceModification> {
+        Some(ForceModification {
+            strength: Some(1.0 + (e.t * RESONATE_OMEGA * b.spin).sin()),
+            gate: false,
+        })
+    }
+    fn apply(&self, _b: &Body, _p: &mut Particle, _e: &mut Env) {} // pure modifier
+}
+
+/// §20.3 — `spotlight`: a modifier that gates its sibling forces to an angular cone of the heading. A
+/// particle outside the cone is skipped for every token on the body this frame — `spotlight stream` is
+/// a directed beam.
+pub struct Spotlight;
+
+impl Force for Spotlight {
+    fn token(&self) -> &'static str {
+        "spotlight"
+    }
+    fn label(&self) -> &'static str {
+        "Spotlight"
+    }
+    fn is_modifier(&self) -> bool {
+        true
+    }
+    fn modify(&self, b: &Body, _p: &Particle, e: &Env) -> Option<ForceModification> {
+        // body → particle (env.vector points particle → body, so negate).
+        let dirx = -e.vector.x / e.dist;
+        let diry = -e.vector.y / e.dist;
+        Some(ForceModification {
+            strength: None,
+            gate: dirx * b.heading.x + diry * b.heading.y < SPOTLIGHT_COS,
+        })
+    }
+    fn apply(&self, _b: &Body, _p: &mut Particle, _e: &mut Env) {} // pure modifier
 }

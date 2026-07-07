@@ -1,10 +1,10 @@
 //! The force catalog — mirrors `packages/core/src/forces`.
 //!
 //! Parity target is 36 forces (9 canonical + 8 natural + 19 extended). Landed so far: the canonical
-//! nine, the four self-contained natural primitives, the eight self-contained extended forces, and the
-//! five class-[B] neighbour forces — 26. The rest wait on their subsystems (scalar grid, integrator
-//! modifier/source passes, field-line hook, plus `collide`'s pairwise impulse); see `natural.rs` /
-//! `extended.rs` for the per-force breakdown.
+//! nine, the four self-contained natural primitives, the eight self-contained extended forces, the
+//! five class-[B] neighbour forces, and the two self-modifiers (`resonate`/`spotlight`) — 28. The rest
+//! wait on their subsystems (scalar grid, cross-body `screen`, source/scatter pass, field-line hook,
+//! plus `collide`'s pairwise impulse); see `natural.rs` / `extended.rs` for the per-force breakdown.
 
 pub mod canonical;
 pub mod extended;
@@ -12,8 +12,8 @@ pub mod natural;
 
 pub use canonical::{Attract, Jet, Repel, Sink, Stream, Swirl, Tether, Viscosity, Wall};
 pub use extended::{
-    Align, Buoyancy, Cohesion, Crystallize, Gate, Hunt, Lens, Link, Pigment, Pressure, Shear, Warp,
-    Wind,
+    Align, Buoyancy, Cohesion, Crystallize, Gate, Hunt, Lens, Link, Pigment, Pressure, Resonate,
+    Shear, Spotlight, Warp, Wind,
 };
 pub use natural::{Charge, Gravity, Magnetism, Thermal};
 
@@ -60,4 +60,7 @@ pub fn register_extended_forces(reg: &mut Registry) {
     reg.force(Box::new(Pressure));
     reg.force(Box::new(Link));
     reg.force(Box::new(Hunt));
+    // modifiers — bend their sibling forces (no force of their own)
+    reg.force(Box::new(Resonate));
+    reg.force(Box::new(Spotlight));
 }

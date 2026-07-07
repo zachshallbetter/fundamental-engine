@@ -90,14 +90,19 @@ source passes** → `resonate`/`spotlight`/`screen`/`spawn`/`morph`; **net field
 - The five read-only neighbour forces: `align` (boids), `cohesion` (surface tension), `pressure` (SPH
   even-fill), `link` (Verlet distance constraint), `hunt` (two-species pursuit).
 
-**39 tests, all green** (golden, integrator, rng, stateful, natural, extended, neighbour + parity).
+**Milestone 6 — the integrator modifier pass.** ✅ 26 → **28 forces**.
+The `Force` trait gains a `modify` hook (`ForceModification { strength, gate }`). Before a body's force
+pass, its modifier tokens run: gates OR, strength factors multiply (order-independent). `resonate`
+pulses sibling strength `S(t) = S₀(1 + sin ωt)`; `spotlight` gates siblings to a heading cone.
 
-### Next (toward full parity — 10 forces remain)
+**41 tests, all green.**
+
+### Next (toward full parity — 8 forces remain)
 
 - **`collide`** — the one class-[B] force that mutates its neighbour; needs a pairwise-impulse effect.
-- **Scalar grid** → the three class-[C] forces (`diffuse`/`propagate`/`memory`).
-- **Integrator modifier + source passes** → `resonate`/`spotlight`/`screen`/`spawn`/`morph`.
-- **Net field-line hook** → `fieldflow`.
+- **Source/scatter pass** → `spawn` (mortal matter + a spawn effect), `morph` (target set + scatter).
+- **Scalar grid** → `diffuse`/`propagate`/`memory`.
+- **Cross-body `screen`** (integrator force-pass attenuation) + **net field-line hook** → `fieldflow`.
 - `solve(until_settled)` = `step()` to convergence.
 - Snapshot + causal replay (the receipts substrate).
 - The CMS-facing reading layer: scores (density/potential per body), clusters (density basins),

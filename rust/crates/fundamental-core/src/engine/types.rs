@@ -269,6 +269,15 @@ impl Env {
     }
 }
 
+/// The result of a modifier force's `modify` hook — how it bends its sibling forces this frame (§20.3).
+#[derive(Clone, Copy, Debug, Default)]
+pub struct ForceModification {
+    /// Multiplies sibling forces' strength for this particle (`resonate`).
+    pub strength: Option<f64>,
+    /// When true, skips all sibling forces on this body entirely (`spotlight` cone exclusion).
+    pub gate: bool,
+}
+
 /// A force — an independent per-frame velocity contribution. The engine never changes to add one
 /// (§4); a force is registered on a [`Registry`](super::Registry) and composed by token.
 pub trait Force: Send + Sync {
@@ -282,6 +291,18 @@ pub trait Force: Send + Sync {
     /// acceleration — first-class mass must not scale it (§21.3). Default false.
     fn kinematic(&self) -> bool {
         false
+    }
+
+    /// True if this force is a *modifier* — it contributes no force of its own (its `apply` is a
+    /// no-op); instead it bends its sibling forces via [`modify`](Force::modify). Default false.
+    fn is_modifier(&self) -> bool {
+        false
+    }
+
+    /// Modifier hook (§20.3) — run before the body's other tokens. Returns how it scales/gates the
+    /// siblings this frame, or `None` for a non-modifier. Reads only; never mutates the particle.
+    fn modify(&self, _body: &Body, _particle: &Particle, _env: &Env) -> Option<ForceModification> {
+        None
     }
 
     /// Apply this force to a free particle. Mutates the particle; reaches the world only through the

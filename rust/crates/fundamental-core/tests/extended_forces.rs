@@ -202,7 +202,7 @@ fn warp_relocates_matter_to_the_paired_throat() {
 #[test]
 fn standard_registry_has_the_ported_catalog() {
     let reg = Registry::standard();
-    assert_eq!(reg.len(), 26, "9 canonical + 4 natural + 13 extended");
+    assert_eq!(reg.len(), 28, "9 canonical + 4 natural + 15 extended");
     for tok in [
         "attract",
         "sink",
@@ -223,6 +223,8 @@ fn standard_registry_has_the_ported_catalog() {
         "pressure",
         "link",
         "hunt",
+        "resonate",
+        "spotlight",
     ] {
         assert!(reg.get(tok).is_some(), "registry is missing '{tok}'");
     }
@@ -234,7 +236,7 @@ fn standard_registry_has_the_ported_catalog() {
         "memory",
         "spawn",
         "morph",
-        "resonate",
+        "screen",
         "fieldflow",
     ] {
         assert!(

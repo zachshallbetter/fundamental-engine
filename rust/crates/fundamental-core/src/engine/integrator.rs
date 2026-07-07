@@ -128,6 +128,36 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
                 }
                 env.vector = Vec3::new(dx, dy, dz);
                 env.dist = if dist < 1.0 { 1.0 } else { dist };
+
+                // modifier pass (§20.3): a body's OWN modifier tokens (spotlight/resonate) bend its
+                // siblings — gates OR, strength factors multiply, so the composed value is
+                // order-independent. Runs before the force pass, reading the geometry set above.
+                let mut s_mul = 1.0;
+                let mut gated = false;
+                for k in 0..b.tokens.len() {
+                    let Some(f) = forces.get(&b.tokens[k]) else {
+                        continue;
+                    };
+                    if !f.is_modifier() {
+                        continue;
+                    }
+                    if let Some(m) = f.modify(b, p, env) {
+                        if let Some(s) = m.strength {
+                            s_mul *= s;
+                        }
+                        gated |= m.gate;
+                    }
+                }
+                if gated {
+                    continue; // spotlight cone excludes this particle from this body
+                }
+
+                // force pass. Scale the body's strength by the composed modifier for the applies, then
+                // restore it (the body object is shared across particles).
+                let orig_strength = b.strength;
+                if s_mul != 1.0 {
+                    b.strength = orig_strength * s_mul;
+                }
                 // iterate tokens by index so the body can be mutated (accretion) after each apply
                 // without holding an immutable borrow of `b.tokens` across the mutation.
                 for k in 0..b.tokens.len() {
@@ -135,6 +165,9 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
                         Some(f) => f,
                         None => continue,
                     };
+                    if f.is_modifier() {
+                        continue; // modifiers contribute no force of their own
+                    }
                     apply_force(f, b, p, env, inv);
                     // resolve a capture request (sink): hold the particle, grow the body, and queue a
                     // release when it saturates. Set now; the top-of-loop guard acts next frame.
@@ -146,6 +179,9 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
                             supernova.push(i);
                         }
                     }
+                }
+                if s_mul != 1.0 {
+                    b.strength = orig_strength;
                 }
             }
         }
