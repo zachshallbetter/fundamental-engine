@@ -10,7 +10,8 @@
     "preview": "astro preview",
     "test": "node --test \"src/lib/**/*.test.ts\"",
     "test:e2e": "playwright test",
-    "gen:llms": "node scripts/gen-llms.mjs"
+    "gen:llms": "node scripts/gen-llms.mjs",
+    "indexnow": "node scripts/indexnow-submit.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
