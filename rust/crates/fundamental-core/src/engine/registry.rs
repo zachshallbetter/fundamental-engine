@@ -42,13 +42,14 @@ impl Registry {
         self.forces.is_empty()
     }
 
-    /// A registry with the standard catalog registered.
-    ///
-    /// Milestone 1: the six deterministic canonical forces. The stochastic/stateful canonical forces
-    /// (jet, wall, sink) and the extended + natural sets follow.
+    /// A registry with the standard catalog registered: the canonical nine plus the ported natural +
+    /// extended forces (21 total). Each is opt-in — a body only feels a force it names in its tokens —
+    /// so a fuller registry never changes a body that doesn't ask.
     pub fn standard() -> Self {
         let mut r = Registry::new();
         crate::forces::register_core_forces(&mut r);
+        crate::forces::register_natural_forces(&mut r);
+        crate::forces::register_extended_forces(&mut r);
         r
     }
 }

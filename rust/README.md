@@ -68,13 +68,29 @@ separation) are explicitly deferred and no-op until their capability lands.
   (capture → hold → supernova release, count-conserving). **The canonical nine are complete.**
 
 Tested: RNG cross-plane parity + determinism, jet nozzle relaunch, wall bounce/spark thresholds, and
-the sink capture-and-hold / release-at-capacity cycle. **18 tests, all green.**
+the sink capture-and-hold / release-at-capacity cycle.
 
-### Next
+**Milestone 4 — natural + extended forces (self-contained set).** ✅ 9 → **21 forces**.
+- Natural (§20.10): `gravity`, `charge` (shared softened inverse-square kernel), `magnetism` (Lorentz
+  rotation, speed-preserving), `thermal` (Langevin/Box–Muller kick off the seeded rng).
+- Extended (§20.3), the class-[A] single-particle set: `lens`, `gate`, `buoyancy`, `shear`,
+  `crystallize`, `wind` (curl-noise), `pigment` (colour transport), `warp` (wormhole throat).
+- Added the state they need (`Particle.charge`/`.color`, `Body.source_mass` + warp pairing) and the
+  hex↔RGB colour helpers.
 
-- The extended + natural force sets (→ 36 forces total).
-- `solve(until_settled)` = `step()` to convergence; spatial hash for large fields.
-- Snapshot + causal replay, building on the RNG seam + effects-as-data (the receipts substrate).
+The remaining 15 forces wait on their subsystems: **neighbour query** → `collide`/`align`/`cohesion`/
+`pressure`/`link`/`hunt`; **scalar grid** → `diffuse`/`propagate`/`memory`; **integrator modifier +
+source passes** → `resonate`/`spotlight`/`screen`/`spawn`/`morph`; **net field-line hook** → `fieldflow`.
+
+**37 tests, all green** (golden, integrator, rng, stateful, natural, extended + parity/colour).
+
+### Next (toward full parity)
+
+- **Neighbour query** (spatial hash) → unlocks the six class-[B] forces.
+- **Scalar grid** → the three class-[C] forces.
+- **Integrator modifier + source passes** → `resonate`/`spotlight`/`screen`/`spawn`/`morph`.
+- `solve(until_settled)` = `step()` to convergence.
+- Snapshot + causal replay (the receipts substrate).
 - The CMS-facing reading layer: scores (density/potential per body), clusters (density basins),
   relations/recommendations (nearest-in-field).
 

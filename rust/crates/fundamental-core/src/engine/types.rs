@@ -66,6 +66,11 @@ pub struct Particle {
     /// (§6.9). While captured, the particle drifts to that body's core and skips the force pass. Valid
     /// only within a solve, where the body set is stable — the integrator clears it on release.
     pub cap: Option<usize>,
+    /// Signed charge `q`, for `charge` / `magnetism` (§20.10). 0 = neutral (ignores charge fields).
+    pub charge: f64,
+    /// Carried pigment (`#rrggbb`), conserved colour transport (§20.8). `None` until a `pigment` body
+    /// stains it.
+    pub color: Option<String>,
 }
 
 impl Default for Particle {
@@ -78,6 +83,8 @@ impl Default for Particle {
             size: 1.0,
             id: 0,
             cap: None,
+            charge: 0.0,
+            color: None,
         }
     }
 }
@@ -104,12 +111,25 @@ pub struct Body {
     pub heading: Vec3,
     /// Engaged / "on" state — widens range and boosts strength per the spec.
     pub engaged: bool,
+    /// The gravitational / charge source scalar `M ≥ 0` (§20.10). (JS `M`.) The natural inverse-square
+    /// forces are sourced by this, not `strength`.
+    pub source_mass: f64,
 
     // ── geometry ────────────────────────────────────────────────────────
     /// Box centre (world).
     pub center: Vec3,
     /// Box half-extents (world). `.x`/`.y` are the JS `hw`/`hh`.
     pub half_extents: Vec3,
+
+    // ── warp / wormhole (§22.3) ─────────────────────────────────────────
+    /// Whether the engine has resolved this warp body's paired throat. `warp` no-ops until set.
+    pub warp_has: bool,
+    /// The paired throat's world centre (JS `warpX`/`warpY`). Matter emerges just outside it.
+    pub warp_target: Vec3,
+    /// Twist applied to the relocated offset + velocity (JS `twist`).
+    pub twist: f64,
+    /// Scale applied to the emergence radius (JS `warpScale`).
+    pub warp_scale: f64,
 
     // ── feedback / density (§8) ─────────────────────────────────────────
     /// Whether this body is an active force source this frame (JS `vis`).
@@ -139,8 +159,13 @@ impl Default for Body {
             spin: 1.0,
             heading: Vec3::new(1.0, 0.0, 0.0),
             engaged: false,
+            source_mass: 1.0,
             center: Vec3::ZERO,
             half_extents: Vec3::ZERO,
+            warp_has: false,
+            warp_target: Vec3::ZERO,
+            twist: 0.0,
+            warp_scale: 1.0,
             visible: true,
             feedback: false,
             count: 0.0,
