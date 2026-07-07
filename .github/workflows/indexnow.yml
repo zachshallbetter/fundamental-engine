@@ -1,0 +1,30 @@
+# Ping IndexNow (Bing, Yandex, Seznam, …) after every successful PRODUCTION deploy,
+# so published changes get re-crawled promptly instead of waiting for the next crawl.
+# The submitter (apps/site/scripts/indexnow-submit.mjs) fetches the LIVE sitemap and
+# POSTs the URL list with the public ownership key — no secrets, no build step.
+#
+# Trigger: Vercel reports a GitHub deployment_status; we act only on a successful
+# Production deployment (previews and failures are ignored). This fires AFTER the
+# deploy is live, so the sitemap the script reads is the just-published one.
+name: IndexNow
+
+on:
+  deployment_status:
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: true
+
+jobs:
+  submit:
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment_status.environment == 'Production'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Submit sitemap URLs to IndexNow
+        run: node apps/site/scripts/indexnow-submit.mjs

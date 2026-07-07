@@ -12,11 +12,15 @@ export default defineConfig({
   integrations: [
     // sitemap-index.xml + per-chunk sitemaps; referenced from public/robots.txt.
     // The redirect stubs below carry noindex — keep them out of the sitemap too.
+    // /design and /resting-tuner are internal reference/prototype surfaces, not
+    // public docs — they carry noindex and stay out of the sitemap (in lockstep).
     sitemap({
       filter: (page) =>
         !page.includes('/reference/') &&
         !page.includes('/research/') &&
-        !page.includes('/docs/guides/vanilla/'),
+        !page.includes('/docs/guides/vanilla/') &&
+        !page.includes('/design/') &&
+        !page.includes('/resting-tuner/'),
     }),
   ],
   // The /writings datastore (and the research papers under it) carry rich markdown:
