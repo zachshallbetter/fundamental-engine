@@ -1,7 +1,7 @@
 //! Designed extended forces (§20.3) — mirrors `packages/core/src/forces/extended.ts`.
 //!
 //! Like the canonical nine these are *designed* (finite range, soft falloff), but opt-in enrichments.
-//! Ported here: the class-[A] forces that act on a single particle from the per-frame `env`, needing no
+//! Ported here: the class-\[A\] forces that act on a single particle from the per-frame `env`, needing no
 //! neighbour/grid/field/modifier subsystem — `lens`, `gate`, `buoyancy`, `shear`, `crystallize`,
 //! `wind`, `pigment`, `warp`.
 //!

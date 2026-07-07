@@ -1,4 +1,4 @@
-//! A uniform-grid spatial hash for neighbour queries (§20.1 class [B]) — mirrors
+//! A uniform-grid spatial hash for neighbour queries (§20.1 class \[B\]) — mirrors
 //! `packages/core/src/engine/spatial-hash.ts`. Makes particle↔particle forces O(n·k) instead of O(n²).
 //!
 //! The Rust plane builds a **frame-start snapshot**: at the top of each [`step`](super::step) the

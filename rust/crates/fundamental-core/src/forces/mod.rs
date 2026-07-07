@@ -2,7 +2,7 @@
 //!
 //! Parity target is 36 forces (9 canonical + 8 natural + 19 extended). Landed so far: the canonical
 //! nine, the four self-contained natural primitives, the eight self-contained extended forces, the
-//! five class-[B] neighbour forces, and the two self-modifiers (`resonate`/`spotlight`) — 28. The rest
+//! five class-\[B\] neighbour forces, and the two self-modifiers (`resonate`/`spotlight`) — 28. The rest
 //! wait on their subsystems (scalar grid, cross-body `screen`, source/scatter pass, field-line hook,
 //! plus `collide`'s pairwise impulse); see `natural.rs` / `extended.rs` for the per-force breakdown.
 
@@ -42,7 +42,7 @@ pub fn register_natural_forces(reg: &mut Registry) {
     reg.force(Box::new(Thermal));
 }
 
-/// Register the ported extended forces (§20.3) — the class-[A] single-particle set plus the class-[B]
+/// Register the ported extended forces (§20.3) — the class-\[A\] single-particle set plus the class-\[B\]
 /// neighbour forces (over the frame-start snapshot). Opt-in, alongside the nine.
 pub fn register_extended_forces(reg: &mut Registry) {
     // class [A] — single particle

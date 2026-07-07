@@ -57,7 +57,7 @@ pub struct Particle {
     pub velocity: Vec3,
     /// Inertial mass — 1 = nominal (§21).
     pub mass: f64,
-    /// ∈ [0,1]; drives colour (toward accent), size, and glow (§2.2).
+    /// `∈ [0,1]`; drives colour (toward accent), size, and glow (§2.2).
     pub heat: f64,
     /// Render-radius basis.
     pub size: f64,
@@ -210,13 +210,13 @@ pub struct Env {
     // ── the force→world seam ────────────────────────────────────────────
     /// The seeded random source every stochastic draw flows through (jet cone, wander, spawn).
     pub rng: Rng,
-    /// Effects emitted this step (sparks). The integrator clears it at the top of each [`step`]; the
-    /// caller drains it after for rendering/receipts. (`step` = [`super::step`].)
+    /// Effects emitted this step (sparks). The integrator clears it at the top of each
+    /// [`step`](super::step); the caller drains it after for rendering/receipts.
     pub effects: Vec<Effect>,
     /// Set by a force (`sink`) to request that the integrator capture the current particle into the
     /// current body. Read + reset by the integrator immediately after each force apply.
     pub capture_request: bool,
-    /// The frame-start neighbour snapshot (§20.1 class [B]). Rebuilt by the integrator each step when a
+    /// The frame-start neighbour snapshot (§20.1 class \[B\]). Rebuilt by the integrator each step when a
     /// neighbour force is in play; queried via [`neighbors`](Env::neighbors).
     pub neighborhood: Neighborhood,
 }
@@ -261,7 +261,7 @@ impl Env {
         self.capture_request = true;
     }
 
-    /// Frame-start neighbour samples within radius `r` of `at` (§20.1 class [B]). Includes the caller's
+    /// Frame-start neighbour samples within radius `r` of `at` (§20.1 class \[B\]). Includes the caller's
     /// own sample (at distance 0); neighbour forces skip self via their `d < 1e-6` / species guards.
     #[inline]
     pub fn neighbors(&self, at: Vec3, r: f64) -> Vec<NeighborSample> {

@@ -3,7 +3,7 @@
 
 use super::{clamp, Vec3};
 
-/// Fallback accent blue (RGB ∈ [0,255]).
+/// Fallback accent blue (RGB `∈ [0,255]`).
 pub const DEFAULT_ACCENT: Vec3 = Vec3::new(77.0, 163.0, 255.0);
 
 /// Parse `#rrggbb` or `#rgb` → RGB, falling back to [`DEFAULT_ACCENT`].

@@ -3,6 +3,18 @@
 The Rust port of the Fundamental relational field engine. A fourth plane alongside the JS reference
 core (`packages/core`) and the Swift/Kotlin ports, held to the **same** cross-plane conformance golden.
 
+## Documentation
+
+- **[docs/architecture.md](docs/architecture.md)** — purpose, design commitments, module map, the tick,
+  and the two architectural bets (effects-as-data, frame-start neighbour snapshot).
+- **[docs/reference.md](docs/reference.md)** — the core types, the full 36-force catalog with porting
+  status, the subsystems, and conformance.
+- **[docs/guide.md](docs/guide.md)** — a practical tour: build a field, compose forces, determinism, and
+  reading results back (the CMS shape).
+- **`cargo run --example ranking`** — a runnable "rank content by field gravity" demo.
+- **`cargo doc --no-deps --open`** — the generated API docs (every type + module is documented).
+- Roadmap: [epic #1036](https://github.com/zachshallbetter/fundamental-engine/issues/1036).
+
 ## What makes the Rust plane different
 
 The DOM, Swift, and Kotlin planes bind the field to a **UI host** — their `Body` wraps an element
