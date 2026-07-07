@@ -31,5 +31,5 @@ pub mod engine;
 pub mod forces;
 pub mod math;
 
-pub use engine::{Body, Env, Force, Formation, Particle, Registry};
+pub use engine::{step, Body, Env, FieldStore, Force, Formation, Particle, Registry};
 pub use math::Vec3;

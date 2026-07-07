@@ -87,6 +87,16 @@ pub struct Body {
     /// Box half-extents (world). `.x`/`.y` are the JS `hw`/`hh`.
     pub half_extents: Vec3,
 
+    // ── feedback / density (§8) ─────────────────────────────────────────
+    /// Whether this body is an active force source this frame (JS `vis`).
+    pub visible: bool,
+    /// Whether this body samples local density for two-way feedback.
+    pub feedback: bool,
+    /// Per-frame density accumulator — how much matter is near this body. Zeroed at the top of
+    /// every [`step`](super::step); the raw signal the CMS "score" layer reads (importance ≈ how
+    /// much of the field a body gathers). (JS `count`.)
+    pub count: f64,
+
     // ── accretion state ─────────────────────────────────────────────────
     pub accreted: u32,
 
@@ -107,6 +117,9 @@ impl Default for Body {
             engaged: false,
             center: Vec3::ZERO,
             half_extents: Vec3::ZERO,
+            visible: true,
+            feedback: false,
+            count: 0.0,
             accreted: 0,
             tint: None,
         }
