@@ -25,6 +25,9 @@ pub const HEAT_DECAY: f64 = 0.972;
 /// Toroidal-wrap margin outside the field bounds. (JS `EDGE`.)
 pub const EDGE: f64 = 10.0;
 
+/// Tokens whose forces read the neighbour snapshot — the integrator only rebuilds it when one is used.
+const NEIGHBOR_TOKENS: [&str; 5] = ["align", "cohesion", "pressure", "link", "hunt"];
+
 /// Apply one force to a particle, honouring first-class mass (§21.3): an *additive* force's velocity
 /// change is scaled by `1/m` (a = F/m), while a `kinematic` force (reflection/rotation/relaunch)
 /// sets velocity outright and is left unscaled. `inv == 1` (unit mass) is the identity path either way.
@@ -59,6 +62,18 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
     let dt = env.dt;
     if dt == 0.0 {
         return; // motion frozen (§18); counts already zeroed
+    }
+
+    // Rebuild the neighbour snapshot only when a class-[B] force is actually in play — most fields use
+    // none, and the rebuild is O(n). (Frame-start snapshot: see `spatial_hash`.)
+    let needs_neighbors = bodies.iter().any(|b| {
+        b.visible
+            && b.tokens
+                .iter()
+                .any(|t| NEIGHBOR_TOKENS.contains(&t.as_str()))
+    });
+    if needs_neighbors {
+        env.neighborhood.rebuild(&store.particles);
     }
 
     let (w, h, d) = (env.volume.x, env.volume.y, env.volume.z);

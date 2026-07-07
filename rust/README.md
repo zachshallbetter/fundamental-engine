@@ -82,13 +82,22 @@ The remaining 15 forces wait on their subsystems: **neighbour query** → `colli
 `pressure`/`link`/`hunt`; **scalar grid** → `diffuse`/`propagate`/`memory`; **integrator modifier +
 source passes** → `resonate`/`spotlight`/`screen`/`spawn`/`morph`; **net field-line hook** → `fieldflow`.
 
-**37 tests, all green** (golden, integrator, rng, stateful, natural, extended + parity/colour).
+**Milestone 5 — the neighbour query + class-[B] forces.** ✅ 21 → **26 forces**.
+- A uniform-grid **spatial hash** (`Neighborhood`) — a frame-start snapshot of the pool, rebuilt each
+  step only when a class-[B] force is in play. Because a particle integrates at the end of its own
+  iteration, its snapshot sample sits at distance 0 when it's processed, so the forces' `d < 1e-6`
+  guards skip self exactly as JS's identity check does.
+- The five read-only neighbour forces: `align` (boids), `cohesion` (surface tension), `pressure` (SPH
+  even-fill), `link` (Verlet distance constraint), `hunt` (two-species pursuit).
 
-### Next (toward full parity)
+**39 tests, all green** (golden, integrator, rng, stateful, natural, extended, neighbour + parity).
 
-- **Neighbour query** (spatial hash) → unlocks the six class-[B] forces.
-- **Scalar grid** → the three class-[C] forces.
+### Next (toward full parity — 10 forces remain)
+
+- **`collide`** — the one class-[B] force that mutates its neighbour; needs a pairwise-impulse effect.
+- **Scalar grid** → the three class-[C] forces (`diffuse`/`propagate`/`memory`).
 - **Integrator modifier + source passes** → `resonate`/`spotlight`/`screen`/`spawn`/`morph`.
+- **Net field-line hook** → `fieldflow`.
 - `solve(until_settled)` = `step()` to convergence.
 - Snapshot + causal replay (the receipts substrate).
 - The CMS-facing reading layer: scores (density/potential per body), clusters (density basins),

@@ -3,6 +3,7 @@
 //! The physics primitives: [`Body`] (a force source), [`Particle`] (a free agent), [`Env`] (the
 //! per-apply environment the integrator hands each force), and the [`Force`] trait.
 
+use super::spatial_hash::{NeighborSample, Neighborhood};
 use crate::math::Vec3;
 use crate::record::Rng;
 
@@ -68,6 +69,8 @@ pub struct Particle {
     pub cap: Option<usize>,
     /// Signed charge `q`, for `charge` / `magnetism` (§20.10). 0 = neutral (ignores charge fields).
     pub charge: f64,
+    /// Species tag, for `hunt` and matter tagging (§20.3). 0 = the default species.
+    pub species: i32,
     /// Carried pigment (`#rrggbb`), conserved colour transport (§20.8). `None` until a `pigment` body
     /// stains it.
     pub color: Option<String>,
@@ -84,6 +87,7 @@ impl Default for Particle {
             id: 0,
             cap: None,
             charge: 0.0,
+            species: 0,
             color: None,
         }
     }
@@ -212,6 +216,9 @@ pub struct Env {
     /// Set by a force (`sink`) to request that the integrator capture the current particle into the
     /// current body. Read + reset by the integrator immediately after each force apply.
     pub capture_request: bool,
+    /// The frame-start neighbour snapshot (§20.1 class [B]). Rebuilt by the integrator each step when a
+    /// neighbour force is in play; queried via [`neighbors`](Env::neighbors).
+    pub neighborhood: Neighborhood,
 }
 
 impl Default for Env {
@@ -230,6 +237,7 @@ impl Default for Env {
             rng: Rng::default(),
             effects: Vec::new(),
             capture_request: false,
+            neighborhood: Neighborhood::default(),
         }
     }
 }
@@ -251,6 +259,13 @@ impl Env {
     #[inline]
     pub fn request_capture(&mut self) {
         self.capture_request = true;
+    }
+
+    /// Frame-start neighbour samples within radius `r` of `at` (§20.1 class [B]). Includes the caller's
+    /// own sample (at distance 0); neighbour forces skip self via their `d < 1e-6` / species guards.
+    #[inline]
+    pub fn neighbors(&self, at: Vec3, r: f64) -> Vec<NeighborSample> {
+        self.neighborhood.near(at, r)
     }
 }
 

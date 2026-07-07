@@ -10,7 +10,7 @@
 //! `spotlight`, `screen`; source/scatter state → `spawn`, `morph`; net field-line hook → `fieldflow`.
 
 use crate::engine::{Body, Env, Force, Particle};
-use crate::math::mix_hex;
+use crate::math::{mix_hex, Vec3};
 
 const FREEZE: f64 = 0.5; // heat below which crystallize solidifies matter
 const LATTICE: f64 = 32.0; // crystallize lattice cell, px
@@ -236,5 +236,201 @@ impl Force for Warp {
         p.velocity.x = vx * cs - vy * sn;
         p.velocity.y = vx * sn + vy * cs;
         p.heat = p.heat.max(0.6);
+    }
+}
+
+// ── class-[B] neighbour forces (§20.3, over the frame-start neighbour snapshot) ───────────────────
+
+const COHESION_REST: f64 = 0.5; // cohesion r₀ as a fraction of r₁
+const PRESSURE_REST: f64 = 0.5; // pressure rest density ρ₀
+const LINK_REST: f64 = 0.35; // link rest length as a fraction of the bond radius
+
+/// §20.3 — `align`: steer velocity toward the mean neighbour heading (boids alignment), preserving
+/// speed; falls back to the body heading when alone. `strength` is the steer gain.
+pub struct Align;
+
+impl Force for Align {
+    fn token(&self) -> &'static str {
+        "align"
+    }
+    fn label(&self) -> &'static str {
+        "Align"
+    }
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if e.dist >= b.range {
+            return;
+        }
+        let speed = p.velocity.length(); // steer toward ĥ·|v| → turns without speeding up
+        let k = b.strength;
+        let (mut hx, mut hy, mut hz) = (b.heading.x, b.heading.y, 0.0); // [A] default: body heading
+        let (mut sx, mut sy, mut sz) = (0.0, 0.0, 0.0);
+        for n in e.neighbors(p.position, b.range) {
+            let ns = n.vel.length();
+            if ns > 1e-6 {
+                sx += n.vel.x / ns; // sum the neighbours' unit velocities
+                sy += n.vel.y / ns;
+                sz += n.vel.z / ns;
+            }
+        }
+        let sm = (sx * sx + sy * sy + sz * sz).sqrt();
+        if sm > 1e-6 {
+            hx = sx / sm; // [B]: the mean neighbour heading
+            hy = sy / sm;
+            hz = sz / sm;
+        }
+        p.velocity.x += (hx * speed - p.velocity.x) * k;
+        p.velocity.y += (hy * speed - p.velocity.y) * k;
+        if hz != 0.0 || p.velocity.z != 0.0 {
+            p.velocity.z += (hz * speed - p.velocity.z) * k;
+        }
+    }
+}
+
+/// §20.3 — `cohesion`: short-range pressure + mid-range pull (surface tension). Around a rest distance
+/// `r₀` each neighbour pushes `p` away when closer, draws it in when between `r₀` and the range `r₁`.
+pub struct Cohesion;
+
+impl Force for Cohesion {
+    fn token(&self) -> &'static str {
+        "cohesion"
+    }
+    fn label(&self) -> &'static str {
+        "Cohesion"
+    }
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if e.dist >= b.range {
+            return;
+        }
+        let r1 = b.range;
+        let r0 = r1 * COHESION_REST;
+        let k = b.strength;
+        for n in e.neighbors(p.position, r1) {
+            let delta = n.pos - p.position;
+            let dn = delta.length();
+            if dn < 1e-6 {
+                continue; // self / coincident
+            }
+            let u = delta * (1.0 / dn);
+            if dn < r0 {
+                let f = (k * (r0 - dn)) / r0; // pressure: push apart
+                p.velocity -= u * f;
+            } else {
+                let f = (k * (dn - r0)) / (r1 - r0); // cohesion: pull toward the skin
+                p.velocity += u * f;
+            }
+        }
+    }
+}
+
+/// §20.3 — `pressure`: SPH-style density relaxation → an incompressible even-fill. Each particle
+/// estimates local density with a smooth kernel and pushes down the gradient when above a rest density.
+pub struct Pressure;
+
+impl Force for Pressure {
+    fn token(&self) -> &'static str {
+        "pressure"
+    }
+    fn label(&self) -> &'static str {
+        "Pressure"
+    }
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if e.dist >= b.range {
+            return;
+        }
+        let h = b.range;
+        let k = b.strength;
+        let ns = e.neighbors(p.position, h);
+        // first pass: local density ρ = Σ (1 − d/h)²
+        let mut rho = 0.0;
+        for n in &ns {
+            let d = (n.pos - p.position).length();
+            if d < h {
+                rho += (1.0 - d / h).powi(2);
+            }
+        }
+        let over = rho - PRESSURE_REST;
+        if over <= 0.0 {
+            return; // under-dense → an even fill only relaxes crowding
+        }
+        // second pass: push away from each neighbour, weighted by how crowded the spot is
+        for n in &ns {
+            let delta = p.position - n.pos; // away-from-crowd direction
+            let d = delta.length();
+            if d < 1e-6 || d >= h {
+                continue;
+            }
+            let f = (k * over * (1.0 - d / h)) / d;
+            p.velocity += delta * f;
+        }
+    }
+}
+
+/// §20.3 — `link`: a Verlet distance constraint holding a rest length, so a dense blob ropes/drapes.
+/// Each particle applies half the correction toward each partner; the partner does its half on its turn.
+pub struct Link;
+
+impl Force for Link {
+    fn token(&self) -> &'static str {
+        "link"
+    }
+    fn label(&self) -> &'static str {
+        "Link"
+    }
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if e.dist >= b.range {
+            return;
+        }
+        let r = b.range;
+        let rest = r * LINK_REST;
+        let k = b.strength;
+        for n in e.neighbors(p.position, r) {
+            let delta = n.pos - p.position;
+            let d = delta.length();
+            if d < 1e-6 {
+                continue;
+            }
+            let err = d - rest; // +ve → too far (pull together); −ve → too close (push apart)
+            let f = 0.5 * k * (err / rest); // half the Verlet correction
+            p.velocity += delta * (f / d);
+        }
+    }
+}
+
+/// §20.3 — `hunt`: a two-species pursuit. Predators (species 0) accelerate toward the nearest particle
+/// of another species; prey (species ≠ 0) flee the nearest predator. `strength` is the seek/flee gain.
+pub struct Hunt;
+
+impl Force for Hunt {
+    fn token(&self) -> &'static str {
+        "hunt"
+    }
+    fn label(&self) -> &'static str {
+        "Hunt"
+    }
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if e.dist >= b.range {
+            return;
+        }
+        let me = p.species;
+        // the nearest neighbour of a *different* species — the target to chase or escape.
+        let mut target: Option<Vec3> = None;
+        let mut best_d2 = f64::INFINITY;
+        for n in e.neighbors(p.position, b.range) {
+            if n.species == me {
+                continue;
+            }
+            let d2 = (n.pos - p.position).length_sq();
+            if d2 < best_d2 {
+                best_d2 = d2;
+                target = Some(n.pos);
+            }
+        }
+        let Some(t) = target else {
+            return; // nothing of the other species in reach
+        };
+        let delta = t - p.position;
+        let d = delta.length().max(1.0);
+        let dir = if me == 0 { 1.0 } else { -1.0 }; // predator seeks, prey flees
+        p.velocity += delta * (b.strength * dir / d);
     }
 }
