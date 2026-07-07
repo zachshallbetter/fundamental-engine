@@ -141,26 +141,26 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
         {families.map((fam) => (
           <>
             <span class="sub">{fam.label}</span>
-            <div class="grid cols-3 swatches">
+            <ul class="grid cols-3 swatches">
               {inFamily(fam.key).map((f) => (
-                <article class="card swatch">
+                <li class="card swatch">
                   <div class="band" style={`background:${f.color}`}><i class={`fg fg-${f.token}`} style="--fc:rgba(0,0,0,0.6)" /></div>
                   <div class="sw-meta"><b>{cap(f.label)}</b><code>{f.color}</code>
                     <span>{DISCIPLINE[f.token] ?? f.family}</span></div>
-                </article>
+                </li>
               ))}
-            </div>
+            </ul>
           </>
         ))}
         <span class="sub">Presets</span>
-        <div class="grid cols-3 swatches">
+        <ul class="grid cols-3 swatches">
           {MANUAL_PRESETS.map((p) => (
-            <article class="card swatch">
+            <li class="card swatch">
               <div class="band" style={`background:${PRESET_COLORS[p.name]}`}><i class={`fgp fgp-${p.name}`} style="--fc:rgba(0,0,0,0.6)" /></div>
               <div class="sw-meta"><b>{cap(p.name)}</b><code>{PRESET_COLORS[p.name]}</code><span>{p.tokens.length} forces</span></div>
-            </article>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
       <!-- SURFACES + INK -->
@@ -169,26 +169,26 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
           <p class="sec-desc">Color is an accent, never a flood — pure hue lives on the mark and the
             glyph; surfaces stay deep, ink stays legible.</p></div>
         <span class="sub">Surfaces</span>
-        <div class="grid cols-5 swatches">
-          {surfaces.map((s) => (<article class="card swatch"><div class="band sm" style={`background:${s.v}; box-shadow:inset 0 0 0 1px var(--line)`} /><div class="sw-meta"><b>{s.n}</b><code>{s.v}</code></div></article>)) }
-        </div>
+        <ul class="grid cols-5 swatches">
+          {surfaces.map((s) => (<li class="card swatch"><div class="band sm" style={`background:${s.v}; box-shadow:inset 0 0 0 1px var(--line)`} /><div class="sw-meta"><b>{s.n}</b><code>{s.v}</code></div></li>)) }
+        </ul>
         <span class="sub">Ink</span>
-        <div class="grid cols-5 swatches">
-          {ink.map((s) => (<article class="card swatch"><div class="band sm" style={`background:${s.v}`} /><div class="sw-meta"><b>{s.n}</b><code>{s.v}</code></div></article>)) }
-        </div>
+        <ul class="grid cols-5 swatches">
+          {ink.map((s) => (<li class="card swatch"><div class="band sm" style={`background:${s.v}`} /><div class="sw-meta"><b>{s.n}</b><code>{s.v}</code></div></li>)) }
+        </ul>
         <span class="sub">Spacing — 4px scale</span>
         <div class="frame canvas spacing">
           {space.map((v) => (<div class="sp"><div class="box" style={`width:${v}px;height:${v}px`} /><code>{v}</code></div>)) }
         </div>
         <div class="grid cols-2">
-          <div><span class="sub">Radii</span><div class="grid cols-5 swatches">
-            {radii.map((r) => (<article class="card swatch"><div class="band sm rad" style={`border-radius:${r.v === '999px' ? '12px' : r.v}; background:var(--accent-soft); box-shadow:inset 0 0 0 1px var(--accent)`} /><div class="sw-meta"><b>{r.n}</b><code>{r.v}</code></div></article>)) }
-          </div></div>
-          <div><span class="sub">Elevation</span><div class="grid cols-3 swatches">
-            <article class="card swatch"><div class="band sm" style="background:var(--bg-card); box-shadow:var(--shadow-md)" /><div class="sw-meta"><b>Resting</b></div></article>
-            <article class="card swatch"><div class="band sm" style="background:var(--bg-card); box-shadow:var(--shadow-lg)" /><div class="sw-meta"><b>Raised</b></div></article>
-            <article class="card swatch"><div class="band sm" style="background:var(--bg-card); box-shadow:0 0 30px -6px var(--accent)" /><div class="sw-meta"><b>Charged</b></div></article>
-          </div></div>
+          <div><span class="sub">Radii</span><ul class="grid cols-5 swatches">
+            {radii.map((r) => (<li class="card swatch"><div class="band sm rad" style={`border-radius:${r.v === '999px' ? '12px' : r.v}; background:var(--accent-soft); box-shadow:inset 0 0 0 1px var(--accent)`} /><div class="sw-meta"><b>{r.n}</b><code>{r.v}</code></div></li>)) }
+          </ul></div>
+          <div><span class="sub">Elevation</span><ul class="grid cols-3 swatches">
+            <li class="card swatch"><div class="band sm" style="background:var(--bg-card); box-shadow:var(--shadow-md)" /><div class="sw-meta"><b>Resting</b></div></li>
+            <li class="card swatch"><div class="band sm" style="background:var(--bg-card); box-shadow:var(--shadow-lg)" /><div class="sw-meta"><b>Raised</b></div></li>
+            <li class="card swatch"><div class="band sm" style="background:var(--bg-card); box-shadow:0 0 30px -6px var(--accent)" /><div class="sw-meta"><b>Charged</b></div></li>
+          </ul></div>
         </div>
       </section>
 
@@ -434,9 +434,9 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
         </div>
 
         <span class="sub">Motion</span>
-        <div class="grid cols-4 swatches">
-          {motions.map((m) => (<article class="card mo"><b>{m.n}</b><code>{m.d}</code><span>{m.note}</span></article>)) }
-        </div>
+        <ul class="grid cols-4 swatches">
+          {motions.map((m) => (<li class="card mo"><b>{m.n}</b><code>{m.d}</code><span>{m.note}</span></li>)) }
+        </ul>
         <p class="ease-note">Easing: <code>cubic-bezier(0.16, 1, 0.3, 1)</code> — everywhere.</p>
       </section>
 
@@ -673,6 +673,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   .voice ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
   .voice li { color: var(--text-2); font-size: 0.98rem; }
 
+  ul.swatches { list-style: none; margin: 0; padding: 0; }
   .swatches .card.swatch { padding: 0; overflow: hidden; }
   .band { position: relative; height: 88px; display: grid; place-items: end; padding: 0.5rem; }
   .band.sm { height: 60px; }

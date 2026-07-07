@@ -69,6 +69,95 @@ html[data-field='on'] .hero-antimass:hover {
   padding: clamp(3.5rem, 9vh, 6.5rem) 0;
   scroll-margin-top: 84px;
 }
+
+/* ── The wedge (lp-ai): text left, a live claims field right ─────────────────────── */
+.lp-ai-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: center;
+}
+.lp-ai-grid .lp-col {
+  min-width: 0;
+}
+.wedge-field {
+  min-width: 0;
+}
+.wf-plane {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  min-height: 260px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background:
+    radial-gradient(120% 90% at 22% 26%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 60%),
+    color-mix(in srgb, var(--bg, #04050a) 55%, transparent);
+  overflow: hidden;
+}
+/* each chip is a real field body, placed at its authored --x/--y; --conf is the authored
+   confidence (weight), --d is the LIVE field density the engine writes back (glow). */
+.claim {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%) scale(calc(0.9 + var(--conf) * 0.35));
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.32rem 0.6rem;
+  border-radius: 999px;
+  font-family: var(--mono);
+  white-space: nowrap;
+  /* confidence → weight + presence; the shaky claim literally reads faint */
+  opacity: calc(0.42 + var(--conf) * 0.58);
+  border: 1px solid color-mix(in srgb, var(--claim-c, var(--accent)) calc(30% + var(--conf) * 45%), var(--line));
+  background: color-mix(in srgb, var(--claim-c, var(--accent)) calc(6% + var(--conf) * 10%), transparent);
+  color: color-mix(in srgb, var(--text) calc(55% + var(--conf) * 45%), var(--text-3));
+  /* the LIVE reading: field density (--d, 0..1) the body accretes drives the halo — a
+     well-supported claim gathers field and glows; a lone one stays dim. */
+  box-shadow: 0 0 calc(var(--d, 0) * 22px) color-mix(in srgb, var(--claim-c, var(--accent)) calc(var(--d, 0) * 60%), transparent);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.claim b {
+  font-size: 0.66rem;
+  font-weight: calc(500 + var(--conf) * 300);
+  letter-spacing: 0.02em;
+}
+.claim i {
+  font-style: normal;
+  font-size: 0.58rem;
+  color: color-mix(in srgb, var(--claim-c, var(--accent)) 80%, var(--text-3));
+  opacity: 0.9;
+}
+.claim-hi {
+  --claim-c: var(--accent, #4da3ff);
+}
+.claim-mid {
+  --claim-c: #a78bfa;
+}
+.claim-lo {
+  --claim-c: #f0628e;
+}
+.wf-legend {
+  margin: 0.8rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  text-align: center;
+}
+.wf-legend .wf-k {
+  color: var(--text-3);
+}
+@media (max-width: 860px) {
+  .lp-ai-grid {
+    grid-template-columns: 1fr;
+  }
+  .wedge-field {
+    max-width: 480px;
+  }
+}
 /* Section break: a soft centred hairline that fades out at the edges instead of a hard full-bleed
    rule — it reads as a seam in the field, not a divider drawn on top of it. */
 .lp::before {
@@ -517,6 +606,21 @@ html[data-field='on'] .hero-antimass:hover {
 }
 .lp-engine-gate .lp-lede {
   margin-bottom: 1.6rem;
+}
+/* Two columns: the engine claim + CTAs left, the live force carousel right. */
+.lp-engine-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+  gap: 2.6rem 3.4rem;
+  align-items: center;
+}
+.lp-engine-col {
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .lp-engine-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {

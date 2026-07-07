@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "pnpm --filter \"@fundamental-engine/*\" build",
     "dev": "astro dev",
     "build": "node scripts/gen-llms.mjs && astro build && pagefind --site dist",
     "preview": "astro preview",
     "test": "node --test \"src/lib/**/*.test.ts\"",
     "test:e2e": "playwright test",
-    "gen:llms": "node scripts/gen-llms.mjs"
+    "gen:llms": "node scripts/gen-llms.mjs",
+    "indexnow": "node scripts/indexnow-submit.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

@@ -8,14 +8,27 @@ interface Props {
   title?: string;
   description?: string;
   ogImage?: string;
+  /** override the OG image alt (defaults to the title). */
+  ogImageAlt?: string;
+  /** robots directive — pass 'noindex, follow' for redirect stubs / thin pages. */
+  robots?: string;
+  /** the OG type — 'article' on writing pages, 'website' elsewhere. */
+  ogType?: string;
+  /** page-specific Schema.org JSON-LD (object or array), emitted alongside the site WebSite graph. */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 const {
   title = 'Fundamental — a reciprocal DOM-physics field',
   description = "Fundamental — elements bend the field; the field's density bends them back. A medium your interface lives inside, not a backdrop it sits on.",
   ogImage = '/og.jpg',
+  ogImageAlt,
+  robots = 'index, follow',
+  ogType = 'website',
+  jsonLd,
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://fundamental-engine.com').href;
 const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.com').href;
+const pageJsonLd = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || Astro.url.pathname.endsWith('/eli5/');
 ---
 
@@ -31,22 +44,30 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="author" content="Zach Shallbetter" />
+    <meta name="robots" content={robots} />
     <link rel="canonical" href={canonical} />
+    <link rel="alternate" type="application/rss+xml" title="Fundamental — Writings" href="/rss.xml" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <meta name="theme-color" content="#04050a" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content="Fundamental" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:alt" content={ogImageAlt ?? title} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={ogImageAlt ?? title} />
+    <meta name="twitter:site" content="@usefundamental" />
+    <meta name="twitter:creator" content="@zachshallbetter" />
     <!-- self-hosted fonts (perf: no third-party request; prerequisite for glyph-outline
          generation — scripts/gen-contours.mjs parses the same family). display=swap in
          /fonts/fonts.css means text paints in fallback fonts immediately. -->
@@ -62,9 +83,39 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
         url: 'https://fundamental-engine.com/',
         description:
           'A platform-native relational field runtime — on the web, elements become bodies in an invisible physics field that bends them back.',
-        author: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
+        sameAs: [
+          'https://github.com/zachshallbetter/fundamental-engine',
+          'https://x.com/usefundamental',
+          'https://www.npmjs.com/org/fundamental-engine',
+        ],
+        author: {
+          '@type': 'Person',
+          name: 'Zach Shallbetter',
+          url: 'https://zachshallbetter.com',
+          sameAs: [
+            'https://zachshallbetter.com',
+            'https://x.com/zachshallbetter',
+            'https://github.com/zachshallbetter',
+          ],
+        },
+        publisher: {
+          '@type': 'Person',
+          name: 'Zach Shallbetter',
+          url: 'https://zachshallbetter.com',
+          sameAs: [
+            'https://zachshallbetter.com',
+            'https://x.com/zachshallbetter',
+            'https://github.com/zachshallbetter',
+          ],
+        },
       })}
     />
+    {/* page-specific structured data (SoftwareApplication on home, BreadcrumbList on docs, etc.) */}
+    {
+      pageJsonLd.map((ld) => (
+        <script type="application/ld+json" is:inline set:html={JSON.stringify(ld)} />
+      ))
+    }
 
     <!-- client-side navigation: no full reload, so the field below runs continuously -->
     <ClientRouter />

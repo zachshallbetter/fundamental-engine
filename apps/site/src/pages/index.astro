@@ -4,7 +4,9 @@ import SiteNav from "../components/SiteNav.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import ManualHero from "../components/ManualHero.astro";
 import Button from "../components/ui/Button.astro";
+import ForceCarousel from "../components/home/ForceCarousel.astro";
 import { MANUAL_FORCES } from "@fundamental-engine/core";
+import { currentVersion } from "../lib/changelog";
 import "../styles/manual.css";
 import "../styles/force-glyphs.css";
 import "../styles/landing.css";
@@ -30,14 +32,47 @@ const ASKS = [
   { title: 'Best way to debounce a resize observer?', meta: '1d · 7▲', urgency: 0.46 },
   { title: 'Preferred naming for boolean props?', meta: '4d · 2▲', urgency: 0.24 },
 ];
+
+// Product structured data — Fundamental is a dev library, so SoftwareApplication is the right
+// schema (richer than the site-wide WebSite graph). softwareVersion tracks the changelog so it
+// never goes stale.
+const softwareLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Fundamental',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Web, iOS, macOS, Android',
+  description:
+    'A platform-native relational field runtime — elements become bodies in an invisible physics field that measures importance, attention, and relationships, then writes them back as CSS variables and agent-readable queries.',
+  url: 'https://fundamental-engine.com',
+  softwareVersion: currentVersion(),
+  author: {
+    '@type': 'Person',
+    name: 'Zach Shallbetter',
+    url: 'https://zachshallbetter.com',
+    sameAs: [
+      'https://zachshallbetter.com',
+      'https://x.com/zachshallbetter',
+      'https://github.com/zachshallbetter',
+    ],
+  },
+  sameAs: [
+    'https://github.com/zachshallbetter/fundamental-engine',
+    'https://x.com/usefundamental',
+    'https://www.npmjs.com/org/fundamental-engine',
+  ],
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  license: 'https://opensource.org/licenses/MIT',
+};
 ---
 
 <Base
   title="Fundamental — a readable behavior layer for host objects"
   description="Fundamental is a readable behavior layer for host objects. Add a data-* attribute and the runtime turns an element, record, or view into a body in a shared field, then writes importance, attention, and relationships back as --field-* variables you style with — and exposes the same state to agents via field.query(). The DOM is the first host, not the boundary: the renderer-agnostic core also runs in WebGL, natively on Apple and Android, and headlessly. Zero runtime dependencies in core. 0.x preview."
+  jsonLd={softwareLd}
 >
   <SiteNav current="home" />
-  <div id="main" class="manual-shell">
+  <main id="main" class="manual-shell">
     <ManualHero kicker="Fundamental · a readable behavior layer for host objects">
       <h1 slot="title">Elements have <span
           class="hero-mass"
@@ -57,7 +92,7 @@ const ASKS = [
           data-color="#ff9d5c"
           style="--cat:#ff9d5c;">.</span></h1>
       <p slot="standfirst" class="standfirst"
-        data-body="attract pigment" data-shaped data-strength="0.5" data-range="260" data-color="#ffce6b" style="--cat:#ffce6b">
+        data-body="attract swirl pigment" data-shaped data-strength="0.5" data-range="260" data-spin="1.1" data-color="#ffce6b" style="--cat:#ffce6b">
         Fundamental is a readable behavior layer for host objects. It turns elements, records,
         views, and relationships into bodies in a shared field — where importance pulls, signal
         routes, relation binds, and change decays. The DOM is the first host, not the boundary:
@@ -74,8 +109,8 @@ const ASKS = [
         {/* Resting mass: ungate the default attention-gated vessel (data-when="") and lead with a
             continuous attract so the CTAs pull the field at rest — they read as live, moving call-to-
             actions, not inert until hovered. Engagement still amplifies on hover. */}
-        <Button href="#proof" variant="primary" data-color="#4da3ff" data-body="attract pigment" data-when="" data-strength="0.95" data-range="230">See it work →</Button>
-        <Button href="#install" data-color="#a78bfa" data-body="attract pigment" data-when="" data-strength="0.8" data-range="210">Install →</Button>
+        <Button href="#proof" variant="primary" data-color="#4da3ff" data-body="attract swirl pigment" data-when="" data-strength="0.95" data-range="230" data-spin="1.1">See it work →</Button>
+        <Button href="#install" data-color="#a78bfa" data-body="attract swirl pigment" data-when="" data-strength="0.8" data-range="210" data-spin="1.1">Install →</Button>
       </Fragment>
       <div slot="meta" class="meta">
         <span><b>Category</b> &nbsp;add a data-* attribute, get --field-* back</span>
@@ -125,18 +160,39 @@ const ASKS = [
     </section>
 
     <section class="lp lp-ai">
-      <div class="wrap">
-        <span class="concept-no">The wedge</span>
-        <h2>Make model output you can read at a glance.</h2>
-        <p class="lp-lede">
-          A model hands you answers; it rarely shows how sure it is. Make each claim a body in the
-          field, and confidence becomes weight, agreement becomes proximity, and contradictions pull
-          apart — so a shaky answer <em>looks</em> shaky and its sources are one hop away, before anyone
-          acts on it. The interface projects that state as type and layout; an agent reads the same field as JSON through <code>field.query()</code>. The same deterministic math drives the Evidence and Search studies.
-        </p>
-        <div class="lp-cta-row">
-          <Button href="/ai-evidence" variant="primary">See AI Evidence →</Button>
-          <Button href="/docs/studies/evidence-field">How it works →</Button>
+      <div class="wrap lp-ai-grid">
+        <div class="lp-col">
+          <span class="concept-no">The wedge</span>
+          <h2>Make model output you can read at a glance.</h2>
+          <p class="lp-lede">
+            A model hands you answers; it rarely shows how sure it is. Make each claim a body in the
+            field, and confidence becomes weight, agreement becomes proximity, and contradictions pull
+            apart — so a shaky answer <em>looks</em> shaky and its sources are one hop away, before anyone
+            acts on it. The interface projects that state as type and layout; an agent reads the same field as JSON through <code>field.query()</code>. The same deterministic math drives the Evidence and Search studies.
+          </p>
+          <div class="lp-cta-row">
+            <Button href="/ai-evidence" variant="primary">See AI Evidence →</Button>
+            <Button href="/docs/studies/evidence-field">How it works →</Button>
+          </div>
+        </div>
+
+        {/* Live claims field — each chip is a REAL body the page field measures. Confidence sets
+            weight (data-strength + the --conf style), and --d (live field density, written back by
+            the engine onto data-feedback) drives the glow: a well-supported claim accretes field and
+            reads heavy; the contradiction uses `repel`, opening a visible gap. Honors the Wallpaper
+            Rule — no fake decoration; the chips are bodies and the emphasis is measured. */}
+        <div class="wedge-field" aria-hidden="true">
+          <div class="wf-plane">
+            <span class="claim claim-hi" data-body="attract swirl" data-feedback data-strength="1.3" data-range="150" data-spin="1.1"
+              style="--x:16%; --y:20%; --conf:0.94"><b>Confirmed</b><i>0.94</i></span>
+            <span class="claim claim-hi" data-body="attract swirl" data-feedback data-strength="1.1" data-range="140" data-spin="1.1"
+              style="--x:36%; --y:42%; --conf:0.87"><b>Corroborated</b><i>0.87</i></span>
+            <span class="claim claim-mid" data-body="attract swirl" data-feedback data-strength="0.6" data-range="120" data-spin="1.1"
+              style="--x:58%; --y:26%; --conf:0.41"><b>One source</b><i>0.41</i></span>
+            <span class="claim claim-lo" data-body="repel" data-feedback data-strength="0.95" data-range="165"
+              style="--x:74%; --y:70%; --conf:0.18"><b>Contradicted</b><i>0.18</i></span>
+          </div>
+          <p class="wf-legend"><span class="wf-k">weight</span> = confidence · <span class="wf-k">proximity</span> = agreement · <span class="wf-k">repel</span> = contradiction</p>
         </div>
       </div>
     </section>
@@ -316,22 +372,25 @@ const ASKS = [
     </section>
 
     <section class="lp lp-engine-gate" id="engine">
-      <div class="wrap">
-        <span class="concept-no">The full engine, live</span>
-        <h2>{MANUAL_FORCES.length} forces. 64 recipes. 8 presets. One 0.x API.</h2>
-        <p class="lp-lede">
-          Everything above is built from one contract: <code>data-*</code> in, <code>--field-*</code> out.
-          The complete force-by-force manual — every force, preset, and system behaviour, each demo running
-          live on the real engine — now has its own page, so the homepage can stay about the substrate.
-        </p>
-        <div class="lp-cta-row">
-          <Button href="/engine-tour" variant="primary">Open the executable manual →</Button>
-          <Button href="/lab">Open the Lab →</Button>
+      <div class="wrap lp-engine-grid">
+        <div class="lp-engine-col">
+          <span class="concept-no">The full engine, live</span>
+          <h2>{MANUAL_FORCES.length} forces. 64 recipes. 8 presets. One 0.x API.</h2>
+          <p class="lp-lede">
+            Everything above is built from one contract: <code>data-*</code> in, <code>--field-*</code> out.
+            The complete force-by-force manual — every force, preset, and system behaviour, each demo running
+            live on the real engine — now has its own page, so the homepage can stay about the substrate.
+          </p>
+          <div class="lp-cta-row">
+            <Button href="/engine-tour" variant="primary">Open the executable manual →</Button>
+            <Button href="/lab">Open the Lab →</Button>
+          </div>
+          <p class="lp-note">
+            Or jump straight to a surface: <a href="/docs/api">the API</a> ·
+            <a href="/recipes">recipes</a> · <a href="/docs/api/catalog">the force catalog</a>.
+          </p>
         </div>
-        <p class="lp-note">
-          Or jump straight to a surface: <a href="/docs/api">the API</a> ·
-          <a href="/recipes">recipes</a> · <a href="/docs/api/catalog">the force catalog</a>.
-        </p>
+        <ForceCarousel />
       </div>
     </section>
 
@@ -353,7 +412,7 @@ const ASKS = [
       </div>
     </section>
 
-  </div>
+  </main>
   <SiteFooter />
 </Base>
 

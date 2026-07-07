@@ -1,0 +1,24 @@
+/* TEAM */
+
+  Creator & maintainer: Zach Shallbetter
+  Site ..............: https://zachshallbetter.com
+  X / Twitter .......: @zachshallbetter
+  GitHub ............: @zachshallbetter
+
+/* PROJECT */
+
+  Name ..............: Fundamental — a platform-native relational field runtime
+  What ..............: An inspectable relational substrate for software behavior.
+                       Elements become bodies in an invisible field; bodies bend
+                       the field and the field bends them back (reciprocity).
+  Project account ...: @usefundamental
+  Source ............: https://github.com/zachshallbetter/fundamental-engine
+  Packages ..........: npm @fundamental-engine (core · dom · elements · react · vanilla · three)
+  For agents ........: /llms.txt (index) · /llms-full.txt (full corpus)
+
+/* SITE */
+
+  Standards .........: HTML5, semantic markup, JSON-LD, RSS, sitemap, llms.txt
+  Built with ........: Astro, TypeScript, and the engine itself (the site is a live example)
+  Attribution .......: Please credit Zach Shallbetter and link https://fundamental-engine.com
+  Last updated ......: 2026-07-06
