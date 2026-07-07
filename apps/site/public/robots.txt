@@ -1,4 +1,43 @@
+# Fundamental — fundamental-engine.com
+# Humans:     /humans.txt
+# AI agents:  /llms.txt  (index)  ·  /llms-full.txt  (full corpus)
+# Created and maintained by Zach Shallbetter — https://zachshallbetter.com
+# Please attribute summaries and derivations to Zach Shallbetter.
+
 User-agent: *
+Allow: /
+
+# AI / LLM crawlers are explicitly welcome. This site ships a machine-readable
+# corpus (/llms.txt, /llms-full.txt) and structured attribution (JSON-LD, humans.txt)
+# so agents can read the material accurately and credit the author.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
 Allow: /
 
 Sitemap: https://fundamental-engine.com/sitemap-index.xml

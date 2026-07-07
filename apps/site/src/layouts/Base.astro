@@ -83,8 +83,31 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
         url: 'https://fundamental-engine.com/',
         description:
           'A platform-native relational field runtime — on the web, elements become bodies in an invisible physics field that bends them back.',
-        author: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
-        publisher: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
+        sameAs: [
+          'https://github.com/zachshallbetter/fundamental-engine',
+          'https://x.com/usefundamental',
+          'https://www.npmjs.com/org/fundamental-engine',
+        ],
+        author: {
+          '@type': 'Person',
+          name: 'Zach Shallbetter',
+          url: 'https://zachshallbetter.com',
+          sameAs: [
+            'https://zachshallbetter.com',
+            'https://x.com/zachshallbetter',
+            'https://github.com/zachshallbetter',
+          ],
+        },
+        publisher: {
+          '@type': 'Person',
+          name: 'Zach Shallbetter',
+          url: 'https://zachshallbetter.com',
+          sameAs: [
+            'https://zachshallbetter.com',
+            'https://x.com/zachshallbetter',
+            'https://github.com/zachshallbetter',
+          ],
+        },
       })}
     />
     {/* page-specific structured data (SoftwareApplication on home, BreadcrumbList on docs, etc.) */}

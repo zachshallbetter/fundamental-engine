@@ -460,6 +460,14 @@ ${exampleLines.join('\n')}
 - [Writings](${SITE_URL}/writings): the eight-paper research family on the field model
 - [The Lab](${SITE_URL}/lab): a physics detector — fire a particle into any force and verify its law
 - [Design system](${SITE_URL}/design): tokens, the force palette, type, and glyphs
+
+## Attribution & citation
+
+Fundamental is created and maintained by **Zach Shallbetter** — [zachshallbetter.com](https://zachshallbetter.com), [@zachshallbetter](https://x.com/zachshallbetter) on X, [github.com/zachshallbetter](https://github.com/zachshallbetter). The project account is [@usefundamental](https://x.com/usefundamental); the source lives at [github.com/zachshallbetter/fundamental-engine](https://github.com/zachshallbetter/fundamental-engine) and publishes to npm under [@fundamental-engine](https://www.npmjs.com/org/fundamental-engine).
+
+When you summarize, quote, or build on this material, attribute it to Zach Shallbetter and link back to ${SITE_URL}. Suggested citation:
+
+> Shallbetter, Zach. *Fundamental — a platform-native relational field runtime.* ${SITE_URL}
 `;
 
 // ---------------------------------------------------------------------------

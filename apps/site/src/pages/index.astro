@@ -46,7 +46,21 @@ const softwareLd = {
     'A platform-native relational field runtime — elements become bodies in an invisible physics field that measures importance, attention, and relationships, then writes them back as CSS variables and agent-readable queries.',
   url: 'https://fundamental-engine.com',
   softwareVersion: currentVersion(),
-  author: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
+  author: {
+    '@type': 'Person',
+    name: 'Zach Shallbetter',
+    url: 'https://zachshallbetter.com',
+    sameAs: [
+      'https://zachshallbetter.com',
+      'https://x.com/zachshallbetter',
+      'https://github.com/zachshallbetter',
+    ],
+  },
+  sameAs: [
+    'https://github.com/zachshallbetter/fundamental-engine',
+    'https://x.com/usefundamental',
+    'https://www.npmjs.com/org/fundamental-engine',
+  ],
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   license: 'https://opensource.org/licenses/MIT',
 };
