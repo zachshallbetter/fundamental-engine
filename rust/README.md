@@ -54,19 +54,27 @@ of their cases.
 **Milestone 2 — the `step()` loop.** ✅
 `FieldStore` (the particle pool) + the legacy semi-implicit Euler integrator: body forces → mass
 scaling → speed cap → integrate → damp, plus per-body density sampling and the frozen-frame (`dt=0`)
-drain (#967). Tested for determinism (byte-identical trajectories), physical behaviour (attract pulls
-in / repel pushes out), density accumulation, and the speed cap. Advanced lanes (formations, waves,
-modifiers, velocity-Verlet, mortal matter, agents, separation) are explicitly deferred and no-op until
-their capability lands.
+drain (#967). Advanced lanes (formations, waves, modifiers, velocity-Verlet, mortal matter, agents,
+separation) are explicitly deferred and no-op until their capability lands.
+
+**Milestone 3 — the canonical nine + the determinism seam.** ✅
+- `record::Rng` — seeded mulberry32, **bit-identical to the JS stream** (verified against captured JS
+  values). Deterministic-by-default (seed 0). The single source every stochastic draw flows through.
+- `config` — the canonical force colours.
+- **Effects-as-data**: a force never mutates the world directly — it emits an `Effect` (or draws
+  `env.rng()` / requests a capture) and the integrator resolves it. This is the substrate the Field
+  Receipts thesis wants (effects are recordable values), and it keeps the hot loop borrow-clean.
+- The last three canonical forces: `jet` (RNG exit cone), `wall` (bounce + spark effect), `sink`
+  (capture → hold → supernova release, count-conserving). **The canonical nine are complete.**
+
+Tested: RNG cross-plane parity + determinism, jet nozzle relaunch, wall bounce/spark thresholds, and
+the sink capture-and-hold / release-at-capacity cycle. **18 tests, all green.**
 
 ### Next
 
-- `config` (force colours/tokens), `record` (seeded RNG).
-- The stochastic/stateful canonical forces (`jet`/`wall`/`sink`) once `Env` grows its service seam
-  (spark/spawn/supernova/neighbours/grid).
 - The extended + natural force sets (→ 36 forces total).
 - `solve(until_settled)` = `step()` to convergence; spatial hash for large fields.
-- Snapshot + causal replay (the receipts substrate).
+- Snapshot + causal replay, building on the RNG seam + effects-as-data (the receipts substrate).
 - The CMS-facing reading layer: scores (density/potential per body), clusters (density basins),
   relations/recommendations (nearest-in-field).
 

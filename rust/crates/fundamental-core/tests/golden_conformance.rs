@@ -85,12 +85,12 @@ fn cross_plane_conformance() {
     let mut checked = 0usize;
 
     for c in &golden.cases {
-        let Some(force) = reg.get(&c.force) else {
-            // Milestone 1 registers only the six deterministic forces; the golden's stochastic/
-            // stateful cases (jet/wall/sink) land later. Skip-with-count keeps this honest — the
-            // final assert will flag if we ever silently drop a force we claim to cover.
-            continue;
-        };
+        // Every force the golden exercises must be registered — a missing one is a real gap, not a
+        // silent skip. (The golden covers the six deterministic forces; the registry also holds
+        // jet/wall/sink, which the golden does not pin because they are stochastic/stateful.)
+        let force = reg
+            .get(&c.force)
+            .unwrap_or_else(|| panic!("golden force '{}' is not registered", c.force));
 
         // Reconstruct the exact inputs the JS apply saw (body at the origin; matches the emitter).
         let mut body = Body {
@@ -117,7 +117,7 @@ fn cross_plane_conformance() {
         e.form.orbit = c.env.orbit;
 
         let v0 = p.velocity;
-        force.apply(&body, &mut p, &e);
+        force.apply(&body, &mut p, &mut e);
         let dv = p.velocity - v0;
         let want = Vec3::new(c.dv.x, c.dv.y, c.dv.z);
 
@@ -142,19 +142,6 @@ fn cross_plane_conformance() {
         checked += 1;
     }
 
-    // Every force the standard registry knows must be exercised by the golden. (Six forces × the
-    // probe/variant fan = the deterministic subset of the 120-case golden.)
-    let covered: std::collections::HashSet<&str> = reg.tokens().collect();
-    let checked_forces: std::collections::HashSet<&str> = golden
-        .cases
-        .iter()
-        .map(|c| c.force.as_str())
-        .filter(|t| covered.contains(t))
-        .collect();
-    assert_eq!(
-        checked_forces.len(),
-        covered.len(),
-        "a registered force was never exercised by the golden"
-    );
-    assert!(checked > 0, "no golden cases were checked");
+    // No case was skipped: every one of the 120 was reconstructed and checked.
+    assert_eq!(checked, golden.count, "every golden case must be checked");
 }

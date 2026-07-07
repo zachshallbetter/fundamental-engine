@@ -27,9 +27,12 @@
 //! viscosity) pass the shared golden. The full 36-force catalog, integrator/store, spatial hash,
 //! snapshot/query, and the CMS-facing reading layer (scores/clusters/relations) follow.
 
+pub mod config;
 pub mod engine;
 pub mod forces;
 pub mod math;
+pub mod record;
 
-pub use engine::{step, Body, Env, FieldStore, Force, Formation, Particle, Registry};
+pub use engine::{step, Body, Effect, Env, FieldStore, Force, Formation, Particle, Registry};
 pub use math::Vec3;
+pub use record::Rng;

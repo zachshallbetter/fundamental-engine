@@ -4,14 +4,18 @@
 //! particle, apply every body's forces (mass-scaled per §21.3), cap speed, integrate `x += v·dt`,
 //! then damp. `dt = 0` freezes motion (§18) but still drains the per-body density counters (#967).
 //!
+//! Stateful/stochastic forces reach the world through the [`Env`] seam, resolved here: `sink` requests
+//! a capture (the integrator holds the particle at the body's core, and releases the whole shell at
+//! capacity — a supernova); `wall` emits sparks into `env.effects`; `jet` draws `env.rng`.
+//!
 //! Faithfully ported for the deterministic subset. **Deferred** (each lands with its capability, and
 //! is a documented no-op until then — matching the JS "flat field, neutral formation" fast path
 //! bit-for-bit): formation currents (drift/spread/conv), carrier waves, `screen`/modifier passes,
 //! conserved-attention, velocity-Verlet, mortal-matter aging, agent steering/bounce, and
-//! particle-to-particle separation. Their supporting state (`Env` services, `p.cap`, `p.age`) arrives
-//! with the forces that need it.
+//! particle-to-particle separation. The supernova *burst* (relaunching held matter outward) is also
+//! deferred — release currently just frees the shell back into the field (count-conserving).
 
-use super::{Body, Env, FieldStore, Force, Registry};
+use super::{Body, Env, FieldStore, Force, Particle, Registry};
 use crate::math::Vec3;
 
 /// Per-frame velocity damping (semi-implicit Euler). (JS `FRICTION`.)
@@ -24,7 +28,7 @@ pub const EDGE: f64 = 10.0;
 /// Apply one force to a particle, honouring first-class mass (§21.3): an *additive* force's velocity
 /// change is scaled by `1/m` (a = F/m), while a `kinematic` force (reflection/rotation/relaunch)
 /// sets velocity outright and is left unscaled. `inv == 1` (unit mass) is the identity path either way.
-fn apply_force(f: &dyn Force, b: &Body, p: &mut super::Particle, e: &Env, inv: f64) {
+fn apply_force(f: &dyn Force, b: &Body, p: &mut Particle, e: &mut Env, inv: f64) {
     if inv == 1.0 || f.kinematic() {
         f.apply(b, p, e);
         return;
@@ -38,11 +42,14 @@ fn apply_force(f: &dyn Force, b: &Body, p: &mut super::Particle, e: &Env, inv: f
 
 /// Advance the field one tick: mutate every particle in `store` under the forces of `bodies`.
 ///
-/// `bodies` is `&mut` because the density counter (`Body::count`) accumulates during the pass; `env`
-/// is `&mut` because the per-apply geometry scratch (`Env::vector` / `Env::dist`) is written before
-/// each force. `env.volume` supplies the world bounds `(W, H, D)`; when it is zero, toroidal wrap is
-/// skipped (a headless-safe default — content shouldn't collapse to the origin for want of bounds).
+/// `bodies` is `&mut` because the density counter (`Body::count`) and accretion (`Body::accreted`)
+/// accumulate during the pass; `env` is `&mut` because the per-apply geometry scratch and the effect
+/// seam live there. `env.effects` is cleared at the top and holds this step's effects on return.
+/// `env.volume` supplies the world bounds `(W, H, D)`; when it is zero, toroidal wrap is skipped
+/// (headless-safe — content shouldn't collapse to the origin for want of bounds).
 pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: &Registry) {
+    env.effects.clear();
+
     // Density bookkeeping drains every frame, including the frozen path (#967), so `count` never
     // carries a stale value.
     for b in bodies.iter_mut() {
@@ -57,8 +64,26 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
     let (w, h, d) = (env.volume.x, env.volume.y, env.volume.z);
     let cap = env.c;
     let has_bodies = !bodies.is_empty();
+    // sink bodies that reached capacity this frame → released after the particle pass.
+    let mut supernova: Vec<usize> = Vec::new();
 
     for p in store.particles.iter_mut() {
+        // captured matter drifts to its sink core and skips the force pass (§6.9). A released body
+        // (index gone) frees the particle back into the field.
+        if let Some(bi) = p.cap {
+            match bodies.get(bi) {
+                Some(cb) => {
+                    p.position.x += (cb.center.x - p.position.x) * 0.18;
+                    p.position.y += (cb.center.y - p.position.y) * 0.18;
+                    if p.position.z != 0.0 {
+                        p.position.z += -p.position.z * 0.18;
+                    }
+                    continue;
+                }
+                None => p.cap = None,
+            }
+        }
+
         // body forces — the field's sources move matter (§4).
         if has_bodies {
             // first-class mass (§21.3): additive Δv scaled by 1/m; kinematic forces left unscaled.
@@ -67,7 +92,7 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
             } else {
                 1.0
             };
-            for b in bodies.iter_mut() {
+            for (i, b) in bodies.iter_mut().enumerate() {
                 if !b.visible || b.tokens.is_empty() {
                     continue;
                 }
@@ -88,9 +113,23 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
                 }
                 env.vector = Vec3::new(dx, dy, dz);
                 env.dist = if dist < 1.0 { 1.0 } else { dist };
-                for tok in &b.tokens {
-                    if let Some(f) = forces.get(tok) {
-                        apply_force(f, b, p, env, inv);
+                // iterate tokens by index so the body can be mutated (accretion) after each apply
+                // without holding an immutable borrow of `b.tokens` across the mutation.
+                for k in 0..b.tokens.len() {
+                    let f = match forces.get(&b.tokens[k]) {
+                        Some(f) => f,
+                        None => continue,
+                    };
+                    apply_force(f, b, p, env, inv);
+                    // resolve a capture request (sink): hold the particle, grow the body, and queue a
+                    // release when it saturates. Set now; the top-of-loop guard acts next frame.
+                    if env.capture_request {
+                        env.capture_request = false;
+                        p.cap = Some(i);
+                        b.accreted += 1;
+                        if (b.accreted as f64) >= b.capacity && !supernova.contains(&i) {
+                            supernova.push(i);
+                        }
                     }
                 }
             }
@@ -128,6 +167,17 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
                 } else if p.position.z > d + EDGE {
                     p.position.z = -EDGE;
                 }
+            }
+        }
+    }
+
+    // release saturated sinks (§6.9): reset accretion and free the held shell back into the field.
+    // (The outward burst is deferred; freeing is count-conserving.)
+    for bi in supernova {
+        bodies[bi].accreted = 0;
+        for p in store.particles.iter_mut() {
+            if p.cap == Some(bi) {
+                p.cap = None;
             }
         }
     }
