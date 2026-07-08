@@ -6,6 +6,7 @@ import ManualHero from "../components/ManualHero.astro";
 import Button from "../components/ui/Button.astro";
 import ForceCarousel from "../components/home/ForceCarousel.astro";
 import InvisibleFieldsStrip from "../components/home/InvisibleFieldsStrip.astro";
+import TryItField from "../components/home/TryItField.astro";
 import { MANUAL_FORCES } from "@fundamental-engine/core";
 import { currentVersion } from "../lib/changelog";
 import "../styles/manual.css";
@@ -159,6 +160,9 @@ const softwareLd = {
         <Button href="/evidence/inbox" variant="primary">Open this example →</Button>
       </div>
     </section>
+
+    {/* Hands-on: touch the engine — rewrite a body's data-* and watch the field answer live. */}
+    <TryItField />
 
     <section class="lp lp-ai">
       <div class="wrap lp-ai-grid">
