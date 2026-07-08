@@ -1,0 +1,226 @@
+---
+// Hands-on "try it": the controls rewrite the real body's data-* attributes and the page field
+// answers live (rescan re-reads the element). The body consumes --d (the live density the engine
+// writes back) as a glow, so it reacts too — and the CSS consumes the feedback var, so it's
+// lint-clean (no silent-contract gap). The code panel mirrors exactly what you'd author.
+const FORCES = [
+  { t: 'attract', c: '#4da3ff' },
+  { t: 'repel', c: '#ff6b6b' },
+  { t: 'swirl', c: '#2dd4bf' },
+  { t: 'gravity', c: '#a78bfa' },
+  { t: 'stream', c: '#ffce6b' },
+  { t: 'sink', c: '#ff8a5c' },
+  { t: 'viscosity', c: '#f0628e' },
+  { t: 'cohesion', c: '#86e57f' },
+  { t: 'tether', c: '#7dd3fc' },
+];
+---
+
+<section class="lp lp-tryit" id="try">
+  <div class="wrap lp-tryit-grid">
+    <div class="lp-col">
+      <span class="concept-no">Try it</span>
+      <h2>Change a <code>data-*</code> and watch the field answer.</h2>
+      <p class="lp-lede">
+        Every control rewrites one attribute on the real element to the right — the same
+        <code>data-*</code> you'd author. The engine re-reads it and the field responds. That's the
+        whole surface: attributes in, motion out. Move your cursor through it, too.
+      </p>
+      <div class="tryit-controls">
+        <label class="tryit-ctl">
+          <span>force</span>
+          <select data-try-force>
+            {FORCES.map((f) => <option value={f.t}>{f.t}</option>)}
+          </select>
+        </label>
+        <label class="tryit-ctl">
+          <span>strength <i data-try-out="strength">0.9</i></span>
+          <input type="range" min="0.1" max="2" step="0.1" value="0.9" data-try-strength />
+        </label>
+        <label class="tryit-ctl">
+          <span>spin <i data-try-out="spin">1.1</i></span>
+          <input type="range" min="0" max="2" step="0.1" value="1.1" data-try-spin />
+        </label>
+        <label class="tryit-ctl">
+          <span>range <i data-try-out="range">180</i></span>
+          <input type="range" min="80" max="320" step="10" value="180" data-try-range />
+        </label>
+      </div>
+      <pre class="tryit-code" data-try-code aria-live="polite">data-body="attract"</pre>
+    </div>
+    <div class="tryit-stage" aria-hidden="true">
+      <span
+        class="tryit-body"
+        data-try-body
+        data-body="attract"
+        data-feedback
+        data-strength="0.9"
+        data-range="180"
+        data-spin="1.1"
+        data-color="#4da3ff"
+        style="--cat:#4da3ff">attract</span>
+    </div>
+  </div>
+</section>
+
+<script>
+  const FORCE_COLORS: Record<string, string> = {
+    attract: '#4da3ff', repel: '#ff6b6b', swirl: '#2dd4bf', gravity: '#a78bfa', stream: '#ffce6b',
+    sink: '#ff8a5c', viscosity: '#f0628e', cohesion: '#86e57f', tether: '#7dd3fc',
+  };
+
+  function initTryIt() {
+    const root = document.querySelector<HTMLElement>('.lp-tryit');
+    if (!root || root.dataset.bound) return;
+    const body = root.querySelector<HTMLElement>('[data-try-body]');
+    const field = document.querySelector('field-root') as (Element & { rescan?: () => void }) | null;
+    if (!body || !field) return;
+    if (typeof field.rescan !== 'function') {
+      window.setTimeout(initTryIt, 150);
+      return;
+    }
+    root.dataset.bound = '1';
+
+    const codeEl = root.querySelector<HTMLElement>('[data-try-code]');
+    const forceSel = root.querySelector<HTMLSelectElement>('[data-try-force]');
+    const val = (n: string) => root.querySelector<HTMLInputElement>(`[data-try-${n}]`)?.value ?? '';
+    const out = (n: string, v: string) => {
+      const el = root.querySelector(`[data-try-out="${n}"]`);
+      if (el) el.textContent = v;
+    };
+
+    // rescan walks the DOM — debounce it so a slider drag doesn't thrash it every input event.
+    let rescanTimer = 0;
+    const scheduleRescan = () => {
+      window.clearTimeout(rescanTimer);
+      rescanTimer = window.setTimeout(() => field.rescan!(), 90);
+    };
+
+    const apply = () => {
+      const force = forceSel?.value ?? 'attract';
+      const strength = val('strength');
+      const spin = val('spin');
+      const range = val('range');
+      const color = FORCE_COLORS[force] ?? '#4da3ff';
+      body.setAttribute('data-body', force);
+      body.setAttribute('data-strength', strength);
+      body.setAttribute('data-range', range);
+      body.setAttribute('data-spin', spin);
+      body.setAttribute('data-color', color);
+      body.style.setProperty('--cat', color);
+      body.textContent = force;
+      out('strength', strength);
+      out('spin', spin);
+      out('range', range);
+      if (codeEl) {
+        codeEl.textContent =
+          `data-body="${force}"\ndata-strength="${strength}"\ndata-range="${range}"\ndata-spin="${spin}"`;
+      }
+      scheduleRescan();
+    };
+
+    forceSel?.addEventListener('change', apply);
+    ['strength', 'spin', 'range'].forEach((n) => {
+      root.querySelector(`[data-try-${n}]`)?.addEventListener('input', apply);
+    });
+    apply();
+  }
+
+  document.addEventListener('astro:page-load', initTryIt);
+  document.addEventListener('DOMContentLoaded', initTryIt);
+</script>
+
+<style>
+  .lp-tryit-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+    gap: 2.4rem 3rem;
+    align-items: center;
+  }
+  .lp-tryit .lp-col {
+    min-width: 0;
+  }
+  .tryit-controls {
+    display: grid;
+    gap: 0.9rem;
+    margin: 1.6rem 0 1.2rem;
+    max-width: 26rem;
+  }
+  .tryit-ctl {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    align-items: center;
+    gap: 0.9rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3, #8a8a99);
+  }
+  .tryit-ctl i {
+    font-style: normal;
+    color: var(--accent, #4da3ff);
+    font-variant-numeric: tabular-nums;
+    margin-left: 0.4rem;
+  }
+  .tryit-ctl select,
+  .tryit-ctl input[type='range'] {
+    width: 100%;
+    accent-color: var(--accent, #4da3ff);
+  }
+  .tryit-ctl select {
+    background: rgba(6, 9, 16, 0.6);
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+    border-radius: 8px;
+    color: var(--text-2, #b0b0bd);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 0.35rem 0.5rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .tryit-code {
+    margin: 0;
+    background: rgba(6, 9, 16, 0.66);
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.09));
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    line-height: 1.6;
+    color: var(--accent, #4da3ff);
+    white-space: pre;
+  }
+  .tryit-stage {
+    position: relative;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.012);
+  }
+  .tryit-body {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem 1.3rem;
+    border-radius: 999px;
+    border: 1px solid var(--cat, #4da3ff);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cat, #4da3ff);
+    /* consume --d (live field density the engine writes back): the body glows as matter gathers,
+       so it reacts too — and consuming the var keeps it clear of the silent-contract-gap lint. */
+    box-shadow: 0 0 calc(var(--d, 0) * 34px) color-mix(in srgb, var(--cat, #4da3ff) 55%, transparent);
+    transition: color 0.3s ease, border-color 0.3s ease;
+  }
+  @media (max-width: 900px) {
+    .lp-tryit-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
