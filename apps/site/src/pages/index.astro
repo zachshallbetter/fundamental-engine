@@ -5,6 +5,7 @@ import SiteFooter from "../components/SiteFooter.astro";
 import ManualHero from "../components/ManualHero.astro";
 import Button from "../components/ui/Button.astro";
 import ForceCarousel from "../components/home/ForceCarousel.astro";
+import InvisibleFieldsStrip from "../components/home/InvisibleFieldsStrip.astro";
 import { MANUAL_FORCES } from "@fundamental-engine/core";
 import { currentVersion } from "../lib/changelog";
 import "../styles/manual.css";
@@ -207,12 +208,17 @@ const softwareLd = {
           through declared channels; you read the state back; projections reveal it; policy governs what
           may run and what an agent may read.
         </p>
+        {/* The five verbs are five bodies, each carrying the force that embodies it — so the row
+            demonstrates the loop it describes: declare pulls matter in (attract), influence pushes a
+            current (stream), read gathers weight (gravity), reveal spins it out (swirl), govern damps
+            it (viscosity). attract/gravity carry swirl+spin so they don't freeze matter into a clump;
+            the ambient field keeps them all circulating. */}
         <ol class="lp-verbs">
-          <li><b>Declare</b><span>Host objects become bodies — a <code>data-body</code> attribute, <code>addBody()</code>, or a declared edge.</span></li>
-          <li><b>Influence</b><span>Forces act through declared channels, accumulated centrally — deterministic and replayable.</span></li>
-          <li><b>Read</b><span><code>query()</code> and <code>snapshot()</code> expose the field as plain, serializable state.</span></li>
-          <li><b>Reveal</b><span>Projections express that state through CSS variables, DOM attributes, JSON, native views, or overlays.</span></li>
-          <li><b>Govern</b><span>Policies, budgets, redactions, lane lints, and reduced-motion rules constrain what runs and what an agent reads.</span></li>
+          <li data-body="attract swirl" data-strength="0.7" data-range="150" data-spin="1.1" data-color="#4da3ff" style="--cat:#4da3ff"><b>Declare</b><span>Host objects become bodies — a <code>data-body</code> attribute, <code>addBody()</code>, or a declared edge.</span></li>
+          <li data-body="stream" data-strength="0.8" data-range="160" data-color="#a78bfa" style="--cat:#a78bfa"><b>Influence</b><span>Forces act through declared channels, accumulated centrally — deterministic and replayable.</span></li>
+          <li data-body="gravity swirl" data-strength="0.8" data-range="150" data-spin="1" data-color="#2dd4bf" style="--cat:#2dd4bf"><b>Read</b><span><code>query()</code> and <code>snapshot()</code> expose the field as plain, serializable state.</span></li>
+          <li data-body="swirl" data-strength="0.75" data-range="150" data-spin="1.2" data-color="#ffce6b" style="--cat:#ffce6b"><b>Reveal</b><span>Projections express that state through CSS variables, DOM attributes, JSON, native views, or overlays.</span></li>
+          <li data-body="viscosity" data-strength="0.9" data-range="160" data-color="#f0628e" style="--cat:#f0628e"><b>Govern</b><span>Policies, budgets, redactions, lane lints, and reduced-motion rules constrain what runs and what an agent reads.</span></li>
         </ol>
         <p class="lp-note">
           Want the exact API? <a href="/docs/api">Read the docs</a>. Want the live engine?
@@ -233,15 +239,17 @@ const softwareLd = {
           bespoke animation for each. <a href="/engine-tour#concept-conserved">See conserved attention →</a>
         </p>
 
+        {/* The pipeline is a literal current: each step is a `stream` body heading right (data-angle=0),
+            so matter runs data-* → measure → --field-* → style, left to right, the way the sentence reads. */}
         <figure class="lp-model">
           <div class="lp-flow">
-            <span class="lp-step"><code>data-*</code><span>you author</span></span>
+            <span class="lp-step" data-body="stream" data-angle="0" data-strength="0.7" data-range="120" data-color="#4da3ff" style="--cat:#4da3ff"><code>data-*</code><span>you author</span></span>
             <span class="lp-arrow">→</span>
-            <span class="lp-step"><code>measure</code><span>runtime</span></span>
+            <span class="lp-step" data-body="stream" data-angle="0" data-strength="0.7" data-range="120" data-color="#a78bfa" style="--cat:#a78bfa"><code>measure</code><span>runtime</span></span>
             <span class="lp-arrow">→</span>
-            <span class="lp-step"><code>--field-*</code><span>runtime writes back</span></span>
+            <span class="lp-step" data-body="stream" data-angle="0" data-strength="0.7" data-range="120" data-color="#2dd4bf" style="--cat:#2dd4bf"><code>--field-*</code><span>runtime writes back</span></span>
             <span class="lp-arrow">→</span>
-            <span class="lp-step"><code>you style</code><span>CSS</span></span>
+            <span class="lp-step" data-body="stream" data-angle="0" data-strength="0.7" data-range="120" data-color="#ffce6b" style="--cat:#ffce6b"><code>you style</code><span>CSS</span></span>
           </div>
           <figcaption>You author meaning; the field returns measurement.</figcaption>
         </figure>
@@ -325,25 +333,27 @@ const softwareLd = {
           The core computes the field against plain data and imports zero DOM. A thin host binds it to
           a host — so the same physics runs on the web, natively, in your renderer, or headless:
         </p>
+        {/* One engine, many hosts — so the four bind as one: each host is a `cohesion` body, and the
+            field's matter coheres across them (binding, not a single well). */}
         <ul class="model">
-          <li>
+          <li data-body="cohesion" data-strength="0.5" data-range="150" data-color="#4da3ff" style="--cat:#4da3ff">
             <b>Web</b> — <code>@fundamental-engine/dom</code> binds the engine to the page: every
             <code>[data-body]</code> element a body, feedback returned as <code>--field-*</code>
             variables. The primary surface — and what this page runs on.
           </li>
-          <li>
+          <li data-body="cohesion" data-strength="0.5" data-range="150" data-color="#86e57f" style="--cat:#86e57f">
             <b>Native</b> — a Swift port runs the same field on Apple platforms (Metal / SwiftUI), and a
             Kotlin port runs it on Android (Jetpack Compose, plus a non-Compose <code>View</code>/<code>Canvas</code>
             host) — both free of the browser’s compositing ceiling. The <a href="/docs/implementations">Field Lab</a>
             is the showcase: a native app to explore every force live.
           </li>
-          <li>
+          <li data-body="cohesion" data-strength="0.5" data-range="150" data-color="#ffce6b" style="--cat:#ffce6b">
             <b>Your renderer</b> — <code>@fundamental-engine/three</code> drives a
             <code>THREE.Points</code> swarm in your own WebGL scene; the read primitives
             (<code>sample</code>, <code>readParticles</code>, <code>addField</code>) bind the engine to
             anything that draws.
           </li>
-          <li>
+          <li data-body="cohesion" data-strength="0.5" data-range="150" data-color="#c084fc" style="--cat:#c084fc">
             <b>Headless</b> — no DOM, no canvas: records become bodies and relationships become edges,
             and a tool reads the field through <code>query()</code> and <code>snapshot()</code>. The
             smallest conformant host — for servers, tests, and agents.
@@ -368,6 +378,12 @@ const softwareLd = {
           <li><b>Measured, not guessed.</b> Sub-millisecond at real-page scale; performance is <a href="/docs/performance">measured on real pages</a>.</li>
           <li><b>Stable 0.x surface, cross-plane conformance.</b> Code-verified docs, a frozen public API, and shared-physics conformance across web, Apple, and Android.</li>
         </ul>
+        {/* Built to be inspected — so show it: a live field.query() of THIS page's field, the same
+            serializable payload an agent reads. Updates on a calm cadence. */}
+        <figure class="lp-inspect" aria-hidden="true">
+          <figcaption><span class="lp-inspect-tag">field.query()</span> — this page's field, as an agent reads it</figcaption>
+          <pre class="lp-inspect-json" data-inspect-json>reading the field…</pre>
+        </figure>
       </div>
     </section>
 
@@ -393,6 +409,11 @@ const softwareLd = {
         <ForceCarousel />
       </div>
     </section>
+
+    {/* Invisible fields — the counterpart showcase: twelve real-data pages that run the field with
+        NO particle swarm (measurement comes back as type/ink). Restores the cut showcase; each item
+        is a light attractor, so the page's visible field gathers on whichever example you engage. */}
+    <InvisibleFieldsStrip />
 
     <!-- §Explore — the deep links out (proofs + reference). -->
     <section class="lp lp-explore" id="explore">
@@ -452,6 +473,53 @@ const softwareLd = {
   document.addEventListener("astro:page-load", initFieldReadout);
 </script>
 
+<script>
+  // Trust · "built to be inspected" — render a live field.query() of THIS page's field into the
+  // lp-inspect panel: the same serializable payload an agent reads (frame, counts, density, and the
+  // live force histogram from each body's tokens). Calm 1.2s cadence; rebinds on SPA nav.
+  type FQEl = Element & {
+    query?: (q?: unknown) => {
+      frame?: number;
+      metrics?: Record<string, number>;
+      bodies?: { tokens?: string[] }[];
+    };
+  };
+  function initInspect() {
+    const pre = document.querySelector("[data-inspect-json]") as HTMLElement | null;
+    const field = document.querySelector("field-root") as FQEl | null;
+    if (!pre || !field || pre.dataset.bound) return;
+    if (typeof field.query !== "function") { window.setTimeout(initInspect, 150); return; }
+    pre.dataset.bound = "1";
+    const r = (v: number | undefined) => (v == null ? 0 : Math.round(v * 100) / 100);
+    const paint = () => {
+      try {
+        const q = field.query!({ include: ["bodies", "metrics"] });
+        const m = q.metrics ?? {};
+        const forces: Record<string, number> = {};
+        for (const b of q.bodies ?? []) for (const t of b.tokens ?? []) forces[t] = (forces[t] ?? 0) + 1;
+        pre.textContent = JSON.stringify(
+          {
+            frame: q.frame ?? 0,
+            bodies: m.bodies ?? (q.bodies ?? []).length,
+            particles: m.particles ?? 0,
+            density: r(m.meanDensity),
+            forces,
+          },
+          null,
+          2,
+        );
+      } catch {
+        /* keep the last good reading */
+      }
+    };
+    paint();
+    const timer = window.setInterval(paint, 1200);
+    document.addEventListener("astro:before-swap", () => window.clearInterval(timer), { once: true });
+  }
+  initInspect();
+  document.addEventListener("astro:page-load", initInspect);
+</script>
+
 
 <style>
   /* P3 new-section layouts — calm + list-based; the full art-direction pass is P4. */
@@ -475,4 +543,19 @@ const softwareLd = {
   .field-readout .fr b { color: var(--text-3, #8a8a99); font-weight: 400; letter-spacing: 0.05em; }
   .field-readout .fr i { font-style: normal; color: var(--accent, #4da3ff); font-variant-numeric: tabular-nums; }
   .field-readout .fr-static i { color: var(--text-2, #b0b0bd); }
+
+  /* Trust · live field.query() readout — reads as an inspectable console panel. */
+  .lp-inspect { margin: 2rem 0 0; }
+  .lp-inspect figcaption {
+    font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.68rem;
+    letter-spacing: 0.02em; color: var(--text-3, #8a8a99); margin: 0 0 0.5rem;
+  }
+  .lp-inspect .lp-inspect-tag { color: var(--accent, #4da3ff); }
+  .lp-inspect-json {
+    margin: 0; max-height: 15.5rem; overflow: auto;
+    background: rgba(6, 9, 16, 0.66); border: 1px solid var(--line, rgba(255, 255, 255, 0.09));
+    border-radius: 12px; padding: 0.9rem 1.1rem;
+    font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.72rem; line-height: 1.55;
+    color: var(--text-2, #b0b0bd); font-variant-numeric: tabular-nums; white-space: pre;
+  }
 </style>
