@@ -137,13 +137,28 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
       grid-warp="3"
       grid-intensity="0.5"
       accent="#4da3ff"
-      density="2.4"
+      density="3.6"
       waves="false"
       data-nav-flow="off"
       data-nav-grid="off"
       data-nav-heatmap="off"
       transition:persist
     ></field-root>
+    <!-- Ambient resting energy (#liveliness): an invisible, viewport-scale swirl body so the
+         resting field keeps circulating instead of settling into the attract wells and freezing.
+         Draws nothing (swirl is a force, not a render layer — no visible waves); low strength so it
+         reads as gentle drift, not a vortex. Matter circulates through the page's content bodies,
+         so it stays alive AND keeps interacting with them. Reduced-motion freezes the integrator
+         (dt=0), so this contributes no motion for users who opt out — no extra guard needed. -->
+    <div
+      class="field-ambient"
+      aria-hidden="true"
+      data-body="swirl"
+      data-strength="0.32"
+      data-range="1500"
+      data-spin="1"
+      style="position: fixed; left: 50%; top: 45%; width: 2px; height: 2px; pointer-events: none; opacity: 0"
+    ></div>
     <script is:inline>
       // Reduced motion: the carrier-wave renderer advances its geometry from wall-clock time even
       // when particle motion is frozen (the engine sets env.dt = 0 under prefers-reduced-motion), so
