@@ -218,11 +218,11 @@ const softwareLd = {
             it (viscosity). attract/gravity carry swirl+spin so they don't freeze matter into a clump;
             the ambient field keeps them all circulating. */}
         <ol class="lp-verbs">
-          <li data-body="attract swirl" data-strength="0.7" data-range="150" data-spin="1.1" data-color="#4da3ff" style="--cat:#4da3ff"><b>Declare</b><span>Host objects become bodies — a <code>data-body</code> attribute, <code>addBody()</code>, or a declared edge.</span></li>
-          <li data-body="stream" data-strength="0.8" data-range="160" data-color="#a78bfa" style="--cat:#a78bfa"><b>Influence</b><span>Forces act through declared channels, accumulated centrally — deterministic and replayable.</span></li>
-          <li data-body="gravity swirl" data-strength="0.8" data-range="150" data-spin="1" data-color="#2dd4bf" style="--cat:#2dd4bf"><b>Read</b><span><code>query()</code> and <code>snapshot()</code> expose the field as plain, serializable state.</span></li>
-          <li data-body="swirl" data-strength="0.75" data-range="150" data-spin="1.2" data-color="#ffce6b" style="--cat:#ffce6b"><b>Reveal</b><span>Projections express that state through CSS variables, DOM attributes, JSON, native views, or overlays.</span></li>
-          <li data-body="viscosity" data-strength="0.9" data-range="160" data-color="#f0628e" style="--cat:#f0628e"><b>Govern</b><span>Policies, budgets, redactions, lane lints, and reduced-motion rules constrain what runs and what an agent reads.</span></li>
+          <li data-body="attract swirl" data-feedback data-strength="0.7" data-range="150" data-spin="1.1" data-color="#4da3ff" style="--cat:#4da3ff"><b>Declare</b><span>Host objects become bodies — a <code>data-body</code> attribute, <code>addBody()</code>, or a declared edge.</span></li>
+          <li data-body="stream" data-feedback data-strength="0.8" data-range="160" data-color="#a78bfa" style="--cat:#a78bfa"><b>Influence</b><span>Forces act through declared channels, accumulated centrally — deterministic and replayable.</span></li>
+          <li data-body="gravity swirl" data-feedback data-strength="0.8" data-range="150" data-spin="1" data-color="#2dd4bf" style="--cat:#2dd4bf"><b>Read</b><span><code>query()</code> and <code>snapshot()</code> expose the field as plain, serializable state.</span></li>
+          <li data-body="swirl" data-feedback data-strength="0.75" data-range="150" data-spin="1.2" data-color="#ffce6b" style="--cat:#ffce6b"><b>Reveal</b><span>Projections express that state through CSS variables, DOM attributes, JSON, native views, or overlays.</span></li>
+          <li data-body="viscosity" data-feedback data-strength="0.9" data-range="160" data-color="#f0628e" style="--cat:#f0628e"><b>Govern</b><span>Policies, budgets, redactions, lane lints, and reduced-motion rules constrain what runs and what an agent reads.</span></li>
         </ol>
         <p class="lp-note">
           Want the exact API? <a href="/docs/api">Read the docs</a>. Want the live engine?
@@ -247,13 +247,13 @@ const softwareLd = {
             so matter runs data-* → measure → --field-* → style, left to right, the way the sentence reads. */}
         <figure class="lp-model">
           <div class="lp-flow">
-            <span class="lp-step" data-body="stream" data-angle="0" data-strength="0.7" data-range="120" data-color="#4da3ff" style="--cat:#4da3ff"><code>data-*</code><span>you author</span></span>
+            <span class="lp-step" data-body="stream" data-angle="0" data-feedback data-strength="0.7" data-range="120" data-color="#4da3ff" style="--cat:#4da3ff"><code>data-*</code><span>you author</span></span>
             <span class="lp-arrow">→</span>
-            <span class="lp-step" data-body="stream" data-angle="0" data-strength="0.7" data-range="120" data-color="#a78bfa" style="--cat:#a78bfa"><code>measure</code><span>runtime</span></span>
+            <span class="lp-step" data-body="stream" data-angle="0" data-feedback data-strength="0.7" data-range="120" data-color="#a78bfa" style="--cat:#a78bfa"><code>measure</code><span>runtime</span></span>
             <span class="lp-arrow">→</span>
-            <span class="lp-step" data-body="stream" data-angle="0" data-strength="0.7" data-range="120" data-color="#2dd4bf" style="--cat:#2dd4bf"><code>--field-*</code><span>runtime writes back</span></span>
+            <span class="lp-step" data-body="stream" data-angle="0" data-feedback data-strength="0.7" data-range="120" data-color="#2dd4bf" style="--cat:#2dd4bf"><code>--field-*</code><span>runtime writes back</span></span>
             <span class="lp-arrow">→</span>
-            <span class="lp-step" data-body="stream" data-angle="0" data-strength="0.7" data-range="120" data-color="#ffce6b" style="--cat:#ffce6b"><code>you style</code><span>CSS</span></span>
+            <span class="lp-step" data-body="stream" data-angle="0" data-feedback data-strength="0.7" data-range="120" data-color="#ffce6b" style="--cat:#ffce6b"><code>you style</code><span>CSS</span></span>
           </div>
           <figcaption>You author meaning; the field returns measurement.</figcaption>
         </figure>
@@ -340,24 +340,24 @@ const softwareLd = {
         {/* One engine, many hosts — so the four bind as one: each host is a `cohesion` body, and the
             field's matter coheres across them (binding, not a single well). */}
         <ul class="model">
-          <li data-body="cohesion" data-strength="0.5" data-range="150" data-color="#4da3ff" style="--cat:#4da3ff">
+          <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#4da3ff" style="--cat:#4da3ff">
             <b>Web</b> — <code>@fundamental-engine/dom</code> binds the engine to the page: every
             <code>[data-body]</code> element a body, feedback returned as <code>--field-*</code>
             variables. The primary surface — and what this page runs on.
           </li>
-          <li data-body="cohesion" data-strength="0.5" data-range="150" data-color="#86e57f" style="--cat:#86e57f">
+          <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#86e57f" style="--cat:#86e57f">
             <b>Native</b> — a Swift port runs the same field on Apple platforms (Metal / SwiftUI), and a
             Kotlin port runs it on Android (Jetpack Compose, plus a non-Compose <code>View</code>/<code>Canvas</code>
             host) — both free of the browser’s compositing ceiling. The <a href="/docs/implementations">Field Lab</a>
             is the showcase: a native app to explore every force live.
           </li>
-          <li data-body="cohesion" data-strength="0.5" data-range="150" data-color="#ffce6b" style="--cat:#ffce6b">
+          <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#ffce6b" style="--cat:#ffce6b">
             <b>Your renderer</b> — <code>@fundamental-engine/three</code> drives a
             <code>THREE.Points</code> swarm in your own WebGL scene; the read primitives
             (<code>sample</code>, <code>readParticles</code>, <code>addField</code>) bind the engine to
             anything that draws.
           </li>
-          <li data-body="cohesion" data-strength="0.5" data-range="150" data-color="#c084fc" style="--cat:#c084fc">
+          <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#c084fc" style="--cat:#c084fc">
             <b>Headless</b> — no DOM, no canvas: records become bodies and relationships become edges,
             and a tool reads the field through <code>query()</code> and <code>snapshot()</code>. The
             smallest conformant host — for servers, tests, and agents.
@@ -561,5 +561,17 @@ const softwareLd = {
     border-radius: 12px; padding: 0.9rem 1.1rem;
     font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.72rem; line-height: 1.55;
     color: var(--text-2, #b0b0bd); font-variant-numeric: tabular-nums; white-space: pre;
+  }
+
+  /* Reciprocity — the field bends the element back. Each re-bodied element carries data-feedback,
+     so the engine writes its live density onto --d; as matter gathers, the element takes on a faint
+     wash of its own force colour (--cat). Consuming --d here also keeps these bodies clear of the
+     silent-contract-gap lint. */
+  .lp-verbs li[data-feedback],
+  .lp-flow .lp-step[data-feedback],
+  .lp-hosts .model li[data-feedback] {
+    background: color-mix(in srgb, var(--cat, var(--accent, #4da3ff)) calc(var(--d, 0) * 11%), transparent);
+    border-radius: 8px;
+    transition: background 0.45s ease;
   }
 </style>
