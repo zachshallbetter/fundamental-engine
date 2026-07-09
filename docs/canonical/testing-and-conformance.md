@@ -483,6 +483,20 @@ android.yml                # CI gate (Android side): fail if a Kotlin force drif
 - **Granularity is one apply, not a trajectory** — the ports are f32, JS is f64, so a single force
   application keeps drift sub-tolerance (`2e-4 + 1e-3·|dv|`) while still catching a wrong coefficient,
   missing leg, or sign flip. Integration over many frames diverges by design and is *not* asserted bit-wise.
+- **Why a tolerance, not equality — and why that is the *correct* target, not a compromise.** Two
+  independent facts make exact cross-plane equality unattainable, so a calibrated tolerance is the
+  honest goal: (1) the ports are f32 and JS is f64, so rounding differs; and (2) several golden forces
+  evaluate transcendentals (`swirl`/`stream` use `sin`/`cos`; the extended/RNG coverage adds
+  `log`/`exp`/`pow`), and **IEEE-754 does not mandate correctly-rounded transcendental functions** — a
+  platform's `libm` (Swift/Kotlin) and JS's `Math` may return last-bit-different results for the same
+  input ([IEEE-754](https://en.wikipedia.org/wiki/IEEE_754); cross-language reproducible numerics is a
+  known *engineered* problem, cf. [Randompack, arXiv:2605.05099](https://arxiv.org/pdf/2605.05099)).
+  The `2e-4 + 1e-3·|dv|` band is sized to swallow both effects while still catching a real force bug.
+  This is why the conformance rule is "ports **match** at `depth: 0` within a stated tolerance," never
+  "bit-identical" — the latter is physically unachievable for these forces, so asserting it would be an
+  over-claim. (Same-plane equivalences elsewhere in the docs — the fixed vs legacy integrator at
+  `dt === 1`, the feedback sink vs its historical writes — *are* byte-identical, because they are the
+  same code path, not a cross-language port.)
 - **A divergence is a port bug.** Fix the force; never loosen the tolerance to hide it.
 - **Coverage:** the golden pins the canonical deterministic forces (attract, repel, swirl, stream,
   tether, viscosity) across all planes — Swift and Android both reproduce it. Each plane's *other*
