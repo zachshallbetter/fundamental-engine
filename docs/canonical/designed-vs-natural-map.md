@@ -32,7 +32,7 @@ Not every concept is a shortcut. Each cell below is tagged with one of:
 | Engine concept | What nature does | Relationship | What it buys |
 |---|---|---|---|
 | Force combination = linear sum | Superposition `F_net = ΣFᵢ` | **Faithful** | Correct by construction (why prioritized *allocation* would be the un-physical choice) |
-| Integrator (default Explicit Euler, opt-in `fixed` / `velocity-verlet`) | Continuous ODE; symplectic/Hamiltonian flow | **Departure** (default) / **idealization/partial** (opt-in Verlet) | Euler is cheap and good enough; Verlet provides stable orbits |
+| Integrator (default semi-implicit Euler, opt-in `fixed` / `velocity-verlet`) | Continuous ODE; symplectic/Hamiltonian flow | **Departure** (default) / **idealization/partial** (opt-in Verlet) | Semi-implicit Euler (`v` first, then `x += v·dt`) is cheap and good enough; the per-step friction/decay makes it non-symplectic and non-conserving by design (count is the invariant); Verlet gives stable orbits. `legacy` ≡ `fixed` at `dt === 1`. |
 | Friction = ×0.95 post-step | Dissipative forces (Coulomb/viscous/quadratic) → heat (2nd law) | **Departure** | An interface that always settles; no static-threshold bookkeeping |
 | Velocity cap `|v|≤c` (12) | Relativistic limit; or terminal velocity from drag balance | **Departure** | A hard anti-blow-up rail; a non-physical clip |
 | Mass = nominal 1 (opt-in `a=F/m`) | Inertia always: `a=F/m`, `m ∝ matter` | **Departure** (default) / **Faithful** (opt-in) | Authors tune `strength` directly without reasoning about mass |

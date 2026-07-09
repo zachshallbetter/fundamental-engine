@@ -268,8 +268,9 @@ platform writes what it can compute; `classifyMetric(name)` returns `'computed'`
 
 Suggested CSS variables for the platform-computed lane (the `--field-*` namespace; for density,
 `--d` and `--field-density` hold the same value — consistent, neither legacy, see
-`feedback-channels.md`). The legacy `--forces-*` CSS variables have been removed — only the `forces:*`
-**event** aliases remain for backward compatibility (those still fire from the engine):
+`feedback-channels.md`). The legacy `--forces-*` CSS variables and the `forces:*` **event** aliases
+have both been removed — `field:*` is the sole event namespace (verified: `FIELD_EVENTS` in
+`packages/core/src/agents/event-agent.ts` carries no alias; nothing dispatches `forces:*`):
 
 ```css
 --field-density
@@ -365,12 +366,12 @@ Focus must be a first-class field source.
 ## 9. Event Contract
 
 > **Implemented.** `FIELD_EVENTS` (`packages/core/src/agents/event-agent.ts`) names every event here
-> with its `field:*` canonical + `forces:*` alias and source metric; the `Thresholder` runtime makes
-> them hysteretic + debounced. `field:lit`/`dim` and the `*-body` lifecycle events dispatch today.
+> by its canonical `field:*` name and source metric; the `Thresholder` runtime makes them hysteretic +
+> debounced. `field:lit`/`dim` and the `*-body` lifecycle events dispatch today.
 
 Field events must be thresholded, debounced, and inspectable.
 
-Allowed event types (canonical `field:*`; each has a `forces:*` compat alias the FeedbackRegistry mirrors):
+Allowed event types (canonical `field:*` — the sole namespace; there is no `forces:*` alias):
 
 ```txt
 field:entered
@@ -688,7 +689,7 @@ Registry rules:
 A registry must declare which scheduler phase it runs in.
 Measurement must read geometry only in the read phase.
 Feedback must write only in the write phase.
-The FeedbackRegistry emits field:* events with forces:* event aliases for compatibility (the legacy --forces-* CSS variables have been removed).
+The FeedbackRegistry emits `field:*` events only (both the legacy `--forces-*` CSS variables and the `forces:*` event aliases have been removed).
 Relationship targets must resolve to registered bodies.
 Visual bindings must target hidden, non-orphan elements.
 Overlays must reference real links.
@@ -784,16 +785,19 @@ compact `--d`):
 --field-attention
 ```
 
-Events still ship a `forces:*` compatibility alias alongside each canonical `field:*` event:
+Events ship under the canonical `field:*` names **only** — the `forces:*` compatibility aliases have
+been removed (verified against `FIELD_EVENTS` in `packages/core/src/agents/event-agent.ts`, which
+carries no alias field, and the DOM dispatch which emits `field:register-body` / `field:unregister-body`
+directly):
 
 ```txt
-field:register-body     (alias: forces:register-body)
-field:unregister-body   (alias: forces:unregister-body)
-field:lit               (alias: forces:lit)
+field:register-body
+field:unregister-body
+field:lit
 ```
 
-These event aliases remain for backward compatibility. Any future alias may be deprecated only
-after:
+The sole remaining, doc-only alias is the `--mass` CSS variable (an alias of `--load`, removed at 1.0).
+Any future alias may be deprecated only after:
 
 ```txt
 docs are updated
