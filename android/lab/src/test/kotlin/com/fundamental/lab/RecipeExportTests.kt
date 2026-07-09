@@ -2,13 +2,13 @@ package com.fundamental.lab
 
 import com.fundamental.core.recipes.AccessibilityRecipe
 import com.fundamental.core.recipes.BodyRecipe
-import com.fundamental.core.recipes.FieldRecipe
+import com.fundamental.core.recipes.FieldPattern
 import com.fundamental.core.recipes.RelationshipRecipe
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-// RecipeExport — the FieldLab "export the current recipe" action. A @Serializable FieldRecipe value
+// RecipeExport — the FieldLab "export the current recipe" action. A @Serializable FieldPattern value
 // must round-trip: RecipeExport.toJson(it) → decode → an EQUAL recipe. Default-valued fields are
 // omitted from the bytes (encodeDefaults = false), so this checks the *value* survives, not the bytes.
 // Built from a minimal hand-authored recipe so the test carries no resource/classpath dependency on
@@ -19,7 +19,7 @@ class RecipeExportTests {
     // A plain decoder: tolerant of missing keys (the omitted defaults), strict on shape otherwise.
     private val json = Json { ignoreUnknownKeys = true }
 
-    private fun minimalRecipe(): FieldRecipe = FieldRecipe(
+    private fun minimalRecipe(): FieldPattern = FieldPattern(
         id = "test-orbit",
         name = "Test Orbit",
         intent = "verify the export round-trip",
@@ -44,14 +44,14 @@ class RecipeExportTests {
     fun toJsonRoundTripsToAnEqualRecipe() {
         val original = minimalRecipe()
         val text = RecipeExport.toJson(original)
-        val decoded = json.decodeFromString(FieldRecipe.serializer(), text)
+        val decoded = json.decodeFromString(FieldPattern.serializer(), text)
         assertEquals(original, decoded, "the decoded recipe equals the original")
     }
 
     @Test
     fun roundTripPreservesIdNamePrimitivesBodiesAndRender() {
         val original = minimalRecipe()
-        val decoded = json.decodeFromString(FieldRecipe.serializer(), RecipeExport.toJson(original))
+        val decoded = json.decodeFromString(FieldPattern.serializer(), RecipeExport.toJson(original))
         assertEquals(original.id, decoded.id, "id preserved")
         assertEquals(original.name, decoded.name, "name preserved")
         assertEquals(original.primitives, decoded.primitives, "primitives preserved")

@@ -1,7 +1,7 @@
 package com.fundamental.lab
 
 import com.fundamental.core.math.Vec3
-import com.fundamental.core.recipes.FieldRecipes
+import com.fundamental.core.recipes.FieldPatterns
 import com.fundamental.core.runtime.FieldController
 import java.awt.image.BufferedImage
 import java.io.File
@@ -25,7 +25,7 @@ private fun renderScenes(): List<LabScene> =
         listOf("gravity", "magnetism", "hunt", "wall", "spawn", "pressure")
             .mapNotNull { ForceCatalog.entry(it) }
             .map { forceScene(it) } +
-        FieldRecipes.all.filter { it.tier == "core" }.take(2).map { recipeScene(it) }
+        FieldPatterns.all.filter { it.tier == "core" }.take(2).map { recipeScene(it) }
 
 private fun slug(name: String) = name.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-')
 

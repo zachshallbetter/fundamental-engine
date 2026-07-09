@@ -4,7 +4,7 @@ import com.fundamental.core.engine.ForceRegistry
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-// FieldRecipe schema + validation (recipes/schema.ts) — the Kotlin port of
+// FieldPattern schema + validation (recipes/schema.ts) — the Kotlin port of
 // swift/Sources/FundamentalCore/Recipes/Schema.swift. A recipe is a portable, inspectable field
 // program; the 64-recipe catalog is LOCKED CANON, decoded from the shared data/recipes.json.
 
@@ -37,7 +37,7 @@ data class AccessibilityRecipe(val reducedMotion: String, val meaningWithoutMoti
 
 /** A portable field recipe (authoring §5). Only `primitives` (runtime tokens) becomes behavior. */
 @Serializable
-data class FieldRecipe(
+data class FieldPattern(
     val id: String,
     val name: String,
     val intent: String,
@@ -58,7 +58,7 @@ data class FieldRecipe(
 )
 
 @Serializable
-private data class RecipeFile(val count: Int = 0, val recipes: List<FieldRecipe> = emptyList())
+private data class RecipeFile(val count: Int = 0, val recipes: List<FieldPattern> = emptyList())
 
 /** A validation problem: a JSON-ish path + the issue. */
 data class RecipeProblem(val path: String, val issue: String)
@@ -71,7 +71,7 @@ fun primitivesOf(bodies: List<BodyRecipe>): List<String> {
 }
 
 /** Validate a recipe's shape and references against a force registry. Empty = valid. */
-fun validateRecipe(r: FieldRecipe, forces: ForceRegistry): List<RecipeProblem> {
+fun validateRecipe(r: FieldPattern, forces: ForceRegistry): List<RecipeProblem> {
     val problems = ArrayList<RecipeProblem>()
     if (r.id.isEmpty()) problems.add(RecipeProblem("id", "required"))
     if (r.name.isEmpty()) problems.add(RecipeProblem("name", "required"))
@@ -96,16 +96,23 @@ fun validateRecipe(r: FieldRecipe, forces: ForceRegistry): List<RecipeProblem> {
 }
 
 /** The locked 64-recipe catalog (4 tiers × 16), decoded from the embedded shared canon. */
-object FieldRecipes {
+object FieldPatterns {
     private val json = Json { ignoreUnknownKeys = true }
 
-    val all: List<FieldRecipe> by lazy {
-        val stream = FieldRecipes::class.java.getResourceAsStream("/recipes.json")
+    val all: List<FieldPattern> by lazy {
+        val stream = FieldPatterns::class.java.getResourceAsStream("/recipes.json")
             ?: error("FundamentalCore: bundled recipes.json is missing (the syncRecipes Gradle task pulls it in)")
         val text = stream.bufferedReader().use { it.readText() }
         json.decodeFromString(RecipeFile.serializer(), text).recipes
     }
 
-    fun recipe(id: String): FieldRecipe? = all.firstOrNull { it.id == id }
-    fun recipes(tier: String): List<FieldRecipe> = all.filter { it.tier == tier }
+    fun recipe(id: String): FieldPattern? = all.firstOrNull { it.id == id }
+    fun recipes(tier: String): List<FieldPattern> = all.filter { it.tier == tier }
 }
+
+// Deprecated aliases (recipe -> Pattern rename; removed at 1.0)
+@Deprecated("Renamed to FieldPattern", ReplaceWith("FieldPattern"))
+typealias FieldRecipe = FieldPattern
+
+@Deprecated("Renamed to FieldPatterns", ReplaceWith("FieldPatterns"))
+typealias FieldRecipes = FieldPatterns
