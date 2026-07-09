@@ -38,6 +38,7 @@ host, not the boundary. Canvas is one render surface, not the whole system.
 | [`visual-language-and-geometry.md`](visual-language-and-geometry.md) | The visual language layer: metric→appearance mappings and geometry |
 | [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring surfaces and the FieldRecipe system |
 | [`testing-and-conformance.md`](testing-and-conformance.md) | Test contracts and the conformance framework (the Lab-as-detector) |
+| [`stability-and-convergence.md`](stability-and-convergence.md) | The force-directed failure canon, per-mechanism: what the field damps or side-steps (seeded RNG, friction, DOM-owned placement, plausibility-over-accuracy) vs what it owns (`dynamic`-body jitter, tuning brittleness) — and the arguments we deliberately do NOT make |
 | [`api-stability.md`](api-stability.md) | The freeze contract: the frozen surface, the experimental surface, the 0.x compatibility rules |
 | [`substrate-api.md`](substrate-api.md) | The shipped substrate read API (EXPERIMENTAL): `query` / `snapshot` / `diff` / `replay` / `projections` + governance lint, body authority + dynamic recoil, integrator modes, accumulator channels, first-class body identity |
 | [`agent-safety-model.md`](agent-safety-model.md) | The **Govern** verb: the safety/governance model for agents reading a field — three invariants (agent-readable ≠ agent-writable; snapshots withhold opaque `body.data` by default; projections reveal, never mutate) linking outward to `substrate-api.md` (EXPERIMENTAL) |
