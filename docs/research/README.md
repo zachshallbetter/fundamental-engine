@@ -186,6 +186,18 @@ about them. Each paper that touches the physics restates the relevant ones rathe
    sources/sinks (`spawn`, `sink`). Energy and momentum are not promised; count is.
 6. **No user-study results exist yet.** Empirical claims in the family are framed as *designs* and
    *hypotheses* (Papers 2–3 and others), never as measured outcomes, until a study is actually run.
+7. **The force-directed failure modes are inherited and named — and three tempting defenses are
+   false.** Fundamental is a force system, so it carries the documented force-directed canon
+   (non-determinism, local minima, oscillation, tuning brittleness). It damps or side-steps most of it
+   (seeded RNG; per-step friction; anchored bodies mean the DOM owns placement, so the field never lays
+   out) but *owns* the rest for `dynamic`-authority bodies — stated per-mechanism in
+   [stability-and-convergence.md](../canonical/stability-and-convergence.md). Three convenient arguments
+   were **refuted in adversarial review and must never be used**: (a) that our non-conservation is an
+   *unavoidable* impossibility (it is not — semi-implicit symplectic Euler exists and nearly conserves
+   energy; we choose non-conservation for **plausibility**, cf. Dinev/Liu/Kavan, ACM TOG 2018); (b) that
+   force-directed layout is *cubic* `O(n³)` (modern Barnes–Hut / multilevel schemes are
+   near-linearithmic); (c) the *"unbounded-repulsion flaw"* framing (it describes a specific competing
+   force model, not Fundamental's bounded `(1 − d/r)ⁿ` designed forces).
 
 ## Internal review
 
