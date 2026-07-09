@@ -13,7 +13,7 @@ host, not the boundary. Canvas is one render surface, not the whole system.
 
 > Concepts describe. Dimensions hold state. Fields structure. Relationships associate. Forces couple.
 > Tokens execute. Metrics measure. Diagnostics explain. Conditions activate. Lenses read.
-> Projections reveal. Field Formations compose. FieldRecipe represents. Field Contracts execute.
+> Projections reveal. Field Patterns compose. FieldRecipe represents. Field Contracts execute.
 > No word lives in two lanes.
 
 | Document | Role |

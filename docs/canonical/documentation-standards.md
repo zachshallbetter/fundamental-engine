@@ -167,14 +167,17 @@ Words that sit close enough to collide. Keep them apart:
 ```txt
 Lens        how the field is READ      (scopes/filters a reading; pure, over any FieldQueryResult)
 Projection  how the field is REVEALED  (writes to a declared host output surface; never to a force)
-Formation   how the field is AUTHORED  (a Field Formation — the conceptual arrangement)
-Contract    how the formation EXECUTES (a Field Contract — the compiled plan from a FieldRecipe)
+Pattern     how the field is AUTHORED  (a Field Pattern — the composed arrangement of forces)
+Contract    how the Pattern EXECUTES   (a Field Contract — the compiled plan; API type FieldRecipe, mid-rename → FieldPattern)
 ```
 
-- **Field Formation** vs **global formation mode.** `ambient`/`wells`/`lanes`/`scatter`/`accretion` are
-  *global formation modes* (a.k.a. field-shape modes) set via `setFormation(...)`. Never call them
-  "formations" without the qualifier — the bare word is reserved for the authored **Field Formation**
-  concept.
+- **Field Pattern** vs **formation mode.** The authored concept — a named composed arrangement of forces
+  that yields a characteristic behavior — is a **Field Pattern** (renamed from the former "Field
+  Formation," which collided with the modes below; the colloquial "recipe" is retired too, end-to-end —
+  the API `FieldRecipe`/`compileRecipe` become `FieldPattern`/`compilePattern` with deprecation aliases,
+  see the Pattern rename epic). Separately, `ambient`/`wells`/`lanes`/`scatter`/`accretion` are
+  *formation modes* set via `setFormation(...)`. With the concept now "Pattern," the bare word
+  "formation" refers only to these global modes — the collision is gone.
 - **Field Agent** vs **Software Agent.** A *Field Agent* is a runtime participant that consumes
   influence (particles are the lightest). A *Software Agent* is an external actor/tool that reads or
   operates on field state. A software agent may read Field Agents through `query()`/`snapshot()`; it is

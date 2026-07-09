@@ -258,10 +258,12 @@ mode (or Kinematic-with-readback), which is why the body-authority decision gate
 
 ## On Field Formation (without renaming the API)
 
-After this physics framing, "recipe" can read as casual — but `FieldRecipe`, `compileRecipe`, and
-`applyRecipe` are part of the **frozen public API** ([`api-stability.md`](api-stability.md)). Do **not**
-rename them. The canonical concept is a **Field Formation**; the API representation stays `FieldRecipe`.
-Use lane separation instead:
+After this physics framing, "recipe" reads as casual — a cooking metaphor in a physics substrate. So
+the concept is being renamed end-to-end: the authored arrangement of forces is a **Field Pattern**
+(replacing the former "Field Formation," which collided with the `setFormation` modes). The API
+`FieldRecipe`/`compileRecipe`/`applyRecipe` ([`api-stability.md`](api-stability.md)) is renamed to
+`FieldPattern`/`compilePattern`/`applyPattern` with one-cycle **deprecation aliases** (the old names
+re-export and dev-warn, removed at 1.0 — see the Pattern rename epic). Lane separation still holds:
 
 ```txt
 Pattern          the human-facing reusable behavior name
