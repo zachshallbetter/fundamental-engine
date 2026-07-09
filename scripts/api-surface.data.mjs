@@ -13,10 +13,12 @@
 /** Frozen value exports — functions/consts that must remain importable, with their owning package. */
 export const FROZEN_VALUES = [
   { pkg: '@fundamental-engine/core', name: 'createField', note: 'host-required primitive — throws without opts.host (the renderer-agnostic door).' },
-  { pkg: '@fundamental-engine/core', name: 'compileRecipe', note: 'pure FieldRecipe → compiled plan (no DOM).' },
+  { pkg: '@fundamental-engine/core', name: 'compilePattern', note: 'pure FieldPattern → compiled plan (no DOM).' },
+  { pkg: '@fundamental-engine/core', name: 'compileRecipe', note: 'DEPRECATED alias of compilePattern (recipe → Pattern rename) — removed at 1.0; frozen until then.' },
   { pkg: '@fundamental-engine/dom', name: 'browserHost', note: 'the canonical DOM FieldHost for core.createField.' },
   { pkg: '@fundamental-engine/dom', name: 'createFieldPlatform', note: 'wires the six native-first registries on a root.' },
-  { pkg: '@fundamental-engine/dom', name: 'applyRecipe', note: 'applies a recipe to a live platform (compileRecipe lives in core).' },
+  { pkg: '@fundamental-engine/dom', name: 'applyPattern', note: 'applies a pattern to a live platform (compilePattern lives in core).' },
+  { pkg: '@fundamental-engine/dom', name: 'applyRecipe', note: 'DEPRECATED alias of applyPattern (recipe → Pattern rename) — removed at 1.0; frozen until then.' },
   { pkg: '@fundamental-engine/dom', name: 'bindData', note: 'binds records → bodies; data drives the field.' },
   { pkg: '@fundamental-engine/vanilla', name: 'createField', note: 'the one imperative door — resolves the host from opts.host -> bounds (contained) -> browserHost (default). Frozen contract preserved: createField(canvas) with no host still auto-supplies browserHost; bounds/host are additive options.' },
   { pkg: '@fundamental-engine/vanilla', name: 'browserHost', note: 're-export of the platform host for the no-framework path.' },
@@ -27,7 +29,8 @@ export const FROZEN_VALUES = [
 
 /** Frozen type exports — interfaces that must remain exported, with their owning package. */
 export const FROZEN_TYPES = [
-  { pkg: '@fundamental-engine/core', name: 'FieldRecipe', note: 'the recipe schema (recipes/schema.ts).' },
+  { pkg: '@fundamental-engine/core', name: 'FieldPattern', note: 'the pattern schema (recipes/schema.ts).' },
+  { pkg: '@fundamental-engine/core', name: 'FieldRecipe', note: 'DEPRECATED alias of FieldPattern (recipe → Pattern rename) — removed at 1.0; frozen until then.' },
   { pkg: '@fundamental-engine/core', name: 'FieldHost', note: 'the renderer-agnostic host contract createField requires; browserHost implements it.' },
   { pkg: '@fundamental-engine/dom', name: 'FieldPlatform', note: 'the surface createFieldPlatform returns.' },
 ];
@@ -94,7 +97,7 @@ export const COMPAT_RULES = [
   'Pre-1.0 semver: in 0.x the MINOR is the breaking position. A breaking change to any frozen symbol bumps 0.MINOR (e.g. 0.2 → 0.3); additive and fix-only changes bump PATCH. Consumers should pin to ~0.MINOR.',
   'The stable surface is additive-only within a 0.MINOR line: new exports, new optional fields, and new recipes/modes may land in a PATCH; renaming, removing, or changing the signature/shape of a frozen symbol requires a MINOR bump and a migration note.',
   'createField is frozen in BOTH Fundamental (host-required primitive; throws without opts.host) and @fundamental-engine/vanilla (host-bundled convenience). Both contracts are preserved; the vanilla door must keep auto-supplying browserHost.',
-  'Package ownership is part of the contract and must not drift within 0.x: compileRecipe / FieldRecipe / FieldHost are core (Fundamental); createFieldPlatform / applyRecipe / bindData / FieldPlatform / browserHost are @fundamental-engine/dom; field-root / field-cell are @fundamental-engine/elements.',
+  'Package ownership is part of the contract and must not drift within 0.x: compilePattern / FieldPattern / FieldHost (and the deprecated aliases compileRecipe / FieldRecipe) are core (Fundamental); createFieldPlatform / applyPattern / bindData / FieldPlatform / browserHost (and the deprecated alias applyRecipe) are @fundamental-engine/dom; field-root / field-cell are @fundamental-engine/elements.',
   'Bodies are a stable ATTRIBUTE contract: [data-body] on ordinary elements is the frozen authoring surface. There is no <field-body> tag and none will be introduced as the body mechanism.',
   'The experimental surface carries no semver guarantee. Diagnostics/agent/render-mode exports that happen to ship today are shipped-but-unfrozen — treat them as experimental until explicitly added to the frozen list.',
 ];

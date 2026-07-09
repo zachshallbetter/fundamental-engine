@@ -99,9 +99,12 @@ export const WAYFINDING_RECIPES: readonly FieldRecipe[] = [WAYFINDING_FIELD, WAY
 import { CHARGE_RECIPES } from './charge.ts';
 import { GRAVITY_RECIPES } from './gravity.ts';
 
-/** Experimental recipes surfaced on the /recipes hub outside the canonical 64. */
-export const EXPERIMENTAL_RECIPES: readonly FieldRecipe[] = [
+/** Experimental patterns surfaced on the /recipes hub outside the canonical 64. */
+export const EXPERIMENTAL_PATTERNS: readonly FieldRecipe[] = [
   ...WAYFINDING_RECIPES,
   ...CHARGE_RECIPES,
   ...GRAVITY_RECIPES,
 ];
+
+/** @deprecated Renamed to {@link EXPERIMENTAL_PATTERNS} (recipe → Pattern); removed at 1.0. */
+export const EXPERIMENTAL_RECIPES = EXPERIMENTAL_PATTERNS;

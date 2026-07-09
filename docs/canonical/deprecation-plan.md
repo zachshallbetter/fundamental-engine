@@ -48,6 +48,19 @@ forever. They are not migration cruft and get **no** deprecation warning:
 | 1 | `--mass` CSS var — *written* alongside `--load` (back-compat alias) | `--load` | `packages/core/src/engine/feedback-sink.ts` (~L47); also mirrored by `packages/elements/src/platform-runtime.ts` | No — a CSS var write is not runtime-observable to JS (CSS reads can't be intercepted); docs + release notes are the signal | **`1.0`** — stop writing `--mass` |
 | 2 | `<field-field>` custom element — *registered* alongside `<field-root>` | `<field-root>` | `packages/elements/src/index.ts` (~L702) | Feasible (a `connectedCallback` warn) but not wired — low-cost registration mirror | **`1.0`** — stop registering (maintainer may bless it as permanent instead; call it at `1.0`) |
 | 3 | `@fundamental-engine/platform` package — re-exports `@fundamental-engine/dom` | `@fundamental-engine/dom` | `packages/platform/` (thin alias; `package.json` `description` says DEPRECATED) | **Yes** — one-time dev-only `console.warn` from the entry module on import | **`1.0`** — stop publishing |
+| 4 | `FieldRecipe` / `SceneRecipe` type — alias of `FieldPattern` (recipe → Pattern rename) | `FieldPattern` | `packages/core/src/recipes/schema.ts` | No — a `type` re-export has no runtime; the `@deprecated` JSDoc + docs are the signal | **`1.0`** — remove the alias |
+| 5 | `compileRecipe` value — alias of `compilePattern` | `compilePattern` | `packages/core/src/recipes/compile.ts` | No — a `const` re-export, no wrapper (matches the codebase's `@deprecated`-only convention); JSDoc + docs are the signal | **`1.0`** — remove |
+| 6 | `CompiledRecipe` type — alias of `CompiledPattern` | `CompiledPattern` | `packages/core/src/recipes/compile.ts` | No — `@deprecated` JSDoc | **`1.0`** — remove |
+| 7 | `FIELD_RECIPES` / `ESSENTIAL_RECIPES` / `FIRST_RELEASE_RECIPE_IDS` consts — aliases of `FIELD_PATTERNS` / `FIRST_RELEASE_PATTERN_IDS` | `FIELD_PATTERNS` / `FIRST_RELEASE_PATTERN_IDS` | `packages/core/src/recipes/catalog.ts` | No — `@deprecated` JSDoc | **`1.0`** — remove |
+| 8 | `EXPERIMENTAL_RECIPES` const — alias of `EXPERIMENTAL_PATTERNS` | `EXPERIMENTAL_PATTERNS` | `packages/core/src/recipes/wayfinding.ts` | No — `@deprecated` JSDoc | **`1.0`** — remove |
+| 9 | `applyRecipe` value + `ApplyRecipeOptions` / `AppliedRecipe` / `AppliedRecipeInspection` types — aliases of `applyPattern` / `ApplyPatternOptions` / `AppliedPattern` / `AppliedPatternInspection` | `applyPattern` (+ the `Pattern` types) | `packages/dom/src/apply-recipe.ts` | No — `const`/`type` re-exports, `@deprecated` JSDoc | **`1.0`** — remove |
+
+> **Rows 4–9 (the recipe → Pattern rename, phase 1).** The concept "recipe" is renamed to **Pattern**
+> end-to-end; the frozen public API (`FieldRecipe`/`compileRecipe`/`applyRecipe`) and the documented data
+> consts gain `FieldPattern`/`compilePattern`/`applyPattern`/`FIELD_PATTERNS`/… canonical names, with the
+> old names kept as `@deprecated` aliases (the same no-runtime-warn convention `SceneRecipe`/
+> `ESSENTIAL_RECIPES` already use). Additive — nothing breaks pre-`1.0`. Internal-only helper type names
+> (`BodyRecipe`, `RecipeTier`, `RECIPE_TIERS`, …) and the `data/recipes.json` filename are a later phase.
 
 **On row #1 (`--mass`) and CSS vars generally:** the engine *writes* the var; a CSS `var(--mass)` read
 happens entirely in the style engine and is invisible to JS, so there is no interception point for a

@@ -19,8 +19,8 @@ import {
   type CompiledRecipe,
 } from '@fundamental-engine/core';
 
-export interface ApplyRecipeOptions {
-  /** existing elements (or a selector within root) to annotate as the recipe's bodies; if omitted, demo elements are created. */
+export interface ApplyPatternOptions {
+  /** existing elements (or a selector within root) to annotate as the pattern's bodies; if omitted, demo elements are created. */
   bodies?: Element[] | string;
   /** when bodies are provided, whether to overwrite their data-body attributes with the recipe's (default true). Set false to keep caller-owned tokens (e.g. bindData) while still binding the recipe's metrics. */
   annotateBodies?: boolean;
@@ -58,7 +58,7 @@ export interface ApplyRecipeOptions {
   extraMetrics?: string[];
 }
 
-export interface AppliedRecipeInspection {
+export interface AppliedPatternInspection {
   id: string;
   frame: number;
   measurements: number;
@@ -76,7 +76,7 @@ export interface AppliedRecipeInspection {
   reducedMotion: boolean;
 }
 
-export interface AppliedRecipe {
+export interface AppliedPattern {
   id: string;
   recipe: FieldRecipe;
   compiled: CompiledRecipe;
@@ -84,10 +84,17 @@ export interface AppliedRecipe {
   root: Element;
   elements: Element[];
   reducedMotion: boolean;
-  inspect(): AppliedRecipeInspection;
+  inspect(): AppliedPatternInspection;
   tick(now?: number): void;
   destroy(): void;
 }
+
+/** @deprecated Renamed to {@link ApplyPatternOptions} (recipe → Pattern); removed at 1.0. */
+export type ApplyRecipeOptions = ApplyPatternOptions;
+/** @deprecated Renamed to {@link AppliedPatternInspection} (recipe → Pattern); removed at 1.0. */
+export type AppliedRecipeInspection = AppliedPatternInspection;
+/** @deprecated Renamed to {@link AppliedPattern} (recipe → Pattern); removed at 1.0. */
+export type AppliedRecipe = AppliedPattern;
 
 const isMetricKind = (m: string): m is MetricKind => (METRIC_KINDS as readonly string[]).includes(m);
 const num = (v: string | null): number | undefined => {
@@ -115,7 +122,10 @@ export function driveRenderPlan(field: RecipeFieldTarget, plan: { underlay: stri
   if (field.setHeatmap) field.setHeatmap(plan.heatmap);
 }
 
-export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRecipeOptions = {}): AppliedRecipe {
+/** @deprecated Renamed to {@link applyPattern} (recipe → Pattern); removed at 1.0. */
+export const applyRecipe = applyPattern;
+
+export function applyPattern(root: Element, recipe: FieldRecipe, options: ApplyPatternOptions = {}): AppliedPattern {
   // Derive the effective recipe from the scoped-field options — a copy, so a shared catalog
   // recipe object is never mutated by an applied run (`renderless` strips the render stack;
   // `extraMetrics` appends + dedupes metric lanes). No options → the input recipe, untouched.
