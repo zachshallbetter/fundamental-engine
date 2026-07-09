@@ -183,7 +183,7 @@ struct LabRootView: View {
                 }
             }
             Section("The canon — 64 recipes") {
-                ForEach(FieldRecipes.all, id: \.id) { r in
+                ForEach(FieldPatterns.all, id: \.id) { r in
                     SidebarRow(symbol: "book.closed", title: r.name, subtitle: r.intent)
                         .tag(LabSelection.recipe(r.id))
                 }
@@ -360,7 +360,7 @@ struct LabRootView: View {
                     .foregroundStyle(.secondary)
                     .padding(.top, 2)
             }
-            if case .recipe(let id) = selection, let r = FieldRecipes.recipe(id: id) {
+            if case .recipe(let id) = selection, let r = FieldPatterns.recipe(id: id) {
                 recipeDetails(r)
             }
             Text("click → burst · drag → flow · hover a card → engage · adjust the formula in the inspector ›")
@@ -378,7 +378,7 @@ struct LabRootView: View {
     /// The recipe's canon lanes, straight from the locked data: tokens execute, metrics
     /// measure, accessibility survives without motion.
     @ViewBuilder
-    private func recipeDetails(_ r: FieldRecipe) -> some View {
+    private func recipeDetails(_ r: FieldPattern) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             // the token lane, each in its force's identity color — the same hue the
             // cards carrying that token wear

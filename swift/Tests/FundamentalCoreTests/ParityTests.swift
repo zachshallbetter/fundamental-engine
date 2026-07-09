@@ -494,26 +494,26 @@ struct RecipeTests {
 
     @Test("the locked catalog decodes: 64 recipes, 4 tiers × 16")
     func catalogLoads() {
-        #expect(FieldRecipes.all.count == 64)
-        #expect(FieldRecipes.recipes(tier: .core).count == 16)
-        #expect(FieldRecipes.recipes(tier: .applied).count == 16)
-        #expect(FieldRecipes.recipes(tier: .systems).count == 16)
-        #expect(FieldRecipes.recipes(tier: .operational).count == 16)
+        #expect(FieldPatterns.all.count == 64)
+        #expect(FieldPatterns.recipes(tier: .core).count == 16)
+        #expect(FieldPatterns.recipes(tier: .applied).count == 16)
+        #expect(FieldPatterns.recipes(tier: .systems).count == 16)
+        #expect(FieldPatterns.recipes(tier: .operational).count == 16)
     }
 
     @Test("every recipe in the canon validates against the standard registry")
     func allValid() {
         let reg = Registry.standard()
-        for r in FieldRecipes.all {
+        for r in FieldPatterns.all {
             let problems = validateRecipe(r, against: reg)
             #expect(problems.isEmpty, "recipe \(r.id): \(problems.map { "\($0.path): \($0.issue)" }.joined(separator: "; "))")
         }
     }
 
-    @Test("compileRecipe preserves the lane split and builds working bodies")
+    @Test("compilePattern preserves the lane split and builds working bodies")
     func compile() {
-        let r = FieldRecipes.recipe(id: "priority-well")!
-        let compiled = compileRecipe(r)
+        let r = FieldPatterns.recipe(id: "priority-well")!
+        let compiled = compilePattern(r)
         #expect(compiled.bodies.count == r.bodies.count)
         #expect(compiled.bodies[0].tokens == ["attract"])
         #expect(compiled.feedback.contains { $0.metric == "density" && $0.variable == "field-density" })

@@ -7,7 +7,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 // Recipe compiler (recipes/compile.ts, authoring §5) — the Kotlin port of
-// swift/Sources/FundamentalCore/Recipes/Compile.swift. Turns a portable FieldRecipe into a runtime
+// swift/Sources/FundamentalCore/Recipes/Compile.swift. Turns a portable FieldPattern into a runtime
 // plan. The lane split is preserved: concepts describe · tokens execute · metrics measure ·
 // diagnostics explain · conditions activate. Only the `primitives`/body tokens lane becomes behavior.
 
@@ -36,9 +36,9 @@ data class RecipeFeedbackBinding(val metric: String, val variable: String)
 data class RecipeReducedMotionPlan(val reducedMotion: String, val meaningWithoutMotion: String, val staticOutputs: List<String>)
 
 /** A compiled recipe — the runtime plan, lanes preserved. */
-data class CompiledRecipe(
+data class CompiledPattern(
     val id: String,
-    val recipe: FieldRecipe,
+    val recipe: FieldPattern,
     val bodies: List<RecipeBodyRegistration>,
     val relationships: List<RecipeRelationshipRegistration>,
     val feedback: List<RecipeFeedbackBinding>,
@@ -48,7 +48,7 @@ data class CompiledRecipe(
     val reducedMotion: RecipeReducedMotionPlan,
 )
 
-private fun staticOutputs(r: FieldRecipe): List<String> {
+private fun staticOutputs(r: FieldPattern): List<String> {
     val out = ArrayList<String>()
     if (r.metrics.isNotEmpty()) out.add("metric-badges")
     if (!r.relationships.isNullOrEmpty()) out.add("relationship-list")
@@ -59,7 +59,7 @@ private fun staticOutputs(r: FieldRecipe): List<String> {
 }
 
 /** Compile a recipe into a runtime plan (pure). Behavior comes only from the strict token lane. */
-fun compileRecipe(r: FieldRecipe): CompiledRecipe = CompiledRecipe(
+fun compilePattern(r: FieldPattern): CompiledPattern = CompiledPattern(
     id = r.id,
     recipe = r,
     bodies = r.bodies.map { b ->
@@ -86,3 +86,10 @@ fun compileRecipe(r: FieldRecipe): CompiledRecipe = CompiledRecipe(
         staticOutputs = staticOutputs(r),
     ),
 )
+
+// Deprecated aliases (recipe -> Pattern rename; removed at 1.0)
+@Deprecated("Renamed to CompiledPattern", ReplaceWith("CompiledPattern"))
+typealias CompiledRecipe = CompiledPattern
+
+@Deprecated("Renamed to compilePattern", ReplaceWith("compilePattern(r)"))
+fun compileRecipe(r: FieldPattern): CompiledPattern = compilePattern(r)

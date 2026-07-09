@@ -1,8 +1,8 @@
 package com.fundamental.core
 
 import com.fundamental.core.engine.Registry
-import com.fundamental.core.recipes.FieldRecipes
-import com.fundamental.core.recipes.compileRecipe
+import com.fundamental.core.recipes.FieldPatterns
+import com.fundamental.core.recipes.compilePattern
 import com.fundamental.core.recipes.validateRecipe
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,13 +17,13 @@ class RecipeTests {
 
     @Test
     fun theCanonLoadsAll64() {
-        assertEquals(64, FieldRecipes.all.size, "the locked catalog is 64 recipes")
+        assertEquals(64, FieldPatterns.all.size, "the locked catalog is 64 recipes")
     }
 
     @Test
     fun everyRecipeValidatesAgainstTheStandardRegistry() {
         val failures = StringBuilder()
-        for (r in FieldRecipes.all) {
+        for (r in FieldPatterns.all) {
             val problems = validateRecipe(r, forces)
             if (problems.isNotEmpty()) failures.append("\n${r.id}: ${problems.joinToString("; ") { "${it.path} — ${it.issue}" }}")
         }
@@ -32,7 +32,7 @@ class RecipeTests {
 
     @Test
     fun everyBodyTokenIsARegisteredForce() {
-        for (r in FieldRecipes.all) {
+        for (r in FieldPatterns.all) {
             for (b in r.bodies) {
                 for (t in b.body.split(" ").filter { it.isNotEmpty() }) {
                     assertTrue(forces.containsKey(t), "recipe ${r.id} references unknown force '$t'")
@@ -43,8 +43,8 @@ class RecipeTests {
 
     @Test
     fun compileProducesRunnableBodies() {
-        val r = FieldRecipes.all.first { it.bodies.isNotEmpty() }
-        val compiled = compileRecipe(r)
+        val r = FieldPatterns.all.first { it.bodies.isNotEmpty() }
+        val compiled = compilePattern(r)
         assertEquals(r.bodies.size, compiled.bodies.size)
         assertTrue(compiled.bodies.all { it.tokens.isNotEmpty() }, "every compiled body carries tokens")
         // a metric becomes a feedback binding (field-<metric>)
@@ -55,7 +55,7 @@ class RecipeTests {
 
     @Test
     fun fourTiersAreRepresented() {
-        val tiers = FieldRecipes.all.mapNotNull { it.tier }.toSet()
+        val tiers = FieldPatterns.all.mapNotNull { it.tier }.toSet()
         assertTrue(tiers.containsAll(setOf("core", "applied", "systems", "operational")), "all four tiers present (got $tiers)")
     }
 }

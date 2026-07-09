@@ -378,8 +378,8 @@ public enum LabScenes {
 
     /// The canon, runnable: any of the locked 64 recipes compiled into live bodies.
     public static func recipe(_ id: String, width: Float = 1, height: Float = 1) -> LabScene? {
-        guard let r = FieldRecipes.recipe(id: id) else { return nil }
-        let compiled = compileRecipe(r)
+        guard let r = FieldPatterns.recipe(id: id) else { return nil }
+        let compiled = compilePattern(r)
         // lay the recipe's bodies out on a ring around the canvas centre
         let n = compiled.bodies.count
         var cards: [CardSpec] = []

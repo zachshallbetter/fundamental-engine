@@ -1,6 +1,6 @@
 import Foundation
 
-// MARK: - FieldRecipe schema + validation (recipes/schema.ts)
+// MARK: - FieldPattern schema + validation (recipes/schema.ts)
 //
 // A recipe is a portable, serializable, inspectable field program: the natural field it
 // translates, the engine primitives + bodies, the render stack, metrics, diagnostics,
@@ -66,7 +66,7 @@ public enum RecipeStatus: String, Codable, Sendable {
 ///
 /// The lane split: concepts describe · tokens execute · metrics measure · diagnostics
 /// explain · conditions activate. Only `primitives` (the runtime tokens) becomes behavior.
-public struct FieldRecipe: Codable, Sendable {
+public struct FieldPattern: Codable, Sendable {
     public var id: String
     public var name: String
     public var intent: String
@@ -118,7 +118,7 @@ public func primitivesOf(_ bodies: [BodyRecipe]) -> [String] {
 
 /// Validate a recipe's shape and references against a force registry. Returns every
 /// problem (empty = valid).
-public func validateRecipe(_ r: FieldRecipe, against registry: Registry) -> [RecipeProblem] {
+public func validateRecipe(_ r: FieldPattern, against registry: Registry) -> [RecipeProblem] {
     var problems: [RecipeProblem] = []
     if r.id.isEmpty { problems.append(RecipeProblem(path: "id", issue: "required")) }
     if r.name.isEmpty { problems.append(RecipeProblem(path: "name", issue: "required")) }
@@ -165,14 +165,14 @@ public func validateRecipe(_ r: FieldRecipe, against registry: Registry) -> [Rec
 
 struct RecipeFile: Codable {
     var count: Int
-    var recipes: [FieldRecipe]
+    var recipes: [FieldPattern]
 }
 
 /// The locked 64-recipe catalog (4 tiers × 16), decoded from the embedded canon.
 /// Loaded once; throws a fatal error only if the bundled resource is corrupt (a build
 /// failure, not a runtime condition).
-public enum FieldRecipes {
-    public static let all: [FieldRecipe] = {
+public enum FieldPatterns {
+    public static let all: [FieldPattern] = {
         guard let url = Bundle.module.url(forResource: "recipes", withExtension: "json"),
               let data = try? Data(contentsOf: url),
               let file = try? JSONDecoder().decode(RecipeFile.self, from: data) else {
@@ -181,11 +181,19 @@ public enum FieldRecipes {
         return file.recipes
     }()
 
-    public static func recipe(id: String) -> FieldRecipe? {
+    public static func recipe(id: String) -> FieldPattern? {
         all.first { $0.id == id }
     }
 
-    public static func recipes(tier: RecipeTier) -> [FieldRecipe] {
+    public static func recipes(tier: RecipeTier) -> [FieldPattern] {
         all.filter { $0.tier == tier }
     }
 }
+
+// MARK: - Deprecated aliases (recipe → Pattern rename; removed at 1.0)
+
+@available(*, deprecated, renamed: "FieldPattern")
+public typealias FieldRecipe = FieldPattern
+
+@available(*, deprecated, renamed: "FieldPatterns")
+public typealias FieldRecipes = FieldPatterns

@@ -5,7 +5,7 @@ import simd
 
 // MARK: - Recipe compiler (recipes/compile.ts, authoring §5)
 //
-// Turns a portable FieldRecipe into a runtime plan — the bridge from "recipe as record"
+// Turns a portable FieldPattern into a runtime plan — the bridge from "recipe as record"
 // to "recipe as program". The lane split is preserved on purpose: concepts describe ·
 // tokens execute · metrics measure · diagnostics explain · conditions activate. Only the
 // `primitives` lane becomes body behavior; concepts are never compiled into force tokens.
@@ -64,9 +64,9 @@ public struct RecipeReducedMotionPlan {
 }
 
 /// A compiled recipe — the runtime plan, lanes preserved.
-public struct CompiledRecipe {
+public struct CompiledPattern {
     public var id: String
-    public var recipe: FieldRecipe
+    public var recipe: FieldPattern
     public var bodies: [RecipeBodyRegistration]
     public var relationships: [RecipeRelationshipRegistration]
     public var feedback: [RecipeFeedbackBinding]
@@ -77,7 +77,7 @@ public struct CompiledRecipe {
 }
 
 /// Derive the static surfaces a reduced-motion render should produce from the lanes.
-private func staticOutputs(_ r: FieldRecipe) -> [String] {
+private func staticOutputs(_ r: FieldPattern) -> [String] {
     var out: [String] = []
     if !r.metrics.isEmpty { out.append("metric-badges") }
     if !(r.relationships ?? []).isEmpty { out.append("relationship-list") }
@@ -90,8 +90,8 @@ private func staticOutputs(_ r: FieldRecipe) -> [String] {
 /// Compile a recipe into a runtime plan (pure). Reads behavior ONLY from the strict
 /// token lane — a concept word never becomes a token. Metrics become feedback bindings;
 /// the accessibility block becomes a reduced-motion output plan.
-public func compileRecipe(_ r: FieldRecipe) -> CompiledRecipe {
-    CompiledRecipe(
+public func compilePattern(_ r: FieldPattern) -> CompiledPattern {
+    CompiledPattern(
         id: r.id,
         recipe: r,
         bodies: r.bodies.map { b in
@@ -119,3 +119,11 @@ public func compileRecipe(_ r: FieldRecipe) -> CompiledRecipe {
         )
     )
 }
+
+// MARK: - Deprecated aliases (recipe → Pattern rename; removed at 1.0)
+
+@available(*, deprecated, renamed: "CompiledPattern")
+public typealias CompiledRecipe = CompiledPattern
+
+@available(*, deprecated, renamed: "compilePattern")
+public func compileRecipe(_ r: FieldPattern) -> CompiledPattern { compilePattern(r) }
