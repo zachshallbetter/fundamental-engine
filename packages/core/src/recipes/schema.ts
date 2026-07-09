@@ -90,8 +90,8 @@ export type RecipeStatus = 'shipped' | 'experimental' | 'planned' | 'conceptual'
  * A portable field recipe (authoring §5) — the reusable unit that connects the natural-field model,
  * engine primitives, DOM authoring, platform feedback, diagnostics, and the accessibility fallback.
  */
-export interface FieldRecipe {
-  /** stable kebab-case id (e.g. `priority-well`) — the recipe's identity across the docs + gallery. */
+export interface FieldPattern {
+  /** stable kebab-case id (e.g. `priority-well`) — the pattern's identity across the docs + gallery. */
   id: string;
   name: string;
   intent: string;
@@ -123,8 +123,13 @@ export interface FieldRecipe {
   notes?: string;
 }
 
-/** @deprecated renamed to {@link FieldRecipe}. */
-export type SceneRecipe = FieldRecipe;
+/**
+ * @deprecated Renamed to {@link FieldPattern} (the "recipe → Pattern" rename). Kept for one
+ * deprecation cycle; removed at 1.0. See docs/canonical/deprecation-plan.md.
+ */
+export type FieldRecipe = FieldPattern;
+/** @deprecated Renamed to {@link FieldPattern} (recipe → Pattern); removed at 1.0. */
+export type SceneRecipe = FieldPattern;
 
 /** A reusable render stack (authoring §6). */
 export interface VisualizationPreset {

@@ -7,6 +7,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`@fundamental-engine/core` + `@fundamental-engine/dom` — the concept "recipe" is renamed to `Pattern` (phase 1, additive).** The authored composed-arrangement concept is now a **Field Pattern**, and the public API gains canonical `Pattern` names: `FieldPattern` (was `FieldRecipe`), `compilePattern` (was `compileRecipe`), `CompiledPattern`, and the data consts `FIELD_PATTERNS` / `EXPERIMENTAL_PATTERNS` / `FIRST_RELEASE_PATTERN_IDS` in core; `applyPattern` (was `applyRecipe`) with `ApplyPatternOptions` / `AppliedPattern` / `AppliedPatternInspection` in dom. The frozen surface now carries `compilePattern` / `applyPattern` / `FieldPattern` as canonical (20 frozen entries; 13 values, 4 types). Purely additive — every old name still works.
+
+### Deprecated
+
+- **The old `recipe`-named API symbols are now `@deprecated` aliases of the `Pattern` names, removed at `1.0`:** `FieldRecipe` / `SceneRecipe` → `FieldPattern`, `compileRecipe` → `compilePattern`, `CompiledRecipe` → `CompiledPattern`, `FIELD_RECIPES` / `ESSENTIAL_RECIPES` → `FIELD_PATTERNS`, `FIRST_RELEASE_RECIPE_IDS` → `FIRST_RELEASE_PATTERN_IDS`, `EXPERIMENTAL_RECIPES` → `EXPERIMENTAL_PATTERNS`, `applyRecipe` → `applyPattern` (+ `ApplyRecipeOptions` / `AppliedRecipe` / `AppliedRecipeInspection`). No runtime warn (a `type`/`const` re-export, matching the existing `SceneRecipe`/`ESSENTIAL_RECIPES` convention); the `@deprecated` JSDoc and [`deprecation-plan.md`](docs/canonical/deprecation-plan.md) rows 4–9 are the signal. Internal-only helper type names (`BodyRecipe`, `RecipeTier`, …) and the `data/recipes.json` filename are a later phase; the ports mirror the rename in phase 2.
+
 ### Changed
 
 - **`@fundamental-engine/core` (internal, no API change):** extracted the pure-math modules (`math.ts`, `geometry.ts`) from `src/core/` into a dedicated `src/math/` folder — step 1 of standardizing the core folder layout across all planes (`engine · forces · math · recipes` + the finer concern folders). Public exports and the barrel are unchanged; `check:api` intact.

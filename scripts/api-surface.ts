@@ -11,9 +11,9 @@
  * Note: a value-import of a type-only export (or vice versa) is itself an error under
  * verbatimModuleSyntax, so these imports also lock each symbol's KIND, not just its presence.
  */
-import { createField as coreCreateField, compileRecipe } from '@fundamental-engine/core';
-import type { FieldRecipe, FieldHost, FieldHandle, OverlayMode } from '@fundamental-engine/core';
-import { browserHost, createFieldPlatform, applyRecipe, bindData } from '@fundamental-engine/dom';
+import { createField as coreCreateField, compilePattern, compileRecipe } from '@fundamental-engine/core';
+import type { FieldPattern, FieldRecipe, FieldHost, FieldHandle, OverlayMode } from '@fundamental-engine/core';
+import { browserHost, createFieldPlatform, applyPattern, applyRecipe, bindData } from '@fundamental-engine/dom';
 import type { FieldPlatform } from '@fundamental-engine/dom';
 import { createField as vanillaCreateField, browserHost as vanillaBrowserHost, FIELD_VERSION as vanillaFieldVersion } from '@fundamental-engine/vanilla';
 import { FIELD_VERSION as reactFieldVersion } from '@fundamental-engine/react';
@@ -22,10 +22,12 @@ import { FIELD_VERSION as elementsFieldVersion } from '@fundamental-engine/eleme
 // Reference every frozen VALUE so its removal/rename is a compile error here.
 const FROZEN_VALUES = [
   coreCreateField,
-  compileRecipe,
+  compilePattern,
+  compileRecipe, // deprecated alias of compilePattern (removed at 1.0) — still frozen until then
   browserHost,
   createFieldPlatform,
-  applyRecipe,
+  applyPattern,
+  applyRecipe, // deprecated alias of applyPattern (removed at 1.0) — still frozen until then
   bindData,
   vanillaCreateField,
   vanillaBrowserHost,
@@ -38,7 +40,7 @@ const FROZEN_VALUES = [
 void FROZEN_VALUES;
 
 // Reference every frozen TYPE so its removal/rename is a compile error here.
-export type __FrozenTypes = [FieldRecipe, FieldHost, FieldPlatform];
+export type __FrozenTypes = [FieldPattern, FieldRecipe, FieldHost, FieldPlatform];
 
 // Field Surfaces (additive): lock the overlay-surface API onto the handle, so removing/renaming
 // `setOverlay` or `OverlayMode` becomes a compile error here too. See api-stability.md.

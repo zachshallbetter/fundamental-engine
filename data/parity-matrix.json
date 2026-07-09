@@ -20,9 +20,11 @@
   },
   "frozenPublicValues": [
     "FIELD_VERSION",
+    "applyPattern",
     "applyRecipe",
     "bindData",
     "browserHost",
+    "compilePattern",
     "compileRecipe",
     "createField",
     "createFieldPlatform"

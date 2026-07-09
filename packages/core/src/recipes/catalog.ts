@@ -1523,17 +1523,19 @@ export const RECIPE_TIERS: readonly RecipeTierGroup[] = [
   { key: 'operational', label: 'Operational — multi-actor, adaptive & live', recipes: decorate(TIER_ENTERPRISE, 'operational') },
 ];
 
-/** The full field-recipe catalog (authoring §7) — 64 recipes across four tiers, in catalog order. */
-export const FIELD_RECIPES: readonly FieldRecipe[] = RECIPE_TIERS.flatMap((t) => t.recipes);
+/** The full field-pattern catalog (authoring §7) — 64 patterns across four tiers, in catalog order. */
+export const FIELD_PATTERNS: readonly FieldRecipe[] = RECIPE_TIERS.flatMap((t) => t.recipes);
 
-/** @deprecated renamed to {@link FIELD_RECIPES}. */
-export const ESSENTIAL_RECIPES: readonly FieldRecipe[] = FIELD_RECIPES;
+/** @deprecated Renamed to {@link FIELD_PATTERNS} (recipe → Pattern); removed at 1.0. */
+export const FIELD_RECIPES: readonly FieldRecipe[] = FIELD_PATTERNS;
+/** @deprecated Renamed to {@link FIELD_PATTERNS} (recipe → Pattern); removed at 1.0. */
+export const ESSENTIAL_RECIPES: readonly FieldRecipe[] = FIELD_PATTERNS;
 
 /**
  * The recommended first-release set: eight recipes that explain the system quickly and span the four
  * fields. The full sixteen give the project its range; these eight are the front door.
  */
-export const FIRST_RELEASE_RECIPE_IDS: readonly string[] = [
+export const FIRST_RELEASE_PATTERN_IDS: readonly string[] = [
   'priority-well',
   'signal-path',
   'relationship-bond',
@@ -1543,6 +1545,9 @@ export const FIRST_RELEASE_RECIPE_IDS: readonly string[] = [
   'memory-trace',
   'guided-flow',
 ];
+
+/** @deprecated Renamed to {@link FIRST_RELEASE_PATTERN_IDS} (recipe → Pattern); removed at 1.0. */
+export const FIRST_RELEASE_RECIPE_IDS = FIRST_RELEASE_PATTERN_IDS;
 
 /** The first-release recipes, resolved from {@link FIRST_RELEASE_RECIPE_IDS} in declared order. */
 export const FIRST_RELEASE_RECIPES: readonly FieldRecipe[] = FIRST_RELEASE_RECIPE_IDS.map(

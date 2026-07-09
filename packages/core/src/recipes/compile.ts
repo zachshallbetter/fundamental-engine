@@ -101,8 +101,8 @@ export interface RecipeReducedMotionPlan {
   staticOutputs: string[];
 }
 
-/** A compiled recipe — the runtime plan, lanes preserved. */
-export interface CompiledRecipe {
+/** A compiled pattern — the runtime plan, lanes preserved. */
+export interface CompiledPattern {
   id: string;
   recipe: FieldRecipe;
   bodies: RecipeBodyRegistration[];
@@ -115,6 +115,11 @@ export interface CompiledRecipe {
   render: RecipeRenderPlan;
   reducedMotion: RecipeReducedMotionPlan;
 }
+
+/** @deprecated Renamed to {@link CompiledPattern} (recipe → Pattern); removed at 1.0. */
+export type CompiledRecipe = CompiledPattern;
+/** @deprecated Renamed to {@link compilePattern} (recipe → Pattern); removed at 1.0. */
+export const compileRecipe = compilePattern;
 
 const tokensOf = (body: string): string[] => (body ?? '').split(/\s+/).filter(Boolean);
 
@@ -134,7 +139,7 @@ function staticOutputs(r: FieldRecipe): string[] {
  * concept word never becomes a token. Metrics become feedback bindings; the accessibility block
  * becomes a reduced-motion output plan.
  */
-export function compileRecipe(r: FieldRecipe): CompiledRecipe {
+export function compilePattern(r: FieldRecipe): CompiledPattern {
   return {
     id: r.id,
     recipe: r,
