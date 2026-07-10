@@ -1,9 +1,9 @@
 package com.fundamental.lab
 
-import com.fundamental.core.recipes.AccessibilityRecipe
-import com.fundamental.core.recipes.BodyRecipe
+import com.fundamental.core.recipes.AccessibilityPattern
+import com.fundamental.core.recipes.BodyPattern
 import com.fundamental.core.recipes.FieldPattern
-import com.fundamental.core.recipes.RelationshipRecipe
+import com.fundamental.core.recipes.RelationshipPattern
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,12 +29,12 @@ class RecipeExportTests {
         metrics = listOf("density"),
         diagnostics = listOf("force-vectors"),
         bodies = listOf(
-            BodyRecipe(body = "attract", strength = 1.6f, range = 260f),
-            BodyRecipe(body = "spin", spin = 2f, angle = 90f),
+            BodyPattern(body = "attract", strength = 1.6f, range = 260f),
+            BodyPattern(body = "spin", spin = 2f, angle = 90f),
         ),
-        relationships = listOf(RelationshipRecipe(from = "attract", to = "spin", type = "drives", strength = 0.5f)),
+        relationships = listOf(RelationshipPattern(from = "attract", to = "spin", type = "drives", strength = 0.5f)),
         render = listOf("dots", "trails"),
-        accessibility = AccessibilityRecipe(
+        accessibility = AccessibilityPattern(
             reducedMotion = "freeze the orbit",
             meaningWithoutMotion = "the ring still reads as a relationship",
         ),

@@ -19,7 +19,7 @@ private val VALID_FIELDS: Set<String> = setOf("gravity", "electromagnetic", "str
 
 /** One body in a recipe: a force token (or space-separated tokens) + attributes. */
 @Serializable
-data class BodyRecipe(
+data class BodyPattern(
     val body: String,
     val strength: Float? = null,
     val range: Float? = null,
@@ -30,10 +30,10 @@ data class BodyRecipe(
 )
 
 @Serializable
-data class RelationshipRecipe(val from: String, val to: String, val type: String, val strength: Float? = null)
+data class RelationshipPattern(val from: String, val to: String, val type: String, val strength: Float? = null)
 
 @Serializable
-data class AccessibilityRecipe(val reducedMotion: String, val meaningWithoutMotion: String)
+data class AccessibilityPattern(val reducedMotion: String, val meaningWithoutMotion: String)
 
 /** A portable field recipe (authoring §5). Only `primitives` (runtime tokens) becomes behavior. */
 @Serializable
@@ -49,10 +49,10 @@ data class FieldPattern(
     val metrics: List<String> = emptyList(),
     val diagnostics: List<String> = emptyList(),
     val conditions: List<String>? = null,
-    val bodies: List<BodyRecipe> = emptyList(),
-    val relationships: List<RelationshipRecipe>? = null,
+    val bodies: List<BodyPattern> = emptyList(),
+    val relationships: List<RelationshipPattern>? = null,
     val render: List<String> = emptyList(),
-    val accessibility: AccessibilityRecipe,
+    val accessibility: AccessibilityPattern,
     val status: String? = null,
     val notes: String? = null,
 )
@@ -61,36 +61,36 @@ data class FieldPattern(
 private data class RecipeFile(val count: Int = 0, val recipes: List<FieldPattern> = emptyList())
 
 /** A validation problem: a JSON-ish path + the issue. */
-data class RecipeProblem(val path: String, val issue: String)
+data class PatternProblem(val path: String, val issue: String)
 
 /** The distinct engine primitives across a recipe's bodies, in first-seen order. */
-fun primitivesOf(bodies: List<BodyRecipe>): List<String> {
+fun primitivesOf(bodies: List<BodyPattern>): List<String> {
     val seen = LinkedHashSet<String>()
     for (b in bodies) for (t in b.body.split(" ")) if (t.isNotEmpty()) seen.add(t)
     return seen.toList()
 }
 
 /** Validate a recipe's shape and references against a force registry. Empty = valid. */
-fun validateRecipe(r: FieldPattern, forces: ForceRegistry): List<RecipeProblem> {
-    val problems = ArrayList<RecipeProblem>()
-    if (r.id.isEmpty()) problems.add(RecipeProblem("id", "required"))
-    if (r.name.isEmpty()) problems.add(RecipeProblem("name", "required"))
-    if (r.bodies.isEmpty()) problems.add(RecipeProblem("bodies", "at least one body is required"))
+fun validatePattern(r: FieldPattern, forces: ForceRegistry): List<PatternProblem> {
+    val problems = ArrayList<PatternProblem>()
+    if (r.id.isEmpty()) problems.add(PatternProblem("id", "required"))
+    if (r.name.isEmpty()) problems.add(PatternProblem("name", "required"))
+    if (r.bodies.isEmpty()) problems.add(PatternProblem("bodies", "at least one body is required"))
     r.bodies.forEachIndexed { i, b ->
         val tokens = b.body.split(" ").filter { it.isNotEmpty() }
-        if (tokens.isEmpty()) problems.add(RecipeProblem("bodies[$i].body", "empty force token list"))
-        for (t in tokens) if (!forces.containsKey(t)) problems.add(RecipeProblem("bodies[$i].body", "unknown force token \"$t\""))
+        if (tokens.isEmpty()) problems.add(PatternProblem("bodies[$i].body", "empty force token list"))
+        for (t in tokens) if (!forces.containsKey(t)) problems.add(PatternProblem("bodies[$i].body", "unknown force token \"$t\""))
     }
     val derived = primitivesOf(r.bodies)
     val declared = r.primitives
     if (declared.size != derived.size || derived.any { it !in declared } || declared.any { it !in derived }) {
-        problems.add(RecipeProblem("primitives", "must list exactly the body tokens (expected: ${derived.joinToString(", ")})"))
+        problems.add(PatternProblem("primitives", "must list exactly the body tokens (expected: ${derived.joinToString(", ")})"))
     }
-    r.render.forEachIndexed { i, layer -> if (layer !in RENDER_LAYER_IDS) problems.add(RecipeProblem("render[$i]", "unknown render layer \"$layer\"")) }
-    r.diagnostics.forEachIndexed { i, mode -> if (mode !in FIELD_MODES) problems.add(RecipeProblem("diagnostics[$i]", "unknown diagnostic mode \"$mode\"")) }
-    r.naturalField?.let { if (it !in VALID_FIELDS) problems.add(RecipeProblem("naturalField", "unknown fundamental field \"$it\"")) }
+    r.render.forEachIndexed { i, layer -> if (layer !in RENDER_LAYER_IDS) problems.add(PatternProblem("render[$i]", "unknown render layer \"$layer\"")) }
+    r.diagnostics.forEachIndexed { i, mode -> if (mode !in FIELD_MODES) problems.add(PatternProblem("diagnostics[$i]", "unknown diagnostic mode \"$mode\"")) }
+    r.naturalField?.let { if (it !in VALID_FIELDS) problems.add(PatternProblem("naturalField", "unknown fundamental field \"$it\"")) }
     if (r.accessibility.reducedMotion.isEmpty() || r.accessibility.meaningWithoutMotion.isEmpty()) {
-        problems.add(RecipeProblem("accessibility", "reducedMotion + meaningWithoutMotion are required (no recipe is motion-only)"))
+        problems.add(PatternProblem("accessibility", "reducedMotion + meaningWithoutMotion are required (no recipe is motion-only)"))
     }
     return problems
 }

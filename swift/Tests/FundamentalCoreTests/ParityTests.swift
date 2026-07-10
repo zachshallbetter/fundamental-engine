@@ -505,7 +505,7 @@ struct RecipeTests {
     func allValid() {
         let reg = Registry.standard()
         for r in FieldPatterns.all {
-            let problems = validateRecipe(r, against: reg)
+            let problems = validatePattern(r, against: reg)
             #expect(problems.isEmpty, "recipe \(r.id): \(problems.map { "\($0.path): \($0.issue)" }.joined(separator: "; "))")
         }
     }
@@ -526,8 +526,8 @@ struct RecipeTests {
     @Test("primitivesOf derives distinct tokens in first-seen order")
     func primitives() {
         let bodies = [
-            BodyRecipe(body: "attract gravity", strength: nil, range: nil, spin: nil, angle: nil, feedback: nil, scope: nil),
-            BodyRecipe(body: "gravity sink", strength: nil, range: nil, spin: nil, angle: nil, feedback: nil, scope: nil),
+            BodyPattern(body: "attract gravity", strength: nil, range: nil, spin: nil, angle: nil, feedback: nil, scope: nil),
+            BodyPattern(body: "gravity sink", strength: nil, range: nil, spin: nil, angle: nil, feedback: nil, scope: nil),
         ]
         #expect(primitivesOf(bodies) == ["attract", "gravity", "sink"])
     }

@@ -20,7 +20,7 @@ public func metricVar(_ metric: String) -> String {
 /// One compiled body: the configured parameters + the runtime tokens it carries.
 /// The Swift counterpart of the JS `data-*` attribute set — `makeBody()` produces a
 /// ready Body the caller attaches to a view (or places headless).
-public struct RecipeBodyRegistration {
+public struct PatternBodyRegistration {
     public var tokens: [String]
     public var strength: Float
     public var range: Float
@@ -42,7 +42,7 @@ public struct RecipeBodyRegistration {
     }
 }
 
-public struct RecipeRelationshipRegistration {
+public struct PatternRelationshipRegistration {
     public var from: String
     public var to: String
     public var type: String
@@ -50,13 +50,13 @@ public struct RecipeRelationshipRegistration {
 }
 
 /// A metric → feedback-variable binding (the metric lane becoming measurable state).
-public struct RecipeFeedbackBinding {
+public struct PatternFeedbackBinding {
     public var metric: String
     public var variable: String
 }
 
 /// The reduced-motion output plan — what the runtime renders when motion is reduced.
-public struct RecipeReducedMotionPlan {
+public struct PatternReducedMotionPlan {
     public var reducedMotion: String
     public var meaningWithoutMotion: String
     /// The static surfaces the runtime should render in place of motion.
@@ -67,13 +67,13 @@ public struct RecipeReducedMotionPlan {
 public struct CompiledPattern {
     public var id: String
     public var recipe: FieldPattern
-    public var bodies: [RecipeBodyRegistration]
-    public var relationships: [RecipeRelationshipRegistration]
-    public var feedback: [RecipeFeedbackBinding]
+    public var bodies: [PatternBodyRegistration]
+    public var relationships: [PatternRelationshipRegistration]
+    public var feedback: [PatternFeedbackBinding]
     public var diagnostics: [String]
     public var metrics: [String]
     public var conditions: [String]
-    public var reducedMotion: RecipeReducedMotionPlan
+    public var reducedMotion: PatternReducedMotionPlan
 }
 
 /// Derive the static surfaces a reduced-motion render should produce from the lanes.
@@ -96,7 +96,7 @@ public func compilePattern(_ r: FieldPattern) -> CompiledPattern {
         recipe: r,
         bodies: r.bodies.map { b in
             let angle = b.angle ?? (-Float.pi / 2) // the JS default heading: up
-            return RecipeBodyRegistration(
+            return PatternBodyRegistration(
                 tokens: b.body.split(separator: " ").map(String.init),
                 strength: b.strength ?? 1,
                 range: b.range ?? 100,
@@ -106,13 +106,13 @@ public func compilePattern(_ r: FieldPattern) -> CompiledPattern {
             )
         },
         relationships: (r.relationships ?? []).map {
-            RecipeRelationshipRegistration(from: $0.from, to: $0.to, type: $0.type, strength: $0.strength)
+            PatternRelationshipRegistration(from: $0.from, to: $0.to, type: $0.type, strength: $0.strength)
         },
-        feedback: r.metrics.map { RecipeFeedbackBinding(metric: $0, variable: metricVar($0)) },
+        feedback: r.metrics.map { PatternFeedbackBinding(metric: $0, variable: metricVar($0)) },
         diagnostics: r.diagnostics,
         metrics: r.metrics,
         conditions: r.conditions ?? [],
-        reducedMotion: RecipeReducedMotionPlan(
+        reducedMotion: PatternReducedMotionPlan(
             reducedMotion: r.accessibility.reducedMotion,
             meaningWithoutMotion: r.accessibility.meaningWithoutMotion,
             staticOutputs: staticOutputs(r)

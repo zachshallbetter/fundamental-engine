@@ -3,7 +3,7 @@ package com.fundamental.core
 import com.fundamental.core.engine.Registry
 import com.fundamental.core.recipes.FieldPatterns
 import com.fundamental.core.recipes.compilePattern
-import com.fundamental.core.recipes.validateRecipe
+import com.fundamental.core.recipes.validatePattern
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -24,7 +24,7 @@ class RecipeTests {
     fun everyRecipeValidatesAgainstTheStandardRegistry() {
         val failures = StringBuilder()
         for (r in FieldPatterns.all) {
-            val problems = validateRecipe(r, forces)
+            val problems = validatePattern(r, forces)
             if (problems.isNotEmpty()) failures.append("\n${r.id}: ${problems.joinToString("; ") { "${it.path} — ${it.issue}" }}")
         }
         assertTrue(failures.isEmpty(), "every canon recipe must validate:$failures")
