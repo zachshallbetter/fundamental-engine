@@ -141,7 +141,7 @@ content — an axis orthogonal to every visualization method. The visible partic
 - **Immersive** = the same field drawn on *both* surfaces, so content sits **inside** the field. It is
   a composition, not a new primitive: set the underlay (`render`) and the overlay (`overlay`) together.
 - **Typographic (invisible)** = no surface at all: the engine runs draw-skipped
-  (`FieldHandle.setVisible(false)`) and/or a recipe runs render-less (`render: []`), and the page's
+  (`FieldHandle.setVisible(false)`) and/or a pattern runs render-less (`render: []`), and the page's
   own type *is* the render surface. The full pattern — two-field architecture, live channels,
   engagement contracts, data provenance — is canonical in
   [invisible-fields.md](invisible-fields.md).
@@ -526,7 +526,7 @@ Export formats:
 ```txt
 PNG
 SVG field lines
-JSON scene recipe
+JSON scene pattern
 Lab report
 conformance state
 debug trace
@@ -558,7 +558,7 @@ This list records the build order that has now shipped; every item below is live
 6. Energy dashboard
 7. Boundary overlays
 8. Reciprocity Inspector
-9. Scene recipe export/import
+9. Scene pattern export/import
 10. Causality overlay
 11. Prediction mode
 12. Topology/flux-linkage after fieldflow stabilizes

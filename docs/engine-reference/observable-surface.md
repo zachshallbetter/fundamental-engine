@@ -154,7 +154,7 @@ The registry is the canonical channel for platform-layer state that isn't a CSS 
 | `memory` | `number` | Accumulated familiarity |
 | `active` | `boolean` | Whether the relationship is currently influencing |
 | `direction` | `from-to \| to-from \| bidirectional` | Directional bias |
-| `source` | `html \| aria \| data \| recipe \| runtime` | How the relationship was discovered |
+| `source` | `html \| aria \| data \| pattern \| runtime` | How the relationship was discovered |
 
 ---
 
@@ -226,7 +226,7 @@ running instance.
 ```ts
 import { systemReport } from '@fundamental-engine/core';
 const report = systemReport();
-// → { forces, passports, contracts, recipes, agentTypes, conformanceExperiments,
+// → { forces, passports, contracts, patterns, agentTypes, conformanceExperiments,
 //     forcesMissingPassport, forcesMissingConformance }
 ```
 

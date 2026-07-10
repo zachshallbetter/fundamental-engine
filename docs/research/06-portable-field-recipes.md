@@ -1,13 +1,13 @@
-# Recipes as Portable Field Programs for Interface Behavior
+# Patterns as Portable Field Programs for Interface Behavior
 
 > **Status: research draft (preprint, work in progress).** Paper 6 of the Fundamental family — the
 > authoring-model paper. Claims verified against the codebase and canonical docs as of 2026-06-07.
 > See the [series index](README.md) and *the caveat canon* therein. This is a preprint draft, not
 > canonical product documentation.
 >
-> **Terminology note.** This paper predates the "Field Formation" terminology decision. A **Field
-> Formation** is the canonical concept (an authored field arrangement); `FieldRecipe` — the subject of
-> this paper — is its current API representation. Read "recipe" throughout as that API representation;
+> **Terminology note.** This paper predates the "Field Pattern" terminology decision. A **Field
+> Formation** is the canonical concept (an authored field arrangement); `FieldPattern` — the subject of
+> this paper — is its current API representation. Read "pattern" throughout as that API representation;
 > the schema, compiler, validator, and catalog names are unchanged. See
 > [`../canonical/dimensional-coupling.md`](../canonical/dimensional-coupling.md).
 
@@ -15,7 +15,7 @@
 **Series:** Fundamental Research Papers, Paper 6 of 8
 **Companion paper (flagship):** [Fundamental: A Field Translation Runtime for Relational DOM
 Interfaces](01-field-translation-runtime.md). This paper goes deep where the flagship's §6.6 (taxonomy
-hygiene) and §7.3 (recipe runtime) were an overview; it cross-references rather than repeats.
+hygiene) and §7.3 (pattern runtime) were an overview; it cross-references rather than repeats.
 
 ---
 
@@ -26,15 +26,15 @@ relevance rises, a claim that is weakened by a contradicting source, a section t
 memory of having been read — is normally authored in imperative, one-off code. Such code drifts from
 its own description, resists inspection, and lets *concept* words leak into the *executable*
 vocabulary: a developer writes `drag` or `spring` or `orbit` as if the engine had such a force when it
-does not. We present **Fundamental recipes**: a portable, serializable, **conformance-gated** schema that
+does not. We present **Fundamental patterns**: a portable, serializable, **conformance-gated** schema that
 makes relational behavior *authorable* by separating it into strict, non-overlapping lanes — concepts
 describe, runtime tokens execute, metrics measure, diagnostics explain, conditions activate, and a
 *required* reduced-motion equivalent guarantees the behavior is never motion-only. The contribution is
-threefold: (1) the `FieldRecipe` schema, in which these lanes are distinct typed fields; (2) a
-conformance gate (`validateRecipe`) that mechanically rejects any recipe whose executable tokens are
+threefold: (1) the `FieldPattern` schema, in which these lanes are distinct typed fields; (2) a
+conformance gate (`validateRecipe`) that mechanically rejects any pattern whose executable tokens are
 not real passported engine forces, whose render or diagnostic layers are not real modes, whose
 declared primitives drift from its body tokens, or that lacks its accessibility fallback — so
-expressive prose can never corrupt the runtime vocabulary; and (3) a shipped catalog of **64** recipes
+expressive prose can never corrupt the runtime vocabulary; and (3) a shipped catalog of **64** patterns
 across four sixteen-recipe tiers, held as *data*, that composes a small passported primitive set into a
 broad, navigable, executable library *with no new engine code*. The 64-recipe breadth is an *existence
 argument* for the model's expressiveness, not a user study; we sketch an authoring-time evaluation
@@ -78,41 +78,41 @@ truth modes, force passports, conformance, lint — exists to keep the boundary 
 and expression *checkable rather than rhetorical* (Paper 1 §9.2). A free-form authoring layer that
 lets any word become a force would undo that posture at the seam where authors actually work.
 
-### 1.2 The recipe answer
+### 1.2 The pattern answer
 
-A **recipe** is Fundamental's reusable authoring unit: *a portable, serializable, inspectable field
-program* (Paper 1 §7.3). Rather than imperative code, a recipe is a declarative record with separated
+A **pattern** is Fundamental's reusable authoring unit: *a portable, serializable, inspectable field
+program* (Paper 1 §7.3). Rather than imperative code, a pattern is a declarative record with separated
 lanes — a human intent, an optional natural-field classification, the strict set of *runtime tokens*
 it composes, its bodies and relationships, its render layers, its metrics, its diagnostics, its
 conditions, its product-language concepts, and a *required* accessibility fallback. It is data, not
-behavior; *applying* it builds a scene (Paper 5), but the recipe itself mutates nothing.
+behavior; *applying* it builds a scene (Paper 5), but the pattern itself mutates nothing.
 
-The decisive property is that a recipe is **conformance-gated**. A single validator,
-`validateRecipe`, rejects any recipe whose executable tokens are not real passported engine forces,
+The decisive property is that a pattern is **conformance-gated**. A single validator,
+`validateRecipe`, rejects any pattern whose executable tokens are not real passported engine forces,
 whose render or diagnostic layers are not real modes, whose declared primitives drift from the tokens
 its bodies actually carry, or that omits its reduced-motion equivalent. The gate is the mechanism
 behind the slogan in this paper's core claim: *behavior composes from a small primitive set without
-corrupting the runtime vocabulary.* Recipe prose may be as expressive as the author likes — "completion
-releases pressure and decays into memory" — while the recipe's executable `primitives` stay strict
+corrupting the runtime vocabulary.* Pattern prose may be as expressive as the author likes — "completion
+releases pressure and decays into memory" — while the pattern's executable `primitives` stay strict
 (`[morph, memory, gravity, pressure, cohesion]`), because the lanes are typed apart and only one lane is executable.
 
 ### 1.3 Contributions
 
 This paper contributes the **authoring model**:
 
-1. **The `FieldRecipe` schema** (§3): a serializable record whose lanes — concepts, runtime tokens,
+1. **The `FieldPattern` schema** (§3): a serializable record whose lanes — concepts, runtime tokens,
    metrics, diagnostics, conditions, render layers, and a required accessibility fallback — are
    distinct typed fields, so a word's role is declared by *where it lives*, never guessed.
 2. **The conformance gate** (§4): `validateRecipe`, which mechanically keeps the runtime vocabulary
    uncorrupted by rejecting non-token primitives, non-mode render/diagnostic layers, primitive drift,
    and missing accessibility fallbacks — the same epistemic discipline as force passports (Paper 1
    §6.2, Paper 5 §5), applied to *composition*.
-3. **The 64-recipe catalog as a data store** (§5): all 64 recipes held as data across four
+3. **The 64-recipe catalog as a data store** (§5): all 64 patterns held as data across four
    sixteen-recipe tiers, every one gate-checked, demonstrating that a small passported primitive,
    metric, and render vocabulary composes into a broad, navigable, executable library *with no new
    engine code* — the expressiveness lives in composition, not in the engine.
 
-The paper is deliberately narrow. The paradigm is Paper 1's; the *execution* of a compiled recipe (the
+The paper is deliberately narrow. The paradigm is Paper 1's; the *execution* of a compiled pattern (the
 DOM-applying `applyRecipe`, the host, the conformance runtime) is Paper 5's; reading is Paper 2's,
 evidence is Paper 3's, accessibility-conformance depth is Paper 4's, data binding is Paper 7's, and
 diagnostics are Paper 8's. We cross-reference and do not re-explain.
@@ -123,62 +123,62 @@ diagnostics are Paper 8's. We cross-reference and do not re-explain.
 
 **Design tokens and design systems.** Design-token systems factor visual decisions — color, spacing,
 type scale — into named, portable values shared across platforms, and design systems compose those
-tokens into reusable components. Fundamental recipes share the *naming-and-portability* instinct but
-operate one level up the abstraction: a recipe names a *behavior*, not a value, and the thing being
+tokens into reusable components. Fundamental patterns share the *naming-and-portability* instinct but
+operate one level up the abstraction: a pattern names a *behavior*, not a value, and the thing being
 kept portable and consistent is a relational interaction rather than a visual constant. The
-conformance gate is the recipe analog of a token system's validation that a reference resolves to a
+conformance gate is the pattern analog of a token system's validation that a reference resolves to a
 real token. [w3c-design-tokens]
 
 **Declarative versus imperative UI behavior.** A long line of work argues for describing *what* an
 interface should do rather than *how*, from constraint-based and reactive UI to declarative animation
-specifications. Recipes are declarative behavior specifications whose distinguishing feature is not the
+specifications. Patterns are declarative behavior specifications whose distinguishing feature is not the
 declarativeness itself but the *typed lane separation* and the *conformance gate* that together prevent
 the description from drifting from the engine's real capabilities. [react-docs-declarative; fowler2004presentation]
 
 **Visual and blocks-based authoring.** Block and node-graph authoring environments let non-programmers
-compose behavior by wiring typed nodes, and refuse connections that violate the type system. A recipe's
+compose behavior by wiring typed nodes, and refuse connections that violate the type system. A pattern's
 gate plays the role of that refusal — a primitive that is "really a metric" is rejected the way an
-incompatible socket is — but recipes are textual, serializable records first; a visual composer is
+incompatible socket is — but patterns are textual, serializable records first; a visual composer is
 future work (§8, R15). [resnick2009scratch]
 
 **Macro and preset systems.** Presets and macros expand a compact authored unit into a larger
 configuration. Fundamental's cosmological *presets* (Paper 1 §6.4 — `blackhole` expands into
-`attract + swirl + sink + lens`) are exactly such an expansion over the force catalog, and recipes are
-the broader, schema-backed generalization: a recipe is a *named, validated, multi-lane composite*. The
+`attract + swirl + sink + lens`) are exactly such an expansion over the force catalog, and patterns are
+the broader, schema-backed generalization: a pattern is a *named, validated, multi-lane composite*. The
 key difference from a macro is the gate: expansion alone does not guarantee the result references only
 real capabilities; validation does. [fowler2010dsl]
 
 **Domain-specific languages for interaction.** DSLs for animation, interaction, and state machines
-give interaction behavior a small, checkable surface. A recipe is best read as a *data-DSL* for
+give interaction behavior a small, checkable surface. A pattern is best read as a *data-DSL* for
 relational field behavior, with `validateRecipe` as its type-checker and the passport set
 (§4) as its symbol table. [fowler2010dsl; myers1990garnet]
 
 The distinguishing stance, across all of these, is the one inherited from the flagship: the authoring
-layer is *epistemically disciplined*. Every recipe is auditable against the engine's actual
+layer is *epistemically disciplined*. Every pattern is auditable against the engine's actual
 capabilities, by running a validator, not by trusting prose.
 
 ---
 
-## 3. The recipe schema
+## 3. The pattern schema
 
-The schema is defined in `packages/core/src/recipes/schema.ts` as the `FieldRecipe` interface. Its
+The schema is defined in `packages/core/src/recipes/schema.ts` as the `FieldPattern` interface. Its
 fields are deliberately partitioned into the lanes from Paper 1 §6.6; the schema's own comment names
 them — *"the lanes — kept separate; a word lives in exactly one."*
 
 ### 3.1 The fields
 
-A `FieldRecipe` carries:
+A `FieldPattern` carries:
 
-- **`id`** — a stable kebab-case identity (`priority-well`), the recipe's handle across docs, gallery,
+- **`id`** — a stable kebab-case identity (`priority-well`), the pattern's handle across docs, gallery,
   and lookup.
 - **`name`**, **`intent`** — the human-facing label and a one-line statement of what the behavior is
   *for* ("make important elements feel naturally weighted without shouting").
-- **`naturalField`** (optional) — the one fundamental field this recipe principally *translates*
-  (`gravity` / `electromagnetic` / `strong` / `weak`), connecting the recipe to the Natural Field
+- **`naturalField`** (optional) — the one fundamental field this pattern principally *translates*
+  (`gravity` / `electromagnetic` / `strong` / `weak`), connecting the pattern to the Natural Field
   Translation System (Paper 1 §6.5). A `translation` phrase carries the conceptual gloss.
 - **`primitives`** — *the runtime-token lane.* The strict, real, **passported** engine forces the
-  recipe composes. This is the *only* executable lane, and it must equal exactly the distinct tokens
-  the recipe's bodies carry (§4).
+  pattern composes. This is the *only* executable lane, and it must equal exactly the distinct tokens
+  the pattern's bodies carry (§4).
 - **`concepts`** (optional) — the product-language lane: human-facing words (`orbit`, `spring`,
   `trust`, `staleness`) that *describe* the behavior and are **never** runtime tokens.
 - **`metrics`** — the measured/semantic-state lane (`density`, `attention`, `confidence`,
@@ -193,15 +193,15 @@ A `FieldRecipe` carries:
   to: 'source', type: 'supports' }`).
 - **`render`** — the render-layer stack (`particles`, `trails`, `links`, `heatmap`, …).
 
-> **Naming note — `particles` (recipe layer) vs `render="dots"` (element attribute).** The recipe
+> **Naming note — `particles` (pattern layer) vs `render="dots"` (element attribute).** The pattern
 > `RenderLayer` token for the base matter layer is `particles` (valid in `schema.ts`), but the
 > `<field-root>` custom element's render attribute spells the same surface `render="dots"`. They
 > coexist deliberately: the `RenderLayer` lane name predates the element-attribute rename, and the two
-> live in different lanes (recipe data vs. element authoring). A consumer must not write
+> live in different lanes (pattern data vs. element authoring). A consumer must not write
 > `render="particles"` on `<field-root>` — the element attribute value is `dots`.
 - **`accessibility`** — *required.* An `AccessibilityRecipe` of two non-empty strings:
   `reducedMotion` (what replaces motion under `prefers-reduced-motion`) and `meaningWithoutMotion`
-  (how meaning survives without color or motion). No recipe is motion-only.
+  (how meaning survives without color or motion). No pattern is motion-only.
 - **`budget`** (optional, `Partial<PerformanceBudget>`) and **`expected`** (optional
   `ExpectedMetrics` — `particleCount`, `entropyRange`, `energyDriftMax`): the performance envelope and
   the conformance fingerprint a running instance should match.
@@ -216,16 +216,16 @@ measure, diagnostics explain, conditions activate.* The schema makes it *literal
 distinct typed field, so a word's role is determined by which field it appears in, and the question
 "is `orbit` a force?" is answered structurally (`orbit` lives in `concepts`, so no) rather than by
 inspection of an implementation. This is the schema-level realization of the slogan *natural fields are
-not tokens; tokens are translations* (Paper 1 §6.5): the recipe can *say* "orbit" all it likes in
+not tokens; tokens are translations* (Paper 1 §6.5): the pattern can *say* "orbit" all it likes in
 `concepts` and `notes`, while the executable `primitives` stay `[attract, magnetism, tether]`.
 
-### 3.3 A real recipe, annotated
+### 3.3 A real pattern, annotated
 
-The `Evidence Field` recipe (`catalog.ts`, the `EVIDENCE_FIELD` record — also a first-release recipe
+The `Evidence Field` pattern (`catalog.ts`, the `EVIDENCE_FIELD` record — also a first-release pattern
 and the substrate for Paper 3) reads, in source, as follows — the assembled record additionally gains a `tier`, a `status`, and a `conditions` lane at catalog assembly (§5.1):
 
 ```ts
-export const EVIDENCE_FIELD: FieldRecipe = {
+export const EVIDENCE_FIELD: FieldPattern = {
   id: 'evidence-field',
   name: 'Evidence Field',
   intent: 'show how sources support, weaken, or contradict a claim',
@@ -261,8 +261,8 @@ Reading it by lane:
   `data-body` tokens. The notes can claim entropy "rises," but entropy is never *applied*.
 - **Diagnostics (explain).** `topology`, `causality`, `links` are inspection overlays that reveal the
   behavior; they are not forces either.
-- **Relationships.** The `claim → source` `supports` edge is the recipe's relational structure,
-  resolved against real bodies only when the recipe is applied (Paper 5, Paper 7).
+- **Relationships.** The `claim → source` `supports` edge is the pattern's relational structure,
+  resolved against real bodies only when the pattern is applied (Paper 5, Paper 7).
 - **Accessibility (required).** A static claim/source table with support and conflict badges is the
   reduced-motion equivalent; the confidence label is how meaning survives without motion. The schema
   *requires* both strings to be present and non-empty (§4).
@@ -275,8 +275,8 @@ real, conformance-tested distinction (Paper 1 §3.3) without inventing a "carry"
 
 ## 4. The conformance gate
 
-The central contribution is the gate. `validateRecipe(r: FieldRecipe): RecipeProblem[]`
-(`packages/core/src/recipes/schema.ts`) returns *every* structural problem with a recipe; an empty
+The central contribution is the gate. `validateRecipe(r: FieldPattern): RecipeProblem[]`
+(`packages/core/src/recipes/schema.ts`) returns *every* structural problem with a pattern; an empty
 array means valid. It is what makes "without corrupting the runtime vocabulary" *mechanical* rather
 than aspirational. We walk its checks in order, quoting the implementation.
 
@@ -295,7 +295,7 @@ Every token a body carries is looked up in the passport registry; an unknown tok
 
 `passportFor` (`packages/core/src/contracts/passport.ts`) resolves a token only if it has a *passport*
 — the machine-readable, conformance-cross-checked declaration of what the force is (Paper 1 §6.2). The
-passport registry is the recipe gate's symbol table. A token like `wormhole` has no passport, so it can
+passport registry is the pattern gate's symbol table. A token like `wormhole` has no passport, so it can
 never appear in a body; the test suite asserts exactly this rejection.
 
 ### 4.2 Declared primitives must not drift from the body tokens
@@ -310,7 +310,7 @@ if (declared.length !== derived.length || derived.some((t) => !declared.includes
   problems.push({ path: 'primitives', issue: `must list exactly the body tokens (expected: ${derived.join(', ') || 'none'})` });
 ```
 
-This closes the gap between a recipe's *self-description* and what it actually does. A recipe cannot
+This closes the gap between a pattern's *self-description* and what it actually does. A pattern cannot
 advertise `primitives: ['attract', 'swirl']` while its bodies only carry `attract` (the test suite
 exercises precisely this drift). The declared executable surface and the real executable surface are
 forced to coincide.
@@ -342,9 +342,9 @@ are deliberately *absent* from it because they really are forces. The map exists
 this lane-awareness for one word per lane (`potential`→diagnostic, `mass`→metric, `orbit`→concept,
 `dwell`→condition).
 
-This is the precise mechanism behind the claim. The recipe author may write expressively — and the
+This is the precise mechanism behind the claim. The pattern author may write expressively — and the
 catalog does: `Focus Orbit`'s concept is literally `orbit`, `Search Relevance Field` speaks of
-recency, and the `completion-release` recipe (`[morph, memory, gravity, pressure, cohesion]`) describes
+recency, and the `completion-release` pattern (`[morph, memory, gravity, pressure, cohesion]`) describes
 completion as "a weak-force phase change (`morph`) that releases the tension and leaves a memory mark
 instead of disappearing." But `orbit` can never become a force (it is a concept), `decay` can never become a force
 (it is a concept), and `entropy`/`coherence` can never become forces (they are metrics). *The prose is
@@ -364,17 +364,17 @@ free; the token lane is sealed.*
 `RENDER_LAYERS` is the nine-member set of matter/structure/scalar surfaces; `FIELD_MODES` is
 `RENDER_LAYERS ∪ DIAGNOSTIC_MODES` (`particles` is already a member of `RENDER_LAYERS`). A test asserts that `FIELD_MODES`
 covers *every* mode in the live `RENDER_MODES` visualization catalog plus `particles` (the base layer that catalog omits), so a
-recipe can never reference an overlay the renderer cannot produce, and the recipe-referenceable mode
+pattern can never reference an overlay the renderer cannot produce, and the recipe-referenceable mode
 set cannot silently drift from the renderer's real one.
 
 ### 4.5 The accessibility fallback is required
 
 ```ts
 if (!r.accessibility || !r.accessibility.reducedMotion || !r.accessibility.meaningWithoutMotion)
-  problems.push({ path: 'accessibility', issue: 'reducedMotion + meaningWithoutMotion are required (no recipe is motion-only)' });
+  problems.push({ path: 'accessibility', issue: 'reducedMotion + meaningWithoutMotion are required (no pattern is motion-only)' });
 ```
 
-Both strings must be present and non-empty. A recipe without a reduced-motion equivalent does not pass
+Both strings must be present and non-empty. A pattern without a reduced-motion equivalent does not pass
 the gate and therefore cannot enter the catalog. The depth of the reduced-motion *conformance* model —
 semantic source, visual–semantic binding, static equivalent, the lint rules — is Paper 4's; here the
 load-bearing fact is only that the equivalent is *required at authoring time*. (`naturalField`, `tier`,
@@ -384,32 +384,32 @@ and `status`, when present, are likewise checked against their closed sets.)
 
 The gate is the recipe-level analog of the force passport (Paper 1 §6.2, Paper 5 §5). A passport keeps
 a *force* honest by cross-checking its declared physics against the live registry and the conformance
-catalog, so a passport cannot drift from the force it describes. The gate keeps a *recipe* honest by
+catalog, so a passport cannot drift from the force it describes. The gate keeps a *pattern* honest by
 cross-checking its declared composition against the passport registry and the render-mode catalog, so a
-recipe cannot reference a capability the engine lacks. In both cases the honesty is *mechanical* — a
+pattern cannot reference a capability the engine lacks. In both cases the honesty is *mechanical* — a
 test runs and fails — which is the posture the whole family adopts toward its own claims (Paper 1 §10,
-"what the epistemics buy"). The recipe gate extends that posture from individual forces to their
+"what the epistemics buy"). The pattern gate extends that posture from individual forces to their
 *composition*, which is exactly where an authoring layer is most tempted to cheat.
 
 ---
 
 ## 5. The catalog as a data store
 
-### 5.1 Sixty-four recipes, held as data
+### 5.1 Sixty-four patterns, held as data
 
 `packages/core/src/recipes/catalog.ts` (~1,550 lines) is *the data store*: it holds all **64**
-`FieldRecipe` records as plain data — not code branches, not behavior — across four tiers of sixteen
-recipes each:
+`FieldPattern` records as plain data — not code branches, not behavior — across four tiers of sixteen
+patterns each:
 
 ```ts
 export const RECIPE_TIERS: readonly RecipeTierGroup[] = [
-  { key: 'core',         label: 'Core interface & accessibility',        recipes: decorate(TIER_CORE, 'core') },
-  { key: 'applied', label: 'Applied — product, workflow & collaboration', recipes: decorate(TIER_PRODUCT, 'applied') },
-  { key: 'systems', label: 'Systems — safety, provenance & governance', recipes: decorate(TIER_SYSTEMS, 'systems') },
-  { key: 'operational', label: 'Operational — multi-actor, adaptive & live', recipes: decorate(TIER_ENTERPRISE, 'operational') },
+  { key: 'core',         label: 'Core interface & accessibility',        patterns: decorate(TIER_CORE, 'core') },
+  { key: 'applied', label: 'Applied — product, workflow & collaboration', patterns: decorate(TIER_PRODUCT, 'applied') },
+  { key: 'systems', label: 'Systems — safety, provenance & governance', patterns: decorate(TIER_SYSTEMS, 'systems') },
+  { key: 'operational', label: 'Operational — multi-actor, adaptive & live', patterns: decorate(TIER_ENTERPRISE, 'operational') },
 ];
 
-export const FIELD_RECIPES: readonly FieldRecipe[] = RECIPE_TIERS.flatMap((t) => t.recipes);
+export const FIELD_RECIPES: readonly FieldPattern[] = RECIPE_TIERS.flatMap((t) => t.recipes);
 ```
 
 The four named tiers (`TIER_CORE`, `TIER_PRODUCT`, `TIER_SYSTEMS`, `TIER_ENTERPRISE`) each hold exactly
@@ -419,32 +419,32 @@ injects each record's `tier` and `status` (defaulting to `shipped`) and layers i
 `FIELD_RECIPES.length === 64`, ids are unique and kebab-case, each tier holds 16, the tiers concatenate
 in declared order, and every record carries an injected tier and `shipped` status.
 
-A `recipeById(id)` lookup resolves any recipe by handle, and `FIRST_RELEASE_RECIPE_IDS` stars **8**
-recipes as the recommended front door — `priority-well`, `signal-path`, `relationship-bond`,
+A `recipeById(id)` lookup resolves any pattern by handle, and `FIRST_RELEASE_RECIPE_IDS` stars **8**
+patterns as the recommended front door — `priority-well`, `signal-path`, `relationship-bond`,
 `reading-field`, `evidence-field`, `coherence-field`, `memory-trace`, `guided-flow` — chosen to explain
 the system quickly and to span the four fundamental fields. (A test asserts the set is exactly eight
-and that all eight resolve.) The catalog spans gravity-family priority recipes (`Priority Well`,
-`Focus Orbit`, `Search Relevance Field`), electromagnetic signal recipes (`Signal Path`,
-`Evidence Field`, `Guided Flow`), strong-interaction binding recipes (`Relationship Bond`,
-`Concept Cluster`, `Coherence Field`), weak-interaction transformation recipes (`Decay Notice`,
+and that all eight resolve.) The catalog spans gravity-family priority patterns (`Priority Well`,
+`Focus Orbit`, `Search Relevance Field`), electromagnetic signal patterns (`Signal Path`,
+`Evidence Field`, `Guided Flow`), strong-interaction binding patterns (`Relationship Bond`,
+`Concept Cluster`, `Coherence Field`), weak-interaction transformation patterns (`Decay Notice`,
 `Phase Shift`), the `Reading Field` and `Memory Trace`, the platform-layer `Diagnostic Lens`, and the
-contract recipe `Accessibility Equivalence`, before broadening through applied, systems, and operational patterns.
+contract pattern `Accessibility Equivalence`, before broadening through applied, systems, and operational patterns.
 
 ### 5.2 Every record is a gate-checked fixture
 
 The catalog's file comment states the property exactly: *"every runtime token is a real passported
 force, every render layer + diagnostic is a known mode, the declared primitives match the body tokens,
 and no primitive is a diagnostic/metric/concept/condition — so `validateRecipe` passes for all of
-them."* The recipe test suite enforces it: it runs `validateRecipe` over every one of the 64 and
+them."* The pattern test suite enforces it: it runs `validateRecipe` over every one of the 64 and
 asserts zero problems, asserts that no primitive is ever a render/diagnostic mode, and asserts that
 declared primitives equal the distinct body tokens for every recipe. The catalog is therefore not just
 documentation — it is sixty-four passing conformance fixtures. A record that referenced a non-existent
 token or omitted its accessibility fallback would fail the build.
 
-**The catalog is also frozen.** The 64-recipe `FIELD_RECIPES` catalog is a locked set: new recipes are
+**The catalog is also frozen.** The 64-recipe `FIELD_RECIPES` catalog is a locked set: new patterns are
 added to a separate `EXPERIMENTAL_RECIPES` collection rather than the gated catalog, so the four-tier,
 sixteen-each structure cannot drift. This is a *collection*-level freeze and is orthogonal to the
-per-record `status` lane: a recipe inside the gated catalog may carry `status: 'experimental'`
+per-record `status` lane: a pattern inside the gated catalog may carry `status: 'experimental'`
 (implementation-maturity metadata, §3.1), which is distinct from membership in the `EXPERIMENTAL_RECIPES`
 collection (catalog placement). A record can therefore be a frozen-catalog member *and* status-experimental
 at once; the two lanes answer different questions.
@@ -460,11 +460,11 @@ const COUNTS = [
   ['presets', len(core.MANUAL_PRESETS)],
   ['formations', len(core.FORMATIONS)],
   ['render modes', len(core.RENDER_MODES)],
-  ['recipes', len(core.FIELD_RECIPES)],
+  ['patterns', len(core.FIELD_RECIPES)],
 ];
 ```
 
-If the README says "64 recipes" but `FIELD_RECIPES.length` is anything else, the check fails the build
+If the README says "64 patterns" but `FIELD_RECIPES.length` is anything else, the check fails the build
 with an explicit message. So the catalog's headline number is a *living* fact derived from the code,
 not a claim that can rot — the same "living docs" discipline the project applies to its force, preset,
 and render-mode counts.
@@ -475,7 +475,7 @@ The catalog's own comment is unambiguous that these records *"compose existing p
 new engine behavior."* This is the substantive claim of the section. Sixty-four product-level
 behaviors — priority wells, evidence fields, conflict fields, reading fields, attention weather,
 diagnostic lenses — are assembled entirely from the small passported vocabulary of forces, metrics,
-and render modes the engine already ships (Paper 1 §6.4). No recipe adds a `field()` or `apply()`
+and render modes the engine already ships (Paper 1 §6.4). No pattern adds a `field()` or `apply()`
 implementation; each is a *composition* over the existing catalog, exactly as the cosmological presets
 compose primitives into cosmology *with no new engine code* (Paper 1 §6.4). The expressive surface is
 large; the executable surface stays small and audited. That gap — broad library, narrow uncorrupted
@@ -483,13 +483,13 @@ vocabulary — is the whole argument of the paper, and the catalog is its eviden
 
 ---
 
-## 6. From recipe to running behavior, and back to explanation
+## 6. From pattern to running behavior, and back to explanation
 
-A recipe is simultaneously *authorable*, *inspectable*, and *explainable*. We keep the *execution*
+A pattern is simultaneously *authorable*, *inspectable*, and *explainable*. We keep the *execution*
 details deferred to Paper 5 and show only that the same record serves all three roles.
 
 **Compilation (authorable → runnable).** `compileRecipe(r)` (`packages/core/src/recipes/compile.ts`)
-is a *pure* function turning a validated recipe into a `CompiledRecipe` runtime plan — "the bridge from
+is a *pure* function turning a validated pattern into a `CompiledRecipe` runtime plan — "the bridge from
 recipe-as-record to recipe-as-program." Crucially, it *preserves the lane split*, as its own comment
 states: *"concepts describe · tokens execute · metrics measure · diagnostics explain · conditions
 activate."* Only the `primitives` lane becomes `data-body` behavior; each body compiles to its
@@ -501,11 +501,11 @@ test suite verifies, for all 64, that compiled tokens are all real, that feedbac
 that a reduced-motion output path is produced, and that *no concept word ever appears as a token*. The
 DOM-applying counterpart `applyRecipe` lives in `@fundamental-engine/dom` and is Paper 5's subject.
 
-**Authoring across surfaces.** `recipeToMarkup` and `recipeAuthoring` emit a recipe's copy-paste
+**Authoring across surfaces.** `recipeToMarkup` and `recipeAuthoring` emit a pattern's copy-paste
 authoring as native-HTML `[data-body]` markup, a `<field-root>` web-component snippet, and a React
 `<FieldField>` component — the one compiled contract across three surfaces from Paper 1 §7.2.
 
-**The designer door (intent compilation).** Below recipes sit *intents*: `compileIntent('draw-focus')`
+**The designer door (intent compilation).** Below patterns sit *intents*: `compileIntent('draw-focus')`
 maps a designer-level verb to concrete force tokens (`draw-focus → attract + feedback`, `warn →
 repel + thermal`). The intent table (`intent.ts`) was corrected in #224 to emit **real tokens only** —
 its comment is explicit: *"Tokens use the current names (viscosity, wall — not the legacy
@@ -514,12 +514,12 @@ drag/reflect)."* So `contain-energy` compiles to `viscosity + wall`, not the con
 `null` rather than a silent default. The intent compiler is thus a second, designer-level door that
 obeys the same token discipline as the gate.
 
-**Explanation (record → prose).** `explainScene(r)` (`explain.ts`) walks a recipe's bodies, looks up
+**Explanation (record → prose).** `explainScene(r)` (`explain.ts`) walks a pattern's bodies, looks up
 each token's passport, and renders plain language *grounded in the real physics*: it names each layer
 by its passport `designUse`, and when `fieldflow` is present it appends the transport caveat — *"Matter
 follows the field geometry because of fieldflow, not the field-owning force itself"* — exactly the
 distinction Paper 1 §3.3 forbids collapsing. Because the explanation reads from passports, it cannot
-describe a behavior the recipe does not actually have. The same record is authored, compiled, and
+describe a behavior the pattern does not actually have. The same record is authored, compiled, and
 explained from one source of truth; explainability depth is Paper 8's.
 
 ---
@@ -538,14 +538,14 @@ by writing a record — choosing tokens, metrics, render layers, conditions, and
 fallback — not by extending the engine. The engine's audited surface stays fixed while the library
 grows.
 
-**Auditability by construction.** Because every recipe is gate-checked and the catalog is sixty-four
+**Auditability by construction.** Because every pattern is gate-checked and the catalog is sixty-four
 passing fixtures (§5.2), the catalog *cannot* reference a non-existent token or mode, *cannot* declare
 primitives that drift from its bodies, and *cannot* ship a motion-only behavior. These are not review
 conventions; they are build-failing assertions. A reviewer can trust the catalog's vocabulary the way
 they can trust that the core reaches no DOM global (Paper 1 §4.2): by the test, not the prose.
 
 **Reduced-motion equivalence required at authoring time.** The schema *requires* both accessibility
-strings, the gate rejects a recipe lacking them, and `compileRecipe` produces a concrete reduced-motion
+strings, the gate rejects a pattern lacking them, and `compileRecipe` produces a concrete reduced-motion
 output plan for all 64. Accessibility is therefore an authoring-time obligation, not a later retrofit —
 which connects directly to Paper 4's conformance model (deferred there for depth).
 
@@ -555,7 +555,7 @@ Framed strictly as a protocol — *no results are reported* — a future evaluat
 model's two promises against the project's "authoring time" target:
 
 - **Time-to-author.** Give developers a target behavior described in prose ("results settle by
-  relevance and recency") and measure wall-clock time to a passing recipe, comparing the recipe path
+  relevance and recency") and measure wall-clock time to a passing pattern, comparing the pattern path
   against an imperative baseline. The hypothesis is that the constrained, lane-typed surface lowers
   time-to-first-correct-behavior.
 - **Lane-violation error rate.** Instrument `validateRecipe` during authoring and count how often
@@ -564,7 +564,7 @@ model's two promises against the project's "authoring time" target:
   that the gate *converts* a class of latent runtime bugs (vocabulary leak) into immediate,
   self-explaining authoring-time errors.
 - **Expressiveness coverage.** Sample real interface behaviors from existing products and record what
-  fraction are expressible as a valid recipe without new engine code, and which require a genuinely new
+  fraction are expressible as a valid pattern without new engine code, and which require a genuinely new
   primitive — locating the boundary of the compositional surface.
 
 We make no claim about outcomes; these are designs and hypotheses only.
@@ -574,7 +574,7 @@ We make no claim about outcomes; these are designs and hypotheses only.
 The 64-recipe catalog is an **existence argument**, not a user study. It demonstrates that a small
 passported primitive/metric/render vocabulary *does in fact* compose into a broad, navigable, executable
 library that passes the gate — which is a real and checkable property. It does *not* demonstrate that
-the recipes are easy to author by non-authors of this project, nor that the resulting behaviors help
+the patterns are easy to author by non-authors of this project, nor that the resulting behaviors help
 users; those are the open questions §7.2 and Papers 3–4 address. We state the breadth as what it is.
 
 ---
@@ -583,8 +583,8 @@ users; those are the open questions §7.2 and Papers 3–4 address. We state the
 
 **The gate checks structure, not feel.** `validateRecipe` verifies *structural* validity — real
 tokens, real modes, matching primitives, a present accessibility fallback. It says nothing about
-whether a recipe *feels* right, whether its tuned strengths and ranges produce a legible result, or
-whether the chosen composition actually matches the stated intent. A recipe can be perfectly valid and
+whether a pattern *feels* right, whether its tuned strengths and ranges produce a legible result, or
+whether the chosen composition actually matches the stated intent. A pattern can be perfectly valid and
 behaviorally poor. Perceptual quality is out of scope for a structural gate.
 
 **Meaning-preservation is not verified.** Relatedly, the gate confirms that a `meaningWithoutMotion`
@@ -598,12 +598,12 @@ specification of the static surface (beyond the coarse `staticOutputs` `compileR
 which lanes are present). Full automation of the reduced-motion equivalent — generating and validating
 the static surface from structure alone — is a gap and future work.
 
-**No visual authoring tool yet.** Recipes are textual, serializable records. A visual composer that
-lets non-programmers assemble recipes with the gate enforced live (refusing a metric dropped into the
+**No visual authoring tool yet.** Patterns are textual, serializable records. A visual composer that
+lets non-programmers assemble patterns with the gate enforced live (refusing a metric dropped into the
 token lane the way a node graph refuses an incompatible socket) is roadmap, not shipped (R15, and Paper
 1 §9.1's "visual authoring tools" frontier).
 
-**Breadth is not a study.** As stated in §7.3, the 64 recipes are an existence argument for
+**Breadth is not a study.** As stated in §7.3, the 64 patterns are an existence argument for
 compositional expressiveness, not measured evidence of authoring ergonomics or user benefit.
 
 ---
@@ -624,7 +624,7 @@ word that is not a real capability cannot become one. Lane hygiene makes the sep
 gate makes it *enforced*. Neither alone suffices — lanes without a gate are a convention authors will
 violate; a gate without lanes has nothing clean to validate.
 
-Fundamental's recipes are one instantiation, but the pattern is portable to any token-and-composition
+Fundamental's patterns are one instantiation, but the pattern is portable to any token-and-composition
 authoring model: design-token systems, animation DSLs, node-graph editors, low-code platforms. The
 recurring payoff is the one the whole family argues for — a system whose honesty is *mechanical*. A
 reviewer can confirm that the authoring catalog references only real engine capabilities by running a
@@ -636,13 +636,13 @@ validator, not by trusting the documentation.
 
 Complex relational interface behavior need not be authored as drifting, opaque, vocabulary-leaking
 imperative code. Fundamental makes it *authorable* through a portable, serializable, **conformance-gated**
-recipe schema that separates the behavior into strict lanes: concepts describe, runtime tokens execute,
+pattern schema that separates the behavior into strict lanes: concepts describe, runtime tokens execute,
 metrics measure, diagnostics explain, conditions activate, and a required reduced-motion equivalent
 guarantees the behavior is never motion-only. The conformance gate, `validateRecipe`, mechanically
-keeps the runtime vocabulary uncorrupted — rejecting any recipe whose executable tokens are not real
+keeps the runtime vocabulary uncorrupted — rejecting any pattern whose executable tokens are not real
 passported forces, whose layers are not real modes, whose primitives drift from its bodies, or that
 lacks its accessibility fallback — so expressive prose can never invent a force. The shipped catalog of
-64 gate-checked recipes, held as data across four sixteen-recipe tiers and assembled entirely from the
+64 gate-checked patterns, held as data across four sixteen-recipe tiers and assembled entirely from the
 existing passported vocabulary with no new engine code, is the existence argument that a small primitive
 set composes into a broad, navigable, executable library. We have been candid that the gate checks
 structure rather than feel, that meaning-preservation needs Paper 4's study, that the accessibility
@@ -657,7 +657,7 @@ diagnostics to Paper 8; this paper's one claim is that behavior can be made port
 
 Every claim in this paper is checkable against the repository.
 
-- **The schema and the gate:** `packages/core/src/recipes/schema.ts` — the `FieldRecipe` interface,
+- **The schema and the gate:** `packages/core/src/recipes/schema.ts` — the `FieldPattern` interface,
   the `RenderLayer` / `DiagnosticMode` / `FIELD_MODES` sets, the `OTHER_LANE` lane map, `primitivesOf`,
   and `validateRecipe` (the conformance gate; §4).
 - **The catalog as data:** `packages/core/src/recipes/catalog.ts` — `TIER_CORE` / `TIER_PRODUCT` /
@@ -667,24 +667,24 @@ Every claim in this paper is checkable against the repository.
   `metricVar`, `recipeToMarkup`, `recipeAuthoring`. Intent: `intent.ts` (`INTENT_PRESETS`,
   `compileIntent`, real tokens after #224). Explanation: `explain.ts` (`explainScene`).
 - **The token symbol table:** `packages/core/src/contracts/passport.ts` — `PASSPORTS`, `passportFor`
-  (what every recipe primitive is validated against), and `validatePassports` (what keeps the passports
+  (what every pattern primitive is validated against), and `validatePassports` (what keeps the passports
   themselves honest).
 - **The conformance fixtures:** `packages/core/src/recipes/recipes.test.ts` — asserts all 64 validate,
   the four-tier 16-each structure, lane discipline (no primitive is ever a mode), primitive/body match,
   the required reduced-motion equivalent, and the eight-recipe first-release set.
 - **The count gate:** `scripts/check-readme.mjs` (`pnpm check:readme`) — fails the build if the
-  README's stated recipe count diverges from `core.FIELD_RECIPES.length`.
+  README's stated pattern count diverges from `core.FIELD_RECIPES.length`.
 
 The canonical design documents corroborate the framing: `docs/canonical/authoring-and-recipes.md`
 (§5 schema, §7 the 64-recipe catalog + tiers, §4 the intent compiler) and
-`docs/canonical/natural-fields.md` ("Recipes by meaning").
+`docs/canonical/natural-fields.md` ("Patterns by meaning").
 
 ## Appendix B. Conversion notes (markdown → preprint)
 
 Notation is kept LaTeX-compatible; the inline `ts`/`js` blocks translate to `listings` directly.
 Figures referenced in prose but not yet drawn — a lane diagram (concepts/tokens/metrics/diagnostics/
 conditions/accessibility as parallel typed fields, §3.2), the gate's decision flow (§4), and the
-catalog tier map (four tiers × sixteen recipes, §5.1) — are produced at conversion time. External
+catalog tier map (four tiers × sixteen patterns, §5.1) — are produced at conversion time. External
 citations are resolved and verified against `references.md` before
 submission; none are fabricated here.
 

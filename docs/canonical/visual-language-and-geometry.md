@@ -895,7 +895,7 @@ Potential attributes:
 | `data-semantic-layer` | semantic mapping |
 | `data-reduced-visual` | reduced-mode fallback |
 
-## 20. Useful Visual Recipes
+## 20. Useful Visual Patterns
 
 ### Living Typography
 

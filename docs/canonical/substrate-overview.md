@@ -25,7 +25,7 @@ ladder, and how non-DOM / headless / native hosts stay first-class), [body-lifec
 
 ## Influence
 
-**Forces** act on declared bodies through declared channels — never implicitly. A `FieldRecipe` composes
+**Forces** act on declared bodies through declared channels — never implicitly. A `FieldPattern` composes
 forces without blurring lanes; the impulse **accumulator** captures every force centrally so influence is
 attributable, not guessed. Bodies choose how much they yield: **body authority** modes (Anchored /
 Kinematic / Dynamic) decide whether a body is moved, and Dynamic bodies **recoil**. A fixed timestep keeps

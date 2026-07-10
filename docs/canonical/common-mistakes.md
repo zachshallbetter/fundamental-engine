@@ -76,10 +76,10 @@ Because the system is expressive, the failure modes are mostly misuse. Don't:
 
 - Use Fundamental as a **decorative particle background** only (it's a behavior/signals layer; particles are optional).
 - Make **motion the only carrier of meaning** — it must survive reduced motion (see #8).
-- Turn **every relationship into a coupling** — association is not coupling; forces couple, a Field Formation decides which associations become couplings.
+- Turn **every relationship into a coupling** — association is not coupling; forces couple, a Field Pattern decides which associations become couplings.
 - Let a **projection mutate field state** — projections reveal, they never write back (projection purity).
 - **Expose body data to agents by default** — `body.data` stays opaque unless deliberately included.
-- Say **"formation"** when you mean a *global formation mode* (`wells`/`lanes`/…), or **"Configuration"** when you mean a *Field Formation*.
+- Say **"formation"** when you mean a *global formation mode* (`wells`/`lanes`/…), or **"Configuration"** when you mean a *Field Pattern*.
 - Use **"Matter"** when you mean authored behavior.
 - Create a **force token for every concept** — most concepts are metrics, dimensions, or projections, not new forces (the recipe/force canon is locked).
 
@@ -91,17 +91,17 @@ When a field misbehaves, name the shape of the failure — each has a distinct c
 2. **Silent field** — the sim runs but no feedback or projection is attached; signals are written but nothing consumes them (the silent-contract gap). See [causality-and-truth.md](causality-and-truth.md).
 3. **Haunted field** — a projection *appears* to change field state because coupling/projection boundaries are unclear; projections reveal, they never write back (projection purity).
 4. **Leaky field** — a snapshot or query unexpectedly exposes opaque body data; `body.data` should stay opaque unless deliberately included. See [substrate-api.md](substrate-api.md).
-5. **Overcoupled field** — relationships produce dynamics with no declared Field Formation; associations became couplings without a formation deciding they should.
+5. **Overcoupled field** — relationships produce dynamics with no declared Field Pattern; associations became couplings without a formation deciding they should.
 6. **Motion-only field** — meaning disappears under reduced motion because motion was the only carrier (see #8).
 7. **Drifting field** — host geometry and field coordinates diverge; the adapter's space no longer matches the field's. See [coordinate-spaces.md](coordinate-spaces.md).
 8. **Unstable field** — forces inject energy with no damping, cap, or budget, so the sim heats up unbounded.
-9. **Ambiguous field** — a term is used in two lanes at once (e.g. "formation" for both a global formation mode and a Field Formation); pick one lane.
+9. **Ambiguous field** — a term is used in two lanes at once (e.g. "formation" for both a global formation mode and a Field Pattern); pick one lane.
 
 ## Field smells
 
 Lint-candidate heuristics — each points at a likely mistake, not a guaranteed one.
 
-1. **Raw force soup** — many force tokens stacked on one body with no Field Formation to organize them.
+1. **Raw force soup** — many force tokens stacked on one body with no Field Pattern to organize them.
 2. **Metric without provenance** — a metric reported with no trace of where it came from. See [causality-and-truth.md](causality-and-truth.md).
 3. **Projection without a reduced-motion / semantic equivalent** — a projection that only reads under animation.
 4. **Relationship pretending to be a force** — an association wired as if it couples, with no formation behind it.

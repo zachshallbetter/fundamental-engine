@@ -10,7 +10,7 @@
 | [`README.md`](./README.md) | Documentation map |
 | [`definition-document.md`](definition-document.md) | Concept |
 | [`system-contracts.md`](system-contracts.md) | Agent contracts |
-| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Recipes |
+| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Patterns |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Relationship visualization |
 
 ## Purpose
@@ -21,7 +21,7 @@ This document expands `Fundamental` beyond particles.
 
 Particles are only one class of field participant. Users, elements, relationships, events, layouts, and data can also be agents.
 
-> **Association is not coupling.** Relationships associate by default. Forces couple. A Field Formation
+> **Association is not coupling.** Relationships associate by default. Forces couple. A Field Pattern
 > decides which associations become couplings. A relationship edge does **not** cause a force on its
 > own — this matters most for evidence, research, and knowledge-graph use, where readers otherwise
 > assume every edge exerts a pull.
@@ -586,9 +586,9 @@ Several items below have shipped on the platform runtime (Phase D). The `Relatio
 5. UserAgent model for pointer/focus/selection — shipped (user-agent.ts)
 6. Thresholded field events — shipped
 7. Relationship heatmaps
-8. Navigation/search recipes
-9. Form state recipes
-10. Reading/editorial recipes — shipped (Reading Field, /docs/reading-field)
+8. Navigation/search patterns
+9. Form state patterns
+10. Reading/editorial patterns — shipped (Reading Field, /docs/reading-field)
 11. Collaborative presence experiments
-12. AI state visualization recipes
+12. AI state visualization patterns
 ```

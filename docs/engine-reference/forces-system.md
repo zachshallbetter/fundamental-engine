@@ -2231,7 +2231,7 @@ threads to. It is the *destination* of the `accretion` formation (§7) and the
 disciplines' shared sink (§15) — a named state, not a tenth force.
 
 ### 25.4 Embedding the field — opacity, scrim, nav continuity (§17/§18)
-A concrete recipe for layering a live field under content (slots beside the §18 cost
+A concrete pattern for layering a live field under content (slots beside the §18 cost
 controls and the §17 gated-toggle):
 
 ```css

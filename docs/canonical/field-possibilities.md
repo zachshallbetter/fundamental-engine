@@ -8,7 +8,7 @@
 >
 > **Relationship to use-cases.md.** [`use-cases.md`](use-cases.md) is the shipped, narrative tier —
 > concrete UI problems and how the field solves them today. This document is the conceptual framework
-> beneath it: conditions, formations, recipe families, natural field translations, matter primitives,
+> beneath it: conditions, formations, pattern families, natural field translations, matter primitives,
 > temporal fields, and alternative output surfaces. When a section here has a concrete shipped
 > implementation, it links to the relevant use-cases section. Sections §26–§36 are
 > **`[frontier]`** — not yet shipped; they define the research and long-range possibility space.
@@ -133,8 +133,8 @@ Fieldflow is transport along field structure.
 
 Diagnostics reveal invisible structure.
 
-Field Formations compose behavior into interface meaning.
-FieldRecipe is the current API representation of a Field Formation.
+Field Patterns compose behavior into interface meaning.
+FieldPattern is the current API representation of a Field Pattern.
 
 Short version:
 
@@ -216,7 +216,7 @@ The possibility categories are:
 ```txt
 conditions
 formations
-recipes
+patterns
 relationships
 input agents
 data fields
@@ -245,7 +245,7 @@ What is the reduced-motion equivalent?
 
 → *Shipped use cases: [use-cases.md §I](use-cases.md#i-universal-ui-patterns) (error gravity — `coherent`; reading weight — `dwell`; completion momentum — `coherent`), §II (urgency sorting — `stale`, `thresholded`; anomaly field — `thresholded`), §IX (staleness gradient — `stale`; dwell-driven mastery — `dwell`), §X (trust gradient — `trusted`; evidence field — `trusted`).*
 
-Conditions decide when a body, recipe, or relationship becomes active.
+Conditions decide when a body, pattern, or relationship becomes active.
 
 The older condition list remains useful, but it should be renamed into field-state language.
 
@@ -347,11 +347,11 @@ Conditions should not spam DOM events. Continuous state belongs in CSS variables
 
 > Two senses of "formation" live nearby — keep them apart. A **global formation mode** (a.k.a.
 > *field-shape mode*) is a whole-field bias set via `setFormation(...)`: `ambient`, `wells`, `lanes`,
-> `scatter`, `accretion`. A **Field Formation** is the authored, recipe-backed conceptual arrangement
+> `scatter`, `accretion`. A **Field Pattern** is the authored, recipe-backed conceptual arrangement
 > named by *meaning* (`reading`, `evidence`, `conflict`, …). This section is about the *modes*; the
-> named `reading`/`evidence`/… Field Formations below map to `FieldRecipe` records.
+> named `reading`/`evidence`/… Field Patterns below map to `FieldPattern` records.
 
-→ *Shipped use cases: [use-cases.md §I](use-cases.md#i-universal-ui-patterns) (reading weight — `reading` Field Formation; completion momentum — `coherence` Field Formation), §IV (article topography — `reading` Field Formation), §VII (kanban physics — `pressure` Field Formation), §X (evidence field — `evidence` Field Formation; conflict field — `conflict` Field Formation), §XI (presence field — `presence` Field Formation).*
+→ *Shipped use cases: [use-cases.md §I](use-cases.md#i-universal-ui-patterns) (reading weight — `reading` Field Pattern; completion momentum — `coherence` Field Pattern), §IV (article topography — `reading` Field Pattern), §VII (kanban physics — `pressure` Field Pattern), §X (evidence field — `evidence` Field Pattern; conflict field — `conflict` Field Pattern), §XI (presence field — `presence` Field Pattern).*
 
 A global formation mode is a whole-field arrangement.
 
@@ -466,15 +466,15 @@ Dependency Tension
 Recovery Path
 ```
 
-## 8. Recipes as the main possibility unit
+## 8. Patterns as the main possibility unit
 
-→ *Shipped use cases: All concrete use cases in [use-cases.md](use-cases.md) map to named recipes — `Evidence Field`, `Trust Gradient`, `Presence Field`, `Memory Trace`, `Guided Flow`, `System Pulse`, `Relation Lens`, `Staleness Drift`, `Provenance Trail`, and more.*
+→ *Shipped use cases: All concrete use cases in [use-cases.md](use-cases.md) map to named patterns — `Evidence Field`, `Trust Gradient`, `Presence Field`, `Memory Trace`, `Guided Flow`, `System Pulse`, `Relation Lens`, `Staleness Drift`, `Provenance Trail`, and more.*
 
 The most important product frontier is not another force.
 
-It is Field Formations.
+It is Field Patterns.
 
-A Field Formation is a portable field program; a `FieldRecipe` is its current API representation.
+A Field Pattern is a portable field program; a `FieldPattern` is its current API representation.
 
 It connects:
 
@@ -490,7 +490,7 @@ diagnostics
 accessibility equivalent
 ```
 
-A recipe should answer:
+A pattern should answer:
 
 ```txt
 What is this for?
@@ -503,7 +503,7 @@ What diagnostics explain it?
 What happens in reduced motion?
 ```
 
-Candidate recipe families:
+Candidate pattern families:
 
 ```txt
 Core interface fields
@@ -514,11 +514,11 @@ Professional systems, safety, provenance, governance
 Enterprise, collaborative, adaptive, operational fields
 ```
 
-The recipe catalog should become a primary authoring surface.
+The pattern catalog should become a primary authoring surface.
 
 ## 9. The 64-recipe possibility map
 
-The current recipe universe can be organized as:
+The current pattern universe can be organized as:
 
 ```txt
 1-16: Core interface and accessibility fields
@@ -564,13 +564,13 @@ Risk Horizon
 System Pulse
 ```
 
-The recipe set is the clearest way to make Fundamental usable.
+The pattern set is the clearest way to make Fundamental usable.
 
 It turns field theory into product patterns.
 
 ## 10. Data-bound fields
 
-→ *Shipped use cases: [use-cases.md §II](use-cases.md#ii-data--dashboards) (anomaly field — `System Pulse` recipe; live data streams; relationship graphs) and §III (product gravity).*
+→ *Shipped use cases: [use-cases.md §II](use-cases.md#ii-data--dashboards) (anomaly field — `System Pulse` pattern; live data streams; relationship graphs) and §III (product gravity).*
 
 A major possibility is turning records into field participants.
 
@@ -651,7 +651,7 @@ Review Constellation
 
 ## 11. Relationship possibilities
 
-→ *Shipped use cases: [use-cases.md §II](use-cases.md#ii-data--dashboards) (relationship graphs — `Relation Lens` recipe), §X (evidence field — source binding).*
+→ *Shipped use cases: [use-cases.md §II](use-cases.md#ii-data--dashboards) (relationship graphs — `Relation Lens` pattern), §X (evidence field — source binding).*
 
 The DOM is a tree, but interfaces are graphs.
 
@@ -670,7 +670,7 @@ figure / figcaption
 details / summary
 popover target
 data-field-relation
-runtime recipe relationships
+runtime pattern relationships
 data-bound graph edges
 ```
 
@@ -828,7 +828,7 @@ What caused this warning?
 What accumulated here?
 Which source supports this claim?
 Which relationship is active?
-Which recipe wrote this CSS variable?
+Which pattern wrote this CSS variable?
 ```
 
 Diagnostic surfaces:
@@ -838,7 +838,7 @@ Platform Inspector
 Field Contract Preview
 Diagnostic Lens
 Relation Lens
-Recipe Debugger
+Pattern Debugger
 Causality Overlay
 Prediction Overlay
 Topology View
@@ -869,7 +869,7 @@ conflict separation -> conflict list
 
 The accessibility system should be recipe-aware.
 
-Every shipped recipe should define:
+Every shipped pattern should define:
 
 ```txt
 semantic source
@@ -902,7 +902,7 @@ provenance
 risk
 ```
 
-Field recipes can make these visible:
+Field patterns can make these visible:
 
 ```txt
 Evidence Field
@@ -936,7 +936,7 @@ This is one of the strongest product directions.
 
 Collaboration can move beyond cursors and avatars.
 
-Recipes:
+Patterns:
 
 ```txt
 Presence Field
@@ -971,7 +971,7 @@ The system should eventually support visual authoring.
 Candidate tools:
 
 ```txt
-recipe editor
+pattern editor
 force card editor
 relationship graph editor
 diagnostic lens
@@ -987,7 +987,7 @@ Authoring principle:
 Designers should compose relational behavior without editing engine force code.
 ```
 
-A recipe editor should make these visible:
+A pattern editor should make these visible:
 
 ```txt
 bodies
@@ -1068,11 +1068,11 @@ Potential product surfaces:
 
 ```txt
 docs site
-recipe gallery
+pattern gallery
 platform inspector
 Lab
 visual authoring tool
-recipe contract preview
+pattern contract preview
 AI evidence viewer
 reading-field article template
 collaboration dashboard
@@ -1085,8 +1085,8 @@ The strongest near-term product arc:
 ```txt
 1. Platform-backed runtime
 2. Platform Inspector
-3. Recipe system
-4. Executable Recipe Gallery
+3. Pattern system
+4. Executable Pattern Gallery
 5. Reading Field and Evidence Field demos
 6. Accessibility conformance
 ```
@@ -1103,7 +1103,7 @@ catalogued in [`../planning/platforms-and-use-cases-frontier.md`](../planning/pl
 
 The global field should remain the default.
 
-But local cells are useful for demos, previews, recipe cards, educational blocks, and isolated experiments.
+But local cells are useful for demos, previews, pattern cards, educational blocks, and isolated experiments.
 
 Local field cells should obey these rules:
 
@@ -1119,7 +1119,7 @@ local cells expose their purpose
 Examples:
 
 ```html
-<field-cell recipe="priority-well"></field-cell>
+<field-cell pattern="priority-well"></field-cell>
 <field-cell force="vortex"></field-cell>
 <field-cell diagnostic="field-lines"></field-cell>
 ```
@@ -1130,7 +1130,7 @@ The possibility is a documentation system where every concept can carry its own 
 
 Containers should be able to express scope.
 
-Recipes:
+Patterns:
 
 ```txt
 Boundary Field
@@ -1171,7 +1171,7 @@ where a process was interrupted
 which path recovered state
 ```
 
-Recipes:
+Patterns:
 
 ```txt
 Memory Trace
@@ -1746,7 +1746,7 @@ padding
 animation timing
 ```
 
-This extends section 18 (authoring possibilities) from a recipe editor to a fully field-native design model.
+This extends section 18 (authoring possibilities) from a pattern editor to a fully field-native design model.
 
 ## 35. Emergent semantics `[frontier]`
 

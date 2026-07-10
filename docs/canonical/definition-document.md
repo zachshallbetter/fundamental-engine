@@ -12,7 +12,7 @@
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Field laws and `fieldflow` |
 | [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | Agents beyond particles |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Visualization and diagnostics |
-| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring and recipes |
+| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring and patterns |
 | [`testing-and-conformance.md`](testing-and-conformance.md) | Testing and conformance |
 | [`wallpaper-rule.md`](wallpaper-rule.md) | The substrate-not-wallpaper rule made operational |
 
@@ -397,7 +397,7 @@ See [`interaction-and-relationship-model.md`](interaction-and-relationship-model
 | Level | User | API |
 |---|---|---|
 | Level 1 | designer | intents and presets |
-| Level 2 | developer | `data-body`, render modes, recipes |
+| Level 2 | developer | `data-body`, render modes, patterns |
 | Level 3 | engine author | custom `field()` / `apply()` / conformance |
 
 See [`authoring-and-recipes.md`](authoring-and-recipes.md).

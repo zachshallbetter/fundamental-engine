@@ -48,7 +48,7 @@ them back (reciprocity). It began as the homepage of zachshallbetter.com and out
 - **`docs/research/`** — an 8-paper arXiv-style family (markdown). `README.md` has the "caveat canon".
 - **`docs/planning-archive/`** — historical design (`field-concept.md`, migration plan). Frozen; don't cite as current.
 - **`docs/planning/critical-path/`** — the **substrate-architecture** program (the path to a true substrate, not
-  just a runtime): `01` Field Formation terminology, `02` Field Query API, `03` Snapshot + Causal Replay,
+  just a runtime): `01` Field Pattern terminology, `02` Field Query API, `03` Snapshot + Causal Replay,
   `04` dimension-aware accumulator + body-authority modes, `05` Projection Registry + governance. Sequenced;
   each step is its own reviewable core PR. **Shipped so far (doc 04 spine):** the opt-in `Env.accum`
   (`FieldImpulseAccumulator`) impulse accumulator captured centrally in `applyForce` via the single
@@ -65,7 +65,7 @@ them back (reciprocity). It began as the homepage of zachshallbetter.com and out
 ## Core concepts (the naming canon — keep lanes separate)
 
 > **Concepts describe. Tokens execute. Metrics measure. Diagnostics explain. Conditions activate.
-> Recipes compose.** No word lives in two lanes.
+> Patterns compose.** No word lives in two lanes.
 
 - **Natural Fields** — the conceptual layer: **Gravity→importance, Electromagnetic→polarity/signal,
   Strong→binding, Weak→transformation**. *"Natural fields are not tokens; tokens are translations"*;
@@ -187,8 +187,8 @@ them back (reciprocity). It began as the homepage of zachshallbetter.com and out
   does NOT work on a CHANGELOG conflict — only a manual rebase resolves it.
 - **Engine fixes go to ALL planes, in their own PR.** A physics/render bug is fixed in the JS core AND the
   Swift port (`swift/`) and any other port, shipped as a focused fix PR — never bundled into feature work.
-- **Recipe canon is locked.** The 64-recipe (4×16) `FIELD_RECIPES` catalog is frozen; new recipes go in
-  `EXPERIMENTAL_RECIPES`, never the locked set.
+- **Pattern canon is locked.** The 64-recipe (4×16) `FIELD_PATTERNS` catalog is frozen; new patterns go in
+  `EXPERIMENTAL_PATTERNS`, never the locked set.
 
 ### Performance: the field is fill-rate-bound, NOT particle-bound
 

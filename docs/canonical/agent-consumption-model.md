@@ -15,7 +15,7 @@
 > **Agent-readable surface (shipped, experimental — unfrozen).** A software/AI agent no longer has to
 > scrape the DOM or read per-body `--field-*` channels to understand the field: `field.query()` and
 > `field.snapshot()` return the live model — bodies, metrics, relationships, and per-force influence —
-> as plain structured data, and the projection registry's `agent-json` surface lets a Field Formation
+> as plain structured data, and the projection registry's `agent-json` surface lets a Field Pattern
 > expose a tailored reading. `query()` is *the* substrate's agent-/tool-readable surface; see
 > [substrate-api.md](substrate-api.md). (Shipped and callable, but not part of the frozen surface — its
 > shape may change.)

@@ -8,10 +8,10 @@
 >
 > **Relationship to field-possibilities.md.** This document is the shipped, narrative
 > tier — concrete UI problems and how the field solves them today. The conceptual
-> framework beneath it (conditions, formations, recipe families, natural field
+> framework beneath it (conditions, formations, pattern families, natural field
 > translations, matter primitives, temporal fields, alternative output surfaces) lives
 > in [`field-possibilities.md`](field-possibilities.md). When a use case references a
-> condition, formation, or recipe name, that's where the definition lives. When a
+> condition, formation, or pattern name, that's where the definition lives. When a
 > section in `field-possibilities.md` has a concrete shipped example, it links back here.
 >
 > The `/use-cases` site page is built from this document.
@@ -28,7 +28,7 @@ depth for specific domains and emerging capabilities.
 These apply to any product in any stack. They are the "oh, I get it" tier — the
 examples that make the model click for someone who has never seen Fundamental before.
 
-→ *Conceptual grounding: [`field-possibilities.md §1`](field-possibilities.md#1-the-paradigm-shift) (the paradigm shift), §7 (formations), §8 (recipes as the main possibility unit).*
+→ *Conceptual grounding: [`field-possibilities.md §1`](field-possibilities.md#1-the-paradigm-shift) (the paradigm shift), §7 (formations), §8 (patterns as the main possibility unit).*
 
 ### Weighted Navigation
 
@@ -331,7 +331,7 @@ The focused element is the engaged body — the strongest local gravity source. 
 traversal creates a moving gravity well. CSS on `[data-feedback]` elements responds
 to `--d` with color, shadow, or scale changes driven by proximity to focus.
 
-→ *See [`field-possibilities.md §15`](field-possibilities.md#15-accessibility-possibilities) for the full accessibility contract every recipe should define (motion, reduced-motion, keyboard, screen-reader equivalents).*
+→ *See [`field-possibilities.md §15`](field-possibilities.md#15-accessibility-possibilities) for the full accessibility contract every pattern should define (motion, reduced-motion, keyboard, screen-reader equivalents).*
 
 For reduced-motion users: the field still writes the CSS variables. Motion is one
 consumer; color is another. Disable the particle canvas and the CSS color response
@@ -455,7 +455,7 @@ between editorial intent and user signal is physically visible.
 pulls, has polarity, and bends the space around it. These combinations produce
 emergent field shapes that are impossible to replicate with CSS alone.
 
-→ *See [`field-possibilities.md §8`](field-possibilities.md#8-recipes-as-the-main-possibility-unit) (recipes as the main possibility unit) and §35 (emergent semantics).*
+→ *See [`field-possibilities.md §8`](field-possibilities.md#8-patterns-as-the-main-possibility-unit) (patterns as the main possibility unit) and §35 (emergent semantics).*
 
 ---
 
@@ -482,7 +482,7 @@ lower resistance. Neglected regions cool. The page ages in a physically meaningf
 way, shaped by how it has been inhabited — not as analytics (external, discrete,
 after-the-fact) but as semantic sediment (local, continuous, immediately legible).
 
-→ *Recipes: `Memory Trace`, `Reading Field`, `Staleness Drift` — [`field-possibilities.md §24`](field-possibilities.md#24-memory-possibilities).*
+→ *Patterns: `Memory Trace`, `Reading Field`, `Staleness Drift` — [`field-possibilities.md §24`](field-possibilities.md#24-memory-possibilities).*
 
 ---
 
@@ -521,7 +521,7 @@ gradient across the surface.
 ## X. AI & Evidence Fields
 
 AI outputs contain claims, sources, confidence, uncertainty, contradiction, revision,
-memory, and provenance. Field recipes can make these structural properties visible
+memory, and provenance. Field patterns can make these structural properties visible
 without decorating them as badges or tooltips.
 
 → *Conceptual grounding: [`field-possibilities.md §16`](field-possibilities.md#16-ai-and-evidence-possibilities) ("one of the strongest product directions"). Formation: `evidence` — §7.*
@@ -532,7 +532,7 @@ Claims become bodies. Sources bind to them — strong sources pull closer, weak 
 orbit at distance. Contradictory sources repel. Verified claims gain coherence and
 mass. Unverified claims remain unstable, visibly unsettled in the field.
 
-→ *Recipe: `Evidence Field` — [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes) (evidence formation) and §9 (recipe catalog).*
+→ *Recipe: `Evidence Field` — [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes) (evidence formation) and §9 (pattern catalog).*
 
 **What the field does:** each claim is a `data-body` whose strength is its confidence
 score. Each source is a related body with `data-field-relation` to the claim it
@@ -581,7 +581,7 @@ A document or interface with contested information — two sources that contradi
 other, two recommendations that conflict. The field holds the contradiction in visible
 tension rather than collapsing it into a resolved state.
 
-→ *Formation: `conflict` — [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes). Recipes: `Conflict Field`, `Disagreement Charge`.*
+→ *Formation: `conflict` — [`field-possibilities.md §7`](field-possibilities.md#7-global-formation-modes). Patterns: `Conflict Field`, `Disagreement Charge`.*
 
 **What the field does:** conflicting bodies carry opposing charge
 (`data-body="charge"`). The field maintains charge separation between them. The
@@ -617,7 +617,7 @@ A voting or review surface where agreement accumulates mass. Items with growing
 consensus pull toward a stable gravity well. Items with persistent disagreement show
 charge separation — two camps of opposing charge, visible as a split field topology.
 
-→ *Recipes: `Consensus Well`, `Disagreement Charge` — [`field-possibilities.md §17`](field-possibilities.md#17-collaboration-possibilities).*
+→ *Patterns: `Consensus Well`, `Disagreement Charge` — [`field-possibilities.md §17`](field-possibilities.md#17-collaboration-possibilities).*
 
 ---
 
@@ -627,7 +627,7 @@ In a collaborative workflow, ownership changes create directional field flow —
 field carries work from one contributor's domain to another. The handoff is visible
 as current, not just as a status update.
 
-→ *Recipes: `Handoff Stream`, `Dependency Tension` — [`field-possibilities.md §17`](field-possibilities.md#17-collaboration-possibilities).*
+→ *Patterns: `Handoff Stream`, `Dependency Tension` — [`field-possibilities.md §17`](field-possibilities.md#17-collaboration-possibilities).*
 
 ---
 

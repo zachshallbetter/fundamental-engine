@@ -11,13 +11,13 @@
 | [`system-contracts.md`](system-contracts.md) | Contract requirements |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Force law requirements |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Visualization tests |
-| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Recipe tests |
+| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Pattern tests |
 
 ## Purpose
 
 Conformance makes the system credible.
 
-Every force, field, visualization, source, sink, event, recipe, and agent behavior should declare what proves it works.
+Every force, field, visualization, source, sink, event, pattern, and agent behavior should declare what proves it works.
 
 Core principle:
 
@@ -38,7 +38,7 @@ event threshold tests
 accessibility tests
 performance budget tests
 snapshot regression tests
-recipe conformance tests
+pattern conformance tests
 Shadow DOM registration tests
 reduced-motion tests
 platform registry tests
@@ -269,9 +269,9 @@ Desired command:
 forces test snapshot solar-prominence.json
 ```
 
-## 13. Recipe Conformance
+## 13. Pattern Conformance
 
-Every recipe should declare:
+Every pattern should declare:
 
 ```txt
 expected metrics
@@ -568,10 +568,10 @@ shape is legible, not so it can be claimed as shipped.
    reproduces it within tolerance. **Where it is:** shipped for the deterministic canonical forces; the
    RNG / stateful / neighbor / grid / field forces are still verified behaviorally per plane.
 
-2. **Formation validation** — *does a [`FieldRecipe`](authoring-and-recipes.md) reference only known
-   primitives, metrics, diagnostics, conditions, and projections?* A recipe is a composition of named
+2. **Formation validation** — *does a [`FieldPattern`](authoring-and-recipes.md) reference only known
+   primitives, metrics, diagnostics, conditions, and projections?* A pattern is a composition of named
    lanes (§ "Concepts describe. Tokens execute…"); a formation is valid only if every name it invokes
-   resolves to a registered token / metric / diagnostic / condition / projection. **Where it is:** recipe
+   resolves to a registered token / metric / diagnostic / condition / projection. **Where it is:** pattern
    conformance (§13) declares the required forces and render modes today; a name-resolution gate across
    *all* lanes — including projections — is **headed**, not yet a standing check.
 

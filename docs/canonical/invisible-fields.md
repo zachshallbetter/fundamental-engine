@@ -32,7 +32,7 @@ that reads those variables.
 > The engine's `render` mode defaults to `'none'`, so a field created without an explicit render mode IS
 > an invisible field — full simulation + feedback, no canvas. You opt *into* a drawn surface
 > (`render: 'dots'`, …), not out of it. The two mechanisms below remain the ways to get a signals-only
-> field while a drawn one exists elsewhere (draw-skip a visible field; run a render-less recipe).
+> field while a drawn one exists elsewhere (draw-skip a visible field; run a render-less pattern).
 
 This is the third **placement** in the Surfaces & Placement taxonomy:
 
@@ -48,7 +48,7 @@ Two shipped mechanisms produce it:
   feedback live while skipping all draw work (`packages/core/src/engine/field.ts`). The
   `<field-root>` element wires this automatically from an IntersectionObserver, so a page that
   hides the element with CSS (`display: none`) gets a signals-only engine for free.
-- **Recipe, render-less** — `applyRecipe(root, { ...recipe, render: [] }, { bodies })` runs the
+- **Pattern, render-less** — `applyRecipe(root, { ...recipe, render: [] }, { bodies })` runs the
   platform's metric pipeline over explicit bodies with no engine canvas at all
   (`packages/dom/src/apply-recipe.ts`).
 
@@ -70,8 +70,8 @@ the PAGE ENGINE (hidden <field-root>, setVisible(false) via IO)
 
 the SCOPED RECIPE PIPELINE (applyRecipe, render: [])
   geometric metric computation over the page's explicit record bodies
-  writes: --field-<metric> for every metric the recipe declares
-          (the examples extend the evidence-field recipe with "attention")
+  writes: --field-<metric> for every metric the pattern declares
+          (the examples extend the evidence-field pattern with "attention")
   inputs per frame: viewport-center proximity, visibility ratio,
           engaged (:hover, :focus, :focus-within, [data-active]),
           relationship resolution/conflict, host-supplied data-field-<metric>
@@ -103,7 +103,7 @@ Two attributes make engagement programmable; both are shipped and verified:
   (a card's `<a>`, a row's `<button>`) — engages the body exactly the way a mouse hover does. Because
   engagement only sets state and the integrator (which reduced-motion already freezes) drives the
   motion, focus engagement is reduced-motion-safe by the same path hover is.
-- **`data-active`** (metric pipeline) — the recipe pipeline's `engaged` input is
+- **`data-active`** (metric pipeline) — the pattern pipeline's `engaged` input is
   `el.matches(':hover, :focus, :focus-within') || el.hasAttribute('data-active')`. Setting
   `data-active` programmatically is the sanctioned way to tell the field "this element is in
   hand": the backlog example sets it on a card for the duration of a drag (the field re-measures
@@ -132,7 +132,7 @@ The evidence example renders its real citation edges this way: the same edges it
 draw are the graph the platform measures, and connected findings read `--field-coherence: 1.000`
 while unconnected ones read `0.000` (verified live).
 
-The `relationships?: RelationshipRecipe[]` field in the `FieldRecipe` schema is **not** a live-graph
+The `relationships?: RelationshipRecipe[]` field in the `FieldPattern` schema is **not** a live-graph
 input. It is compiled metadata used exclusively for the reduced-motion static display — `applyRecipe`
 renders declared pairs as a `<p class="rs-rels">` list when `prefers-reduced-motion` is set. To put
 an edge into the live graph, author it in the DOM with `data-field-relation` / `data-field-target`.
@@ -214,7 +214,7 @@ mobile/touch QA pass.
 
 The invisible-field is not only for content — the site's own **navigation chrome** is a body set
 too. The nav sweep makes every navigation surface a field of its own links, each driven by an
-existing catalog recipe, all signals-only, all progressive enhancement (with the engine off or
+existing catalog pattern, all signals-only, all progressive enhancement (with the engine off or
 under reduced motion the `--field-*` lanes are unset and the links render as plain, reachable
 chrome):
 
@@ -225,19 +225,19 @@ chrome):
 - A cross-surface **visit log** grounds one "seen / visited" memory shared by search, breadcrumbs,
   and pagers.
 
-**What it earned the platform.** The navigation-chrome idiom — run a recipe `render: []` over the
+**What it earned the platform.** The navigation-chrome idiom — run a pattern `render: []` over the
 `<a href>` links, pin the current, mark the visited, return a teardown — lifted out of the site into
 **`bindFieldNav`** (`@fundamental-engine/dom`), the same way the example family earned FLIP and
 `allocateAttention` above.
 
 **The honesty it forced.** On a small nav (a two-link pager, a breadcrumb) "signals-only" is mostly
 a *grounded-metric transport*: the host supplies the signal (current / visited), the platform eases
-it, CSS consumes it — the recipe's physics forces are dormant. That is the same honesty as a
+it, CSS consumes it — the pattern's physics forces are dormant. That is the same honesty as a
 declared `data-field-at` grounding the recency lane (§6), not a claim that physics drives the nav.
 
-It also exposed a real silent gap: a recipe may **declare a metric the platform can never produce**.
+It also exposed a real silent gap: a pattern may **declare a metric the platform can never produce**.
 `computeMetrics` writes seven **computed** lanes; `confidence`/`risk` are **supplied-only** (the
-engine never invents them); everything else a recipe lists is **designed** — the host must supply
+engine never invents them); everything else a pattern lists is **designed** — the host must supply
 `data-field-<m>` (or a domain model) or the `--field-<m>` lane is *inert*: declared, bound, never
 written. The sweep hit this — `navigation-current` declares `signal` and `route-strength`, which no
 signals-only binding produces. `classifyMetric(name)` now names the split, and **`lintInertFeedback`**
