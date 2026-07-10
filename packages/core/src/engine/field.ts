@@ -1901,7 +1901,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
       ctx!.fillRect(0, 0, W, H);
     }
-    drawWaves();
+    if ((globalThis as { __FE_DRAW_WAVES__?: boolean }).__FE_DRAW_WAVES__ !== false) drawWaves(); // TUNER (dev)
     // The heatmap is an ambient layer that fades out with scroll POSITION (the DECLARED `heatmapFade`
     // curve above), not with scroll SPEED. An earlier speed-based suppression made it pop/fade in/out
     // while scrolling, which read as choppy; the position fade is monotonic so it never flickers, and

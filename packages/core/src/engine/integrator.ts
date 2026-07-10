@@ -297,6 +297,10 @@ export function step(input: StepInput): void {
 
     // wave current (§2.3): near a wave line, drift along its slope like debris.
     if (hasWaves) {
+      // TUNER (dev): flow strength + reach multipliers for the invisible-flow experiment.
+      const _wt = globalThis as { __FE_WAVE_ADVECT__?: number; __FE_WAVE_REACH__?: number };
+      const wA = _wt.__FE_WAVE_ADVECT__ ?? 1;
+      const wBand = 70 * (_wt.__FE_WAVE_REACH__ ?? 1);
       if (input.waveStyle === 'circular') {
         let near: Wave | null = null;
         let nd = 1e9;
@@ -314,19 +318,19 @@ export function step(input: StepInput): void {
             nearTheta = res.theta;
           }
         }
-        if (near && nd < 70) {
-          const factor = 1 - nd / 70;
+        if (near && nd < wBand) {
+          const factor = 1 - nd / wBand;
           // Tangential drift
           const tx = -Math.sin(nearTheta) * near.dir;
           const ty = Math.cos(nearTheta) * near.dir;
-          p.vx += tx * 0.035 * factor;
-          p.vy += ty * 0.035 * factor;
+          p.vx += tx * 0.035 * wA * factor;
+          p.vy += ty * 0.035 * wA * factor;
 
           // Radial pull towards the wave radius
           const rx = Math.cos(nearTheta) * Math.sign(nearRWave - nearR);
           const ry = Math.sin(nearTheta) * Math.sign(nearRWave - nearR);
-          p.vx += rx * 0.05 * factor;
-          p.vy += ry * 0.05 * factor;
+          p.vx += rx * 0.05 * wA * factor;
+          p.vy += ry * 0.05 * wA * factor;
         }
       } else {
         let near: Wave | null = null;
@@ -338,9 +342,9 @@ export function step(input: StepInput): void {
             near = w;
           }
         }
-        if (near && nd < 70) {
-          p.vx += near.dir * 0.035 * (1 - nd / 70);
-          p.vy += waveSlope(near, p.x, env.t) * 0.1 * (1 - nd / 70);
+        if (near && nd < wBand) {
+          p.vx += near.dir * 0.035 * wA * (1 - nd / wBand);
+          p.vy += waveSlope(near, p.x, env.t) * 0.1 * wA * (1 - nd / wBand);
         }
       }
     }
