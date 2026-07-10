@@ -2,7 +2,7 @@
 // INVISIBLE field, with the restraint a reading surface demands:
 //   · Headings as bodies — at init (never in page markup) every h2/h3 becomes a gentle
 //     attract body with engine feedback (data-hot, data-feedback), and a scoped render-less
-//     recipe (the established idiom: recipeById("evidence-field") + applyRecipe's
+//     recipe (the established idiom: recipeById("evidence-field") + applyPattern's
 //     { renderless, extraMetrics: ["attention"] }) measures per-section attention each
 //     frame as --field-attention.
 //   · The attention TOC — one rAF loop mirrors each heading's --field-attention onto its
@@ -19,7 +19,7 @@
 // Everything the field writes is felt, not loud, and ALL of it is gated behind
 // prefers-reduced-motion and the persisted sidebar toggle (main[data-field-docs="off"]).
 import { recipeById } from "@fundamental-engine/core";
-import { applyRecipe } from "@fundamental-engine/dom";
+import { applyPattern } from "@fundamental-engine/dom";
 import { DOCS_NAV, ROUTE_FAMILIES, groupColorFor } from "../lib/docs-nav.ts";
 import { pageRuntime } from "../lib/page-runtime.ts";
 import { persisted } from "../lib/persisted.ts";
@@ -82,7 +82,7 @@ function startField(main: HTMLElement, toc: HTMLElement | null): FieldBits | nul
     // alongside the live attention.
     const base = recipeById("reading-field");
     if (base) {
-      applied = applyRecipe(main, base, {
+      applied = applyPattern(main, base, {
         bodies: heads,
         annotateBodies: false,
         renderless: true,
@@ -162,7 +162,7 @@ function startSidebarField(): { destroy(): void } | null {
   try {
     const base = recipeById("priority-well");
     if (!base) return null;
-    const applied = applyRecipe(nav, base, {
+    const applied = applyPattern(nav, base, {
       bodies: links,
       annotateBodies: false,
       renderless: true,
@@ -375,7 +375,7 @@ function wireSearch(shell: HTMLElement, sig: AbortSignal): void {
         const base = recipeById("search-relevance-field");
         const hits = [...results.querySelectorAll<HTMLElement>("a.ds-hit")];
         if (base && hits.length)
-          searchField = applyRecipe(results, base, {
+          searchField = applyPattern(results, base, {
             bodies: hits,
             annotateBodies: false,
             renderless: true,

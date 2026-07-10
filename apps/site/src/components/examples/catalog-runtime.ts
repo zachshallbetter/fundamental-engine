@@ -11,9 +11,9 @@
 //     the fresh counts back through the ACTIVE weight lens and FLIP re-sorts (the existing
 //     reweight path, verbatim). Books missing from the fresh result keep their snapshot
 //     values, silently. Any failure keeps the snapshot.
-// The scoped field runs render-less (applyRecipe renderless) — bodies compute (metrics flow) but nothing is drawn.
+// The scoped field runs render-less (applyPattern renderless) — bodies compute (metrics flow) but nothing is drawn.
 import { logNormalize, recipeById, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe, withFlip } from "@fundamental-engine/dom";
+import { applyPattern, withFlip } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { fmtInt } from "../../lib/fmt";
 import { wireLiveChip, politeLoop } from "../../lib/live-data";
@@ -133,7 +133,7 @@ function initCatalog(page: HTMLElement): () => void {
         // renderless — invisible; metrics gain the attention lane, so the platform
         // pipeline writes an eased --field-attention (hover/focus + viewport-center
         // proximity + visibility) back to every card.
-        activeField = applyRecipe(grid, base, {
+        activeField = applyPattern(grid, base, {
           bodies: cards,
           annotateBodies: false,
           renderless: true,

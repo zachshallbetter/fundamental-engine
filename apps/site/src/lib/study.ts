@@ -1,6 +1,6 @@
 /**
  * Shared concept-study runtime. Each study declares element groups (a root + a recipe id + the items
- * to annotate) and this drives them through the REAL recipe runtime — applyRecipe() per group — plus a
+ * to annotate) and this drives them through the REAL recipe runtime — applyPattern() per group — plus a
  * Field on/off toggle, a reduced-motion toggle, and a live inspect readout. No hand-wired behavior with
  * recipe labels attached: the recipes execute.
  *
@@ -8,7 +8,7 @@
  * `data-study-status`.
  */
 import { recipeById } from '@fundamental-engine/core';
-import { applyRecipe, type AppliedRecipe, type DataBinding } from '@fundamental-engine/dom';
+import { applyPattern, type AppliedPattern, type DataBinding } from '@fundamental-engine/dom';
 
 export interface StudyGroup {
   root: HTMLElement;
@@ -18,7 +18,7 @@ export interface StudyGroup {
 
 export function mountStudy(groups: StudyGroup[]): { stop: () => void } {
   const status = document.querySelector<HTMLElement>('[data-study-status]');
-  let applieds: AppliedRecipe[] = [];
+  let applieds: AppliedPattern[] = [];
   let raf = 0;
   let on = false;
   let reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -31,7 +31,7 @@ export function mountStudy(groups: StudyGroup[]): { stop: () => void } {
     teardown();
     applieds = groups.flatMap((g) => {
       const r = recipeById(g.recipeId);
-      return r && g.items.length ? [applyRecipe(g.root, r, { bodies: g.items, reducedMotion: reduced })] : [];
+      return r && g.items.length ? [applyPattern(g.root, r, { bodies: g.items, reducedMotion: reduced })] : [];
     });
     on = true;
     if (!raf) raf = requestAnimationFrame(loop);

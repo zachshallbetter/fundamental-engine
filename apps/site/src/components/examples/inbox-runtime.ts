@@ -21,7 +21,7 @@
 //     brief fade, removal, renormalize again);
 //   · Field on/off — off, the page collapses to a plain list (CSS via [data-field]) and the
 //     scoped field is destroyed.
-// The scoped field runs render-less (applyRecipe renderless) — bodies compute (metrics flow) but nothing is drawn.
+// The scoped field runs render-less (applyPattern renderless) — bodies compute (metrics flow) but nothing is drawn.
 import {
   allocateAttention,
   freshness,
@@ -29,7 +29,7 @@ import {
   recipeById,
   weightToStrength,
 } from "@fundamental-engine/core";
-import { applyRecipe, withFlip } from "@fundamental-engine/dom";
+import { applyPattern, withFlip } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { politeLoop, wireLiveChip } from "../../lib/live-data";
 import { pageRuntime } from "../../lib/page-runtime";
@@ -183,7 +183,7 @@ function initInbox(page: HTMLElement): () => void {
         // pipeline to write --field-attention per ask (an eased 0..1 blend of engagement,
         // viewport-center proximity, and visibility) and --field-recency — GROUNDED in each
         // ask's declared data-field-at (askedAt), so it decays on the world clock.
-        activeField = applyRecipe(split, base, {
+        activeField = applyPattern(split, base, {
           bodies: itemsOf(),
           annotateBodies: false,
           renderless: true,

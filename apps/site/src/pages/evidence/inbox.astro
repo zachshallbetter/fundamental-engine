@@ -154,7 +154,7 @@ w[i] = min(1, u[i] × k)   // repeat on the rest
 
 // the scoped field runs invisible (renderless)
 // and asks for the attention metric lane:
-applyRecipe(split, base, {
+applyPattern(split, base, {
   renderless: true,
   extraMetrics: ["attention"],
 });
@@ -178,7 +178,7 @@ stream.prepend(...cards);
 budget = N × 0.42;  reallocate();  // Σ w = budget
 
 // the scoped field re-binds to the new bodies
-field.destroy(); field = applyRecipe(…);
+field.destroy(); field = applyPattern(…);
 
 // past 60 unpinned, the oldest decay
 // off the bottom — then renormalize again`;
@@ -422,7 +422,7 @@ const SNIPPET_CSS = `.ix-item {
         </p>
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
-          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+          <a href="/patterns" class="ev-how-link ev-how-link--dim">See patterns →</a>
         </div>
       </div>
     </div>

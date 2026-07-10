@@ -1,9 +1,9 @@
 ---
 // "Recipes applied" panel for the concept studies — rendered from the engine catalog (recipeById), so
 // a study declares the actual recipe objects it runs, with their lanes. The `live` ids are the ones the
-// study drives through applyRecipe(); the rest are the conceptual family the study embodies.
+// study drives through applyPattern(); the rest are the conceptual family the study embodies.
 import VocabBadge from './VocabBadge.astro';
-import { recipeById, type FieldRecipe } from '@fundamental-engine/core';
+import { recipeById, type FieldPattern } from '@fundamental-engine/core';
 
 interface Props {
   ids: string[];
@@ -11,14 +11,14 @@ interface Props {
 }
 const { ids, live = [] } = Astro.props;
 const liveSet = new Set(live);
-const recipes = ids.map((id) => recipeById(id)).filter((r): r is FieldRecipe => !!r);
+const recipes = ids.map((id) => recipeById(id)).filter((r): r is FieldPattern => !!r);
 ---
 
 <section class="recipes-applied" aria-label="Recipes applied">
   <h2>Recipes applied</h2>
   <p class="ra-lede">
-    Each is a real <a href="/docs/recipes"><code>FieldRecipe</code></a> from the catalog. The ones marked
-    <span class="ra-livedot">live</span> are driven through <code>applyRecipe()</code> on this page; the
+    Each is a real <a href="/docs/patterns"><code>FieldPattern</code></a> from the catalog. The ones marked
+    <span class="ra-livedot">live</span> are driven through <code>applyPattern()</code> on this page; the
     rest are the conceptual family this study embodies.
   </p>
   <div class="ra-grid">
@@ -26,7 +26,7 @@ const recipes = ids.map((id) => recipeById(id)).filter((r): r is FieldRecipe => 
       recipes.map((r) => (
         <article class="ra-card">
           <header>
-            <a href={`/recipes#${r.id}`} class="ra-name">{r.name}</a>
+            <a href={`/patterns#${r.id}`} class="ra-name">{r.name}</a>
             {r.naturalField && <VocabBadge kind="field" label={r.naturalField} />}
             {liveSet.has(r.id) && <span class="ra-live">live</span>}
           </header>

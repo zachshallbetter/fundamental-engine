@@ -1,0 +1,83 @@
+---
+// DEV TUNER (temporary) — experiment with resting-field motion. Waves are built (advection on)
+// but you control: whether they're DRAWN, the advection STRENGTH, and the REACH (how far from a
+// wave line a particle feels the current). Backed by dev globals read live by the engine:
+//   window.__FE_DRAW_WAVES__ (bool) · __FE_WAVE_ADVECT__ (0-6) · __FE_WAVE_REACH__ (1-8)
+// Goal: find a lively coherent flow with the waves NOT drawn, then productize as real options.
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Resting motion tuner" description="Dev tuner for the invisible resting-flow experiment." robots="noindex, follow">
+  <main class="rt">
+    <h1 class="rt-mass" data-body="attract" data-strength="1.2" data-range="260">Resting motion</h1>
+    <p class="rt-a" data-body="attract" data-strength="0.8" data-range="200">a well over here</p>
+    <p class="rt-b" data-body="attract" data-strength="0.8" data-range="200">another over there</p>
+    <p class="rt-c" data-body="attract" data-strength="0.9" data-range="220">and one down here</p>
+    <p class="rt-note">
+      Waves advect the particles; the checkbox only controls whether the wave lines are drawn.
+      Turn drawing off and raise strength + reach to hunt for a lively flow with nothing painted.
+    </p>
+  </main>
+
+  <aside id="rt-panel" aria-label="Resting motion controls">
+    <div class="rt-row">
+      <label><input type="checkbox" id="rt-draw" checked /> draw wave lines</label>
+    </div>
+    <div class="rt-row">
+      <label>strength</label>
+      <input type="range" id="rt-adv" min="0" max="6" step="0.1" value="1" />
+      <output id="rt-advv">1.0</output>
+    </div>
+    <div class="rt-row">
+      <label>reach</label>
+      <input type="range" id="rt-reach" min="1" max="8" step="0.5" value="1" />
+      <output id="rt-rv">1.0</output>
+    </div>
+    <div class="rt-hint">×70px band · engine reads these live</div>
+  </aside>
+
+  <script is:inline>
+    // Enable waves before the deferred engine boot (runs during parse, after the field-root exists).
+    document.querySelector('field-root')?.setAttribute('waves', 'true');
+    const draw = document.getElementById('rt-draw');
+    const adv = document.getElementById('rt-adv');
+    const reach = document.getElementById('rt-reach');
+    const advv = document.getElementById('rt-advv');
+    const rv = document.getElementById('rt-rv');
+    function apply() {
+      window.__FE_DRAW_WAVES__ = draw.checked;
+      window.__FE_WAVE_ADVECT__ = parseFloat(adv.value);
+      window.__FE_WAVE_REACH__ = parseFloat(reach.value);
+      advv.textContent = parseFloat(adv.value).toFixed(1);
+      rv.textContent = parseFloat(reach.value).toFixed(1);
+    }
+    draw.addEventListener('change', apply);
+    adv.addEventListener('input', apply);
+    reach.addEventListener('input', apply);
+    apply();
+  </script>
+
+  <style>
+    .rt { min-height: 100vh; position: relative; padding: 8rem 3rem; }
+    .rt h1 { font-family: var(--display); font-size: 3rem; letter-spacing: -0.02em; }
+    .rt-mass { max-width: 20ch; }
+    .rt-a { position: absolute; top: 32%; right: 14%; }
+    .rt-b { position: absolute; top: 62%; left: 22%; }
+    .rt-c { position: absolute; top: 78%; right: 26%; }
+    .rt p { font-family: var(--mono); font-size: 0.8rem; color: var(--text-3); }
+    .rt-note { position: absolute; bottom: 3rem; left: 3rem; max-width: 46ch; line-height: 1.6; }
+    #rt-panel {
+      position: fixed; bottom: 1.4rem; right: 1.4rem; z-index: 50;
+      display: flex; flex-direction: column; gap: 0.7rem;
+      background: rgba(10, 12, 18, 0.86); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px;
+      padding: 1rem 1.1rem; font-family: var(--mono); font-size: 0.72rem; color: var(--text-2);
+      min-width: 240px;
+    }
+    .rt-row { display: flex; align-items: center; gap: 0.6rem; }
+    .rt-row label { white-space: nowrap; }
+    .rt-row input[type='range'] { flex: 1; accent-color: #4da3ff; }
+    #rt-panel output { min-width: 2.2em; text-align: right; color: #4da3ff; }
+    .rt-hint { color: var(--text-4); font-size: 0.62rem; letter-spacing: 0.04em; }
+  </style>
+</Base>

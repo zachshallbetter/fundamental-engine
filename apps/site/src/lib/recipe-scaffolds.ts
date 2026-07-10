@@ -1,5 +1,5 @@
 // recipe-scaffolds.ts — per-recipe HTML templates injected into preview cards
-// before applyRecipe() runs, so visitors see actual UI elements reacting to the
+// before applyPattern() runs, so visitors see actual UI elements reacting to the
 // field rather than an empty particle box.
 //
 // Each scaffold is a small fragment of representative UI: 3-5 labeled elements

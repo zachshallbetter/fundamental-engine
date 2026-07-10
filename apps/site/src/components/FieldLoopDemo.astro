@@ -1,12 +1,12 @@
 ---
 // A LIVE, deterministic demonstration of the core loop, built on the PRIMARY contract: data
-// attributes on semantic HTML, driven by the recipe runtime (applyRecipe). No <field-cell>, no
+// attributes on semantic HTML, driven by the recipe runtime (applyPattern). No <field-cell>, no
 // canvas widget. The loop, made provable:
 //
-//   semantic element → [data-body] + supplied data-field-* → applyRecipe() registers it →
+//   semantic element → [data-body] + supplied data-field-* → applyPattern() registers it →
 //   the metric becomes --field-<metric> → the demo reflects it
 //
-// Each body carries a real runtime token (data-body) and a supplied metric value; applyRecipe writes
+// Each body carries a real runtime token (data-body) and a supplied metric value; applyPattern writes
 // that metric back as a --field-* custom property. The reactive styling is applied inline from the
 // value the FIELD wrote (read back after the tick), because Astro's scoped <style> rules do not reach
 // set:html content and scoped calc(var()) is unreliable — inline styling renders everywhere. The text
@@ -47,7 +47,7 @@ const Tag = tag as any;
   </div>
   <figcaption>
     <span class="fl-loop">
-      <code>data-body="{token}"</code> + supplied <code>{metric}</code> → <code>applyRecipe()</code> →
+      <code>data-body="{token}"</code> + supplied <code>{metric}</code> → <code>applyPattern()</code> →
       <code>--field-{metric}</code> → this element
     </span>
     <span class="fl-cap">Each row supplies a different value, so the field's feedback is visible at a glance — the readout shows what the field actually wrote back.</span>
@@ -55,11 +55,11 @@ const Tag = tag as any;
 </figure>
 
 <script>
-  import { applyRecipe } from '@fundamental-engine/dom';
+  import { applyPattern } from '@fundamental-engine/dom';
   import { recipeById } from '@fundamental-engine/core';
   import { pageRuntime } from '../lib/page-runtime';
 
-  // applyRecipe registers bodies and a scoped platform per .field-loop and writes --field-* back.
+  // applyPattern registers bodies and a scoped platform per .field-loop and writes --field-* back.
   // pageRuntime owns the lifecycle: init on first load and every astro:page-load (the previous
   // run's teardown always runs first), teardown on astro:before-swap — so applied-recipe state
   // never accumulates across client-side navigation. One init handles EVERY .field-loop on the
@@ -71,7 +71,7 @@ const Tag = tag as any;
       const recipe = recipeById(root.dataset.recipe || 'priority-well');
       const metric = root.dataset.metric || 'priority';
       const bodies = [...root.querySelectorAll<HTMLElement>('.fl-body')];
-      // the supplied value lives on data-field-strength for authoring clarity; applyRecipe reads the
+      // the supplied value lives on data-field-strength for authoring clarity; applyPattern reads the
       // metric from data-field-<metric>, so mirror it across before applying.
       for (const b of bodies) {
         const v = b.getAttribute('data-field-strength');
@@ -80,7 +80,7 @@ const Tag = tag as any;
       if (!recipe || !bodies.length) continue;
       // Deterministic: drive manually (drive:false) + tick to flush compute → state → write, so
       // --field-<metric> is written without depending on requestAnimationFrame (background tabs pause it).
-      const a = applyRecipe(root, recipe, { bodies, annotateBodies: false, drive: false, reducedMotion: reduced });
+      const a = applyPattern(root, recipe, { bodies, annotateBodies: false, drive: false, reducedMotion: reduced });
       a.tick();
       a.tick();
       applied.push(a);

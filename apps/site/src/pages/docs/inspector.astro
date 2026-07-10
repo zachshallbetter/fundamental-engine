@@ -8,7 +8,7 @@ import {
   VISUAL_CONTRACTS,
   RECIPE_CONTRACTS,
   SEMANTIC_CONTRACTS,
-  FIELD_RECIPES,
+  FIELD_PATTERNS,
 } from '@fundamental-engine/core';
 import { PHASES } from '@fundamental-engine/dom';
 
@@ -26,7 +26,7 @@ const contracts = [
   ...SEMANTIC_CONTRACTS,
 ];
 const passports = Object.values(PASSPORTS);
-const recipeOptions = FIELD_RECIPES.map((r) => ({ id: r.id, name: r.name }));
+const recipeOptions = FIELD_PATTERNS.map((r) => ({ id: r.id, name: r.name }));
 ---
 
 <DocsLayout
@@ -106,8 +106,8 @@ const recipeOptions = FIELD_RECIPES.map((r) => ({ id: r.id, name: r.name }));
   <section aria-labelledby="ri">
     <h2 id="ri">Recipe inspector</h2>
     <p>
-      Pick a recipe to see its <b>compiled plan</b> (<code>compileRecipe</code>) and then run it through
-      <code>applyRecipe</code> live. This answers <em>why is this moving</em>: which runtime tokens execute,
+      Pick a recipe to see its <b>compiled plan</b> (<code>compilePattern</code>) and then run it through
+      <code>applyPattern</code> live. This answers <em>why is this moving</em>: which runtime tokens execute,
       which metrics are written, which relationships bind, and what the reduced-motion output is.
     </p>
     <div class="ri-bar">
@@ -300,10 +300,10 @@ const recipeOptions = FIELD_RECIPES.map((r) => ({ id: r.id, name: r.name }));
 </script>
 
 <script>
-  // Recipe inspector: compile a chosen recipe (compileRecipe) + run it (applyRecipe), exposing the
+  // Recipe inspector: compile a chosen recipe (compilePattern) + run it (applyPattern), exposing the
   // plan and live metrics — "why is this moving" made answerable from the recipe object.
-  import { compileRecipe, recipeById } from '@fundamental-engine/core';
-  import { applyRecipe, type AppliedRecipe } from '@fundamental-engine/dom';
+  import { compilePattern, recipeById } from '@fundamental-engine/core';
+  import { applyPattern, type AppliedPattern } from '@fundamental-engine/dom';
 
   const pick = document.querySelector<HTMLSelectElement>('[data-ri-pick]');
   const reducedRi = document.querySelector<HTMLInputElement>('[data-ri-reduced]');
@@ -311,13 +311,13 @@ const recipeOptions = FIELD_RECIPES.map((r) => ({ id: r.id, name: r.name }));
   const riLive = document.querySelector<HTMLElement>('[data-ri-live]');
   const riMetrics = document.querySelector<HTMLElement>('[data-ri-metrics]');
   const setPlan = (k: string, v: string): void => { const e = document.querySelector(`[data-ri="${k}"]`); if (e) e.textContent = v; };
-  let riApplied: AppliedRecipe | null = null;
+  let riApplied: AppliedPattern | null = null;
   let riRaf = 0;
   const riStop = (): void => { if (riRaf) cancelAnimationFrame(riRaf); riRaf = 0; };
   const showRecipe = (id: string): void => {
     const r = recipeById(id);
     if (!r || !riStage) return;
-    const c = compileRecipe(r);
+    const c = compilePattern(r);
     setPlan('field', r.naturalField ?? '— (diagnostic / platform)');
     setPlan('tokens', c.bodies.flatMap((b) => b.tokens).join(', '));
     setPlan('feedback', c.feedback.map((f) => `${f.metric} → ${f.var}`).join('   ') || '—');
@@ -326,7 +326,7 @@ const recipeOptions = FIELD_RECIPES.map((r) => ({ id: r.id, name: r.name }));
     setPlan('reduced', c.reducedMotion.staticOutputs.join(', '));
     riApplied?.destroy();
     riStage.innerHTML = '';
-    riApplied = applyRecipe(riStage, r, { reducedMotion: reducedRi?.checked });
+    riApplied = applyPattern(riStage, r, { reducedMotion: reducedRi?.checked });
     riStop();
     const loop = (): void => {
       if (riApplied) {

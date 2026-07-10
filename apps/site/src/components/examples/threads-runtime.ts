@@ -20,7 +20,7 @@
 //     scoped field is destroyed.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
 import { recipeById } from "@fundamental-engine/core";
-import { applyRecipe } from "@fundamental-engine/dom";
+import { applyPattern } from "@fundamental-engine/dom";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";
 
@@ -222,7 +222,7 @@ function initThreads(page: HTMLElement): () => void {
         // platform pipeline to write --field-attention per comment (an eased 0..1 blend
         // of engagement, viewport-center proximity, and visibility) — read by the ink CSS.
         // Visible bodies only — collapsed subtrees leave the field, not just the page.
-        activeField = applyRecipe(list, base, {
+        activeField = applyPattern(list, base, {
           bodies: visibleRows(),
           annotateBodies: false,
           renderless: true,

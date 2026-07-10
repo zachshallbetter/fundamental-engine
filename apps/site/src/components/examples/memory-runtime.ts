@@ -13,7 +13,7 @@
 // The scoped field runs with render: [] plus the "attention" metric, so the platform pipeline
 // writes --field-attention per card — the ink CSS reads it alongside the engine's live --d.
 import { DAY_MS, recipeById, retention, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe } from "@fundamental-engine/dom";
+import { applyPattern } from "@fundamental-engine/dom";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { persisted } from "../../lib/persisted.ts";
 import { wireFieldToggle } from "../../lib/controls.ts";
@@ -101,7 +101,7 @@ function initMemory(page: HTMLElement): () => void {
         // renderless keeps the field invisible; the extra "attention" metric asks the
         // platform pipeline to write --field-attention per card (an eased 0..1 blend of
         // engagement, viewport-center proximity, and visibility) — read by the ink CSS.
-        activeField = applyRecipe(grid, base, {
+        activeField = applyPattern(grid, base, {
           bodies: cards,
           annotateBodies: false,
           renderless: true,

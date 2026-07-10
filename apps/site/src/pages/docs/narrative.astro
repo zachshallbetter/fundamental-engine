@@ -5,7 +5,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
 // participant one layer at a time. The story is the data-attribute runtime, not "particles over a
 // page" — semantic DOM → data attributes → registered body → runtime token → metric → feedback →
 // relationships → diagnostics → reduced motion. The running example is a real [data-body] element; at
-// the feedback stage it is driven deterministically by applyRecipe (no canvas, no cursor needed).
+// the feedback stage it is driven deterministically by applyPattern (no canvas, no cursor needed).
 const stages = [
   {
     title: 'Semantic DOM',
@@ -34,7 +34,7 @@ const stages = [
   },
   {
     title: 'Feedback',
-    body: 'Add data-feedback and the field writes a metric back as a --field-* custom property on the element. CSS reads it — the heading gains weight. The value below is written by applyRecipe, deterministically.',
+    body: 'Add data-feedback and the field writes a metric back as a --field-* custom property on the element. CSS reads it — the heading gains weight. The value below is written by applyPattern, deterministically.',
     markup: 'data-feedback\n// → element.style[\'--field-priority\'] = 0.85\n.h3 { font-weight: calc(400 + var(--field-priority) * 320) }',
     feedback: true,
   },
@@ -100,16 +100,16 @@ const stages = [
 </DocsLayout>
 
 <script>
-  import { applyRecipe } from '@fundamental-engine/dom';
+  import { applyPattern } from '@fundamental-engine/dom';
   import { recipeById } from '@fundamental-engine/core';
 
   interface Stage { title: string; body: string; markup: string; feedback?: boolean; rel?: boolean; link?: string; reduced?: boolean }
   const data: Stage[] = (window as unknown as { __NR__?: Stage[] }).__NR__ ?? [];
   const $ = (id: string) => document.getElementById(id);
   let i = 0;
-  let applied: ReturnType<typeof applyRecipe> | null = null;
+  let applied: ReturnType<typeof applyPattern> | null = null;
 
-  // Drive the running example deterministically with applyRecipe: supply a priority, the recipe writes
+  // Drive the running example deterministically with applyPattern: supply a priority, the recipe writes
   // --field-priority back. No requestAnimationFrame, no cursor — the feedback is real and repeatable.
   function driveFeedback(reduced: boolean) {
     const root = $('nr-demo-root');
@@ -120,7 +120,7 @@ const stages = [
     applied?.destroy();
     const recipe = recipeById('priority-well');
     if (!recipe) return;
-    applied = applyRecipe(root, recipe, { bodies: [demo], annotateBodies: false, drive: false, reducedMotion: reduced });
+    applied = applyPattern(root, recipe, { bodies: [demo], annotateBodies: false, drive: false, reducedMotion: reduced });
     applied.tick();
     applied.tick();
   }

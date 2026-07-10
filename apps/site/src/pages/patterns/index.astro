@@ -1,5 +1,5 @@
 ---
-// /explore — the solution-finder catalog. A clean-slate rethink of /recipes built around the
+// /explore — the solution-finder catalog. A clean-slate rethink of /patterns built around the
 // question a developer actually arrives with ("I need to show what matters / where the user is /
 // how these connect") rather than the engine's own taxonomy. See
 // docs/design/explore-interaction-model.md for the full interaction model.
@@ -12,23 +12,23 @@
 import Base from '../../layouts/Base.astro';
 import SiteNav from '../../components/SiteNav.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import { FIELD_RECIPES, EXPERIMENTAL_RECIPES, type FieldRecipe } from '@fundamental-engine/core';
+import { FIELD_PATTERNS, EXPERIMENTAL_PATTERNS, type FieldPattern } from '@fundamental-engine/core';
 import { DOMAINS, taxonomyFor, isPlatformRecipe, type ProblemDomain } from '../../lib/recipe-taxonomy.ts';
 import '../../styles/workbench.css';
 import '../../styles/explore.css';
 
-// Natural-field accent (mirrors the /recipes hub so the colour language stays consistent).
+// Natural-field accent (mirrors the /patterns hub so the colour language stays consistent).
 const FIELD_COLOR: Record<string, string> = {
   gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c',
   diagnostic: '#9aa7b4', platform: '#9aa7b4',
 };
-const fieldKeyOf = (r: FieldRecipe) => r.naturalField ?? 'platform';
-const fieldLabelOf = (r: FieldRecipe) =>
+const fieldKeyOf = (r: FieldPattern) => r.naturalField ?? 'platform';
+const fieldLabelOf = (r: FieldPattern) =>
   r.naturalField != null ? r.naturalField[0]!.toUpperCase() + r.naturalField.slice(1) : 'Platform';
 
 // Assemble one view-model row per recipe (the 64), carrying everything the card + the Phase-1
 // filter island need. Data attributes keep the filter logic out of the markup.
-const cards = FIELD_RECIPES.map((r) => {
+const cards = FIELD_PATTERNS.map((r) => {
   const tax = taxonomyFor(r.id);
   return {
     id: r.id,
@@ -56,7 +56,7 @@ const domainLabel: Record<ProblemDomain, string> = Object.fromEntries(
 // Richer per-recipe data for the expand-in-place detail overlay, built client-side from this blob
 // (embedded as JSON rather than 64 hidden DOM panels, and avoids bundling core into the page).
 const detailData = Object.fromEntries(
-  FIELD_RECIPES.map((r) => {
+  FIELD_PATTERNS.map((r) => {
     const tax = taxonomyFor(r.id);
     return [r.id, {
       name: r.name,
@@ -82,17 +82,17 @@ const detailData = Object.fromEntries(
 ---
 
 <Base
-  title="Fundamental — Recipes"
-  description={`Find the field recipe for your problem. ${total} portable recipes, organised by what you're building — priority, navigation, relationships, evidence, conflict, memory, flow, presence, governance.`}
+  title="Fundamental — Patterns"
+  description={`Find the field pattern for your problem. ${total} portable patterns, organised by what you're building — priority, navigation, relationships, evidence, conflict, memory, flow, presence, governance.`}
 >
-  <SiteNav current="recipes" sticky={false} />
+  <SiteNav current="patterns" sticky={false} />
 
   <main id="main" class="ex-shell">
     <header class="ex-hero">
-      <p class="ex-kicker">Fundamental · recipes</p>
-      <h1 class="ex-title">Find the recipe for your problem.</h1>
+      <p class="ex-kicker">Fundamental · patterns</p>
+      <h1 class="ex-title">Find the pattern for your problem.</h1>
       <p class="ex-lede">
-        Start from what you're building, not from the physics. Every recipe below is a named,
+        Start from what you're building, not from the physics. Every pattern below is a named,
         validated answer to a real interface problem — pick the job, watch it run, open its page.
       </p>
     </header>
@@ -109,8 +109,8 @@ const detailData = Object.fromEntries(
         <input
           type="search"
           class="ex-search-input"
-          placeholder="Search recipes — priority, conflict, citations…"
-          aria-label="Search recipes"
+          placeholder="Search patterns — priority, conflict, citations…"
+          aria-label="Search patterns"
           autocomplete="off"
         />
       </div>
@@ -127,7 +127,7 @@ const detailData = Object.fromEntries(
             <span class="ex-pill-count">{countFor(d.id)}</span>
           </button>
         ))}
-        <button class="ex-pill ex-pill-platform" type="button" data-domain="platform" aria-pressed="false" title="Platform &amp; Teaching — recipes that help you understand or instrument the engine itself" aria-label="Platform & Teaching">
+        <button class="ex-pill ex-pill-platform" type="button" data-domain="platform" aria-pressed="false" title="Platform &amp; Teaching — patterns that help you understand or instrument the engine itself" aria-label="Platform & Teaching">
           <span class="ex-pill-label">Platform</span>
           <span class="ex-pill-count">{platformCount}</span>
         </button>
@@ -135,7 +135,7 @@ const detailData = Object.fromEntries(
     </div>
 
     <div class="ex-toolbar">
-      <p class="ex-resultcount" aria-live="polite" data-result-count>{total} recipes</p>
+      <p class="ex-resultcount" aria-live="polite" data-result-count>{total} patterns</p>
       <div class="ex-viewtoggle" role="group" aria-label="View mode">
         <button type="button" class="ex-view is-on" data-view="grid" aria-pressed="true">Grid</button>
         <button type="button" class="ex-view" data-view="constellation" aria-pressed="false">Constellation</button>
@@ -163,7 +163,7 @@ const detailData = Object.fromEntries(
           data-tier={c.tier}
           style={`--card-accent: ${c.accent}`}
         >
-          <a class="ex-card-link" href={`/recipes/${c.id}`}>
+          <a class="ex-card-link" href={`/patterns/${c.id}`}>
             <div class="ex-card-head">
               <span class="ex-card-field">{c.fieldLabel}</span>
               <span class="ex-card-tier">{c.tier}</span>
@@ -185,15 +185,15 @@ const detailData = Object.fromEntries(
     </ul>
 
     <p class="ex-empty" data-empty hidden>
-      No recipe matches that yet. <button type="button" data-clear-filters class="ex-link-btn">Clear filters</button>
+      No pattern matches that yet. <button type="button" data-clear-filters class="ex-link-btn">Clear filters</button>
     </p>
 
     <section class="ex-experimental" aria-labelledby="ex-exp-h">
       <h2 id="ex-exp-h">Experimental</h2>
-      <p>Recipes still proving out — kept outside the canonical {FIELD_RECIPES.length} while they settle. Validated and live, with their own pages.</p>
+      <p>Patterns still proving out — kept outside the canonical {FIELD_PATTERNS.length} while they settle. Validated and live, with their own pages.</p>
       <ul class="ex-exp-list">
-        {EXPERIMENTAL_RECIPES.map((r) => (
-          <li><a href={`/recipes/${r.id}`}>{r.name}</a> <span>{r.intent}</span></li>
+        {EXPERIMENTAL_PATTERNS.map((r) => (
+          <li><a href={`/patterns/${r.id}`}>{r.name}</a> <span>{r.intent}</span></li>
         ))}
       </ul>
     </section>
@@ -228,12 +228,12 @@ const detailData = Object.fromEntries(
 <!-- Suppress the global ambient particle field on the recipes catalog only (signals-first: the
      catalog is calm; the engine wakes where the visitor interacts). Page-scoped class — does NOT
      touch the global `data-field` nav toggle, so the visitor's own preference is preserved on leave.
-     The /recipes/<id> pages have their own contained workbench field, so suppress only the index. -->
+     The /patterns/<id> pages have their own contained workbench field, so suppress only the index. -->
 <style is:global>
   html.ex-no-ambient field-root { display: none !important; }
 </style>
 <script>
-  const onCatalog = () => location.pathname.replace(/\/$/, '') === '/recipes';
+  const onCatalog = () => location.pathname.replace(/\/$/, '') === '/patterns';
   const mark = () => document.documentElement.classList.add('ex-no-ambient');
   const unmark = () => document.documentElement.classList.remove('ex-no-ambient');
   if (onCatalog()) mark();
@@ -260,7 +260,7 @@ const detailData = Object.fromEntries(
   let constellation: ConstellationHandle | null = null;
   let booted = false;
   function boot() {
-    if (location.pathname.replace(/\/$/, '') !== '/recipes') { stopFilterField(); return; }
+    if (location.pathname.replace(/\/$/, '') !== '/patterns') { stopFilterField(); return; }
     if (booted) return; // astro:page-load + the readyState fallback can both fire on first load
     booted = true;
     teardown = initExplorePage();

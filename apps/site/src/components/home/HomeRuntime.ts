@@ -16,7 +16,7 @@
 // always be upgraded by the time they fire.
 
 import { recipeById, BURST_RADIUS } from "@fundamental-engine/core";
-import { applyRecipe } from "@fundamental-engine/dom";
+import { applyPattern } from "@fundamental-engine/dom";
 
 type FieldEl = HTMLElement & {
   rescan?: () => void;
@@ -385,7 +385,7 @@ export function initHomeRuntime(): () => void {
     try {
       const base = recipeById("wayfinding-current");
       if (base) {
-        const railField = applyRecipe(rail, base, {
+        const railField = applyPattern(rail, base, {
           renderless: true,
           bodies: links,
           annotateBodies: false,

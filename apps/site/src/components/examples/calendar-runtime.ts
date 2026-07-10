@@ -18,7 +18,7 @@
 //   · Color by status / off — --cat encodes launch status, or steps aside entirely.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { imminence, recipeById, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe } from "@fundamental-engine/dom";
+import { applyPattern } from "@fundamental-engine/dom";
 import calendar from "../../data/examples/calendar.json";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { persisted } from "../../lib/persisted.ts";
@@ -525,7 +525,7 @@ function initCalendar(page: HTMLElement): () => void {
           ? [...viewsRoot.querySelectorAll<HTMLElement>("[data-body]")]
           : [];
         if (hero) bodies.push(hero);
-        activeField = applyRecipe(zone, base, {
+        activeField = applyPattern(zone, base, {
           bodies,
           annotateBodies: false,
           renderless: true,

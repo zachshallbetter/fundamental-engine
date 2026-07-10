@@ -1,8 +1,8 @@
 // explore-preview.ts — mount ONE live recipe field inside the expand-in-place detail overlay.
 //
-// Unlike the /recipes hub (which lazily runs up to six tiny card previews), the explore overlay shows
+// Unlike the /patterns hub (which lazily runs up to six tiny card previews), the explore overlay shows
 // exactly one recipe at a time, large, in its own render mode — so this is a single explicit mount,
-// no IntersectionObserver. It runs the REAL recipe via applyRecipe against a contained field, with
+// no IntersectionObserver. It runs the REAL recipe via applyPattern against a contained field, with
 // representative scaffold bodies so the field has something to react to. Phase 2b layers the
 // visualization workbench (render switcher / overlay toggle / live signal panel) on top of this.
 //
@@ -45,7 +45,7 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
   // Async: lazy-import the engine so the catalog never pays for it until a recipe is opened.
   (async () => {
     try {
-      const [{ recipeById }, { applyRecipe }, { createField }, scaffolds, { attachWorkbench }] = await Promise.all([
+      const [{ recipeById }, { applyPattern }, { createField }, scaffolds, { attachWorkbench }] = await Promise.all([
         import('@fundamental-engine/core'),
         import('@fundamental-engine/dom'),
         import('@fundamental-engine/vanilla'),
@@ -90,8 +90,8 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
 
       // run the real recipe — its render plan drives the field (setRender/setOverlay/heatmap).
       // Pass the scaffold elements as the bodies (annotateBodies:false keeps their use-case tokens)
-      // so applyRecipe does NOT also spawn its own token-labelled demo bodies.
-      applied = applyRecipe(container, recipe, {
+      // so applyPattern does NOT also spawn its own token-labelled demo bodies.
+      applied = applyPattern(container, recipe, {
         bodies: bodyEls.length ? bodyEls : undefined,
         annotateBodies: false,
         drive: true,

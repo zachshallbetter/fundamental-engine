@@ -106,6 +106,16 @@ export interface Highlight {
 }
 export const HIGHLIGHTS: Highlight[] = [
   {
+    title: "Focus / attention substrate — the field reads and writes attention",
+    blurb: "New (experimental): operator attention as an input, agent attention as an output, over one shared field. field.focus(target, { source }) deposits source-tagged, decaying focus onto any body by identity; field.focusState() is the ranked, thresholded digest an AI agent can read in a single turn; metrics.salience rides query()/snapshot(); the focus event is the write-back channel; and a focus well gathers the field toward whatever is currently focused. The agent view stays read-only. Signals-first — it runs with nothing drawn.",
+    href: "/docs/api/handle",
+  },
+  {
+    title: "“recipe” is now “Pattern”",
+    blurb: "The authored composed-arrangement concept is renamed to a Field Pattern, end to end: FieldPattern / compilePattern / applyPattern / FIELD_PATTERNS in the API, mirrored on the Swift + Kotlin ports. Every old recipe-named symbol still works as a deprecation alias (removed at 1.0), so nothing breaks.",
+    href: "/docs/api/stability",
+  },
+  {
     title: "Android — a native Kotlin port",
     blurb: "The engine now runs natively on Android: same package layout, API surface, and physics as the JS and Swift packages, held to the same shared cross-plane golden. Ships a Jetpack Compose host (FieldView + Modifier.fieldBody), an imperative View host, and a desktop FieldLab. In active development on the android branch.",
     href: "/docs/guides/kotlin",

@@ -146,7 +146,7 @@ list.style.setProperty("--chain",
 
 // the scoped field runs invisible (renderless) and asks
 // for the attention metric lane (--field-attention) —
-// applyRecipe options, not a hand-spread recipe:
+// applyPattern options, not a hand-spread recipe:
 //   { renderless: true, extraMetrics: ["attention"] }`;
 
 const SNIPPET_COLLAPSE = `// collapse = hide the subtree, then RE-BIND
@@ -166,7 +166,7 @@ caret.addEventListener("click", () => {
   // collapsed comments leave the field, not just
   // the page (destroy + apply, like field on/off)
   field?.destroy();
-  field = applyRecipe(list, base, {
+  field = applyPattern(list, base, {
     bodies: rows.filter((r) => !r.hidden),
     annotateBodies: false,
     renderless: true,
@@ -379,7 +379,7 @@ caret.addEventListener("click", () => {
         />
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
-          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+          <a href="/patterns" class="ev-how-link ev-how-link--dim">See patterns →</a>
         </div>
       </div>
     </div>

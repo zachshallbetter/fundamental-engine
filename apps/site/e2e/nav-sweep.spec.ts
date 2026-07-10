@@ -67,9 +67,9 @@ test.describe("footer · Wayfinding Field", () => {
 
 test.describe("recipes filter pills · per-domain color", () => {
   test("the problem-domain pills carry their domain color", async ({ page }) => {
-    // /recipes is the solution-finder catalog: the primary filter is the nine problem-domain pills,
+    // /patterns is the solution-finder catalog: the primary filter is the nine problem-domain pills,
     // each tinted with its own --pill-accent (the natural-field colour now lives on the cards).
-    await page.goto("/recipes");
+    await page.goto("/patterns");
     const pill = page.locator('.ex-pill[data-domain="conflict"]');
     await expect(pill).toHaveCount(1);
     const dotColor = await pill
