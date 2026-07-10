@@ -47,7 +47,7 @@ a boundary test scans every core source file for DOM globals and runs with an **
 the core imports no DOM globals and computes with no document present. On top of that boundary sit
 two contracts that make field participation portable and auditable: a six-phase frame scheduler
 (`discover → read → compute → state → write → render`) with six single-concern registries that
-eliminate read-after-write layout thrashing, and a recipe runtime whose programs are validated
+eliminate read-after-write layout thrashing, and a pattern runtime whose programs are validated
 against the engine's real, passported vocabulary and proven by a headless conformance harness that
 runs *the same physics* the live product does. We argue the engineering case for portability — the
 same core already drives a canvas surface, SVG overlays, CSS-variable feedback, and a headless test
@@ -111,7 +111,7 @@ This paper contributes the *runtime architecture and its conformance methodology
    ordered phases and single-concern registries make DOM participation a disciplined, lintable
    protocol rather than ad hoc glue, and why that discipline is what lets a field ride the browser's
    layout instead of fighting it.
-3. **The recipe runtime and conformance gates as portable, auditable behavior** (§5): how a recipe
+3. **The pattern runtime and conformance gates as portable, auditable behavior** (§5): how a pattern
    compiles onto the platform, how validation rejects programs that reference vocabulary the engine
    does not have, and how the passport ↔ live-registry ↔ conformance-catalog cross-check and the
    headless physics harness make a behavior's claims checkable across host targets.
@@ -163,7 +163,7 @@ the conformance harness exercises the production physics headlessly (§5.3). [fo
 
 The distinguishing stance, across all of these, is that Fundamental treats the renderer-agnostic
 boundary and the participation contract as *auditable artifacts* — a test with an empty allowlist, a
-phase-discipline lint, a recipe validator, and a passport cross-check — not as conventions the
+phase-discipline lint, a pattern validator, and a passport cross-check — not as conventions the
 authors promise to honor.
 
 ---
@@ -422,7 +422,7 @@ const edge = (idref, type, source, strength) => {
 };
 ```
 
-This matters downstream: a recipe's metric computation can now report a *real* resolution ratio —
+This matters downstream: a pattern's metric computation can now report a *real* resolution ratio —
 `resolved / (resolved + unresolved)` — so a citation that points at nothing lowers coherence and
 raises entropy instead of being invisible (the fix merged in #222; see §5.4). A subtle bug the fix
 also closed: id-less elements were collapsed onto one fallback key (`tagName`), so edges keyed by
@@ -457,28 +457,28 @@ the DOM.* It is the platform's self-audit, run in the same spirit as the conform
 
 ---
 
-## 5. The recipe runtime and conformance gates (portable, auditable behavior)
+## 5. The pattern runtime and conformance gates (portable, auditable behavior)
 
 The host boundary makes the engine portable; the scheduler makes participation safe. The third leg of
-the architecture makes *behavior itself* portable and auditable: a recipe is a serializable field
+the architecture makes *behavior itself* portable and auditable: a pattern is a serializable field
 program, and the runtime that applies it — together with the validation, passport, and conformance
 machinery — guarantees that a program only ever references vocabulary the engine actually has, and
 that the behavior behind that vocabulary is proven by tests that run the production physics. Paper 6
-covers recipe *authoring*; this section covers the *runtime and conformance* that make recipes a
+covers pattern *authoring*; this section covers the *runtime and conformance* that make patterns a
 portable, auditable behavior format.
 
-### 5.1 `applyRecipe`: a recipe compiled onto the platform
+### 5.1 `applyRecipe`: a pattern compiled onto the platform
 
-`applyRecipe(root, recipe, options)` (`packages/dom/src/apply-recipe.ts`) is the DOM counterpart
+`applyRecipe(root, pattern, options)` (`packages/dom/src/apply-recipe.ts`) is the DOM counterpart
 to the core's `compileRecipe`. It turns a `FieldRecipe` record into a running field program on a
 scoped `createFieldPlatform(root)` — the registry/feedback layer, *not* a particle canvas — so it runs
 on ordinary content the way the Reading Field studies do. The sequence is:
 
-1. **Validate, then compile.** `validateRecipe(recipe)` runs first; an invalid recipe throws before
-   anything touches the DOM. The valid recipe is compiled to bodies, a feedback variable map, metric
+1. **Validate, then compile.** `validateRecipe(pattern)` runs first; an invalid pattern throws before
+   anything touches the DOM. The valid pattern is compiled to bodies, a feedback variable map, metric
    lanes, and a reduced-motion description.
 2. **Register bodies (token lane only).** Each body element is registered for measurement and
-   annotated with the recipe's `data-body` tokens. Only the *token lane* is executed — concept words
+   annotated with the pattern's `data-body` tokens. Only the *token lane* is executed — concept words
    are never run as forces.
 3. **Bind the metric lane to feedback variables.** Each metric maps to a `--field-*` variable through
    the `FeedbackRegistry`, so the write phase is the single writer.
@@ -490,19 +490,19 @@ on ordinary content the way the Reading Field studies do. The sequence is:
 
 The returned handle is *inspectable and destroyable*: `inspect()` returns live measurement counts, the
 resolved/unresolved relationship split and resolution ratio, the per-element metric values, and the
-current lint count; `destroy()` clears every CSS variable the recipe wrote, removes created elements,
+current lint count; `destroy()` clears every CSS variable the pattern wrote, removes created elements,
 restores overwritten attributes, and tears down the loop. Because the whole thing runs on a scheduler
-that can be driven by hand (`drive: false` lets a caller call `tick()` directly), a recipe's behavior
+that can be driven by hand (`drive: false` lets a caller call `tick()` directly), a pattern's behavior
 can be exercised frame-by-frame in a test with no rAF and no browser.
 
 ### 5.2 `validateRecipe`: a program cannot reference vocabulary the engine lacks
 
-The decisive property of the recipe format is its *conformance gate*. `validateRecipe`
-(`packages/core/src/recipes/schema.ts`) rejects any recipe whose references are not real:
+The decisive property of the pattern format is its *conformance gate*. `validateRecipe`
+(`packages/core/src/recipes/schema.ts`) rejects any pattern whose references are not real:
 
 - **Every force token is a passported force.** Each token in every body is checked against
   `passportFor(token)`; an unknown token is a problem.
-- **Declared primitives must equal the body tokens.** The recipe's `primitives` array must list
+- **Declared primitives must equal the body tokens.** The pattern's `primitives` array must list
   *exactly* the distinct tokens its bodies use — no drift between the human-facing declaration and the
   executable bodies.
 - **Cross-lane guard.** A primitive must be a real runtime token, *never* a diagnostic, metric,
@@ -513,19 +513,19 @@ The decisive property of the recipe format is its *conformance gate*. `validateR
 - **Every render layer and diagnostic is a known mode**, and the natural field, tier, and status are
   each one of their enumerated values.
 - **An accessibility fallback is required** — `reducedMotion` and `meaningWithoutMotion` must both be
-  present, so *no recipe is motion-only* (the accessibility invariant of Paper 4, enforced at the
+  present, so *no pattern is motion-only* (the accessibility invariant of Paper 4, enforced at the
   authoring boundary).
 
-The effect is that a recipe is *auditable against the engine's actual capabilities*. Recipe prose may
+The effect is that a pattern is *auditable against the engine's actual capabilities*. Pattern prose may
 be expressive ("completion releases pressure and decays into memory") while the runtime fields stay
 strict (`primitives: ['morph', 'memory', 'gravity']`), and a concept word can never silently invent a
-force. The shipped catalog (the records in `packages/core/src/recipes/catalog.ts`, re-exported by `gallery.ts`) is itself a conformance fixture — a test runs every recipe through `validateRecipe` (`recipes/schema.ts`):
-every one of the 64 portable recipes passes `validateRecipe`, enforced by a test, so the catalog
+force. The shipped catalog (the records in `packages/core/src/recipes/catalog.ts`, re-exported by `gallery.ts`) is itself a conformance fixture — a test runs every pattern through `validateRecipe` (`recipes/schema.ts`):
+every one of the 64 portable patterns passes `validateRecipe`, enforced by a test, so the catalog
 cannot drift from the engine's vocabulary.
 
 ### 5.3 Passports cross-checked against ground truth, proven headless
 
-Behind every token a recipe may reference is a *passport*
+Behind every token a pattern may reference is a *passport*
 (`packages/core/src/contracts/passport.ts`): a machine-readable declaration of what a force is and
 does — its family and class, its truth mode, whether it owns a `field()`, whether it reads
 `env.fieldAt()`, whether it moves particles, does work, conserves speed, requires charge or velocity,
@@ -562,7 +562,7 @@ platform metric library (`packages/dom/src/metrics.ts`) draws a hard line betwee
   and age).
 - **Supplied-only:** `confidence` and `risk`. The engine has no evidence for a claim's truth — or for
   how dangerous it is — so each is present *only* when the host supplies it (via `data-field-confidence`,
-  recipe options, or a domain trust/risk model). Neither is **ever** inferred from relationship
+  pattern options, or a domain trust/risk model). Neither is **ever** inferred from relationship
   presence, and `risk` is **never** defaulted to `0` — *a citation is not certainty, a source is not
   proof,* and "no risk" is a claim, not a safe blank.
 
@@ -572,9 +572,9 @@ an evidence/trust surface (Paper 3). The fix (merged in #220) removes confidence
 entirely; the `ComputedMetrics` type encodes the asymmetry by making `confidence` optional while every
 other lane is a required number. Relationship *resolution* is a separate, legitimately computed signal
 (§4.4) — and it, too, was made real in #222 (the metric computation now counts declared-but-unresolved
-edges toward the total, so resolution is honest). Together these fixes mean that what a recipe writes
+edges toward the total, so resolution is honest). Together these fixes mean that what a pattern writes
 back to the DOM is either *observed*, *declared by the host*, or *honestly absent* — never fabricated.
-That property is what makes the behavior auditable across host targets: the same recipe, on the same
+That property is what makes the behavior auditable across host targets: the same pattern, on the same
 core, behind any host, computes the same honest metrics.
 
 ---
@@ -591,7 +591,7 @@ surfaces in the shipping system: the particle **canvas** (the legacy simulate-an
 overlays** (relationship lines and field lines resolved by the `OverlayRegistry` from the measurement
 snapshot), and **CSS-variable feedback** (the `FeedbackRegistry`'s `--field-*` write-back, which drives
 weight, size, color, and glow in pure CSS). These are not three engines; they are three readings of one
-field. A recipe applied with `applyRecipe` runs entirely on the CSS-feedback surface — no canvas at
+field. A pattern applied with `applyRecipe` runs entirely on the CSS-feedback surface — no canvas at
 all — which is the existence proof that the field is separable from any one way of drawing it.
 
 **A headless target, today.** The conformance harness (§5.3) is a *fourth* consumer of the same core,
@@ -666,7 +666,7 @@ measured demonstration of N working backends. We are explicit that this is the f
 
 **Conformance proves forces, not every composition.** The passport cross-check and the conformance
 harness prove individual forces and a set of composite experiments; they do not exhaustively prove
-every one of the 64 recipes' emergent behavior, only that each recipe references real vocabulary and
+every one of the 64 patterns' emergent behavior, only that each pattern references real vocabulary and
 that its constituent forces are individually conformant.
 
 ---
@@ -695,8 +695,8 @@ The same pattern recurs one layer down in the scheduler's read-phase guard, whic
 measurement registry as a single function so the registry never imports the scheduler.
 
 **Auditable behavior as a portability property.** A subtle benefit of the conformance machinery is that
-it makes *behavior* portable, not just the engine. Because a recipe is validated against passported
-vocabulary and its forces are proven by a headless harness, a recipe carries its own guarantees: drop
+it makes *behavior* portable, not just the engine. Because a pattern is validated against passported
+vocabulary and its forces are proven by a headless harness, a pattern carries its own guarantees: drop
 it onto any host that implements `FieldHost` and the same honest metrics are computed and the same
 proven forces run. The supplied-vs-derived discipline (confidence supplied-only; resolution real) means
 those metrics never fabricate evidence — a property that holds *by construction across host targets*,
@@ -714,7 +714,7 @@ field, force, metric, and conformance logic against plain data and imports no DO
 not asserted but enforced by a boundary test that runs with an empty allowlist, so the core computes
 with no document present. On top of that boundary, a six-phase scheduler and six single-concern
 registries turn DOM participation into a disciplined, lintable contract that lets the field ride the
-browser's layout without thrash, and a recipe runtime backed by validation, passport cross-checks, a
+browser's layout without thrash, and a pattern runtime backed by validation, passport cross-checks, a
 headless physics harness, and a supplied-vs-derived metric discipline turns interface behavior into a
 portable, auditable program. We have made the engineering case for portability — one core already
 driving a canvas, SVG overlays, CSS-variable feedback, and a headless harness, with a clear host-
@@ -723,7 +723,7 @@ legacy element write-back path in `engine/field.ts` is still being migrated behi
 registries (Phase 5; #228), and there is no shipping non-DOM production renderer yet. Portability is
 demonstrated by a proven boundary plus host injection, not by a second production renderer. The
 companion papers validate the paradigm this runtime serves in their own domains — reading (Paper 2),
-evidence and trust (Paper 3), reduced-motion equivalence (Paper 4), recipe authoring (Paper 6), data
+evidence and trust (Paper 3), reduced-motion equivalence (Paper 4), pattern authoring (Paper 6), data
 binding (Paper 7), and explainable diagnostics (Paper 8) — and the flagship (Paper 1) names the
 paradigm itself.
 
@@ -746,9 +746,9 @@ Every architectural claim in this paper is checkable against the repository. The
   registries `measurement.ts`, `state.ts`, `feedback.ts`, `relationships.ts` (with `scanRelationships`
   and the resolved/unresolved split), `visual-bindings.ts`, `overlays.ts`.
 - **The self-audit.** `packages/dom/src/lint.ts` (`lintPlatform` and its seven pure rules).
-- **The recipe runtime and conformance.** `packages/dom/src/apply-recipe.ts` (`applyRecipe`),
+- **The pattern runtime and conformance.** `packages/dom/src/apply-recipe.ts` (`applyRecipe`),
   `packages/core/src/recipes/schema.ts` (`validateRecipe`, the `OTHER_LANE` cross-lane guard),
-  `packages/core/src/recipes/catalog.ts` (the 64 recipes as a conformance fixture),
+  `packages/core/src/recipes/catalog.ts` (the 64 patterns as a conformance fixture),
   `packages/core/src/contracts/passport.ts` (`PASSPORTS`, `validatePassports`),
   `packages/core/src/contracts/passport.test.ts` (the cross-check test), and
   `packages/core/src/conformance/run.ts` (the headless physics harness).

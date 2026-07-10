@@ -41,7 +41,7 @@ of field state, not the *source* of meaning — and that equivalence can be made
 property rather than a hand-waved fallback.** We give (a) a formal equivalence model that traces
 meaning from a *semantic source* (live DOM text and state) through a *visual–semantic binding* to a
 *motion behavior* and its *static equivalent*; (b) a conformance model that makes "motion is not
-meaning" mechanically checkable through shipped lint rules, a recipe schema that makes a reduced-motion
+meaning" mechanically checkable through shipped lint rules, a pattern schema that makes a reduced-motion
 fallback *required*, and a proposed automated equivalence harness; and (c) an evaluation plan that
 tests whether the reduced surface is non-inferior to the full-motion surface on comprehension,
 orientation, and recall. We are precise about what ships — the reduced-motion guard, the
@@ -113,7 +113,7 @@ This paper contributes the accessibility model behind that stance:
    *color is never the sole carrier*; *state still tracks under reduced motion, only easing drops*).
 2. **A conformance model** (§4) — the central contribution — that turns "motion is not meaning" from
    an aspiration into a checkable property, through shipped lint rules (`visual-orphan`,
-   `visual-not-hidden`, `feedback-non-css-var`), a recipe schema that makes a reduced-motion fallback
+   `visual-not-hidden`, `feedback-non-css-var`), a pattern schema that makes a reduced-motion fallback
    *required* (`accessibility.reducedMotion` / `meaningWithoutMotion`), a reduced-motion guard, a
    travel-gating user agent, and a *proposed* automated equivalence-conformance check, with a precise
    Implementation-status accounting of ships-versus-proposed.
@@ -124,7 +124,7 @@ This paper contributes the accessibility model behind that stance:
 
 Scope discipline. This paper concerns accessibility and reduced-motion equivalence *only*. It assumes
 the runtime architecture (deferred to Paper 5), the reading study (Paper 2), the evidence/trust model
-(Paper 3), recipe authoring (Paper 6), and diagnostics (Paper 8), and cross-references rather than
+(Paper 3), pattern authoring (Paper 6), and diagnostics (Paper 8), and cross-references rather than
 re-explains them. Per the caveat canon (item 6), every empirical statement here is a hypothesis or a
 design, never a finding.
 
@@ -257,7 +257,7 @@ enforced somewhere in code (§4):
 
 1. **Meaning is never motion-only.** Every motion that carries state has a static equivalent that
    carries the same state. The contract states it twice — "Motion is optional. Meaning is never
-   motion-only" (system-contracts §14) — and the recipe schema makes the equivalent *mandatory* (§4.2).
+   motion-only" (system-contracts §14) — and the pattern schema makes the equivalent *mandatory* (§4.2).
    This is the load-bearing invariant; the other two are its corollaries for specific channels.
 2. **Color is never the sole carrier of meaning.** State that a reader must perceive is encoded
    redundantly — outline, icon, text, layout, or tone — not in hue alone (visual-language §5.2). The
@@ -320,13 +320,13 @@ and surface alongside the structural rules (`relation-target-missing`, `state-un
 `overlay-without-links`, `measurement-off-phase`). Their accessibility role is the §16 visual-language
 rule made operational (visual-language §18.1).
 
-### 4.2 Shipped: the recipe schema makes a fallback required
+### 4.2 Shipped: the pattern schema makes a fallback required
 
-A field recipe — the portable, serializable unit of field behavior (Paper 1, §7.3; developed in
+A field pattern — the portable, serializable unit of field behavior (Paper 1, §7.3; developed in
 Paper 6) — cannot validate without declaring its reduced-motion equivalence. The schema
 (`packages/core/src/recipes/schema.ts`) makes `accessibility` a non-optional field of `FieldRecipe`,
 with the comment that states the policy: "the reduced-motion + meaning-without-motion equivalent —
-required: no recipe is motion-only." The field's shape is two required strings:
+required: no pattern is motion-only." The field's shape is two required strings:
 
 ```ts
 interface AccessibilityRecipe {
@@ -342,12 +342,12 @@ and the validator enforces both:
 ```ts
 if (!r.accessibility || !r.accessibility.reducedMotion || !r.accessibility.meaningWithoutMotion)
   problems.push({ path: 'accessibility',
-    issue: 'reducedMotion + meaningWithoutMotion are required (no recipe is motion-only)' });
+    issue: 'reducedMotion + meaningWithoutMotion are required (no pattern is motion-only)' });
 ```
 
 This is the antipattern of §1.2 inverted at the authoring layer. A second, drifting fallback path is
 *possible* in a system where the fallback is optional; here it is structurally impossible to ship a
-valid recipe that has not said, in words, what replaces its motion and how its meaning survives without
+valid pattern that has not said, in words, what replaces its motion and how its meaning survives without
 color or motion. The declaration is *prose* today (a human sentence), which is a real limitation we
 return to in §6 — the schema requires that the author *answer the question*, not yet that a machine
 *verify the answer*.
@@ -396,7 +396,7 @@ it, framed as a design, not a result.
 The proposed **equivalence-conformance check** would, given a composition and its visual bindings:
 
 1. Render the composition twice — full motion and reduced motion (`reducedMotion: true`), reusing the
-   path the recipe applier already exposes (`applyRecipe(..., { reducedMotion })`,
+   path the pattern applier already exposes (`applyRecipe(..., { reducedMotion })`,
    `packages/dom/src/apply-recipe.ts`; exercised by `FieldLoopDemo.astro`).
 2. Enumerate the meaning-bearing state for each measured body — the `StateRegistry` values written
    back as `--field-*` variables, plus the typed relationships — in *both* renders.
@@ -425,7 +425,7 @@ To be precise, in the family's house style:
   `lintPlatform()` (`packages/dom/src/lint.ts`, `visual-bindings.ts`), and the core visual-lint
   rules `color-only-meaning`, `glyph-only-text`, `missing-reduced-motion`
   (`packages/core/src/visual/lint.ts`).
-- The recipe schema's **required** `accessibility.reducedMotion` and `accessibility.meaningWithoutMotion`
+- The pattern schema's **required** `accessibility.reducedMotion` and `accessibility.meaningWithoutMotion`
   fields and their validation (`packages/core/src/recipes/schema.ts`).
 - The reduced-motion guard `assertReducedMotionFallback` / `MISSING_REDUCED_MOTION`
   (`packages/core/src/contracts/guards.ts`) and the travel-gating user agent
@@ -441,7 +441,7 @@ To be precise, in the family's house style:
 
 **Proposed** (a design in this paper, not shipped): the automated equivalence-conformance harness of
 §4.4 — a single check that the *whole* meaning-bearing state of a composition survives motion being
-disabled. The recipe schema currently requires the author to *state* the equivalence in prose; the
+disabled. The pattern schema currently requires the author to *state* the equivalence in prose; the
 harness would *verify* it.
 
 ---
@@ -571,7 +571,7 @@ becomes, generalized, *no single channel is the only carrier* — and motion is 
 literature warns about most.
 
 **Relationship to the rest of the family.** The conformance posture here is the same as the flagship's
-truth modes and passports (Paper 1, §6) and the recipe conformance gate (Paper 6): make the honest
+truth modes and passports (Paper 1, §6) and the pattern conformance gate (Paper 6): make the honest
 boundary mechanical rather than rhetorical. Accessibility is, in this view, not a separate concern
 bolted onto the runtime but another property the runtime is built to make *checkable* — the same
 discipline, pointed at reduced motion.
@@ -587,7 +587,7 @@ reduced motion the same field differently revealed: the field keeps computing, o
 and every travelling effect has a static equivalent that renders the same state. The contribution of
 this paper is to make that equivalence a *testable conformance property* rather than a hand-waved
 fallback. The shipped mechanisms — the `visual-orphan` / `visual-not-hidden` / `feedback-non-css-var`
-lint rules, the recipe schema's required reduced-motion-and-meaning-without-motion fields, the
+lint rules, the pattern schema's required reduced-motion-and-meaning-without-motion fields, the
 reduced-motion guard, the travel-gating user agent, and the accessibility preview — already enforce the
 components of equivalence; the proposed equivalence-conformance harness would check the whole. We have
 been explicit that this verifies *presence* of meaning-bearing state, not human-*perceived* equivalence,
@@ -608,7 +608,7 @@ Every accessibility claim in this paper is checkable against the repository. The
   `missing-reduced-motion`).
 - **Recipe-schema accessibility field:** `packages/core/src/recipes/schema.ts` (`AccessibilityRecipe`,
   the required `accessibility` field on `FieldRecipe`, and the validator clause forbidding a
-  motion-only recipe).
+  motion-only pattern).
 - **Reduced-motion guard, travel-gating, host capability:**
   `packages/core/src/contracts/guards.ts` (`assertReducedMotionFallback`, `MISSING_REDUCED_MOTION`),
   `packages/core/src/agents/user-agent.ts` (`userFieldSource` wake-gating),

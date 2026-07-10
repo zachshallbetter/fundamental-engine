@@ -2,7 +2,7 @@
 // INVISIBLE field, with the restraint a reading surface demands:
 //   · Headings as bodies — at init (never in page markup) every h2/h3 becomes a gentle
 //     attract body with engine feedback (data-hot, data-feedback), and a scoped render-less
-//     recipe (the established idiom: recipeById("evidence-field") + applyPattern's
+//     recipe (the established idiom: patternById("evidence-field") + applyPattern's
 //     { renderless, extraMetrics: ["attention"] }) measures per-section attention each
 //     frame as --field-attention.
 //   · The attention TOC — one rAF loop mirrors each heading's --field-attention onto its
@@ -18,7 +18,7 @@
 //     native, keyboard-first, and honest in dev (the index only exists in a built site).
 // Everything the field writes is felt, not loud, and ALL of it is gated behind
 // prefers-reduced-motion and the persisted sidebar toggle (main[data-field-docs="off"]).
-import { recipeById } from "@fundamental-engine/core";
+import { patternById } from "@fundamental-engine/core";
 import { applyPattern } from "@fundamental-engine/dom";
 import { DOCS_NAV, ROUTE_FAMILIES, groupColorFor } from "../lib/docs-nav.ts";
 import { pageRuntime } from "../lib/page-runtime.ts";
@@ -80,7 +80,7 @@ function startField(main: HTMLElement, toc: HTMLElement | null): FieldBits | nul
     // reading-field (was evidence-field) — the Reading Field recipe: it keeps the attention
     // lane AND adds MEMORY, so sections you dwell on accrete --field-memory ("where I've read")
     // alongside the live attention.
-    const base = recipeById("reading-field");
+    const base = patternById("reading-field");
     if (base) {
       applied = applyPattern(main, base, {
         bodies: heads,
@@ -160,7 +160,7 @@ function startSidebarField(): { destroy(): void } | null {
   const current = nav.querySelector<HTMLElement>('a[aria-current="page"]');
   current?.setAttribute("data-field-attention", "1"); // the current route is the well
   try {
-    const base = recipeById("priority-well");
+    const base = patternById("priority-well");
     if (!base) return null;
     const applied = applyPattern(nav, base, {
       bodies: links,
@@ -372,7 +372,7 @@ function wireSearch(shell: HTMLElement, sig: AbortSignal): void {
     // Skipped under reduced motion — the static list + dot still read.
     if (!reduceMotion()) {
       try {
-        const base = recipeById("search-relevance-field");
+        const base = patternById("search-relevance-field");
         const hits = [...results.querySelectorAll<HTMLElement>("a.ds-hit")];
         if (base && hits.length)
           searchField = applyPattern(results, base, {

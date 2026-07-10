@@ -26,7 +26,7 @@ import {
   allocateAttention,
   freshness,
   logNormalizeBetween,
-  recipeById,
+  patternById,
   weightToStrength,
 } from "@fundamental-engine/core";
 import { applyPattern, withFlip } from "@fundamental-engine/dom";
@@ -177,7 +177,7 @@ function initInbox(page: HTMLElement): () => void {
     activeField = null;
     if (!fieldOn) return;
     try {
-      const base = recipeById("evidence-field");
+      const base = patternById("evidence-field");
       if (base) {
         // renderless keeps the field invisible; the extra metric lanes ask the platform
         // pipeline to write --field-attention per ask (an eased 0..1 blend of engagement,

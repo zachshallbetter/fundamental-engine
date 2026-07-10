@@ -17,7 +17,7 @@
 //     scoped field is destroyed. The countdowns keep ticking — they're data, not field.
 //   · Color by status / off — --cat encodes launch status, or steps aside entirely.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { imminence, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { imminence, patternById, weightToStrength } from "@fundamental-engine/core";
 import { applyPattern } from "@fundamental-engine/dom";
 import calendar from "../../data/examples/calendar.json";
 import { pageRuntime } from "../../lib/page-runtime.ts";
@@ -516,7 +516,7 @@ function initCalendar(page: HTMLElement): () => void {
     activeField = null;
     if (!fieldOn || !zone) return;
     try {
-      const base = recipeById("evidence-field");
+      const base = patternById("evidence-field");
       if (base) {
         // renderless keeps the field invisible; the extra "attention" metric asks the
         // platform pipeline to write --field-attention per card (an eased 0..1 blend of

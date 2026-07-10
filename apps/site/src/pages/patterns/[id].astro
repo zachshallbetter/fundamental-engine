@@ -5,7 +5,7 @@ import SiteFooter from '../../components/SiteFooter.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 import {
-  FIELD_PATTERNS, EXPERIMENTAL_PATTERNS, FIRST_RELEASE_PATTERN_IDS, explainScene, serializeRecipe, recipeAuthoring, passportFor, type FieldPattern,
+  FIELD_PATTERNS, EXPERIMENTAL_PATTERNS, FIRST_RELEASE_PATTERN_IDS, explainScene, serializePattern, patternAuthoring, passportFor, type FieldPattern,
 } from '@fundamental-engine/core';
 import { metricTitle, designedMetrics } from '../../lib/metric-lanes.ts';
 import { taxonomyFor } from '../../lib/recipe-taxonomy.ts';
@@ -13,7 +13,7 @@ import '../../styles/workbench.css';
 
 // One page per recipe (getStaticPaths over the 64 FIELD_PATTERNS + the experimental set): a large live
 // preview, the full five-lane breakdown + render + a11y + notes + plain-language explanation, copyable
-// HTML / web component / React / JSON (recipeAuthoring), and "see also" siblings (same field/tier).
+// HTML / web component / React / JSON (patternAuthoring), and "see also" siblings (same field/tier).
 export function getStaticPaths() {
   return [...FIELD_PATTERNS, ...EXPERIMENTAL_PATTERNS].map((r) => ({ params: { id: r.id }, props: { recipe: r } }));
 }
@@ -27,8 +27,8 @@ const fieldKey = r.naturalField ?? 'other';
 const color = FIELD_COLOR[fieldKey] ?? '#9aa7b4';
 const fieldLabel = r.naturalField != null ? r.naturalField[0]!.toUpperCase() + r.naturalField.slice(1) : 'Diagnostic / platform';
 const isFirst = new Set(FIRST_RELEASE_PATTERN_IDS).has(r.id);
-const auth = recipeAuthoring(r);
-const exports = { html: auth.html, wc: auth.webComponent, react: auth.react, json: serializeRecipe(r) };
+const auth = patternAuthoring(r);
+const exports = { html: auth.html, wc: auth.webComponent, react: auth.react, json: serializePattern(r) };
 const seeAlso = FIELD_PATTERNS.filter((x) => x.id !== r.id && (x.naturalField === r.naturalField || x.tier === r.tier)).slice(0, 6);
 // which metric lanes need the host to ground them (else --field-<m> stays inert) — see lintInertFeedback
 const designed = designedMetrics(r.metrics);

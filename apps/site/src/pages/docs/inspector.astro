@@ -6,7 +6,7 @@ import {
   CONTRACTS,
   AGENT_CONTRACTS,
   VISUAL_CONTRACTS,
-  RECIPE_CONTRACTS,
+  PATTERN_CONTRACTS,
   SEMANTIC_CONTRACTS,
   FIELD_PATTERNS,
 } from '@fundamental-engine/core';
@@ -22,7 +22,7 @@ const contracts = [
   ...CONTRACTS,
   ...AGENT_CONTRACTS,
   ...VISUAL_CONTRACTS,
-  ...RECIPE_CONTRACTS,
+  ...PATTERN_CONTRACTS,
   ...SEMANTIC_CONTRACTS,
 ];
 const passports = Object.values(PASSPORTS);
@@ -302,7 +302,7 @@ const recipeOptions = FIELD_PATTERNS.map((r) => ({ id: r.id, name: r.name }));
 <script>
   // Recipe inspector: compile a chosen recipe (compilePattern) + run it (applyPattern), exposing the
   // plan and live metrics — "why is this moving" made answerable from the recipe object.
-  import { compilePattern, recipeById } from '@fundamental-engine/core';
+  import { compilePattern, patternById } from '@fundamental-engine/core';
   import { applyPattern, type AppliedPattern } from '@fundamental-engine/dom';
 
   const pick = document.querySelector<HTMLSelectElement>('[data-ri-pick]');
@@ -315,7 +315,7 @@ const recipeOptions = FIELD_PATTERNS.map((r) => ({ id: r.id, name: r.name }));
   let riRaf = 0;
   const riStop = (): void => { if (riRaf) cancelAnimationFrame(riRaf); riRaf = 0; };
   const showRecipe = (id: string): void => {
-    const r = recipeById(id);
+    const r = patternById(id);
     if (!r || !riStage) return;
     const c = compilePattern(r);
     setPlan('field', r.naturalField ?? '— (diagnostic / platform)');

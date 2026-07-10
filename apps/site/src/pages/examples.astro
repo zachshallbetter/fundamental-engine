@@ -800,7 +800,7 @@ const GROUPS = [
   // in view writes --field-attention (and accretes --field-memory), mirrored onto its nav link as
   // --att / --mem. Signals-only + reduced-motion-guarded; the scroll-spy .active stays the discrete
   // signal. Engine off / RM → the vars are unset and the nav reads plain.
-  import { recipeById } from '@fundamental-engine/core';
+  import { patternById } from '@fundamental-engine/core';
   import { applyPattern } from '@fundamental-engine/dom';
   import { reduceMotion } from '../lib/nav-field.ts';
 
@@ -819,7 +819,7 @@ const GROUPS = [
     const root = side.closest<HTMLElement>('.examples-layout') ?? document.body;
     let applied: Bits | null = null;
     try {
-      const base = recipeById('reading-field');
+      const base = patternById('reading-field');
       if (base)
         applied = applyPattern(root, base, {
           bodies: pairs.map((p) => p.el),

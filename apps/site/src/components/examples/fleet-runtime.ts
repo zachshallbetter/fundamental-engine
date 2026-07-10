@@ -13,7 +13,7 @@
 //     the change as engagement — the field notices. Three consecutive failures and the loop
 //     retires itself; the chip falls back to the snapshot date. Never throws.
 // The scoped field runs render-less (applyPattern renderless) — particles compute (metrics flow) but are never drawn.
-import { logNormalize, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { logNormalize, patternById, weightToStrength } from "@fundamental-engine/core";
 import { applyPattern, withFlip } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { pageRuntime } from "../../lib/page-runtime";
@@ -312,7 +312,7 @@ function initFleet(page: HTMLElement): () => void {
     activeField = null;
     if (!fieldOn || !zone) return;
     try {
-      const base = recipeById("evidence-field");
+      const base = patternById("evidence-field");
       if (base) {
         // renderless — invisible; metrics gain the attention lane, so the platform
         // pipeline writes an eased --field-attention (hover/focus + viewport-center

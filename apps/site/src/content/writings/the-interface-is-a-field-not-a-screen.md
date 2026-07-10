@@ -285,9 +285,9 @@ and, importantly, it is no longer a promise but a shipped surface. Underneath, t
 provably free of the browser: a boundary test passes with an empty allowlist, which means no core
 file reaches for a DOM global, which means the engine computes with no document present at all.
 
-## Recipes: the practical bridge
+## Patterns: the practical bridge
 
-A system like this becomes useful when the theory turns into recipes. A recipe is not an example
+A system like this becomes useful when the theory turns into recipes. A pattern is not an example
 animation. It is a reusable field program. It describes intent, the natural-field translation, the
 engine primitives, the required bodies, the relationships, the metrics, the feedback, the
 diagnostics, and — required, not optional — a reduced-motion equivalent.
@@ -309,8 +309,8 @@ diagnostics, and — required, not optional — a reduced-motion equivalent.
   more stable as its parts align — invalid pieces create pressure or entropy instead of just
   throwing red borders at the user.
 
-A **Field Contract Preview** lets designers and engineers inspect what a recipe will register,
-measure, write, render, and announce before they enable it. The recipes are the bridge between
+A **Field Contract Preview** lets designers and engineers inspect what a pattern will register,
+measure, write, render, and announce before they enable it. The patterns are the bridge between
 natural-field grammar and interface design — and the place the conceptual load is meant to
 disappear behind a named intent.
 
@@ -386,7 +386,7 @@ visible behavior. Why did this move? Why did this brighten? Why are these connec
 warning heating up? Why did the page calm down? Why did this source increase confidence?
 
 The answer should trace to a field cause — a relationship, a measurement, a primitive, a metric,
-a threshold, a recipe, a diagnostic. That is very different from most UI systems, where the honest
+a threshold, a pattern, a diagnostic. That is very different from most UI systems, where the honest
 answer is usually "because a component added a class." Fundamental can expose topology, causality,
 prediction, energy, potential, contours, velocity vectors, field lines, heatmaps, overlays, and
 platform registry state. The system does not just behave. It can show why — and the diagnostics
@@ -430,7 +430,7 @@ interface Fundamental is supposed to replace. So, plainly:
 
 **It is more to learn.** A designer who just wants the important card to stand out now has a
 richer vocabulary to hold — priority, polarity, binding, decay — and a heavier one than color and
-spacing. The recipes exist to hide that load behind named intents. The load is still real.
+spacing. The patterns exist to hide that load behind named intents. The load is still real.
 
 **It is more to run.** Measuring every body every frame and writing state back to the DOM is work
 the browser was not doing before. The scheduler separates reads from writes so it does not thrash

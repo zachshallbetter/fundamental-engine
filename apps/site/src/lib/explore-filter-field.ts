@@ -28,12 +28,12 @@ export async function startFilterField(): Promise<void> {
   if (!bar || !pills.length) return;
 
   try {
-    const [{ recipeById }, { applyPattern }] = await Promise.all([
+    const [{ patternById }, { applyPattern }] = await Promise.all([
       import('@fundamental-engine/core'),
       import('@fundamental-engine/dom'),
     ]);
     if (mine !== gen) return; // superseded by a newer start / a teardown
-    const base = recipeById('wayfinding-field');
+    const base = patternById('wayfinding-field');
     if (!base) return;
     field = applyPattern(bar, base, {
       renderless: true, // signals only — no canvas, no particles

@@ -13,7 +13,7 @@
 //     poll: the figure is a weekly aggregate, so re-polling it would be theater. Failed rows
 //     keep their snapshot values; advisories and publish dates stay snapshot by design.
 // The scoped field runs render-less (applyPattern renderless) — particles compute (metrics flow) but are never drawn.
-import { logNormalizeBetween, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { logNormalizeBetween, patternById, weightToStrength } from "@fundamental-engine/core";
 import { applyPattern, threadOverlay, withFlip } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls.ts";
 import { wireLiveChip, politeLoop } from "../../lib/live-data.ts";
@@ -138,7 +138,7 @@ function initDependencies(page: HTMLElement): () => void {
     activeField = null;
     if (!fieldOn || !zone) return;
     try {
-      const base = recipeById("evidence-field");
+      const base = patternById("evidence-field");
       if (base) {
         // renderless — invisible; metrics gain the attention lane, so the platform
         // pipeline writes an eased --field-attention (hover/focus + viewport-center

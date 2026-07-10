@@ -7,7 +7,7 @@
  * Page contract: buttons carry `data-study="field"` / `data-study="reduced"`; a status element carries
  * `data-study-status`.
  */
-import { recipeById } from '@fundamental-engine/core';
+import { patternById } from '@fundamental-engine/core';
 import { applyPattern, type AppliedPattern, type DataBinding } from '@fundamental-engine/dom';
 
 export interface StudyGroup {
@@ -30,7 +30,7 @@ export function mountStudy(groups: StudyGroup[]): { stop: () => void } {
   const apply = (): void => {
     teardown();
     applieds = groups.flatMap((g) => {
-      const r = recipeById(g.recipeId);
+      const r = patternById(g.recipeId);
       return r && g.items.length ? [applyPattern(g.root, r, { bodies: g.items, reducedMotion: reduced })] : [];
     });
     on = true;

@@ -37,9 +37,9 @@ dashboard, or a result set behaves as a *relational field* — not a flat collec
 shipped mechanism, `bindData()` (`packages/dom/src/bind-data.ts`), as it actually exists: a
 per-record *mapper* that yields body tokens, metric values, and typed relationships; deterministic
 **id-diffed** updates (add / update / remove); and **decay on removal**, so a departing record eases
-out of the field rather than popping. We show that `bindData()` composes with the recipe runtime
-(Paper 6) — the recipe supplies the *behavior*, the binding supplies the *participants* — through an
-`annotateBodies: false` path that binds a recipe's metrics while leaving the data's own body tokens
+out of the field rather than popping. We show that `bindData()` composes with the pattern runtime
+(Paper 6) — the pattern supplies the *behavior*, the binding supplies the *participants* — through an
+`annotateBodies: false` path that binds a pattern's metrics while leaving the data's own body tokens
 intact. We document four shipped demonstrations spanning evidence, search, code review, and
 operations dashboards, each built data-first from the same mechanism. We are explicit about the
 limits: a binding is only as meaningful as the mapping the host supplies, confidence and risk must be
@@ -100,11 +100,11 @@ This paper contributes, for the single claim *data can be a field substrate*:
 2. **A binding lifecycle** (§4): `bindData()` as a function of a *changing* dataset — deterministic
    id-diffed add/update/remove, updates realized as field transitions, and removal realized as
    release/decay rather than a pop — as the code actually implements it.
-3. **Composition with recipes** (§5) and **four shipped, cross-domain demonstrations** (§6): evidence,
+3. **Composition with patterns** (§5) and **four shipped, cross-domain demonstrations** (§6): evidence,
    search, review, and system-weather study pages, each built data-first from one mechanism.
 
 Scope discipline, per the family's "one claim per paper" rule: the paradigm is Paper 1; the runtime
-and host architecture are Paper 5; the recipe schema and catalog are Paper 6; evidence and trust are
+and host architecture are Paper 5; the pattern schema and catalog are Paper 6; evidence and trust are
 Paper 3; reading is Paper 2; accessibility is Paper 4; diagnostics are Paper 8. This paper
 cross-references those and does not re-derive them.
 
@@ -231,7 +231,7 @@ whose target id-ref resolves to no element is *tracked, not dropped*: the relati
 both a `resolved` set and an `unresolved` set, and the registry keeps the unresolved declarations so
 inspection can name each missing endpoint (`packages/dom/src/relationships.ts`). This matters for
 data binding specifically, because the data may declare an edge to a record that has not yet arrived
-or has just left. The recipe runtime then counts an unresolved edge toward an element's *total*
+or has just left. The pattern runtime then counts an unresolved edge toward an element's *total*
 relationships but not its *resolved* set, so a citation pointing at nothing *lowers* resolution and
 *raises* entropy rather than silently vanishing (`apply-recipe.ts`; §3.3). The Evidence Field demo
 relies on exactly this: claims declare `supports`/`contradicts` edges to source list items, and the
@@ -240,7 +240,7 @@ field reads the resolution honestly.
 ### 3.3 Record state → metrics and feedback
 
 The third mapping is the mapper's `metrics?: Record<string, number>`. For each entry the binding
-writes `data-field-<metric>` on the record's element. These attributes are the input lane the recipe
+writes `data-field-<metric>` on the record's element. These attributes are the input lane the pattern
 runtime reads: in `applyRecipe`'s compute phase, any `data-field-<metric>` present on a body is read
 as a *supplied* metric value, clamped to `[0, 1]`, and — critically — *supplied values win* over
 computed ones (`packages/dom/src/metrics.ts`, `computeMetrics`; `apply-recipe.ts`). The runtime
@@ -307,18 +307,18 @@ survives.)
 Because a kept record's element persists across an update, a change to its mapped metrics or body is a
 *transition of an existing body*, not a replacement. When a claim's source is flipped from `supports`
 to `contradicts`, `update()` re-emits that claim's edges; the relationship graph's resolved/conflict
-counts change; the recipe's compute phase recomputes coherence and entropy for that body; and the
+counts change; the pattern's compute phase recomputes coherence and entropy for that body; and the
 feedback flush eases the `--field-coherence`/`--field-entropy` variables to their new values, which
 the CSS transitions. The record's metric change *re-shapes the field* — the body and its neighbors
-respond — rather than the list snapping to a new static arrangement. The binding re-applies the recipe
+respond — rather than the list snapping to a new static arrangement. The binding re-applies the pattern
 only when the *set* of participants changes (an add or a remove), so steady metric updates flow
-through the already-running recipe loop (§5).
+through the already-running pattern loop (§5).
 
 ### 4.3 Removal as release / decay
 
 A removed id is not deleted immediately. The binding marks the departing element `data-bd-exiting`,
 zeroes every `data-field-*` attribute on it so its feedback eases down, removes it from the live id
-map (so it is excluded from the recipe's re-application), and schedules its actual DOM removal after a
+map (so it is excluded from the pattern's re-application), and schedules its actual DOM removal after a
 `decayMs` delay (default 400 ms). During that window the CSS fades and translates it out, and its
 metrics have already relaxed to zero, so a removed record *releases* rather than *pops*. This is the
 "weak-interaction → transformation" register of the Natural Field Translation System made literal for
@@ -328,24 +328,24 @@ which the next animation frame removes, so CSS can ease them in. The lifecycle t
 grammar at both ends: arrivals settle in, departures decay out, and the steady state in between is a
 field of bodies whose metrics track their records.
 
-`destroy()` tears the whole binding down: it destroys the applied recipe (clearing the feedback
+`destroy()` tears the whole binding down: it destroys the applied pattern (clearing the feedback
 variables it wrote, so a torn-down binding leaves the DOM plain — `apply-recipe.ts`) and removes every
 element. The binding leaves no residue.
 
 ---
 
-## 5. Recipes over bound data
+## 5. Patterns over bound data
 
-`bindData()` supplies the *participants*; a **recipe** (Paper 6) supplies the *behavior*. The two
+`bindData()` supplies the *participants*; a **pattern** (Paper 6) supplies the *behavior*. The two
 compose through one option and one flag, and the division of labor is clean enough to state in a
-sentence: the recipe frames *which* metrics are tracked and how they feed back; the per-record mapper
+sentence: the pattern frames *which* metrics are tracked and how they feed back; the per-record mapper
 owns the body tokens, the metric *values*, and the relationships — so the data drives the field, not a
 mock.
 
 Internally, when the binding's participant set changes it calls
 
 ```ts
-applyRecipe(container, recipe, {
+applyRecipe(container, pattern, {
   bodies: items,
   annotateBodies: false,   // keep the data's own data-body tokens
   reducedMotion: options.reducedMotion,
@@ -353,20 +353,20 @@ applyRecipe(container, recipe, {
 ```
 
 (`bind-data.ts`, `reapply()`.) The `annotateBodies: false` path is the key to the composition. By
-default `applyRecipe` *overwrites* each body's `data-body` attributes with the recipe's own body
+default `applyRecipe` *overwrites* each body's `data-body` attributes with the pattern's own body
 tokens (Paper 6); under `annotateBodies: false` it leaves the caller-owned tokens intact and still
-binds the recipe's metric→variable framework and discovers relationships
+binds the pattern's metric→variable framework and discovers relationships
 (`apply-recipe.ts`, `ApplyRecipeOptions`). This is exactly what data binding needs: the *mapper*
-decided that a search result is `['charge', 'link']` based on the record, and the *recipe*
+decided that a search result is `['charge', 'link']` based on the record, and the *pattern*
 (`trust-gradient`) decides that `confidence` is the tracked metric and `--field-confidence` is its
-output variable. Neither overwrites the other. The recipe contributes its compiled metric lane,
+output variable. Neither overwrites the other. The pattern contributes its compiled metric lane,
 feedback bindings, relationship discovery, and reduced-motion static surface; the data contributes the
 bodies that lane runs over.
 
-The recipe's *internals* — validation, compilation, the conformance gate that rejects non-real tokens,
+The pattern's *internals* — validation, compilation, the conformance gate that rejects non-real tokens,
 the metric/diagnostic catalog — are Paper 6's subject and are deferred here. What matters for the
-binding claim is only the contract: a recipe is a portable field program, and `bindData()` lets real
-data be the program's input. The same mechanism therefore inherits the recipe runtime's guarantees —
+binding claim is only the contract: a pattern is a portable field program, and `bindData()` lets real
+data be the program's input. The same mechanism therefore inherits the pattern runtime's guarantees —
 reduced-motion equivalence (a real static surface is installed when motion is reduced; Paper 4), live
 inspection (`applied().inspect()` reports measurements, resolved/unresolved relationships, and live
 metric lanes), and the lint self-audit — for free over data.
@@ -377,7 +377,7 @@ metric lanes), and the lint self-audit — for free over data.
 
 Four study pages ship under `apps/site/src/pages/docs/studies/`, each built *data-first*: the page
 renders nothing static for the field region; a `bindData()` call creates the bodies from records, and
-toggling "Field: off" re-binds *without a recipe*, so the same records still render as a plain
+toggling "Field: off" re-binds *without a pattern*, so the same records still render as a plain
 list/grid (the honest "before"). All four share a Field on/off toggle, a reduced-motion toggle, and a
 live `inspect()` readout (records · bodies · edges), driven by `mountBindStudy()`
 (`apps/site/src/lib/study.ts`). They demonstrate the *mechanism* across domains; they are concept
@@ -389,12 +389,12 @@ studies, not controlled experiments (§6.5).
 edges resolve against. The mapper maps each claim to
 `tokens: ['charge', 'link', 'cohesion']`, `strength: 0.6 + confidence * 0.6`, `feedback: true`,
 `metrics: { confidence }`, and `relationships: refs.map(r => ({ to: r.src, type: r.kind, strength:
-r.w }))` where `kind` is `supports` or `contradicts`. The `evidence-field` recipe turns the resolved
+r.w }))` where `kind` is `supports` or `contradicts`. The `evidence-field` pattern turns the resolved
 and conflicting edges into coherence and entropy; well-supported claims read coherent, contradicted
 claims gain entropy and read contested. The page's controls exercise the full lifecycle: *add claim*
 and *remove claim* drive id-diffed add/decay; *flip a source* flips a claim's first edge from
 `supports` to `contradicts` and `update()`s, re-shaping the field; *reduce motion* rebuilds the
-binding with the recipe's static surface. Confidence here is *supplied by the claim record*, never
+binding with the pattern's static surface. Confidence here is *supplied by the claim record*, never
 inferred from the presence of sources — the §3.3 constraint in action, and the concrete reason this
 demo is the data substrate for Paper 3's trust protocol.
 
@@ -402,7 +402,7 @@ demo is the data substrate for Paper 3's trust protocol.
 
 `studies/search-field.astro`. Results are records mapped to `tokens: ['charge', 'link']`,
 `strength: 0.4 + confidence`, `spin: polarity === 'contradict' ? -1 : 1`, `metrics: { confidence,
-recency }`, with real result markup supplied via `content`. The `trust-gradient` recipe turns each
+recency }`, with real result markup supplied via `content`. The `trust-gradient` pattern turns each
 result's confidence into a `--field-confidence` gradient on its border and title color, and a
 contradicting result stands apart (negative spin, a `contradicts` badge). Opening a result toggles
 `data-active`, which the runtime reads as engagement. A ranked `<ul>` becomes an evidence landscape in
@@ -413,8 +413,8 @@ real result records, with no per-result rendering logic beyond the mapper.
 
 `studies/review-field.astro`. This demo binds *two* groups: changed files
 (`tokens: ['link', 'tether', 'charge']`, `metrics: { heat, tension }`, via the `dependency-tension`
-recipe) and reviewers (`tokens: ['charge', 'link']`, `metrics: { attention }`, via the
-`review-constellation` recipe). Files heat by impact and blocked files hold tension; reviewers form a
+pattern) and reviewers (`tokens: ['charge', 'link']`, `metrics: { attention }`, via the
+`review-constellation` pattern). Files heat by impact and blocked files hold tension; reviewers form a
 constellation by attention. Review *comments* are static list items carrying
 `data-field-relation="affects"` / `data-field-target="#<file-id>"` anchors that resolve to the
 *data-bound* file elements by id — a relationship from hand-authored markup into the bound data,
@@ -427,7 +427,7 @@ structure.
 `studies/system-weather.astro`. Dashboard metric cards are records mapped to
 `tokens: ['gravity', 'thermal', 'pressure']`, `strength: 0.5 + heat`, `metrics: { heat, pressure }`,
 with card markup via `content` and an `anomaly` flag rendered as a badge. The `attention-weather`
-recipe turns supplied heat and pressure into `--field-heat`/`--field-pressure` that the CSS renders as
+pattern turns supplied heat and pressure into `--field-heat`/`--field-pressure` that the CSS renders as
 weather: hot or overloaded metrics gain weight and warmth, calm regions stay quiet. The aggregate
 "system pulse" is computed from the cards' heat. This is the alert-fatigue archetype from the flagship
 (Paper 1, §8.6) realized over a data-bound grid: priority is field-based, so calm stays calm.
@@ -456,12 +456,12 @@ register. Three properties follow from the model and are demonstrated by §6:
    demos express support/contradiction edges, relevance/heat priority, and confidence/entropy
    uncertainty — directly from records, through one mechanism — where the conventional rendering
    expresses none of them. The relationships live in the runtime's typed graph, not in per-view code.
-2. **No bespoke per-list code.** Each demo's field behavior is a *mapper plus a recipe*. The mapper is
-   a single pure function from record to `MappedRecord`; the recipe is a named, conformance-gated
+2. **No bespoke per-list code.** Each demo's field behavior is a *mapper plus a pattern*. The mapper is
+   a single pure function from record to `MappedRecord`; the pattern is a named, conformance-gated
    program (Paper 6). There is no hand-wired animation or per-row state machine; "no hand-wired
    behavior — the page comes from data" is the literal design note on each study.
 3. **Cross-domain reuse.** One mechanism spans evidence, search, code review, and operations
-   dashboards. The differences between the demos are entirely in their mappers and chosen recipes; the
+   dashboards. The differences between the demos are entirely in their mappers and chosen patterns; the
    binding, the lifecycle, the relationship discovery, and the feedback flush are identical across all
    four. This is the strongest available evidence that the binding is a *general* substrate and not
    four bespoke effects wearing one name.
@@ -477,7 +477,7 @@ selection, error rate on identifying the most-relevant or most-contradicted item
 evidence supports a decision (the canonical "source binding improves recall" hypothesis from the
 Evidence demo's own claim list). The field-off / field-on toggle and the deterministic, data-first
 construction make such an A/B both *possible* and *fair*: the two conditions are the same records and
-the same mapper, with the recipe attached or not. We state this strictly as a protocol; **no results
+the same mapper, with the pattern attached or not. We state this strictly as a protocol; **no results
 are reported**, consistent with the caveat canon.
 
 ---
@@ -540,8 +540,8 @@ interface. This paper presented the data-binding model that lets the data itself
 records map to bodies through a host-supplied mapper, record links map to typed graph edges the
 existing relationship registry discovers, and record state maps to supplied metrics that the runtime
 feeds back as `--field-*` properties. The model is realized by the shipped `bindData()` — deterministic
-id-diffed updates, updates as field transitions, removal as decay — and composes with the recipe
-runtime through `annotateBodies: false`, so a recipe supplies the behavior while the data supplies the
+id-diffed updates, updates as field transitions, removal as decay — and composes with the pattern
+runtime through `annotateBodies: false`, so a pattern supplies the behavior while the data supplies the
 participants. Four shipped demonstrations span evidence, search, review, and operations from one
 mechanism, with no bespoke per-list code. We were explicit that a binding is only as meaningful as its
 mapping, that confidence and risk are supplied and never invented, that large-set performance is
@@ -561,8 +561,8 @@ Every mechanism claim in this paper is checkable against the repository:
   `MappedBody` / `MappedRelationship` / `MappedRecord` / `RecordMapper` types, the pure `diffIds()`,
   `applyMapped()` (body tokens, metric attributes, relationship anchors), and the
   add/update/decay-on-remove render loop.
-- **Recipes over bound data:** `packages/dom/src/apply-recipe.ts` — the `annotateBodies: false`
-  path (keep caller-owned tokens while binding the recipe's metrics), supplied-metric handling in the
+- **Patterns over bound data:** `packages/dom/src/apply-recipe.ts` — the `annotateBodies: false`
+  path (keep caller-owned tokens while binding the pattern's metrics), supplied-metric handling in the
   compute/state phases, the absent-metric clear, the reduced-motion static surface, and the
   resolved/unresolved relationship inspection.
 - **Metric provenance:** `packages/dom/src/metrics.ts` — `METRIC_KINDS`, the SUPPLIED-ONLY

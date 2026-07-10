@@ -25,7 +25,7 @@
 //     HONESTY: triage is a LOCAL SANDBOX — the arrangement persists to localStorage only;
 //     GitHub is never written.
 // The scoped field runs render-less (applyPattern renderless) — particles compute (metrics flow) but are never drawn.
-import { recipeById, weightToStrength } from "@fundamental-engine/core";
+import { patternById, weightToStrength } from "@fundamental-engine/core";
 import { applyPattern, threadOverlay, withFlip as flipReflow } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { pageRuntime } from "../../lib/page-runtime";
@@ -268,7 +268,7 @@ function initBacklog(page: HTMLElement): () => void {
     activeField = null;
     if (!fieldOn || !zone) return;
     try {
-      const base = recipeById("evidence-field");
+      const base = patternById("evidence-field");
       if (base) {
         // renderless — invisible; metrics gain the attention + recency lanes. Attention:
         // the pipeline writes an eased --field-attention (hover/focus + viewport-center

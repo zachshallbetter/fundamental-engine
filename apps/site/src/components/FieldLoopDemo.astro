@@ -56,7 +56,7 @@ const Tag = tag as any;
 
 <script>
   import { applyPattern } from '@fundamental-engine/dom';
-  import { recipeById } from '@fundamental-engine/core';
+  import { patternById } from '@fundamental-engine/core';
   import { pageRuntime } from '../lib/page-runtime';
 
   // applyPattern registers bodies and a scoped platform per .field-loop and writes --field-* back.
@@ -68,7 +68,7 @@ const Tag = tag as any;
     const applied: Array<{ destroy?: () => void }> = [];
     const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     for (const root of document.querySelectorAll<HTMLElement>('.field-loop[data-field-root]')) {
-      const recipe = recipeById(root.dataset.recipe || 'priority-well');
+      const recipe = patternById(root.dataset.recipe || 'priority-well');
       const metric = root.dataset.metric || 'priority';
       const bodies = [...root.querySelectorAll<HTMLElement>('.fl-body')];
       // the supplied value lives on data-field-strength for authoring clarity; applyPattern reads the
