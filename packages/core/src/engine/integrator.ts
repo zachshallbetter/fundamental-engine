@@ -481,8 +481,10 @@ export function step(input: StepInput): void {
         // 1 = neutral (the default, so the live field is untouched until opted in).
         const attn = b.attn ?? 1;
         // the composed effective-strength multiplier: resonate's S(t) × the attention
-        // budget × the screen attenuation. 1 ⇒ the untouched fast path.
-        const mul = sMul * attn * screenMul;
+        // budget × the screen attenuation × the focus well. 1 ⇒ the untouched fast path.
+        // focusMul (EXPERIMENTAL, ≥1, clamped) deepens a FOCUSED body's forces so the field gathers
+        // where attention currently is; `undefined` when unfocused, preserving the `mul === 1` fast path.
+        const mul = sMul * attn * screenMul * (b.focusMul ?? 1);
         if (!hasModifier && mul === 1) {
           for (const tok of b.tokens) {
             const f = forces[tok];

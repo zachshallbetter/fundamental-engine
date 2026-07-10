@@ -12,6 +12,7 @@ export * from './gallery.ts';
 export * from './wayfinding.ts';
 export * from './charge.ts';
 export * from './gravity.ts';
+export * from './focus.ts';
 export * from './explain.ts';
 export * from './compile.ts';
 

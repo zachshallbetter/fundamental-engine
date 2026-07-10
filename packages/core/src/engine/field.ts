@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AgentCapability, AgentFieldView, AgentViewOptions, AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldPolicy, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldBodyIdentity, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, ProjectionSource, FieldProjectionTarget, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, SnapshotProfile, Vec2, Vec3 } from './types.ts';
+import type { AgentCapability, AgentFieldView, AgentViewOptions, AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldPolicy, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldBodyIdentity, FocusSource, FocusInput, FocusState, FocusReadOptions, FocusEntry, FocusSourceShare, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, ProjectionSource, FieldProjectionTarget, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, SnapshotProfile, Vec2, Vec3 } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -46,6 +46,7 @@ import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { defaultFeedbackSink } from './feedback-sink.ts';
 import { thermoMetrics } from './thermo.ts';
 import { attentionMuls } from './attention.ts';
+import { freshness } from './temporal.ts';
 import { updateRelationship, type RelationshipAgent } from '../agents/relationship.ts';
 import { Thresholder } from '../agents/event-agent.ts';
 import { spillover } from './causality.ts';
@@ -187,6 +188,25 @@ function applyRedactions<T extends Record<string, unknown>>(reading: T, redactio
   }
   return reading;
 }
+
+// ── Focus / attention substrate (experimental) constants ────────────────────────────────────────
+/** default half-life of a focus deposit, in the field's simulation-clock unit (env.t SECONDS) — attention
+ *  halves in ~8s. freshness() is unit-agnostic, so at/now/halfLife share env.t's unit (seconds). */
+const DEFAULT_FOCUS_HALF_LIFE = 8;
+/** default cap on the focusState() sharp-tip digest. */
+const DEFAULT_FOCUS_LIMIT = 8;
+/** default salience floor for the sharp tip — drop entries below this. */
+const DEFAULT_FOCUS_THRESHOLD = 0.05;
+/** GC floor: drop a ledger source (and clear a body's salience) once its decayed weight falls below this. */
+const FOCUS_FLOOR = 0.02;
+/** focus-well gain: salience 1 → focusMul 1 + gain (a focused body's forces deepen by up to this fraction).
+ *  DORMANT by default (0): focus is a pure attention SIGNAL (salience + event + focusState) that moves no
+ *  matter — signals-first. The integrator seam (Body.focusMul) is wired and tested-inert; raising the gain
+ *  (a follow-up knob) activates the salience-driven well. Mirrors the codebase's declared-not-yet-active
+ *  idiom (e.g. FieldBudgets.attention). Clamped by FOCUS_MUL_MAX so activation can't destabilize. */
+const FOCUS_GAIN = 0;
+/** hard clamp on focusMul so an activated focus well can never destabilize the integrator. */
+const FOCUS_MUL_MAX = 2;
 
 export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}): FieldHandle {
   // Signals-only mode (`render: 'none'`, §13.7 / #297): the full simulation + feedback pipeline
@@ -492,11 +512,111 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     return ident;
   };
   const bodyId = (b: Body): string => bodyIdentity(b).id;
+
+  // ── Focus / attention ledger (experimental) — identity-keyed, source-tagged, decaying ──────────
+  // focus() deposits here; applyFocus() joins it to present bodies each frame (salience + the focus
+  // well); focusState() reads the ranked tip; metrics.salience surfaces the aggregate. Identity-keyed,
+  // so a deposit for a not-yet-scanned entity (e.g. 'card:9f3a') is retained until its body appears and
+  // then binds. Opt-in: an empty ledger is the byte-identical fast path (applyFocus returns at once).
+  const focusLedger = new Map<string, Map<FocusSource, { mass: number; at: number; halfLife: number }>>();
+  const focusIdentities = new Map<string, FieldBodyIdentity>();
+  const ledgerSalienceAt = (id: string, now: number): number => {
+    const perSource = focusLedger.get(id);
+    if (!perSource) return 0;
+    let s = 0;
+    for (const c of perSource.values()) s += c.mass * freshness(c.at, now, c.halfLife);
+    return s > 1 ? 1 : s;
+  };
+  function depositFocus(target: string | FieldBodyIdentity, input?: FocusInput): void {
+    const identity: FieldBodyIdentity = typeof target === 'string' ? { id: target } : target;
+    const id = identity.id;
+    if (!id) return; // the only no-op: a target with no id (an absent field short-circuits at the plane proxy)
+    const amount = input?.amount ?? 1;
+    const source: FocusSource = input?.source ?? 'system';
+    const halfLife = input?.halfLife ?? DEFAULT_FOCUS_HALF_LIFE;
+    const at = input?.at ?? env.t;
+    // remember the richest identity we've seen for this id (for the reading / event / write-back address).
+    if (typeof target !== 'string' && (identity.namespace || identity.kind || identity.host)) focusIdentities.set(id, identity);
+    let perSource = focusLedger.get(id);
+    if (!perSource) focusLedger.set(id, (perSource = new Map()));
+    const prev = perSource.get(source);
+    // decay-then-add accumulation: age the running mass to `at`, then add this deposit.
+    const decayedPrev = prev ? prev.mass * freshness(prev.at, at, prev.halfLife) : 0;
+    const mass = decayedPrev + amount;
+    perSource.set(source, { mass, at, halfLife });
+    busEmit('focus', {
+      target: id,
+      identity: focusIdentities.get(id) ?? identity,
+      source,
+      amount,
+      salience: ledgerSalienceAt(id, at),
+      sourceSalience: mass > 1 ? 1 : mass,
+      frame: frameN,
+      time: at,
+    });
+  }
+  function focusStateImpl(readOpts?: FocusReadOptions): FocusState {
+    const now = env.t;
+    const limit = readOpts?.limit ?? DEFAULT_FOCUS_LIMIT;
+    const threshold = readOpts?.threshold ?? DEFAULT_FOCUS_THRESHOLD;
+    const srcFilter = readOpts?.source;
+    const weightIn = (sources: FocusSourceShare[]): number => sources.find((s) => s.source === srcFilter)?.weight ?? 0;
+    const entries: FocusEntry[] = [];
+    for (const [id, perSource] of focusLedger) {
+      const sources: FocusSourceShare[] = [];
+      let salience = 0;
+      let updatedAt = 0;
+      for (const [src, c] of perSource) {
+        const w = c.mass * freshness(c.at, now, c.halfLife);
+        if (w <= 0) continue;
+        salience += w;
+        if (c.at > updatedAt) updatedAt = c.at;
+        sources.push({ source: src, weight: w > 1 ? 1 : w, updatedAt: c.at });
+      }
+      if (salience > 1) salience = 1;
+      if ((srcFilter ? weightIn(sources) : salience) < threshold) continue;
+      sources.sort((a, b) => b.weight - a.weight);
+      entries.push({ target: id, identity: focusIdentities.get(id) ?? { id }, salience, sources, updatedAt });
+    }
+    entries.sort((a, b) => (srcFilter ? weightIn(b.sources) - weightIn(a.sources) : b.salience - a.salience));
+    return { frame: frameN, time: now, entries: entries.slice(0, limit) };
+  }
+  // Per-frame: decay + GC the ledger, then join it to present bodies (salience + the focus-well
+  // multiplier). Runs before step() so the integrator reads this frame's focusMul. O(bodies) only when
+  // the ledger is non-empty; an empty ledger is a no-op (the fast path preserving mul === 1).
+  function applyFocus(): void {
+    if (focusLedger.size === 0) return;
+    const now = env.t;
+    for (const [id, perSource] of focusLedger) {
+      for (const [src, c] of perSource) {
+        if (c.mass * freshness(c.at, now, c.halfLife) < FOCUS_FLOOR) perSource.delete(src);
+      }
+      if (perSource.size === 0) {
+        focusLedger.delete(id);
+        focusIdentities.delete(id);
+      }
+    }
+    for (const b of bodies) {
+      const sal = ledgerSalienceAt(bodyId(b), now);
+      if (sal > FOCUS_FLOOR) {
+        b.salience = sal;
+        // the focus well — dormant while FOCUS_GAIN is 0 (fm === 1 ⇒ focusMul undefined ⇒ integrator fast path).
+        const fm = 1 + FOCUS_GAIN * sal;
+        b.focusMul = fm > 1 ? Math.min(FOCUS_MUL_MAX, fm) : undefined;
+        if (b.identity && !focusIdentities.has(b.identity.id)) focusIdentities.set(b.identity.id, b.identity);
+      } else {
+        if (b.salience !== undefined) b.salience = undefined;
+        if (b.focusMul !== undefined) b.focusMul = undefined;
+      }
+    }
+  }
+
   // Shared metric/dimension reading for query() and snapshot(), so both compute identically (diff
   // compares snapshot metrics — they must agree with what query() reports).
   const readBodyMetrics = (b: Body): { metrics: Record<string, number>; dimensions: Record<string, number> } => {
     const metrics: Record<string, number> = { density: b.d, count: b.count, engaged: b.on ? 1 : 0 };
     if (b.attn !== undefined) metrics.attention = b.attn;
+    if (b.salience !== undefined) metrics.salience = b.salience; // EXPERIMENTAL: net decayed directed focus (base-grant read)
     if (b.capacity > 0) metrics.load = b.accreted / b.capacity;
     const dimensions: Record<string, number> = b.metrics
       ? { entropy: b.metrics.entropy, coherence: b.metrics.coherence, temperature: b.metrics.temperature }
@@ -2801,6 +2921,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
     store.reindex();
     applyAttention();
+    applyFocus(); // EXPERIMENTAL: decay + GC the focus ledger, join it to bodies (salience + focus well) before step()
     if (env.dt) induceCharges(bodies, store.particles); // polarize neutral matter near charge/magnetism bodies (§20.10)
     // flow focus (field.flowTo): nudge free matter toward the moving target before integration, so
     // it visibly streams in. The streamline render bends toward it too (see drawField).
@@ -3117,6 +3238,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // `replay` is present ONLY when granted — the facade's shape reflects the capability.
       if (has('read:replay')) {
         view.replay = (a, b, replayOpts) => handle.replay(a, b, replayOpts);
+      }
+      // `focusState` is present ONLY when `read:focus` is granted — the ranked tip + the per-source
+      // provenance split (WHO is focused, the sensitive dimension). The aggregate per-body `salience`
+      // still rides query()/snapshot() metrics under the always-on base grant (that's the feature — an
+      // agent should see WHERE attention is). The view stays read-only: no focus() mutator (host-relay).
+      if (has('read:focus')) {
+        view.focusState = (focusOpts) => {
+          const s = handle.focusState(focusOpts);
+          return agentReadOpen() ? s : { frame: s.frame, time: s.time, entries: [] };
+        };
       }
       return Object.freeze(view);
     },
@@ -3581,6 +3712,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       return { x: 0, y: 0 };
     },
     grid: (name) => env.grid(name),
+    focus: (target, input) => depositFocus(target, input),
+    focusState: (readOpts) => focusStateImpl(readOpts),
     on: <K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void) => {
       let set = busListeners.get(type);
       if (!set) { set = new Set(); busListeners.set(type, set); }

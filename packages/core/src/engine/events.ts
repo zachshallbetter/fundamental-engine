@@ -5,7 +5,7 @@
  * comma-separated). Rising-edge debounced: fires once on cross, re-arms on reset.
  */
 
-import type { Body } from './types.ts';
+import type { Body, FocusEvent } from './types.ts';
 
 // ── host-agnostic discrete event bus (the read side, occurrences not state) ──────────────────
 // Plain-data push delivery a non-DOM host (3D/native/headless) can subscribe to with
@@ -24,6 +24,9 @@ export interface FieldEventMap {
   exit: { body: Body; other: Body };
   /** two bodies came into contact — their boxes touched/overlapped (#441), once on the rising edge. */
   met: { a: Body; b: Body };
+  /** EXPERIMENTAL: a `focus()` deposit landed — the write-back channel + append-only provenance receipt.
+   *  Flat payload (no `Body` ref) so it serializes and mirrors 1:1 to the ports. */
+  focus: FocusEvent;
 }
 export type FieldEventType = keyof FieldEventMap;
 
@@ -50,6 +53,13 @@ export class FieldEventCoalescer {
 
   /** Coalescing key for an occurrence — "per (element, type)" for state events, per-pair for relational. */
   keyOf<K extends FieldEventType>(type: K, payload: FieldEventMap[K]): string {
+    if (type === 'focus') {
+      // flat payload (no Body ref) → key by (target, source) so operator + agent deposits on the SAME
+      // body in one frame both survive (last-wins per source, not per body — the agent write-back is
+      // never dropped). MUST precede the default branch, which dereferences payload.body.
+      const p = payload as FieldEventMap['focus'];
+      return `focus:${p.target}:${p.source}`;
+    }
     if (type === 'met') {
       const p = payload as FieldEventMap['met'];
       const [x, y] = [this.idOf((p.a.el as object) ?? p.a), this.idOf((p.b.el as object) ?? p.b)].sort((m, n) => m - n);

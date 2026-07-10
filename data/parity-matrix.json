@@ -50,7 +50,9 @@
         "feedReducedMotion",
         "feedScrollV",
         "flowTo",
+        "focus",
         "focusAt",
+        "focusState",
         "forAgent",
         "grid",
         "on",
@@ -98,7 +100,7 @@
         "tick"
       ],
       "counts": {
-        "js": 50,
+        "js": 52,
         "swift": 56,
         "kotlin": 59
       },
@@ -116,7 +118,9 @@
           "diff",
           "energy",
           "flowTo",
+          "focus",
           "focusAt",
+          "focusState",
           "forAgent",
           "grid",
           "on",
@@ -373,10 +377,22 @@
           "kotlin": true
         },
         {
+          "symbol": "focus",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
           "symbol": "focusAt",
           "js": true,
           "swift": true,
           "kotlin": true
+        },
+        {
+          "symbol": "focusState",
+          "js": true,
+          "swift": false,
+          "kotlin": false
         },
         {
           "symbol": "forAgent",
