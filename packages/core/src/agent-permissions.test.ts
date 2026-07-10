@@ -186,8 +186,8 @@ test('forAgent: budgets.agentRead === 0 closes the surface to the most-restricte
 // build until it is placed — into AGENT_EXPOSED (and the facade is extended to serve it) or
 // AGENT_WITHHELD (kept off the agent surface on purpose).
 
-// The methods the agent facade DOES surface (read-only; `replay` is capability-gated but still exposed).
-const AGENT_EXPOSED = new Set<string>(['query', 'snapshot', 'replay']);
+// The methods the agent facade DOES surface (read-only; `replay`/`focusState` are capability-gated but still exposed).
+const AGENT_EXPOSED = new Set<string>(['query', 'snapshot', 'replay', 'focusState']);
 
 // Every other FieldHandle method — mutators, lifecycle, low-level readers — kept OFF the agent view.
 const AGENT_WITHHELD = new Set<string>([
@@ -208,6 +208,8 @@ const AGENT_WITHHELD = new Set<string>([
   'diff',
   // events + the facade factory itself are never re-exposed through the facade
   'on', 'forAgent',
+  // focus() is a WRITE (the read-only view can never write; agent writes go through the host relay)
+  'focus',
 ]);
 
 test('forAgent: every FieldHandle method is explicitly exposed OR withheld (facade drift guard)', () => {
@@ -247,7 +249,7 @@ test('forAgent: a fully-granted agent view exposes ONLY the AGENT_EXPOSED method
     const view = field.forAgent({
       capabilities: [
         'read:metrics', 'read:relationships', 'read:influences', 'read:body-data',
-        'read:snapshots', 'read:replay', 'read:projections',
+        'read:snapshots', 'read:replay', 'read:projections', 'read:focus',
       ],
     });
     const viewMethods = new Set(

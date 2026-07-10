@@ -591,6 +591,10 @@ export class FieldField extends HTMLElementBase {
   grid(name: string): ScalarGrid {
     return this.field?.grid(name) ?? NULL_GRID;
   }
+  // EXPERIMENTAL focus/attention substrate: the field-focus WRITE + read (`focus()` / `focusState()`) are
+  // NOT proxied onto this custom element on purpose — `HTMLElement.focus()` is the element's DOM/keyboard
+  // focus and must stay that way (accessibility). Reach the field-focus surface through the handle:
+  // `el.handle?.focus('file:src/auth.ts', { source: 'operator' })` and `el.handle?.focusState()`.
   /** subscribe to a discrete field event (absorb/release/settle); a no-op unsubscribe until the field starts. */
   on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void {
     return this.field?.on(type, cb) ?? (() => {});

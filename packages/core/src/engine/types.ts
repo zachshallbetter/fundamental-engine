@@ -186,6 +186,88 @@ export interface FieldBodyIdentity {
   host?: string;
 }
 
+// ── Focus / attention substrate (experimental) ──────────────────────────────────────────────────
+// A shared, source-tagged, decaying attention ledger: focus() writes it, focusState() + metrics.salience
+// read it, and the `focus` event carries the write-back. Operator attention is an input; an agent's is an
+// output (the host relays it) — one channel distinguished only by `source`. Zero DOM; runs under
+// render:'none'. Decay is temporal.freshness (half-life, the field's env.t clock — no Date.now).
+
+/** Who directed a focus deposit. Open union so multi-agent tags ride along (e.g. `'agent:planner'`). */
+export type FocusSource = 'operator' | 'agent' | 'system' | (string & {});
+
+/** One focus deposit's parameters. */
+export interface FocusInput {
+  /** the deposit's weight (default `1`). Accumulates decay-then-add onto the source's running mass. */
+  amount?: number;
+  /** who directed it (default `'system'` on the raw handle; the host stamps `'operator'` / `'agent'`). */
+  source?: FocusSource;
+  /** the deposit's half-life, in the field's simulation-clock unit (`env.t` SECONDS, matching
+   *  {@link FocusState}`.time`) — how fast this attention goes stale (default ~8). */
+  halfLife?: number;
+  /** the deposit's timestamp on the simulation clock (`env.t` seconds; default the field's current `env.t`);
+   *  backdates a stale focus. Same unit as {@link FocusState}`.time`. */
+  at?: number;
+}
+
+/** One source's decayed contribution to a body's salience — the provenance split (who is focused here). */
+export interface FocusSourceShare {
+  source: FocusSource;
+  /** the source's decayed weight at read time, clamped `0..1`. */
+  weight: number;
+  /** when this source last deposited (simulation clock). */
+  updatedAt: number;
+}
+
+/** A focused entity in a {@link FocusState} reading — who (sources), how hot (salience), where (identity). */
+export interface FocusEntry {
+  /** the entity's addressable id (the focus target; equals `identity.id`). */
+  target: string;
+  /** the entity's first-class identity (see {@link FieldBodyIdentity}) — the id for a write-back. */
+  identity: FieldBodyIdentity;
+  /** net decayed directed focus, clamped `0..1`. */
+  salience: number;
+  /** the per-source split (present in an agent view only with `read:focus`). */
+  sources: FocusSourceShare[];
+  /** the most recent deposit's timestamp (simulation clock). */
+  updatedAt: number;
+}
+
+/** Options for {@link FieldHandle.focusState} — bound the sharp-tip digest. All optional. */
+export interface FocusReadOptions {
+  /** max entries returned (default `8`). */
+  limit?: number;
+  /** drop entries below this salience (default `0.05`). */
+  threshold?: number;
+  /** rank + filter by ONE source's decayed weight instead of net salience. */
+  source?: FocusSource;
+}
+
+/** The current-focus digest — small, ranked, thresholded; cheap to push into an agent turn. */
+export interface FocusState {
+  frame: number;
+  /** the simulation clock at read time (matches {@link FieldQueryResult}`.time`). */
+  time: number;
+  /** entries ranked desc by salience (or by `opts.source` weight), thresholded, capped. */
+  entries: FocusEntry[];
+}
+
+/** The `focus` discrete event — the write-back channel AND an append-only, timestamped provenance receipt. */
+export interface FocusEvent {
+  /** the focused entity's addressable id. */
+  target: string;
+  identity: FieldBodyIdentity;
+  /** who directed this deposit. */
+  source: FocusSource;
+  /** this deposit's weight. */
+  amount: number;
+  /** the entity's net decayed salience after this deposit, clamped `0..1`. */
+  salience: number;
+  /** this source's decayed running mass after this deposit, clamped `0..1`. */
+  sourceSalience: number;
+  frame: number;
+  time: number;
+}
+
 /**
  * A registered DOM element acting as a force source (§3.1). Parsed from
  * `data-*` attributes; the runtime fields are refreshed each scan/frame.
@@ -300,6 +382,12 @@ export interface Body {
   d: number;
   /** conserved-attention effective-strength multiplier (§2.4); 1 = neutral. */
   attn?: number;
+  /** EXPERIMENTAL (focus substrate): this body's net decayed directed focus ∈ [0,1], joined from the
+   *  focus ledger each frame; `undefined` when unfocused (the fast path). Surfaces as `metrics.salience`. */
+  salience?: number;
+  /** EXPERIMENTAL (focus substrate): the focus-well strength multiplier derived from `salience` (≥1,
+   *  clamped), applied at the integrator; `undefined` = neutral (preserves the `mul === 1` fast path). */
+  focusMul?: number;
   /** fractional-emission accumulator for a budgeted [S] source (`spawn`) — carries the
    *  sub-1/frame remainder when the rate is clamped to `cap / life`. Runtime state. */
   emitAcc?: number;
@@ -1161,7 +1249,10 @@ export type AgentCapability =
   | 'read:body-data'
   | 'read:projections'
   | 'read:diagnostics'
-  | 'read:replay';
+  | 'read:replay'
+  /** EXPERIMENTAL: gates the {@link AgentFieldView.focusState} digest + the per-source provenance split.
+   *  The aggregate per-body `salience` still rides `query()`/`snapshot()` under the base grant. */
+  | 'read:focus';
 
 /** Options for {@link FieldHandle.forAgent} — the capability grant + optional redaction list. */
 export interface AgentViewOptions {
@@ -1196,6 +1287,11 @@ export interface AgentFieldView {
   /** narrate how the field changed between two snapshots — present ONLY when `read:replay` is granted
    *  (otherwise `undefined`, so the facade's shape reflects the grant). */
   replay?(a: FieldSnapshot, b: FieldSnapshot, opts?: ReplayOptions): CausalReplay;
+  /** the current-focus digest — present ONLY when `read:focus` is granted (otherwise `undefined`, so the
+   *  facade's shape reflects the grant). Read-only, like the rest of the view. The aggregate per-body
+   *  `salience` still rides `query()`/`snapshot()` metrics; this adds the ranked tip with the per-source
+   *  provenance split (who is focused where). */
+  focusState?(opts?: FocusReadOptions): FocusState;
 }
 
 /** A body captured in a {@link FieldSnapshot}. */
@@ -1703,12 +1799,31 @@ export interface FieldHandle {
    */
   grid(name: string): ScalarGrid;
   /**
+   * EXPERIMENTAL — deposit source-tagged, decaying **focus** onto a body by identity: the write side of
+   * the shared attention channel. `focus('file:src/auth.ts', { source: 'operator' })`. Operator/host
+   * attention is an input; an agent's is an output — the host relays `field.focus(id, { source: 'agent' })`
+   * so the read-only agent view can never write. Deposits accumulate decay-then-add per source (decay is
+   * `temporal.freshness`, the `env.t` clock — no `Date.now`); each fires the `focus` event and surfaces as
+   * `metrics.salience` + in {@link focusState}. A string target ALWAYS records (retained until a body with
+   * that id appears, then it binds). The only no-op is the absent-field case (e.g. a detached `<field-root>`).
+   */
+  focus(target: string | FieldBodyIdentity, input?: FocusInput): void;
+  /**
+   * EXPERIMENTAL — read the current-focus digest: the ranked, thresholded, capped "sharp tip" (a few
+   * hundred bytes), small enough to push into an agent turn each turn. Net breadth — any body's focus
+   * magnitude — rides `query()`/`snapshot()` via `metrics.salience`; this is the tip, with the per-source
+   * provenance split (who is focused where).
+   */
+  focusState(opts?: FocusReadOptions): FocusState;
+  /**
    * Subscribe to a discrete **field event** — the engine's host-agnostic push bus, for reacting to
    * *occurrences* instead of polling the continuous feedback channels each frame. Returns an
    * unsubscribe function. Plain data, no DOM (distinct from the `data-on` CustomEvent bindings a DOM
-   * host uses). Events: `absorb` / `release` — a `sink` body captured / let go of matter (the rising
-   * / falling edge of accretion), `{ body, count }`. Detection is lazy: a type with no listener costs
-   * nothing. (`contact`, `settle`, and per-particle `enter`·`exit` are the next slice — see #441.)
+   * host uses). Events: `captured` / `released` — a `sink` body captured / let go of matter (the rising
+   * / falling edge of accretion), `{ body, count }`; `enter` / `exit` — another body crossed INTO / OUT
+   * of a body's `range`, `{ body, other }`; `met` — two bodies' boxes touched, `{ a, b }`; `focus` — a
+   * `focus()` deposit landed (the write-back channel + provenance receipt), a flat {@link FocusEvent}.
+   * Detection is lazy: a type with no listener costs nothing.
    */
   on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void;
   /**

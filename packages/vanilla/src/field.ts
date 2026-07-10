@@ -229,6 +229,14 @@ export class FieldField implements FieldHandle {
   grid(name: string): ScalarGrid {
     return this.field.grid(name);
   }
+  /** EXPERIMENTAL: deposit source-tagged, decaying focus onto a body by identity (the write side). */
+  focus(target: Parameters<FieldHandle['focus']>[0], input?: Parameters<FieldHandle['focus']>[1]): void {
+    this.field.focus(target, input);
+  }
+  /** EXPERIMENTAL: read the current-focus digest (the ranked, thresholded sharp tip). */
+  focusState(opts?: Parameters<FieldHandle['focusState']>[0]): ReturnType<FieldHandle['focusState']> {
+    return this.field.focusState(opts);
+  }
   /** subscribe to a discrete field event (absorb/release/settle); returns an unsubscribe fn. */
   on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void {
     return this.field.on(type, cb);

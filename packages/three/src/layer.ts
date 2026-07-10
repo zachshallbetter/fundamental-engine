@@ -322,6 +322,14 @@ export class FieldLayer implements FieldHandle {
   grid(name: string): ScalarGrid {
     return this.field.grid(name);
   }
+  /** EXPERIMENTAL: deposit source-tagged, decaying focus onto a body by identity (the write side). */
+  focus(target: Parameters<FieldHandle['focus']>[0], input?: Parameters<FieldHandle['focus']>[1]): void {
+    this.field.focus(target, input);
+  }
+  /** EXPERIMENTAL: read the current-focus digest (the ranked, thresholded sharp tip). */
+  focusState(opts?: Parameters<FieldHandle['focusState']>[0]): ReturnType<FieldHandle['focusState']> {
+    return this.field.focusState(opts);
+  }
   /** relate two programmatic bodies (the `FieldHandle.addEdge` form) — delegated to the engine. */
   addEdge(a: BodyHandle, b: BodyHandle, opts?: { type?: string; strength?: number; direction?: 'from-to' | 'to-from' | 'bidirectional' }): EdgeHandle {
     return this.field.addEdge(a, b, opts);
