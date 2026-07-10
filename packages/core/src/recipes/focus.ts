@@ -3,10 +3,10 @@ import type { FieldPattern } from './schema.ts';
 /**
  * FOCUS_WELL (experimental) — the authored "focus" unit for the focus/attention substrate. A single
  * `attract` well that gathers the field toward whatever the operator or an agent is currently focused
- * on. The host writes attention with `field.focus(id, { source })` and reads each focused entity's
- * `metrics.salience` back from the focus ledger (decaying via temporal.freshness). The salience-driven
- * integrator coupling (a focused body's attract deepening as attention freshens) is wired but DORMANT by
- * default — signals-first; the well here is the plain `attract`, which the host can size from salience.
+ * on. The host writes attention with `field.focus(id, { source })`; each focused entity's `attract`
+ * deepens (up to ~2×, clamped) as its `metrics.salience` freshens and relaxes as it goes stale
+ * (temporal.freshness) — so the field visibly gathers toward whatever is currently focused, and any
+ * unfocused body keeps its baseline pull.
  *
  * Signals-first: runs under `render: 'none'` feeding `focusState()` with zero pixels drawn; the
  * `heatmap` layer is the opt-in visual (source-tinted operator-vs-agent heat is a later render slice).

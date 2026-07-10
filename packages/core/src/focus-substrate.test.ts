@@ -49,6 +49,24 @@ const makeField = (opts = {}): ReturnType<typeof createField> & { _step: (n: num
   return field;
 };
 const rectAt = (x: number, y: number) => () => ({ left: x - 20, top: y - 20, width: 40, height: 40 });
+/** a seeded PRNG so two fields evolve identically except for the variable under test. */
+function mulberry32(seed: number): () => number {
+  let a = seed;
+  return () => {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const meanDistTo = (field: ReturnType<typeof createField>, cx: number, cy: number): number => {
+  const out = new Float32Array(field.particleCount() * 5);
+  const n = field.readParticles(out);
+  if (n === 0) return 0;
+  let sum = 0;
+  for (let i = 0; i < n; i++) sum += Math.hypot((out[i * 5] ?? 0) - cx, (out[i * 5 + 1] ?? 0) - cy);
+  return sum / n;
+};
 const salOf = (field: ReturnType<typeof createField>, id: string): number =>
   field.focusState({ threshold: 0, limit: 50 }).entries.find((e) => e.target === id)?.salience ?? -1;
 
@@ -170,6 +188,27 @@ test('focus: degrades quietly — empty field is an empty digest; an empty-id ta
     field.focus({ id: '' }, { amount: 1 });
     assert.equal(field.focusState().entries.length, 0, 'an empty-id target records nothing');
   } finally { field.destroy(); }
+});
+
+test('focus well (active): a focused attract body gathers matter tighter than an unfocused control', () => {
+  const seed = 1234;
+  const control = makeField({ rng: mulberry32(seed) });
+  const focused = makeField({ rng: mulberry32(seed) }); // identical initial matter
+  try {
+    for (const f of [control, focused])
+      f.addBody({ tokens: 'attract', identity: 'well', strength: 1.4, range: 700, rect: rectAt(500, 400) });
+    control._step(2);
+    focused._step(2);
+    focused.focus('well', { amount: 1, source: 'operator', at: focused.focusState().time }); // salience → 1 → focusMul → 2×
+    control._step(60);
+    focused._step(60); // same total frames, same rng — the only difference is the focus well
+    const dControl = meanDistTo(control, 500, 400);
+    const dFocused = meanDistTo(focused, 500, 400);
+    assert.ok(dFocused < dControl, `focused well pulls matter tighter: focused ${dFocused.toFixed(1)} < control ${dControl.toFixed(1)}`);
+  } finally {
+    control.destroy();
+    focused.destroy();
+  }
 });
 
 test('FOCUS_WELL Pattern validates and lives in EXPERIMENTAL_PATTERNS, not the locked 64', () => {

@@ -199,13 +199,13 @@ const DEFAULT_FOCUS_LIMIT = 8;
 const DEFAULT_FOCUS_THRESHOLD = 0.05;
 /** GC floor: drop a ledger source (and clear a body's salience) once its decayed weight falls below this. */
 const FOCUS_FLOOR = 0.02;
-/** focus-well gain: salience 1 → focusMul 1 + gain (a focused body's forces deepen by up to this fraction).
- *  DORMANT by default (0): focus is a pure attention SIGNAL (salience + event + focusState) that moves no
- *  matter — signals-first. The integrator seam (Body.focusMul) is wired and tested-inert; raising the gain
- *  (a follow-up knob) activates the salience-driven well. Mirrors the codebase's declared-not-yet-active
- *  idiom (e.g. FieldBudgets.attention). Clamped by FOCUS_MUL_MAX so activation can't destabilize. */
-const FOCUS_GAIN = 0;
-/** hard clamp on focusMul so an activated focus well can never destabilize the integrator. */
+/** focus-well gain: salience 1 → focusMul 1 + gain (a focused body's forces deepen by up to this fraction,
+ *  clamped by FOCUS_MUL_MAX). ACTIVE: the field GATHERS where attention currently is — matter is pulled
+ *  harder toward a focused attract body and relaxes as that salience goes stale (temporal.freshness). Any
+ *  UNfocused body keeps the `mul === 1` fast path (focusMul stays undefined below the floor); bounded by
+ *  FOCUS_MUL_MAX so a focused body can never destabilize the integrator. */
+const FOCUS_GAIN = 1.0;
+/** hard clamp on focusMul so a focused body can never destabilize the integrator. */
 const FOCUS_MUL_MAX = 2;
 
 export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}): FieldHandle {
