@@ -10,8 +10,8 @@ test.describe("/recipes · solution-finder catalog", () => {
     await expect(page.locator(".ex-card")).toHaveCount(64);
     // All + nine problem domains + Platform & Teaching
     await expect(page.locator(".ex-pill")).toHaveCount(11);
-    // experimental recipes are preserved as a linked section
-    await expect(page.locator(".ex-exp-list li")).toHaveCount(4);
+    // experimental patterns are preserved as a linked section (incl. the new focus-well)
+    await expect(page.locator(".ex-exp-list li")).toHaveCount(5);
   });
 
   test("a domain filter narrows the result count and marks itself active", async ({ page }) => {
