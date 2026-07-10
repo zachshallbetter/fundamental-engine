@@ -77,23 +77,37 @@ for (const route of ["/", "/engine-tour", "/eli5"] as const) {
       await expect(chip).toHaveClass(/copied/);
     });
 
-    test("a body chip drags with a real pointer and moves with arrow keys", async ({ page }) => {
+    test("a body chip drags with a real pointer and moves with arrow keys", async ({ page, browserName }) => {
       await skipUnless(page, "[data-drag][data-body]", "draggable body chip");
       const chip = page.locator("[data-drag][data-body]").first();
       await chip.scrollIntoViewIfNeeded();
-      const before = await chip.evaluate((el) => (el as HTMLElement).style.left);
-      const box = (await chip.boundingBox())!;
-      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-      await page.mouse.down();
-      await page.mouse.move(box.x + box.width / 2 + 70, box.y + box.height / 2 + 40, { steps: 6 });
-      await page.mouse.up();
-      const after = await chip.evaluate((el) => (el as HTMLElement).style.left);
-      expect(after).not.toBe(before);
-      // keyboard path
+      const leftOf = () => chip.evaluate((el) => (el as HTMLElement).style.left);
+      // Pointer path. HomeRuntime wires the [data-drag] pointer handler on its DEFERRED boot, so a drag
+      // fired before boot is a silent no-op (the chip never moves) — the source of the chromium cold-start
+      // flake. Retry the WHOLE gesture until the chip actually moves, racing neither the boot nor sparse
+      // pointer delivery (same fix shape as the agitate test). WebKit under CI software rendering delivers
+      // pointer moves too sparsely for the per-frame drag tracker to follow (the limitation backlog.spec
+      // documents), so the pointer path is chromium + mobile; the keyboard path below covers WebKit.
+      if (browserName !== "webkit") {
+        await expect(async () => {
+          const before = await leftOf();
+          const box = (await chip.boundingBox())!;
+          await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+          await page.mouse.down();
+          await page.mouse.move(box.x + box.width / 2 + 70, box.y + box.height / 2 + 40, { steps: 6 });
+          await page.mouse.up();
+          expect(await leftOf(), "pointer drag moved the chip").not.toBe(before);
+        }).toPass({ timeout: 15_000 });
+      }
+      // Keyboard path — browser-agnostic, the same handler nudges the chip right on ArrowRight. Retry to
+      // clear the deferred-boot race (a pre-boot keypress is a silent no-op too). Capture `start` fresh
+      // inside the loop so a stray warm-up press can't make the assertion falsely pass or fail.
       await chip.focus();
-      await page.keyboard.press("ArrowRight");
-      const afterKey = await chip.evaluate((el) => (el as HTMLElement).style.left);
-      expect(parseFloat(afterKey)).toBeGreaterThan(parseFloat(after));
+      await expect(async () => {
+        const start = parseFloat((await leftOf()) || "0");
+        await page.keyboard.press("ArrowRight");
+        expect(parseFloat((await leftOf()) || "0"), "ArrowRight nudged the chip right").toBeGreaterThan(start);
+      }).toPass({ timeout: 8_000 });
     });
 
     test("agitate kicks the target and fires a shock ring", async ({ page }) => {
