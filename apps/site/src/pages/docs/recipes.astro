@@ -4,11 +4,11 @@ import CodeTabs from '../../components/CodeTabs.astro';
 import SeeAlso from '../../components/SeeAlso.astro';
 import VocabLegend from '../../components/VocabLegend.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
-import { FIELD_RECIPES, RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, recipeById, serializeRecipe } from '@fundamental-engine/core';
+import { FIELD_PATTERNS, RECIPE_TIERS, FIRST_RELEASE_PATTERN_IDS, recipeById, serializeRecipe } from '@fundamental-engine/core';
 
-// The Recipe Model page: how a FieldRecipe separates the vocabulary lanes, the schema, the strict rule
+// The Recipe Model page: how a FieldPattern separates the vocabulary lanes, the schema, the strict rule
 // (prose expressive, runtime tokens real), and the concept->token mapping. Counts are data-driven.
-const schema = `type FieldRecipe = {
+const schema = `type FieldPattern = {
   id: string;
   name: string;
   intent: string;
@@ -47,22 +47,22 @@ const MAPPING: [string, string, string][] = [
 ];
 
 const example = serializeRecipe(recipeById('guided-flow')!);
-const tokenCount = new Set(FIELD_RECIPES.flatMap((r) => r.primitives)).size;
+const tokenCount = new Set(FIELD_PATTERNS.flatMap((r) => r.primitives)).size;
 ---
 
 <DocsLayout
   title="Fundamental — Recipe model"
-  description="The FieldRecipe model: how a recipe separates runtime tokens, concepts, metrics, diagnostics, and conditions into distinct lanes. Recipe prose can be expressive; runtime tokens must be real and conformance-gated."
+  description="The FieldPattern model: how a recipe separates runtime tokens, concepts, metrics, diagnostics, and conditions into distinct lanes. Recipe prose can be expressive; runtime tokens must be real and conformance-gated."
 >
   <header class="docs-hero">
     <p class="kicker">Recipes</p>
     <h1>The <span class="accent">recipe model</span></h1>
     <p class="lede">
-      A <code>FieldRecipe</code> is a portable, serializable field program — the reusable unit that
+      A <code>FieldPattern</code> is a portable, serializable field program — the reusable unit that
       connects the natural-field model, engine primitives, DOM authoring, platform feedback, diagnostics,
       and the accessibility fallback. The catalog ships
-      <b>{FIELD_RECIPES.length}</b> recipes across <b>{RECIPE_TIERS.length}</b> tiers
-      (<b>{FIRST_RELEASE_RECIPE_IDS.length}</b> first-release), composed from {tokenCount} distinct runtime
+      <b>{FIELD_PATTERNS.length}</b> recipes across <b>{RECIPE_TIERS.length}</b> tiers
+      (<b>{FIRST_RELEASE_PATTERN_IDS.length}</b> first-release), composed from {tokenCount} distinct runtime
       tokens. See them all in the <a href="/recipes">recipe gallery</a>.
     </p>
   </header>
@@ -83,7 +83,7 @@ const tokenCount = new Set(FIELD_RECIPES.flatMap((r) => r.primitives)).size;
 
   <section class="docs-sec">
     <h2>The schema</h2>
-    <CodeTabs variants={[{ label: 'FieldRecipe', lang: 'ts', code: schema }]} />
+    <CodeTabs variants={[{ label: 'FieldPattern', lang: 'ts', code: schema }]} />
   </section>
 
   <section class="docs-sec">

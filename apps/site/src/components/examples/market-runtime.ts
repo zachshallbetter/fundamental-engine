@@ -14,7 +14,7 @@
 //     error reverts silently to snapshot mode; 3 consecutive failures stop the polling.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { logNormalizeBetween, recipeById, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe, withFlip } from "@fundamental-engine/dom";
+import { applyPattern, withFlip } from "@fundamental-engine/dom";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";
 import { armEntryAtPace } from "../../lib/reading-pace.ts";
@@ -201,7 +201,7 @@ function initMarket(page: HTMLElement): () => void {
       if (base) {
         // renderless — invisible; the extra "attention" metric asks the platform pipeline to
         // write --field-attention (eased engagement + center proximity + visibility) per tile.
-        activeField = applyRecipe(list, base, {
+        activeField = applyPattern(list, base, {
           bodies: rows(),
           annotateBodies: false,
           renderless: true,

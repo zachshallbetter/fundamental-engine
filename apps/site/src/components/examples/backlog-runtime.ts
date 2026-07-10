@@ -24,9 +24,9 @@
 //     Keyboard: Space/Enter lifts, arrows move (Left/Right across lanes), Esc cancels.
 //     HONESTY: triage is a LOCAL SANDBOX — the arrangement persists to localStorage only;
 //     GitHub is never written.
-// The scoped field runs render-less (applyRecipe renderless) — particles compute (metrics flow) but are never drawn.
+// The scoped field runs render-less (applyPattern renderless) — particles compute (metrics flow) but are never drawn.
 import { recipeById, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe, threadOverlay, withFlip as flipReflow } from "@fundamental-engine/dom";
+import { applyPattern, threadOverlay, withFlip as flipReflow } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { pageRuntime } from "../../lib/page-runtime";
 import { persisted } from "../../lib/persisted";
@@ -280,7 +280,7 @@ function initBacklog(page: HTMLElement): () => void {
         // the cycle bar joins as a sink — the engine writes its fill back as --load.
         const bodies = rows();
         if (sink) bodies.push(sink);
-        activeField = applyRecipe(zone, base, {
+        activeField = applyPattern(zone, base, {
           bodies,
           annotateBodies: false,
           renderless: true,

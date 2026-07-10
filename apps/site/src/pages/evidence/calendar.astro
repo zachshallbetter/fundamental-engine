@@ -123,7 +123,7 @@ row.dataset.strength =
 // and asks for the attention metric lane —
 // the pipeline writes --field-attention per
 // card (eased 0..1):
-field = applyRecipe(zone, base, {
+field = applyPattern(zone, base, {
   renderless: true,
   extraMetrics: ["attention"],
   /* …bodies below */
@@ -148,7 +148,7 @@ const bodies = [
   ...zone.querySelectorAll("[data-body]"),
   hero,
 ];
-field = applyRecipe(zone, base, {
+field = applyPattern(zone, base, {
   bodies,
   annotateBodies: false,
   renderless: true,

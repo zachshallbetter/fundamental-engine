@@ -12,9 +12,9 @@
 //     count from api.npmjs.org and re-settles through the EXISTING reweight path. Once, not a
 //     poll: the figure is a weekly aggregate, so re-polling it would be theater. Failed rows
 //     keep their snapshot values; advisories and publish dates stay snapshot by design.
-// The scoped field runs render-less (applyRecipe renderless) — particles compute (metrics flow) but are never drawn.
+// The scoped field runs render-less (applyPattern renderless) — particles compute (metrics flow) but are never drawn.
 import { logNormalizeBetween, recipeById, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe, threadOverlay, withFlip } from "@fundamental-engine/dom";
+import { applyPattern, threadOverlay, withFlip } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls.ts";
 import { wireLiveChip, politeLoop } from "../../lib/live-data.ts";
 import { pageRuntime } from "../../lib/page-runtime.ts";
@@ -143,7 +143,7 @@ function initDependencies(page: HTMLElement): () => void {
         // renderless — invisible; metrics gain the attention lane, so the platform
         // pipeline writes an eased --field-attention (hover/focus + viewport-center
         // proximity + visibility) back to every row and node.
-        activeField = applyRecipe(zone, base, {
+        activeField = applyPattern(zone, base, {
           bodies: [...rows(), ...nodes],
           annotateBodies: false,
           renderless: true,

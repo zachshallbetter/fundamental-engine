@@ -7,7 +7,7 @@
 // (renderless / signals-only), so it never re-introduces the busy-ness of particles over the controls.
 //
 // This mirrors the shipped nav Wayfinding Field (SiteNav.astro) exactly — same recipe, same renderless
-// applyRecipe over real chrome, same single CSS custom property as the only output. Progressive
+// applyPattern over real chrome, same single CSS custom property as the only output. Progressive
 // enhancement: reduced motion, the global field switch off, or a failed import all leave the pills as
 // plain chrome (the `--field-attention` fallback resolves to 0).
 
@@ -28,14 +28,14 @@ export async function startFilterField(): Promise<void> {
   if (!bar || !pills.length) return;
 
   try {
-    const [{ recipeById }, { applyRecipe }] = await Promise.all([
+    const [{ recipeById }, { applyPattern }] = await Promise.all([
       import('@fundamental-engine/core'),
       import('@fundamental-engine/dom'),
     ]);
     if (mine !== gen) return; // superseded by a newer start / a teardown
     const base = recipeById('wayfinding-field');
     if (!base) return;
-    field = applyRecipe(bar, base, {
+    field = applyPattern(bar, base, {
       renderless: true, // signals only — no canvas, no particles
       bodies: pills, // the pills are the bodies
       annotateBodies: false, // don't write data-body — keep them out of any global field-root scan

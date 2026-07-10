@@ -46,14 +46,14 @@ const dest = [
       if (r === here || (r !== '/' && here.startsWith(`${r}/`))) a.setAttribute('data-field-attention', '1');
     }
     try {
-      const [{ recipeById }, { applyRecipe }] = await Promise.all([
+      const [{ recipeById }, { applyPattern }] = await Promise.all([
         import('@fundamental-engine/core'),
         import('@fundamental-engine/dom'),
       ]);
       if (mine !== footGen) return;
       const base = recipeById('wayfinding-field');
       if (!base) return;
-      footField = applyRecipe(nav, base, {
+      footField = applyPattern(nav, base, {
         renderless: true,
         bodies: links,
         annotateBodies: false,

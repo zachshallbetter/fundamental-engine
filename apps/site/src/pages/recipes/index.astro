@@ -12,7 +12,7 @@
 import Base from '../../layouts/Base.astro';
 import SiteNav from '../../components/SiteNav.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import { FIELD_RECIPES, EXPERIMENTAL_RECIPES, type FieldRecipe } from '@fundamental-engine/core';
+import { FIELD_PATTERNS, EXPERIMENTAL_PATTERNS, type FieldPattern } from '@fundamental-engine/core';
 import { DOMAINS, taxonomyFor, isPlatformRecipe, type ProblemDomain } from '../../lib/recipe-taxonomy.ts';
 import '../../styles/workbench.css';
 import '../../styles/explore.css';
@@ -22,13 +22,13 @@ const FIELD_COLOR: Record<string, string> = {
   gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c',
   diagnostic: '#9aa7b4', platform: '#9aa7b4',
 };
-const fieldKeyOf = (r: FieldRecipe) => r.naturalField ?? 'platform';
-const fieldLabelOf = (r: FieldRecipe) =>
+const fieldKeyOf = (r: FieldPattern) => r.naturalField ?? 'platform';
+const fieldLabelOf = (r: FieldPattern) =>
   r.naturalField != null ? r.naturalField[0]!.toUpperCase() + r.naturalField.slice(1) : 'Platform';
 
 // Assemble one view-model row per recipe (the 64), carrying everything the card + the Phase-1
 // filter island need. Data attributes keep the filter logic out of the markup.
-const cards = FIELD_RECIPES.map((r) => {
+const cards = FIELD_PATTERNS.map((r) => {
   const tax = taxonomyFor(r.id);
   return {
     id: r.id,
@@ -56,7 +56,7 @@ const domainLabel: Record<ProblemDomain, string> = Object.fromEntries(
 // Richer per-recipe data for the expand-in-place detail overlay, built client-side from this blob
 // (embedded as JSON rather than 64 hidden DOM panels, and avoids bundling core into the page).
 const detailData = Object.fromEntries(
-  FIELD_RECIPES.map((r) => {
+  FIELD_PATTERNS.map((r) => {
     const tax = taxonomyFor(r.id);
     return [r.id, {
       name: r.name,
@@ -190,9 +190,9 @@ const detailData = Object.fromEntries(
 
     <section class="ex-experimental" aria-labelledby="ex-exp-h">
       <h2 id="ex-exp-h">Experimental</h2>
-      <p>Recipes still proving out — kept outside the canonical {FIELD_RECIPES.length} while they settle. Validated and live, with their own pages.</p>
+      <p>Recipes still proving out — kept outside the canonical {FIELD_PATTERNS.length} while they settle. Validated and live, with their own pages.</p>
       <ul class="ex-exp-list">
-        {EXPERIMENTAL_RECIPES.map((r) => (
+        {EXPERIMENTAL_PATTERNS.map((r) => (
           <li><a href={`/recipes/${r.id}`}>{r.name}</a> <span>{r.intent}</span></li>
         ))}
       </ul>

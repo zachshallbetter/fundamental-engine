@@ -3,7 +3,7 @@
  *
  * Two extraction rounds converted the example family's repeated hand-rolls into named
  * primitives (core: logNormalize/logNormalizeBetween/weightToStrength/temporal kernels/
- * allocateAttention; platform: withFlip/threadOverlay/createFieldPerf/applyRecipe options;
+ * allocateAttention; platform: withFlip/threadOverlay/createFieldPerf/applyPattern options;
  * site lib: pageRuntime/persisted/fmt/controls/palette/reading-pace). This test greps the
  * family's sources and FAILS if a hand-roll reappears — a regression here means someone
  * reimplemented a primitive instead of importing it. Allowlists are explicit and carry the
@@ -86,7 +86,7 @@ test("the lens palette has ONE home — lib/palette.ts", () => {
   assert.deepEqual(offenders(/FIELD_PALETTE\s*=\s*\[/, familyFiles(), new Map()), []);
 });
 
-test("scoped fields use applyRecipe's renderless option, not the render:[] spread", () => {
+test("scoped fields use applyPattern's renderless option, not the render:[] spread", () => {
   assert.deepEqual(offenders(/render:\s*\[\]\s*as\s*never/, familyFiles(), new Map()), []);
 });
 

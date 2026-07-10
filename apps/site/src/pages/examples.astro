@@ -801,7 +801,7 @@ const GROUPS = [
   // --att / --mem. Signals-only + reduced-motion-guarded; the scroll-spy .active stays the discrete
   // signal. Engine off / RM → the vars are unset and the nav reads plain.
   import { recipeById } from '@fundamental-engine/core';
-  import { applyRecipe } from '@fundamental-engine/dom';
+  import { applyPattern } from '@fundamental-engine/dom';
   import { reduceMotion } from '../lib/nav-field.ts';
 
   type Bits = { destroy(): void };
@@ -821,7 +821,7 @@ const GROUPS = [
     try {
       const base = recipeById('reading-field');
       if (base)
-        applied = applyRecipe(root, base, {
+        applied = applyPattern(root, base, {
           bodies: pairs.map((p) => p.el),
           annotateBodies: false,
           renderless: true,

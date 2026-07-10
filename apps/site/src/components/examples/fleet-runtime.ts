@@ -12,9 +12,9 @@
 //     A changed card pulses once and holds data-active ~3s, so the attention metric reads
 //     the change as engagement — the field notices. Three consecutive failures and the loop
 //     retires itself; the chip falls back to the snapshot date. Never throws.
-// The scoped field runs render-less (applyRecipe renderless) — particles compute (metrics flow) but are never drawn.
+// The scoped field runs render-less (applyPattern renderless) — particles compute (metrics flow) but are never drawn.
 import { logNormalize, recipeById, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe, withFlip } from "@fundamental-engine/dom";
+import { applyPattern, withFlip } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { pageRuntime } from "../../lib/page-runtime";
 import { atReadingPace } from "../../lib/reading-pace";
@@ -317,7 +317,7 @@ function initFleet(page: HTMLElement): () => void {
         // renderless — invisible; metrics gain the attention lane, so the platform
         // pipeline writes an eased --field-attention (hover/focus + viewport-center
         // proximity + visibility) back to every card.
-        activeField = applyRecipe(zone, base, {
+        activeField = applyPattern(zone, base, {
           bodies: [...comps(), ...incidents],
           annotateBodies: false,
           renderless: true,

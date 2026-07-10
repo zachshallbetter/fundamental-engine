@@ -77,7 +77,7 @@ const DEMOS = [
     <div class="callout">
       <b>Data attributes are the contract.</b> You make semantic HTML participate in the field by adding
       attributes to it — there is no special body element. <code>&lt;field-root&gt;</code> only hosts the
-      field; <code>applyRecipe()</code> <ApiStamp name="applyRecipe" /> and <code>bindData()</code>
+      field; <code>applyPattern()</code> <ApiStamp name="applyPattern" /> and <code>bindData()</code>
       <ApiStamp name="bindData" /> adapt it to recipes and data; and the
       <code>&lt;field-cell&gt;</code> frames lower down are just isolated single-force microscopes. The
       system is the markup, not the components.
@@ -165,7 +165,7 @@ const DEMOS = [
       priority, coherence, entropy — and writes each back as a <code>--field-&lt;metric&gt;</code> custom
       property. A <a href="/docs/recipes">recipe</a> declares which metrics it tracks; the runtime writes
       them. Below, real elements carry a runtime token (<code>data-body="attract"</code>) and a supplied
-      <code>priority</code>; <code>applyRecipe()</code> writes it back as <code>--field-priority</code>,
+      <code>priority</code>; <code>applyPattern()</code> writes it back as <code>--field-priority</code>,
       and the CSS reads it — no canvas, no cursor needed:
     </p>
     <FieldLoopDemo

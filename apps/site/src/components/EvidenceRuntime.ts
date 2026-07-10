@@ -12,7 +12,7 @@
 //     move slowly, so re-polling would be theater. Works the API misses keep snapshot values.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { logNormalize, recipeById, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe, threadOverlay, withFlip, type ThreadOverlay } from "@fundamental-engine/dom";
+import { applyPattern, threadOverlay, withFlip, type ThreadOverlay } from "@fundamental-engine/dom";
 import { EVIDENCE, type Signal, type Lens } from "../lib/copy.ts";
 import { wireLiveChip, politeLoop } from "../lib/live-data.ts";
 import { pageRuntime } from "../lib/page-runtime.ts";
@@ -139,7 +139,7 @@ function initEvidence(page: HTMLElement): () => void {
         // renderless — invisible; the extra "attention" metric asks the platform pipeline to
         // write --field-attention (an eased 0..1 blend of engagement, center proximity,
         // visibility) back to every finding each frame.
-        activeField = applyRecipe(list, base, {
+        activeField = applyPattern(list, base, {
           bodies,
           annotateBodies: false,
           renderless: true,
