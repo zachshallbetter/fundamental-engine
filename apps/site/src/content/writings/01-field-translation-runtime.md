@@ -28,7 +28,7 @@ author: "Zach Shallbetter"
 **Series:** Fundamental Research Papers, Paper 1 of 8 (the flagship paradigm paper)
 **Companion papers (domain validators):** [Reading Field](/writings/02-reading-field) (reading);
 [Evidence Fields](/writings/03-evidence-fields) (AI trust); Motion Equivalence (accessibility);
-Host-Driven Runtime (architecture); Portable Field Recipes (authoring); Data as Field Participants
+Host-Driven Runtime (architecture); Portable Field Patterns (authoring); Data as Field Participants
 (data binding); Explainable Interface Behavior (diagnostics). See the [series index](/writings).
 
 ---
@@ -112,17 +112,17 @@ This paper contributes the **system** behind Fundamental:
    cause), per-force *passports*, and a six-way *truth-mode* taxonomy that keeps the system honest
    about which behaviors are physics, which are design, and which are expressive.
 5. **A uniform authoring contract** (§7): one `[data-body]` markup that compiles identically across
-   native HTML, web components, and React, plus an intent compiler and a conformance-gated *recipe*
+   native HTML, web components, and React, plus an intent compiler and a conformance-gated *pattern*
    format.
 6. **Emergent interface primitives** (§8) that the reciprocal loop yields and that have no direct
    analogue in CSS or component state: conserved attention, material typography, cross-boundary
    causality, and memory fields.
 
 This paper *names the paradigm* and presents the model, the architecture in overview, the taxonomy,
-the Natural Field Translation System (§6.5), the recipe runtime, and accessibility. The
+the Natural Field Translation System (§6.5), the pattern runtime, and accessibility. The
 domain-specific validations follow in their own papers, one claim each: reading (Paper 2), evidence
 and trust in AI interfaces (Paper 3), reduced-motion equivalence (Paper 4), the host-driven runtime
-architecture in depth (Paper 5), portable recipe authoring (Paper 6), data binding (Paper 7), and
+architecture in depth (Paper 5), portable pattern authoring (Paper 6), data binding (Paper 7), and
 explainable diagnostics (Paper 8). Throughout, we mark shipped behavior distinctly from aspirational
 or opt-in behavior (§9).
 
@@ -505,7 +505,7 @@ and `fieldflow` is *transport along field structure*, not a field of its own. Ea
 one clean place in a hierarchy:
 
 ```
-Natural field → interface translation → engine primitive → metric → diagnostic → recipe
+Natural field → interface translation → engine primitive → metric → diagnostic → pattern
 ```
 
 Crucially, this classification is *data*, not prose: it lives as `FORCE_KIND`, `FORCE_FIELD`, and
@@ -526,12 +526,12 @@ Fundamental separates:
 | **Metrics** | measured state, never forces | mass, density, attention, entropy, memory |
 | **Diagnostics** | render / inspection modes | potential, field-lines, topology, causality |
 | **Conditions** | gates that read state | `active`, `fast`, `slow`, `hot`, `cool` |
-| **Recipes** | named composites of the above | Priority Well, Evidence Field, Reading Field |
+| **Patterns** | named composites of the above | Priority Well, Evidence Field, Reading Field |
 
 The rule is that *a word's lane is never left to the reader to guess*: in the canonical tables the
 code-styled words are real runtime tokens, and the unstyled words are metrics or diagnostics that can
 never be authored as a force. `mass` is a metric; `potential` is a diagnostic; neither is a token.
-This hygiene is exactly what makes recipes auditable (§7.3): because the lanes are distinct and the
+This hygiene is exactly what makes patterns auditable (§7.3): because the lanes are distinct and the
 token lane is strict, concept words can be expressive without ever inventing a force. The lanes are
 the discipline behind the slogan; the truth modes (§6.3) are the discipline behind the forces.
 
@@ -570,26 +570,26 @@ related through the same platform registries:*
 That the three surfaces converge on one contract is the practical expression of the architectural
 claim in §4: the authoring surface is an adapter, and field behavior is independent of it.
 
-### 7.3 Intent compilation and recipes
+### 7.3 Intent compilation and patterns
 
 Two higher-level authoring layers sit above raw tokens. The **intent compiler** translates a
 designer-level `data-intent` (with `data-intensity` / `data-risk`) into force tokens and parameters:
 `draw-focus` compiles to `attract + feedback`, `warn` to `repel + thermal` (with feedback), and so on.
 
-A **recipe** is the reusable unit: *a portable, serializable, inspectable field program*. A
+A **pattern** is the reusable unit: *a portable, serializable, inspectable field program*. A
 `FieldRecipe` declares an id, a human intent, an optional natural-field classification, its
 `primitives` (real tokens), its `bodies` and `relationships`, its `render` layers, its `metrics` and
 `diagnostics`, a *required* accessibility fallback, and an optional performance budget and expected
-metrics. Sixty-four recipes ship as validated programs. The decisive property is the *conformance
-gate*: it rejects any recipe whose primitives are not real passported tokens, whose render layers or
-diagnostics are not real modes, or whose declared primitives drift from its body tokens. Recipe
-*prose* may be expressive ("completion releases pressure and decays into memory") while recipe
+metrics. Sixty-four patterns ship as validated programs. The decisive property is the *conformance
+gate*: it rejects any pattern whose primitives are not real passported tokens, whose render layers or
+diagnostics are not real modes, or whose declared primitives drift from its body tokens. Pattern
+*prose* may be expressive ("completion releases pressure and decays into memory") while pattern
 *runtime fields* stay strict (`primitives: [morph, memory, gravity]`), and concept words never invent
-tokens (spring→`tether`, drag→`viscosity`, reflect→`wall`). Recipes are thus *auditable against the
+tokens (spring→`tether`, drag→`viscosity`, reflect→`wall`). Patterns are thus *auditable against the
 engine's actual capabilities* — the same epistemic discipline as passports, applied to composition.
 
 The three authoring *levels* map cleanly onto these layers: a **designer** works in intents and
-presets; a **developer** works in `data-body`, render modes, and recipes; an **engine author** writes
+presets; a **developer** works in `data-body`, render modes, and patterns; an **engine author** writes
 custom `field()` / `apply()` implementations with conformance.
 
 ---
@@ -768,7 +768,7 @@ rather than pathological.
 
 **What the epistemics buy.** Truth modes, passports, conformance, and lint are unusual for an
 interface library. Their payoff is that Fundamental can make *auditable* claims: a reviewer can check
-that magnetism does no work, that a recipe references only real tokens, that no overlay mutates
+that magnetism does no work, that a pattern references only real tokens, that no overlay mutates
 physics, and that the core reaches no DOM global — by running tests, not by trusting prose. We argue
 this is the right posture for a system that asks designers to reason about *cause* ("why did this
 move?") rather than only appearance.
@@ -795,7 +795,7 @@ cross-boundary causality, and memory fields — that local component state canno
 explicit about the boundary between what is shipped and what is aspirational, and about the model's
 deliberate physical limitations. The companion papers validate the paradigm in specific domains:
 reading (Paper 2), evidence and trust in AI interfaces (Paper 3), reduced-motion equivalence
-(Paper 4), the host-driven runtime architecture in depth (Paper 5), portable recipe authoring
+(Paper 4), the host-driven runtime architecture in depth (Paper 5), portable pattern authoring
 (Paper 6), data binding (Paper 7), and explainable diagnostics (Paper 8).
 
 ---

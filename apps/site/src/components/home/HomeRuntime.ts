@@ -15,7 +15,7 @@
 // (threads) stay imperative — their window is user-interaction-gated, so the element will
 // always be upgraded by the time they fire.
 
-import { recipeById, BURST_RADIUS } from "@fundamental-engine/core";
+import { patternById, BURST_RADIUS } from "@fundamental-engine/core";
 import { applyPattern } from "@fundamental-engine/dom";
 
 type FieldEl = HTMLElement & {
@@ -383,7 +383,7 @@ export function initHomeRuntime(): () => void {
     typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (rail && links.length && !railReduceMotion) {
     try {
-      const base = recipeById("wayfinding-current");
+      const base = patternById("wayfinding-current");
       if (base) {
         const railField = applyPattern(rail, base, {
           renderless: true,

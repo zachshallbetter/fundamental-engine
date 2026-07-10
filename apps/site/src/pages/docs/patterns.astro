@@ -4,7 +4,7 @@ import CodeTabs from '../../components/CodeTabs.astro';
 import SeeAlso from '../../components/SeeAlso.astro';
 import VocabLegend from '../../components/VocabLegend.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
-import { FIELD_PATTERNS, RECIPE_TIERS, FIRST_RELEASE_PATTERN_IDS, recipeById, serializeRecipe } from '@fundamental-engine/core';
+import { FIELD_PATTERNS, PATTERN_TIERS, FIRST_RELEASE_PATTERN_IDS, patternById, serializePattern } from '@fundamental-engine/core';
 
 // The Recipe Model page: how a FieldPattern separates the vocabulary lanes, the schema, the strict rule
 // (prose expressive, runtime tokens real), and the concept->token mapping. Counts are data-driven.
@@ -23,7 +23,7 @@ const schema = `type FieldPattern = {
   diagnostics:string[];       // DIAGNOSTIC    — potential, topology, causality
   conditions?:string[];       // CONDITION     — dwell, threshold, stale, in-view
 
-  bodies: BodyRecipe[];       // how the runtime tokens are authored on elements
+  bodies: BodyPattern[];       // how the runtime tokens are authored on elements
   render: RenderLayer[];
   accessibility: {            // required — no pattern is motion-only
     reducedMotion: string;
@@ -46,7 +46,7 @@ const MAPPING: [string, string, string][] = [
   ['trust / risk / confidence', 'metric', 'measured state — never a token'],
 ];
 
-const example = serializeRecipe(recipeById('guided-flow')!);
+const example = serializePattern(patternById('guided-flow')!);
 const tokenCount = new Set(FIELD_PATTERNS.flatMap((r) => r.primitives)).size;
 ---
 
@@ -61,7 +61,7 @@ const tokenCount = new Set(FIELD_PATTERNS.flatMap((r) => r.primitives)).size;
       A <code>FieldPattern</code> is a portable, serializable field program — the reusable unit that
       connects the natural-field model, engine primitives, DOM authoring, platform feedback, diagnostics,
       and the accessibility fallback. The catalog ships
-      <b>{FIELD_PATTERNS.length}</b> patterns across <b>{RECIPE_TIERS.length}</b> tiers
+      <b>{FIELD_PATTERNS.length}</b> patterns across <b>{PATTERN_TIERS.length}</b> tiers
       (<b>{FIRST_RELEASE_PATTERN_IDS.length}</b> first-release), composed from {tokenCount} distinct runtime
       tokens. See them all in the <a href="/patterns">pattern gallery</a>.
     </p>

@@ -45,7 +45,7 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
   // Async: lazy-import the engine so the catalog never pays for it until a recipe is opened.
   (async () => {
     try {
-      const [{ recipeById }, { applyPattern }, { createField }, scaffolds, { attachWorkbench }] = await Promise.all([
+      const [{ patternById }, { applyPattern }, { createField }, scaffolds, { attachWorkbench }] = await Promise.all([
         import('@fundamental-engine/core'),
         import('@fundamental-engine/dom'),
         import('@fundamental-engine/vanilla'),
@@ -53,7 +53,7 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
         import('./explore-workbench.ts'),
       ]);
       if (destroyed) return;
-      const recipe = recipeById(opts.recipeId);
+      const recipe = patternById(opts.recipeId);
       if (!recipe) return;
 
       scaffolds.injectScaffoldStyles();

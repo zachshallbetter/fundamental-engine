@@ -1,9 +1,9 @@
 ---
-// "Recipes applied" panel for the concept studies — rendered from the engine catalog (recipeById), so
+// "Recipes applied" panel for the concept studies — rendered from the engine catalog (patternById), so
 // a study declares the actual recipe objects it runs, with their lanes. The `live` ids are the ones the
 // study drives through applyPattern(); the rest are the conceptual family the study embodies.
 import VocabBadge from './VocabBadge.astro';
-import { recipeById, type FieldPattern } from '@fundamental-engine/core';
+import { patternById, type FieldPattern } from '@fundamental-engine/core';
 
 interface Props {
   ids: string[];
@@ -11,7 +11,7 @@ interface Props {
 }
 const { ids, live = [] } = Astro.props;
 const liveSet = new Set(live);
-const recipes = ids.map((id) => recipeById(id)).filter((r): r is FieldPattern => !!r);
+const recipes = ids.map((id) => patternById(id)).filter((r): r is FieldPattern => !!r);
 ---
 
 <section class="recipes-applied" aria-label="Recipes applied">

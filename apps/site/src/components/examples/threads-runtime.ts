@@ -19,7 +19,7 @@
 //   · Field on/off — off, the page collapses to a plain tree (CSS via [data-field]) and the
 //     scoped field is destroyed.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
-import { recipeById } from "@fundamental-engine/core";
+import { patternById } from "@fundamental-engine/core";
 import { applyPattern } from "@fundamental-engine/dom";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";
@@ -216,7 +216,7 @@ function initThreads(page: HTMLElement): () => void {
     activeField = null;
     if (!fieldOn) return;
     try {
-      const base = recipeById("evidence-field");
+      const base = patternById("evidence-field");
       if (base) {
         // renderless keeps the field invisible; the extra "attention" metric asks the
         // platform pipeline to write --field-attention per comment (an eased 0..1 blend

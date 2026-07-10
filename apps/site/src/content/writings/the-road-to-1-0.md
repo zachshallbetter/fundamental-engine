@@ -37,8 +37,8 @@ build if any of them move. The full contract is in [API stability](/docs/api/sta
 
 Three more surfaces are locked by their own gates today:
 
-- The **64-recipe catalog** is frozen (`check:recipes`); new recipes go to an experimental set, never
-  the locked one. See [portable recipes](/writings/06-portable-field-recipes).
+- The **64-recipe catalog** is frozen (`check:patterns`); new patterns go to an experimental set, never
+  the locked one. See [portable patterns](/writings/06-portable-field-recipes).
 - The **36-force catalog** is single-sourced and conformance-checked **across planes** — the same
   catalog generates the JS and the Swift port, and a golden test asserts they agree force-for-force.
   That cross-plane discipline is the subject of [one engine, four runtimes](/writings/one-engine-four-runtimes).
@@ -56,7 +56,7 @@ on **every PR to `main`**, not as a pre-tag ceremony:
 
 - **Engine gate** — `typecheck` + `build` + `test` across all packages.
 - **`check:api`** — the 14-entry frozen surface, unmoved.
-- **`check:dist`**, **`check:readme`**, **`check:recipes`** (64), **`check:cem`** (the Custom
+- **`check:dist`**, **`check:readme`**, **`check:patterns`** (64), **`check:cem`** (the Custom
   Elements Manifest) — the packaging and authoring surfaces stay consistent with the code.
 - **E2E** — Playwright over the shipped pages (Chromium + mobile), pinning the invisible-field
   invariants: the `data-body` contract, the `--field-*` feedback channels, the engagement and

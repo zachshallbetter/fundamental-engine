@@ -13,7 +13,7 @@
 //     sparkline path). A poll never re-sorts or re-tiers — hostile under the cursor. Any fetch
 //     error reverts silently to snapshot mode; 3 consecutive failures stop the polling.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { logNormalizeBetween, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { logNormalizeBetween, patternById, weightToStrength } from "@fundamental-engine/core";
 import { applyPattern, withFlip } from "@fundamental-engine/dom";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";
@@ -197,7 +197,7 @@ function initMarket(page: HTMLElement): () => void {
     activeField = null;
     if (!fieldOn || !list) return;
     try {
-      const base = recipeById("evidence-field");
+      const base = patternById("evidence-field");
       if (base) {
         // renderless — invisible; the extra "attention" metric asks the platform pipeline to
         // write --field-attention (eased engagement + center proximity + visibility) per tile.

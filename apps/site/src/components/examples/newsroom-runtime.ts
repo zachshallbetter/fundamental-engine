@@ -13,7 +13,7 @@
 //     the new bodies and re-applies the active lens. If the snapshot already is the latest
 //     edition, the chip flips to live and nothing is rebuilt. Any failure keeps the snapshot.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { logNormalizeBetween, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { logNormalizeBetween, patternById, weightToStrength } from "@fundamental-engine/core";
 import { applyPattern } from "@fundamental-engine/dom";
 import { wireLiveChip, politeLoop } from "../../lib/live-data";
 import { pageRuntime } from "../../lib/page-runtime.ts";
@@ -105,7 +105,7 @@ function initNewsroom(page: HTMLElement): () => void {
     activeField = null;
     if (!fieldOn || !list) return;
     try {
-      const base = recipeById("evidence-field");
+      const base = patternById("evidence-field");
       if (base) {
         // renderless — invisible; the extra "attention" metric asks the platform pipeline to
         // write --field-attention (eased engagement + center proximity + visibility) per

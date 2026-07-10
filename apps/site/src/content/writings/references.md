@@ -27,7 +27,7 @@ The papers treat the codebase and canonical docs as primary evidence, cited inli
 - `[fundamental-engine-natural]` `docs/canonical/natural-fields.md` — the four-field translation system.
 - `[fundamental-engine-fieldtable]` `docs/canonical/fundamental-field-behavior-table.md` — field/force laws.
 - `[fundamental-engine-interaction]` `docs/canonical/interaction-and-relationship-model.md` — agents, attention, reading, AI use cases.
-- `[fundamental-engine-recipes]` `docs/canonical/authoring-and-recipes.md` — the recipe schema + 64-recipe gallery.
+- `[fundamental-engine-recipes]` `docs/canonical/authoring-and-recipes.md` — the pattern schema + 64-recipe gallery.
 - `[fundamental-engine-forces]` `docs/engine-reference/forces-system.md` — the as-built engine spec.
 - `[fundamental-engine-formulas]` `docs/engine-reference/forces-formulas.md` — per-force math.
 - `[fundamental-engine-physics]` `docs/engine-reference/physics-workover.md` — the physics-correctness pass.
@@ -118,7 +118,7 @@ allowlist), `packages/core/src/engine/integrator.ts`, `packages/core/src/contrac
 - `[chrome-devtools]` Google Chrome Developers, *Chrome DevTools* documentation. <https://developer.chrome.com/docs/devtools>.
 - `[firefox-devtools]` MDN Web Docs, "Firefox Developer Tools." <https://developer.mozilla.org/en-US/docs/Tools>.
 
-### Authoring systems, recipes, and design/programming abstractions
+### Authoring systems, patterns, and design/programming abstractions
 - `[w3c-design-tokens]` Design Tokens Community Group, "Design Tokens Format Module." <https://tr.designtokens.org/format/>.
 - `[fowler2004presentation]` M. Fowler, "Presentation Model," 2004. <https://martinfowler.com/eaaDev/PresentationModel.html>.
 - `[fowler2010dsl]` M. Fowler, *Domain-Specific Languages*, Addison-Wesley, 2010.

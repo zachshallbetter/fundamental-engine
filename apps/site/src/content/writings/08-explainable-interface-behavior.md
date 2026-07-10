@@ -92,7 +92,7 @@ already holds the cause; a diagnostic simply makes it visible. The canonical fra
 > "Purpose")*
 
 This paper isolates the diagnostic framework as its own contribution. It is not the paradigm (Paper
-1), not the runtime architecture (Paper 5), not recipes (Paper 6), data (Paper 7), accessibility
+1), not the runtime architecture (Paper 5), not patterns (Paper 6), data (Paper 7), accessibility
 (Paper 4), or the reading/evidence studies (Papers 2–3); it cross-references each. Its single claim
 is:
 
@@ -348,7 +348,7 @@ Two design choices keep the Inspector honest about *itself*:
 
 ### 5.2 `applyRecipe.inspect()` and real relationship resolution
 
-A recipe (Paper 6) applied to live content exposes `inspect()`
+A pattern (Paper 6) applied to live content exposes `inspect()`
 (`packages/dom/src/apply-recipe.ts`), returning per-element metrics plus relationship counts. The
 load-bearing recent change is #222 (`fix(platform): compute real relationship resolution — stop
 hardcoding relResolved = relTotal`). Before it, resolution was assumed; after it, the runtime *resolves*
@@ -546,7 +546,7 @@ Every diagnostic claim in this paper is checkable against the repository.
 - **The render-mode catalog and truth table:** `packages/core/src/visual/visualization.ts`
   (`VISUALIZATION_TRUTH_TABLE`, `RENDER_MODES`, `VISUALIZATION_PRESETS`).
 - **The Platform Inspector:** `apps/site/src/pages/docs/inspector.astro` (live registry readout,
-  recipe inspector, reciprocity panel; shipped #198, recipe inspector #211) and the live
+  pattern inspector, reciprocity panel; shipped #198, pattern inspector #211) and the live
   `apps/site/src/pages/docs/diagnostics.astro` page.
 - **The platform self-audit:** `packages/dom/src/lint.ts` (`lintPlatform` and the per-rule pure
   functions).

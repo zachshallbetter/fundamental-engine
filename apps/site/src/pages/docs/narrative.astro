@@ -101,7 +101,7 @@ const stages = [
 
 <script>
   import { applyPattern } from '@fundamental-engine/dom';
-  import { recipeById } from '@fundamental-engine/core';
+  import { patternById } from '@fundamental-engine/core';
 
   interface Stage { title: string; body: string; markup: string; feedback?: boolean; rel?: boolean; link?: string; reduced?: boolean }
   const data: Stage[] = (window as unknown as { __NR__?: Stage[] }).__NR__ ?? [];
@@ -118,7 +118,7 @@ const stages = [
     demo.setAttribute('data-feedback', '');
     demo.setAttribute('data-field-priority', '0.85');
     applied?.destroy();
-    const recipe = recipeById('priority-well');
+    const recipe = patternById('priority-well');
     if (!recipe) return;
     applied = applyPattern(root, recipe, { bodies: [demo], annotateBodies: false, drive: false, reducedMotion: reduced });
     applied.tick();

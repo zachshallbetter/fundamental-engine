@@ -91,9 +91,9 @@ which is which**:
 The team is careful to never call the gentle, tuned `attract` "gravity," even though it'd be easy to. One
 is the universe's rule; the other is a designer's choice wearing its costume.
 
-## Recipes: the cookbook
+## Patterns: the cookbook
 
-You rarely build with raw magnets. You build with **recipes** — little cards, exactly like a recipe for
+You rarely build with raw magnets. You build with **patterns** — little cards, exactly like a pattern for
 cookies, except it's *magnets + how it looks + what it means*:
 
 > **Card: "Evidence Field"** *(for showing whether you can trust an answer)*
@@ -112,12 +112,12 @@ Yes — two ways, and the second is the secret heart of it.
 
 1. **On one element**, you mash magnet lists together (a pull *and* a spin *and* a drain → a little black
    hole). Some mixes are delicious; some cancel out, like `attract` fighting `repel`.
-2. **On one page**, you don't even have to try — because **there's only one pond.** Every recipe swims in
+2. **On one page**, you don't even have to try — because **there's only one pond.** Every pattern swims in
    the *same* invisible water, tugging the *same* matter. The pulls just add up, like two kids pulling one
    wagon. A page isn't a *list* of effects sitting side by side; it's a **soup**, where everything you add
    ripples through everything else.
 
-(The one rule the pond enforces: don't put two drains next to each other, and if your recipe is a
+(The one rule the pond enforces: don't put two drains next to each other, and if your pattern is a
 *fountain*, it needs a budget — because *nothing from nothing*.)
 
 ## The deep end
@@ -195,4 +195,4 @@ gently faked where realism would just annoy, honest about the difference, and ai
 interfaces keep throwing away: *meaning you can feel.*
 
 If you want the rigorous version, the [research papers](/writings) pick up exactly here — one each for
-reading, trust, accessibility, the runtime, recipes, data, and diagnostics.
+reading, trust, accessibility, the runtime, patterns, data, and diagnostics.

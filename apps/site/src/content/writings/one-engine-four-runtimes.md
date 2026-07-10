@@ -164,6 +164,6 @@ surface it lands on.
 - [The Interface is a Field, Not a Screen](/writings/the-interface-is-a-field-not-a-screen) — the manifesto; the portable core is what lets the field outlive any one surface.
 - [render: 'none' — The Invisible Field Is the Baseline](/writings/render-none-the-invisible-field) — signals-first is the bridge from the web to a screen-free runtime.
 - [Host-driven runtime](/writings/05-host-driven-runtime) — the formal architecture paper this essay narrates.
-- [Portable field recipes](/writings/06-portable-field-recipes) — what stays the same when the same engine moves between runtimes.
+- [Portable field patterns](/writings/06-portable-field-recipes) — what stays the same when the same engine moves between runtimes.
 - [Platform docs](/docs/platform) — the `FieldHost` seam and dependency direction, practitioner's version.
 - [Getting started](/docs/getting-started) — `createField` and the web host you meet first.

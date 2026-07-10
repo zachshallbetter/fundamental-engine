@@ -257,12 +257,12 @@ const dest = [
     const links = nav ? [...nav.querySelectorAll<HTMLElement>('a')] : [];
     if (!nav || !links.length) return;
     try {
-      const [{ recipeById }, { applyPattern }] = await Promise.all([
+      const [{ patternById }, { applyPattern }] = await Promise.all([
         import('@fundamental-engine/core'),
         import('@fundamental-engine/dom'),
       ]);
       if (mine !== navGen) return; // a newer start / a teardown superseded this async boot
-      const base = recipeById('wayfinding-field');
+      const base = patternById('wayfinding-field');
       if (!base) return;
       navField = applyPattern(nav, base, {
         renderless: true,

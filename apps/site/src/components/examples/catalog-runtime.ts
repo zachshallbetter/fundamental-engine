@@ -12,7 +12,7 @@
 //     reweight path, verbatim). Books missing from the fresh result keep their snapshot
 //     values, silently. Any failure keeps the snapshot.
 // The scoped field runs render-less (applyPattern renderless) — bodies compute (metrics flow) but nothing is drawn.
-import { logNormalize, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { logNormalize, patternById, weightToStrength } from "@fundamental-engine/core";
 import { applyPattern, withFlip } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { fmtInt } from "../../lib/fmt";
@@ -128,7 +128,7 @@ function initCatalog(page: HTMLElement): () => void {
     activeField = null;
     if (!fieldOn) return;
     try {
-      const base = recipeById("evidence-field");
+      const base = patternById("evidence-field");
       if (base) {
         // renderless — invisible; metrics gain the attention lane, so the platform
         // pipeline writes an eased --field-attention (hover/focus + viewport-center

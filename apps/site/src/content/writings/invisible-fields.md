@@ -19,7 +19,7 @@ So I built twelve pages where the field never shows a particle.
 They live at [/evidence](/evidence) and its siblings — an inbox, a market, a backlog, a calendar, a
 comment thread, a dependency graph, a fleet dashboard, a catalog, a library, a memory deck, a front
 page. Ordinary page types, each over real data. On every one of them the field runs exactly as it
-does on the homepage — bodies, strengths, relationships, the recipe pipeline — but the only output
+does on the homepage — bodies, strengths, relationships, the pattern pipeline — but the only output
 channels are **type, ink, and anchor**: font weight and optical size, how dark the text sits, how
 hard a border or a bar leans into its accent. The field is a substrate, not wallpaper. Take away
 the wallpaper and the substrate is what's left.

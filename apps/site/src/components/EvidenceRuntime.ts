@@ -11,7 +11,7 @@
 //     reweight path then re-settles trust in front of the reader. Once, not a poll: citations
 //     move slowly, so re-polling would be theater. Works the API misses keep snapshot values.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { logNormalize, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { logNormalize, patternById, weightToStrength } from "@fundamental-engine/core";
 import { applyPattern, threadOverlay, withFlip, type ThreadOverlay } from "@fundamental-engine/dom";
 import { EVIDENCE, type Signal, type Lens } from "../lib/copy.ts";
 import { wireLiveChip, politeLoop } from "../lib/live-data.ts";
@@ -129,7 +129,7 @@ function initEvidence(page: HTMLElement): () => void {
     const list = topic.querySelector<HTMLElement>("[data-ev-list]");
     if (!list) return;
     try {
-      const base = recipeById("evidence-field");
+      const base = patternById("evidence-field");
       if (base) {
         // the sink sentinel joins the field so particles drifting past the list's end accrete
         // into it — the engine writes the fill back as --load, which paces the reveal.

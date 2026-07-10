@@ -39,7 +39,7 @@ way and the bookkeeping never balances.
 Second, **mass is nominal.** By default every particle behaves as if it weighs exactly one unit — the
 engine advances velocity by simply adding the force (`v += F`), not by dividing force by mass
 (`a = F/m`). So "heavier elements swing wider, lighter ones dart" is, right now, a thing the field
-*can't express* by default. There's an opt-in for real mass, but the recipes are all tuned around unit
+*can't express* by default. There's an opt-in for real mass, but the patterns are all tuned around unit
 weight, so almost nothing uses it.
 
 Add a dab of friction every frame — which the engine does deliberately, to keep interfaces calm — and
@@ -98,7 +98,7 @@ energy paths that didn't exist before.
 
 **And there are costs worth naming.** Momentum makes things bouncier, and bounciness is exactly what
 the calm-interface default was protecting against — so this has to be opt-in, not a global flip. Every
-recipe is tuned for unit mass, so a mass-on field needs recalibration. And the moment bodies can be
+pattern is tuned for unit mass, so a mass-on field needs recalibration. And the moment bodies can be
 moved by matter, layout stability becomes something the system has to actively defend rather than get
 for free. None of these is disqualifying; all of them are real.
 
@@ -108,7 +108,7 @@ Of everything on Fundamental's list of honest limitations, momentum is the one a
 would resolve — and the one that pays the system's own story back the most. Most of the others are
 deliberate (energy decay keeps things calm; designed forces are kept distinct from natural laws on
 purpose) or aren't the engine's job at all (whether any of this *helps a user* still needs studies that
-haven't been run). Momentum is different. It's a capability the field almost has, that the recipes
+haven't been run). Momentum is different. It's a capability the field almost has, that the patterns
 don't yet use, that the roadmap already gestures at, and that would make the reciprocity at the heart of
 the whole project something you could feel in the motion — the way you could feel it in a swarm of bats
 over Gotham.
