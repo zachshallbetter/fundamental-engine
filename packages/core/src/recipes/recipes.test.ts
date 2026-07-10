@@ -8,8 +8,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  validateRecipe,
-  serializeRecipe,
+  validatePattern,
+  serializePattern,
   parseRecipe,
   primitivesOf,
   FIELD_MODES,
@@ -21,18 +21,18 @@ import {
   ESSENTIAL_RECIPES,
   FIRST_RELEASE_RECIPE_IDS,
   FIRST_RELEASE_RECIPES,
-  RECIPE_TIERS,
-  recipeById,
+  PATTERN_TIERS,
+  patternById,
 } from './gallery.ts';
 import { explainScene, fieldDiff } from './explain.ts';
-import { compileRecipe, recipeToMarkup, recipeBodyAttributes, metricVar, recipeAuthoring } from './compile.ts';
+import { compileRecipe, patternToMarkup, patternBodyAttributes, metricVar, patternAuthoring } from './compile.ts';
 import { passportFor } from '../contracts/passport.ts';
 import { RENDER_MODES } from '../visual/visualization.ts';
 import { FUNDAMENTAL_FIELDS } from '../config/manual.ts';
 
 test('every field recipe is valid (real tokens, known render layers + diagnostics, matching primitives)', () => {
   for (const r of FIELD_RECIPES) {
-    const problems = validateRecipe(r);
+    const problems = validatePattern(r);
     assert.deepEqual(problems, [], `${r.name}: ${problems.map((p) => `${p.path} ${p.issue}`).join(', ')}`);
   }
 });
@@ -46,13 +46,13 @@ test('the catalog is the canonical 64 with unique kebab ids', () => {
 });
 
 test('the four tiers (core/applied/systems/operational) each hold 16 and concatenate in order', () => {
-  assert.equal(RECIPE_TIERS.length, 4);
-  assert.deepEqual(RECIPE_TIERS.map((t) => t.key), ['core', 'applied', 'systems', 'operational']);
-  for (const t of RECIPE_TIERS) {
+  assert.equal(PATTERN_TIERS.length, 4);
+  assert.deepEqual(PATTERN_TIERS.map((t) => t.key), ['core', 'applied', 'systems', 'operational']);
+  for (const t of PATTERN_TIERS) {
     assert.equal(t.recipes.length, 16, `tier ${t.key} has 16`);
     for (const r of t.recipes) assert.equal(r.tier, t.key, `${r.id} carries tier ${t.key}`);
   }
-  const flattened = RECIPE_TIERS.flatMap((t) => t.recipes);
+  const flattened = PATTERN_TIERS.flatMap((t) => t.recipes);
   assert.deepEqual(flattened.map((r) => r.id), FIELD_RECIPES.map((r) => r.id), 'tiers == FIELD_RECIPES order');
 });
 
@@ -71,17 +71,17 @@ test('no recipe primitive is ever a diagnostic, metric, concept, or condition (l
     }
 });
 
-test('validateRecipe gives a lane-aware error when a non-token slips into primitives', () => {
+test('validatePattern gives a lane-aware error when a non-token slips into primitives', () => {
   const mk = (token: string): FieldRecipe =>
     ({
       id: 'x', name: 'X', intent: 'i', primitives: [token], bodies: [{ body: token }],
       render: ['particles'], metrics: [], diagnostics: [],
       accessibility: { reducedMotion: 'r', meaningWithoutMotion: 'm' },
     }) as unknown as FieldRecipe;
-  assert.ok(validateRecipe(mk('potential')).some((p) => p.path.startsWith('primitives') && /diagnostic/.test(p.issue)));
-  assert.ok(validateRecipe(mk('mass')).some((p) => p.path.startsWith('primitives') && /metric/.test(p.issue)));
-  assert.ok(validateRecipe(mk('orbit')).some((p) => p.path.startsWith('primitives') && /concept/.test(p.issue)));
-  assert.ok(validateRecipe(mk('dwell')).some((p) => p.path.startsWith('primitives') && /condition/.test(p.issue)));
+  assert.ok(validatePattern(mk('potential')).some((p) => p.path.startsWith('primitives') && /diagnostic/.test(p.issue)));
+  assert.ok(validatePattern(mk('mass')).some((p) => p.path.startsWith('primitives') && /metric/.test(p.issue)));
+  assert.ok(validatePattern(mk('orbit')).some((p) => p.path.startsWith('primitives') && /concept/.test(p.issue)));
+  assert.ok(validatePattern(mk('dwell')).some((p) => p.path.startsWith('primitives') && /condition/.test(p.issue)));
 });
 
 test('declared primitives match the distinct body tokens for every recipe', () => {
@@ -112,11 +112,11 @@ test('FIELD_MODES covers every render mode in the visualization catalog', () => 
 test('the first-release set is eight recipes that all resolve', () => {
   assert.equal(FIRST_RELEASE_RECIPE_IDS.length, 8);
   assert.equal(FIRST_RELEASE_RECIPES.length, 8);
-  for (const id of FIRST_RELEASE_RECIPE_IDS) assert.ok(recipeById(id), `${id} exists`);
+  for (const id of FIRST_RELEASE_RECIPE_IDS) assert.ok(patternById(id), `${id} exists`);
   assert.deepEqual(FIRST_RELEASE_RECIPES.map((r) => r.id), [...FIRST_RELEASE_RECIPE_IDS]);
 });
 
-test('validateRecipe rejects unknown tokens, render layers, diagnostics, and fields', () => {
+test('validatePattern rejects unknown tokens, render layers, diagnostics, and fields', () => {
   const bad = {
     id: 'x',
     name: 'X',
@@ -129,14 +129,14 @@ test('validateRecipe rejects unknown tokens, render layers, diagnostics, and fie
     diagnostics: ['mythology'],
     accessibility: { reducedMotion: 'r', meaningWithoutMotion: 'm' },
   } as unknown as FieldRecipe;
-  const problems = validateRecipe(bad);
+  const problems = validatePattern(bad);
   assert.ok(problems.some((p) => /unknown force token "wormhole"/.test(p.issue)));
   assert.ok(problems.some((p) => /unknown render layer "hologram"/.test(p.issue)));
   assert.ok(problems.some((p) => /unknown diagnostic mode "mythology"/.test(p.issue)));
   assert.ok(problems.some((p) => /unknown fundamental field "mystery"/.test(p.issue)));
 });
 
-test('validateRecipe flags primitives that drift from the body tokens', () => {
+test('validatePattern flags primitives that drift from the body tokens', () => {
   const drift = {
     id: 'drift',
     name: 'Drift',
@@ -148,10 +148,10 @@ test('validateRecipe flags primitives that drift from the body tokens', () => {
     diagnostics: [],
     accessibility: { reducedMotion: 'r', meaningWithoutMotion: 'm' },
   } as FieldRecipe;
-  assert.ok(validateRecipe(drift).some((p) => p.path === 'primitives'));
+  assert.ok(validatePattern(drift).some((p) => p.path === 'primitives'));
 });
 
-test('validateRecipe requires the accessibility equivalent', () => {
+test('validatePattern requires the accessibility equivalent', () => {
   const noA11y = {
     id: 'na',
     name: 'No a11y',
@@ -162,12 +162,12 @@ test('validateRecipe requires the accessibility equivalent', () => {
     metrics: [],
     diagnostics: [],
   } as unknown as FieldRecipe;
-  assert.ok(validateRecipe(noA11y).some((p) => p.path === 'accessibility'));
+  assert.ok(validatePattern(noA11y).some((p) => p.path === 'accessibility'));
 });
 
 test('a recipe round-trips through JSON', () => {
-  const r = recipeById('guided-flow')!;
-  const back = parseRecipe(serializeRecipe(r));
+  const r = patternById('guided-flow')!;
+  const back = parseRecipe(serializePattern(r));
   assert.deepEqual(back, r);
 });
 
@@ -194,7 +194,7 @@ test('compileIntent applies intensity, range, feedback, and high-risk thermal', 
 });
 
 test('explainScene names the forces and the fieldflow transport caveat', () => {
-  const text = explainScene(recipeById('guided-flow')!); // magnetism + fieldflow + field-lines
+  const text = explainScene(patternById('guided-flow')!); // magnetism + fieldflow + field-lines
   assert.match(text, /magnetism/i);
   assert.match(text, /fieldflow/i);
   assert.match(text, /because of fieldflow/i);
@@ -230,20 +230,20 @@ test('accessibility conformance: every shipped recipe compiles a reduced-motion 
   }
 });
 
-test('recipeToMarkup + recipeBodyAttributes emit real data-body authoring', () => {
-  const gf = recipeById('guided-flow')!;
-  const markup = recipeToMarkup(gf);
+test('patternToMarkup + patternBodyAttributes emit real data-body authoring', () => {
+  const gf = patternById('guided-flow')!;
+  const markup = patternToMarkup(gf);
   assert.match(markup, /<field-root><\/field-root>/);
   for (const b of gf.bodies) assert.ok(markup.includes(`data-body="${b.body}"`), `markup has ${b.body}`);
-  const attrs = recipeBodyAttributes({ body: 'attract', strength: 1.2, range: 320, feedback: true });
+  const attrs = patternBodyAttributes({ body: 'attract', strength: 1.2, range: 320, feedback: true });
   assert.equal(attrs['data-body'], 'attract');
   assert.equal(attrs['data-strength'], '1.2');
   assert.equal(attrs['data-range'], '320');
   assert.ok('data-feedback' in attrs);
 });
 
-test('recipeAuthoring emits html / web-component / react surfaces with real tokens', () => {
-  const a = recipeAuthoring(recipeById('priority-well')!);
+test('patternAuthoring emits html / web-component / react surfaces with real tokens', () => {
+  const a = patternAuthoring(patternById('priority-well')!);
   assert.match(a.html, /<field-root><\/field-root>/);
   assert.match(a.html, /data-body="attract"/);
   assert.match(a.webComponent, /@fundamental-engine\/elements/);

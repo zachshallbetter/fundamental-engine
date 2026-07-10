@@ -5,15 +5,15 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateRecipe, serializeRecipe, parseRecipe, primitivesOf, FIELD_MODES } from './schema.ts';
+import { validatePattern, serializePattern, parseRecipe, primitivesOf, FIELD_MODES } from './schema.ts';
 import { CONTOUR_CHARGE, CHARGE_RECIPES } from './charge.ts';
 import { EXPERIMENTAL_RECIPES } from './wayfinding.ts';
-import { FIELD_RECIPES, recipeById } from './catalog.ts';
+import { FIELD_RECIPES, patternById } from './catalog.ts';
 import { compileRecipe } from './compile.ts';
 import { passportFor } from '../contracts/passport.ts';
 
 test('contour-charge validates: real tokens, known layers, primitives match body tokens', () => {
-  const problems = validateRecipe(CONTOUR_CHARGE);
+  const problems = validatePattern(CONTOUR_CHARGE);
   assert.deepEqual(problems, [], problems.map((p) => `${p.path} ${p.issue}`).join(', '));
   assert.deepEqual(CONTOUR_CHARGE.primitives, primitivesOf(CONTOUR_CHARGE.bodies));
   for (const p of CONTOUR_CHARGE.primitives) {
@@ -30,7 +30,7 @@ test('the lane rule holds: the recipe is contour-charge, never bare "charge" (th
 
 test('registered experimentally: in EXPERIMENTAL_RECIPES, resolvable by id, outside the 64', () => {
   assert.ok(EXPERIMENTAL_RECIPES.some((r) => r.id === 'contour-charge'));
-  assert.equal(recipeById('contour-charge'), CONTOUR_CHARGE);
+  assert.equal(patternById('contour-charge'), CONTOUR_CHARGE);
   assert.ok(!FIELD_RECIPES.includes(CONTOUR_CHARGE), 'the canonical 64 is undisturbed');
   assert.equal(CHARGE_RECIPES.length, 1);
 });
@@ -38,7 +38,7 @@ test('registered experimentally: in EXPERIMENTAL_RECIPES, resolvable by id, outs
 test('compiles and round-trips', () => {
   const plan = compileRecipe(CONTOUR_CHARGE);
   assert.ok(plan.bodies.length === 1, 'one vessel body');
-  assert.deepEqual(parseRecipe(serializeRecipe(CONTOUR_CHARGE)), CONTOUR_CHARGE);
+  assert.deepEqual(parseRecipe(serializePattern(CONTOUR_CHARGE)), CONTOUR_CHARGE);
 });
 
 test('the recipe is self-executing: the vessel body compiles with its data-when gate (#370)', () => {

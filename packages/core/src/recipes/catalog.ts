@@ -1,17 +1,17 @@
 /**
  * The field-recipe catalog (authoring-and-recipes §7) — the data file for the 64 portable
  * `FieldRecipe`s that map the four-field translation model onto practical interface patterns, grouped
- * into four tiers (`RECIPE_TIERS`). Each doubles as a worked example and a conformance fixture: every
+ * into four tiers (`PATTERN_TIERS`). Each doubles as a worked example and a conformance fixture: every
  * runtime token is a real passported force, every render layer + diagnostic is a known mode, the
  * declared primitives match the body tokens, and no primitive is a diagnostic/metric/concept/condition
- * — so `validateRecipe` passes for all of them (the conformance test enforces this).
+ * — so `validatePattern` passes for all of them (the conformance test enforces this).
  *
  * Lanes are kept separate: `primitives` are strict runtime tokens; `concepts`/`conditions` (layered in
  * by id below) are product language and activation logic; `metrics`/`diagnostics` are measured state
  * and inspection modes. These are classification + authoring artifacts — they compose existing
  * primitives and add NO new engine behavior. Eight ids are the recommended first-release set.
  */
-import type { FieldRecipe, RecipeTier } from './schema.ts';
+import type { FieldRecipe, PatternTier } from './schema.ts';
 import { EXPERIMENTAL_RECIPES } from './wayfinding.ts';
 
 // ── Gravity: priority, convergence, hierarchy ───────────────────────────────────────
@@ -1500,7 +1500,7 @@ const CONDITIONS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /** Layer tier + status + the concept/condition lanes onto a tier's raw records. */
-const decorate = (recipes: readonly FieldRecipe[], tier: RecipeTier): FieldRecipe[] =>
+const decorate = (recipes: readonly FieldRecipe[], tier: PatternTier): FieldRecipe[] =>
   recipes.map((r) => ({
     ...r,
     tier,
@@ -1509,14 +1509,14 @@ const decorate = (recipes: readonly FieldRecipe[], tier: RecipeTier): FieldRecip
     ...(CONDITIONS[r.id] ? { conditions: [...CONDITIONS[r.id]!] } : {}),
   }));
 
-export interface RecipeTierGroup {
-  key: RecipeTier;
+export interface PatternTierGroup {
+  key: PatternTier;
   label: string;
   recipes: readonly FieldRecipe[];
 }
 
 /** The four catalog tiers, in order — the navigable structure over {@link FIELD_RECIPES}. */
-export const RECIPE_TIERS: readonly RecipeTierGroup[] = [
+export const PATTERN_TIERS: readonly PatternTierGroup[] = [
   { key: 'core', label: 'Core — interface & accessibility', recipes: decorate(TIER_CORE, 'core') },
   { key: 'applied', label: 'Applied — product, workflow & collaboration', recipes: decorate(TIER_PRODUCT, 'applied') },
   { key: 'systems', label: 'Systems — safety, provenance & governance', recipes: decorate(TIER_SYSTEMS, 'systems') },
@@ -1524,7 +1524,7 @@ export const RECIPE_TIERS: readonly RecipeTierGroup[] = [
 ];
 
 /** The full field-pattern catalog (authoring §7) — 64 patterns across four tiers, in catalog order. */
-export const FIELD_PATTERNS: readonly FieldRecipe[] = RECIPE_TIERS.flatMap((t) => t.recipes);
+export const FIELD_PATTERNS: readonly FieldRecipe[] = PATTERN_TIERS.flatMap((t) => t.recipes);
 
 /** @deprecated Renamed to {@link FIELD_PATTERNS} (recipe → Pattern); removed at 1.0. */
 export const FIELD_RECIPES: readonly FieldRecipe[] = FIELD_PATTERNS;
@@ -1555,6 +1555,11 @@ export const FIRST_RELEASE_RECIPES: readonly FieldRecipe[] = FIRST_RELEASE_RECIP
 );
 
 /** Look up a recipe by id — the canonical 64 first, then the experimental set (undefined if unknown). */
-export function recipeById(id: string): FieldRecipe | undefined {
+export function patternById(id: string): FieldRecipe | undefined {
   return FIELD_RECIPES.find((r) => r.id === id) ?? EXPERIMENTAL_RECIPES.find((r) => r.id === id);
 }
+
+// ── Deprecated aliases (recipe → Pattern rename, phase 4; removed at 1.0) ──────────────────────
+/** @deprecated Renamed to {@link PatternTierGroup}. */ export type RecipeTierGroup = PatternTierGroup;
+/** @deprecated Renamed to {@link PATTERN_TIERS}. */ export const RECIPE_TIERS = PATTERN_TIERS;
+/** @deprecated Renamed to {@link patternById}. */ export const recipeById = patternById;

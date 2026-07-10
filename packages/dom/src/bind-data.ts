@@ -1,18 +1,18 @@
 /**
  * bindData — make real application data participate in field behavior. Records become bodies, mapped
  * metrics become state, mapped relationships become graph edges, and a recipe supplies the behavior
- * (metric/feedback framework) via applyRecipe(). Updates are deterministic (diff by id); removed
+ * (metric/feedback framework) via applyPattern(). Updates are deterministic (diff by id); removed
  * records decay before they leave rather than popping.
  *
- *   const binding = bindData(container, records, mapper, { recipe: 'search-relevance-field' });
+ *   const binding = bindData(container, records, mapper, { pattern: 'search-relevance-field' });
  *   binding.update(nextRecords);
  *   binding.destroy();
  *
  * The recipe frames the field (which metrics → --field-* are tracked); the per-record mapper owns the
  * body tokens, metric values, and relationships — so the data drives the field, not a mock.
  */
-import { recipeById, type FieldRecipe } from '@fundamental-engine/core';
-import { applyRecipe, type AppliedRecipe } from './apply-recipe.ts';
+import { patternById, type FieldPattern } from '@fundamental-engine/core';
+import { applyPattern, type AppliedPattern } from './apply-recipe.ts';
 
 export interface MappedBody {
   tokens: string[];
@@ -37,15 +37,17 @@ export interface MappedRecord {
 export type RecordMapper<T> = (record: T, index: number) => MappedRecord;
 
 export interface BindDataOptions<T = unknown> {
-  /** the recipe whose metric/feedback framework drives the bound bodies (id or object). */
-  recipe?: string | FieldRecipe;
+  /** the Pattern whose metric/feedback framework drives the bound bodies (id or object). */
+  pattern?: string | FieldPattern;
+  /** @deprecated Renamed to {@link BindDataOptions.pattern} (recipe → Pattern); read as a fallback, removed at 1.0. */
+  recipe?: string | FieldPattern;
   /** decay duration (ms) before a removed record leaves the DOM (default 400). */
   decayMs?: number;
   /** element tag for each record (default 'div'). */
   tag?: string;
   /** class added to each record element. */
   className?: string;
-  /** install the recipe's reduced-motion output instead of motion (passed to applyRecipe). */
+  /** install the recipe's reduced-motion output instead of motion (passed to applyPattern). */
   reducedMotion?: boolean;
   /** custom inner HTML per record (domain markup); overrides the default label. Relationship anchors are kept. */
   content?: (record: T, mapped: MappedRecord) => string;
@@ -60,7 +62,7 @@ export interface DataBinding<T> {
   container: HTMLElement;
   update(records: T[]): void;
   ids(): string[];
-  applied(): AppliedRecipe | null;
+  applied(): AppliedPattern | null;
   inspect(): DataBindingInspection | null;
   destroy(): void;
 }
@@ -91,7 +93,7 @@ function applyMapped(el: HTMLElement, m: MappedRecord, contentHtml?: string): vo
   setNum(el, 'data-spin', m.body.spin);
   setNum(el, 'data-angle', m.body.angle);
   if (m.body.feedback) el.setAttribute('data-feedback', '');
-  // metric values → data-field-<metric> (the recipe + applyRecipe turn these into --field-* state)
+  // metric values → data-field-<metric> (the recipe + applyPattern turn these into --field-* state)
   for (const [k, v] of Object.entries(m.metrics ?? {})) setNum(el, `data-field-${k}`, v);
   // domain content (overrides label), else the plain label
   if (contentHtml != null) {
@@ -131,15 +133,15 @@ export function bindData<T>(container: HTMLElement, records: T[], mapper: Record
   const tag = options.tag ?? 'div';
   const doc = container.ownerDocument;
   const els = new Map<string, HTMLElement>();
-  let applied: AppliedRecipe | null = null;
-  const recipeArg = options.recipe;
+  let applied: AppliedPattern | null = null;
+  const patternArg = options.pattern ?? options.recipe;
 
   const reapply = (): void => {
     applied?.destroy();
     applied = null;
     const items = [...els.values()].filter((e) => !('bdExiting' in e.dataset));
-    const recipe = typeof recipeArg === 'string' ? recipeById(recipeArg) : recipeArg;
-    if (recipe && items.length) applied = applyRecipe(container, recipe, { bodies: items, annotateBodies: false, reducedMotion: options.reducedMotion });
+    const recipe = typeof patternArg === 'string' ? patternById(patternArg) : patternArg;
+    if (recipe && items.length) applied = applyPattern(container, recipe, { bodies: items, annotateBodies: false, reducedMotion: options.reducedMotion });
   };
 
   const render = (recs: T[]): void => {

@@ -7,6 +7,10 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Deprecated
+
+- **`@fundamental-engine/core` + `@fundamental-engine/dom` — the recipe → `Pattern` rename reaches the internal helper surface (phase 4, additive).** The remaining `recipe`-named exported helpers are renamed to `Pattern`, each keeping a `@deprecated` alias of the old name (removed at `1.0`): `BodyPattern` (was `BodyRecipe`), `RelationshipPattern`, `AccessibilityPattern`, `PatternTier`, `PatternStatus`, `PatternProblem`, `PatternTierGroup`, `PatternRenderPlan`, `PatternBodyRegistration`, `PatternRelationshipRegistration`, `PatternFeedbackBinding`, `PatternReducedMotionPlan`, `PatternAuthoring`, `PatternFieldTarget` (dom), the consts `PATTERN_TIERS` / `PATTERN_CONTRACTS`, and the functions `validatePattern` / `serializePattern` / `patternById` / `patternBodyAttributes` / `patternRenderPlan` / `patternToMarkup` / `patternAuthoring`. `bindData` gains a `pattern` option (the `recipe` option is still read as a deprecated fallback). Every old name still works. Intentionally left unchanged (invisible plumbing, not concept surface): the `recipes/` source folder, `apply-recipe.ts`, `data/recipes.json`, and the `RelationshipSource` `'recipe'` value tag.
+
 ## [0.9.4] — 2026-07-10
 
 ### Added

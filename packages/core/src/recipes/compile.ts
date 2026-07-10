@@ -10,7 +10,7 @@
  * bindings; diagnostics become inspector/render toggles; conditions become activation gates;
  * accessibility becomes a reduced-motion output plan.
  */
-import type { BodyRecipe, FieldRecipe } from './schema.ts';
+import type { BodyPattern, FieldRecipe } from './schema.ts';
 
 /** The CSS feedback variable a metric writes to (`attention` → `--field-attention`). */
 export function metricVar(metric: string): string {
@@ -18,7 +18,7 @@ export function metricVar(metric: string): string {
 }
 
 /** The data-* attributes a single recipe body authors onto an element (token lane → behavior). */
-export function recipeBodyAttributes(b: BodyRecipe): Record<string, string> {
+export function patternBodyAttributes(b: BodyPattern): Record<string, string> {
   const a: Record<string, string> = { 'data-body': b.body };
   if (b.strength != null) a['data-strength'] = String(b.strength);
   if (b.range != null) a['data-range'] = String(b.range);
@@ -33,7 +33,7 @@ export function recipeBodyAttributes(b: BodyRecipe): Record<string, string> {
  *  layer drives. One matter mode owns the underlay; overlay readings stack additively; heatmap
  *  is its own toggle. Layers with no executable surface yet are NAMED in `unapplied` — never
  *  silently dropped (the no-silent-caps rule). */
-export interface RecipeRenderPlan {
+export interface PatternRenderPlan {
   /** the underlay matter mode (`setRender`), or null to leave the field's current mode alone. */
   underlay: string | null;
   /** the additive overlay reading stack (`setOverlay`); empty = 'off'. */
@@ -52,7 +52,7 @@ const OVERLAY_READINGS = new Set(['streamlines', 'force-vectors', 'field-lines',
 /** Derive the render plan from a recipe's declared layers (pure; `particles` is the base matter
  *  layer and maps to `dots`). `streamlines` prefers the overlay (it reads over content) unless it
  *  is the recipe's ONLY layer, where the underlay render mode of the same name serves. */
-export function recipeRenderPlan(layers: readonly string[]): RecipeRenderPlan {
+export function patternRenderPlan(layers: readonly string[]): PatternRenderPlan {
   let underlay: string | null = null;
   const overlay: string[] = [];
   let heatmap = false;
@@ -74,13 +74,13 @@ export function recipeRenderPlan(layers: readonly string[]): RecipeRenderPlan {
 }
 
 /** One compiled body: the attribute set + the runtime tokens it carries. */
-export interface RecipeBodyRegistration {
+export interface PatternBodyRegistration {
   attributes: Record<string, string>;
   tokens: string[];
 }
 
 /** A relationship the recipe declares (from/to are conceptual endpoints, resolved at apply time). */
-export interface RecipeRelationshipRegistration {
+export interface PatternRelationshipRegistration {
   from: string;
   to: string;
   type: string;
@@ -88,13 +88,13 @@ export interface RecipeRelationshipRegistration {
 }
 
 /** A metric → feedback-variable binding (the metric lane becoming measurable state). */
-export interface RecipeFeedbackBinding {
+export interface PatternFeedbackBinding {
   metric: string;
   var: string;
 }
 
 /** The reduced-motion output plan — what the runtime renders when motion is reduced (not just prose). */
-export interface RecipeReducedMotionPlan {
+export interface PatternReducedMotionPlan {
   reducedMotion: string;
   meaningWithoutMotion: string;
   /** the static surfaces the runtime should render in place of motion. */
@@ -105,15 +105,15 @@ export interface RecipeReducedMotionPlan {
 export interface CompiledPattern {
   id: string;
   recipe: FieldRecipe;
-  bodies: RecipeBodyRegistration[];
-  relationships: RecipeRelationshipRegistration[];
-  feedback: RecipeFeedbackBinding[];
+  bodies: PatternBodyRegistration[];
+  relationships: PatternRelationshipRegistration[];
+  feedback: PatternFeedbackBinding[];
   diagnostics: string[];
   metrics: string[];
   conditions: string[];
   /** the executable render plan (#370) — what applyRecipe drives when given a field target. */
-  render: RecipeRenderPlan;
-  reducedMotion: RecipeReducedMotionPlan;
+  render: PatternRenderPlan;
+  reducedMotion: PatternReducedMotionPlan;
 }
 
 /** @deprecated Renamed to {@link CompiledPattern} (recipe → Pattern); removed at 1.0. */
@@ -143,13 +143,13 @@ export function compilePattern(r: FieldRecipe): CompiledPattern {
   return {
     id: r.id,
     recipe: r,
-    bodies: r.bodies.map((b) => ({ attributes: recipeBodyAttributes(b), tokens: tokensOf(b.body) })),
+    bodies: r.bodies.map((b) => ({ attributes: patternBodyAttributes(b), tokens: tokensOf(b.body) })),
     relationships: (r.relationships ?? []).map((rel) => ({ from: rel.from, to: rel.to, type: rel.type, strength: rel.strength })),
     feedback: r.metrics.map((m) => ({ metric: m, var: metricVar(m) })),
     diagnostics: [...r.diagnostics],
     metrics: [...r.metrics],
     conditions: [...(r.conditions ?? [])],
-    render: recipeRenderPlan(r.render ?? []),
+    render: patternRenderPlan(r.render ?? []),
     reducedMotion: {
       reducedMotion: r.accessibility.reducedMotion,
       meaningWithoutMotion: r.accessibility.meaningWithoutMotion,
@@ -167,8 +167,8 @@ const attrsToString = (a: Record<string, string>): string =>
  * Emit the `[data-body]` markup a recipe authors — a `<field-root>` plus one element per body. This is
  * the copy-paste authoring for a recipe; drop it on a page and the field runs the recipe.
  */
-export function recipeToMarkup(r: FieldRecipe): string {
-  const bodies = r.bodies.map((b) => `  <div ${attrsToString(recipeBodyAttributes(b))}></div>`).join('\n');
+export function patternToMarkup(r: FieldRecipe): string {
+  const bodies = r.bodies.map((b) => `  <div ${attrsToString(patternBodyAttributes(b))}></div>`).join('\n');
   return `<field-root></field-root>\n${bodies}`;
 }
 
@@ -176,19 +176,31 @@ const pascal = (id: string): string =>
   id.split(/[^a-z0-9]+/i).filter(Boolean).map((s) => s[0]!.toUpperCase() + s.slice(1)).join('') || 'Field';
 
 /** A recipe's copy-paste authoring across the three surfaces. */
-export interface RecipeAuthoring {
+export interface PatternAuthoring {
   html: string;
   webComponent: string;
   react: string;
 }
 
 /** Emit a recipe's authoring for native HTML, the web component, and React (pure). */
-export function recipeAuthoring(r: FieldRecipe): RecipeAuthoring {
-  const bodyLines = r.bodies.map((b) => `  <div ${attrsToString(recipeBodyAttributes(b))}></div>`).join('\n');
-  const reactBodies = r.bodies.map((b) => `      <div ${attrsToString(recipeBodyAttributes(b))} />`).join('\n');
+export function patternAuthoring(r: FieldRecipe): PatternAuthoring {
+  const bodyLines = r.bodies.map((b) => `  <div ${attrsToString(patternBodyAttributes(b))}></div>`).join('\n');
+  const reactBodies = r.bodies.map((b) => `      <div ${attrsToString(patternBodyAttributes(b))} />`).join('\n');
   return {
-    html: recipeToMarkup(r),
+    html: patternToMarkup(r),
     webComponent: `<script type="module">\n  import '@fundamental-engine/elements';\n</script>\n\n<field-root></field-root>\n${bodyLines}`,
     react: `import { FieldField } from '@fundamental-engine/react';\n\nexport default function ${pascal(r.id)}() {\n  return (\n    <FieldField>\n${reactBodies}\n    </FieldField>\n  );\n}`,
   };
 }
+
+// ── Deprecated aliases (recipe → Pattern rename, phase 4; removed at 1.0) ──────────────────────
+/** @deprecated Renamed to {@link PatternRenderPlan}. */ export type RecipeRenderPlan = PatternRenderPlan;
+/** @deprecated Renamed to {@link PatternBodyRegistration}. */ export type RecipeBodyRegistration = PatternBodyRegistration;
+/** @deprecated Renamed to {@link PatternRelationshipRegistration}. */ export type RecipeRelationshipRegistration = PatternRelationshipRegistration;
+/** @deprecated Renamed to {@link PatternFeedbackBinding}. */ export type RecipeFeedbackBinding = PatternFeedbackBinding;
+/** @deprecated Renamed to {@link PatternReducedMotionPlan}. */ export type RecipeReducedMotionPlan = PatternReducedMotionPlan;
+/** @deprecated Renamed to {@link PatternAuthoring}. */ export type RecipeAuthoring = PatternAuthoring;
+/** @deprecated Renamed to {@link patternBodyAttributes}. */ export const recipeBodyAttributes = patternBodyAttributes;
+/** @deprecated Renamed to {@link patternRenderPlan}. */ export const recipeRenderPlan = patternRenderPlan;
+/** @deprecated Renamed to {@link patternToMarkup}. */ export const recipeToMarkup = patternToMarkup;
+/** @deprecated Renamed to {@link patternAuthoring}. */ export const recipeAuthoring = patternAuthoring;

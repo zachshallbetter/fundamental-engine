@@ -45,7 +45,7 @@ export type DiagnosticMode =
   | 'prediction';
 
 /** One body in a recipe: a force token (or space-separated tokens) + attributes. */
-export interface BodyRecipe {
+export interface BodyPattern {
   body: string;
   strength?: number;
   range?: number;
@@ -54,20 +54,20 @@ export interface BodyRecipe {
   feedback?: boolean;
   scope?: 'local' | 'global';
   /** condition gate for this body (`data-when`) — must be a REGISTERED engine condition id
-   *  (active, fast, slow, hot, cool, scrolling); validateRecipe rejects unknown ids so a
+   *  (active, fast, slow, hot, cool, scrolling); validatePattern rejects unknown ids so a
    *  recipe can never declare a gate that silently never passes (#370). Recipe-level
    *  `conditions` remain the activation vocabulary; `when` is the executable per-body gate. */
   when?: string;
 }
 
-export interface RelationshipRecipe {
+export interface RelationshipPattern {
   from: string;
   to: string;
   type: string;
   strength?: number;
 }
 
-export interface AccessibilityRecipe {
+export interface AccessibilityPattern {
   /** what replaces motion under prefers-reduced-motion. */
   reducedMotion: string;
   /** how meaning survives without color/motion. */
@@ -81,10 +81,10 @@ export interface ExpectedMetrics {
 }
 
 /** Which catalog tier a recipe belongs to. */
-export type RecipeTier = 'core' | 'applied' | 'systems' | 'operational';
+export type PatternTier = 'core' | 'applied' | 'systems' | 'operational';
 
 /** A recipe's implementation status. */
-export type RecipeStatus = 'shipped' | 'experimental' | 'planned' | 'conceptual';
+export type PatternStatus = 'shipped' | 'experimental' | 'planned' | 'conceptual';
 
 /**
  * A portable field recipe (authoring §5) — the reusable unit that connects the natural-field model,
@@ -96,7 +96,7 @@ export interface FieldPattern {
   name: string;
   intent: string;
   /** which catalog tier the recipe sits in (injected during assembly). */
-  tier?: RecipeTier;
+  tier?: PatternTier;
   /** the fundamental field this recipe translates (gravity / electromagnetic / strong / weak), if one dominates. */
   naturalField?: FundamentalField;
   /** a short natural-field translation phrase (conceptual), e.g. "priority, convergence, hierarchy". */
@@ -112,12 +112,12 @@ export interface FieldPattern {
   diagnostics: string[];
   /** CONDITIONS: activation logic (dwell, threshold, stale, in-view, focused) — not forces. */
   conditions?: string[];
-  bodies: BodyRecipe[];
-  relationships?: RelationshipRecipe[];
+  bodies: BodyPattern[];
+  relationships?: RelationshipPattern[];
   render: RenderLayer[];
   /** the reduced-motion + meaning-without-motion equivalent — required: no recipe is motion-only. */
-  accessibility: AccessibilityRecipe;
-  status?: RecipeStatus;
+  accessibility: AccessibilityPattern;
+  status?: PatternStatus;
   budget?: Partial<PerformanceBudget>;
   expected?: ExpectedMetrics;
   notes?: string;
@@ -151,8 +151,8 @@ const DIAGNOSTIC_MODES: ReadonlySet<string> = new Set<DiagnosticMode>([
 export const FIELD_MODES: ReadonlySet<string> = new Set<string>([...RENDER_LAYERS, ...DIAGNOSTIC_MODES]);
 
 const VALID_FIELDS: ReadonlySet<string> = new Set<string>(FUNDAMENTAL_FIELDS);
-const VALID_TIERS: ReadonlySet<string> = new Set<RecipeTier>(['core', 'applied', 'systems', 'operational']);
-const VALID_STATUS: ReadonlySet<string> = new Set<RecipeStatus>(['shipped', 'experimental', 'planned', 'conceptual']);
+const VALID_TIERS: ReadonlySet<string> = new Set<PatternTier>(['core', 'applied', 'systems', 'operational']);
+const VALID_STATUS: ReadonlySet<string> = new Set<PatternStatus>(['shipped', 'experimental', 'planned', 'conceptual']);
 
 /**
  * Well-known words that belong to a DIFFERENT lane than runtime tokens. None of these is a passported
@@ -179,7 +179,7 @@ const OTHER_LANE: Readonly<Record<string, string>> = {
 };
 
 /** The distinct engine primitives used across a recipe's bodies, in first-seen order. */
-export function primitivesOf(bodies: readonly BodyRecipe[]): string[] {
+export function primitivesOf(bodies: readonly BodyPattern[]): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
   for (const b of bodies ?? [])
@@ -191,7 +191,7 @@ export function primitivesOf(bodies: readonly BodyRecipe[]): string[] {
   return out;
 }
 
-export interface RecipeProblem {
+export interface PatternProblem {
   path: string;
   issue: string;
 }
@@ -201,8 +201,8 @@ export interface RecipeProblem {
  * must be a real, passported force; each render layer + diagnostic must be a known mode; the declared
  * primitives must match the body tokens; the natural field must be one of the four.
  */
-export function validateRecipe(r: FieldRecipe): RecipeProblem[] {
-  const problems: RecipeProblem[] = [];
+export function validatePattern(r: FieldRecipe): PatternProblem[] {
+  const problems: PatternProblem[] = [];
   if (!r.id) problems.push({ path: 'id', issue: 'required' });
   if (!r.name) problems.push({ path: 'name', issue: 'required' });
   if (!Array.isArray(r.bodies) || r.bodies.length === 0)
@@ -249,14 +249,24 @@ export function validateRecipe(r: FieldRecipe): RecipeProblem[] {
 }
 
 /** Serialize a recipe to canonical JSON. */
-export function serializeRecipe(r: FieldRecipe): string {
+export function serializePattern(r: FieldRecipe): string {
   return JSON.stringify(r, null, 2);
 }
 
 /** Parse + validate a recipe from JSON; throws on invalid shape. */
 export function parseRecipe(json: string): FieldRecipe {
   const r = JSON.parse(json) as FieldRecipe;
-  const problems = validateRecipe(r);
+  const problems = validatePattern(r);
   if (problems.length) throw new Error(`invalid recipe: ${problems.map((p) => `${p.path} (${p.issue})`).join('; ')}`);
   return r;
 }
+
+// ── Deprecated aliases (recipe → Pattern rename, phase 4; removed at 1.0) ──────────────────────
+/** @deprecated Renamed to {@link BodyPattern}. */ export type BodyRecipe = BodyPattern;
+/** @deprecated Renamed to {@link RelationshipPattern}. */ export type RelationshipRecipe = RelationshipPattern;
+/** @deprecated Renamed to {@link AccessibilityPattern}. */ export type AccessibilityRecipe = AccessibilityPattern;
+/** @deprecated Renamed to {@link PatternTier}. */ export type RecipeTier = PatternTier;
+/** @deprecated Renamed to {@link PatternStatus}. */ export type RecipeStatus = PatternStatus;
+/** @deprecated Renamed to {@link PatternProblem}. */ export type RecipeProblem = PatternProblem;
+/** @deprecated Renamed to {@link validatePattern}. */ export const validateRecipe = validatePattern;
+/** @deprecated Renamed to {@link serializePattern}. */ export const serializeRecipe = serializePattern;

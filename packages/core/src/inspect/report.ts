@@ -9,7 +9,7 @@ import { CONTRACTS } from '../contracts/index.ts';
 import { PASSPORTS } from '../contracts/passport.ts';
 import { AGENT_CONTRACTS } from '../agents/index.ts';
 import { VISUAL_CONTRACTS } from '../visual/index.ts';
-import { RECIPE_CONTRACTS, FIELD_RECIPES } from '../recipes/index.ts';
+import { PATTERN_CONTRACTS, FIELD_RECIPES } from '../recipes/index.ts';
 import { EXPERIMENTS } from '../conformance/experiments.ts';
 import { allForces } from '../conformance/run.ts';
 
@@ -35,7 +35,7 @@ export function systemReport(): SystemReport {
     forces: tokens.length,
     passports: Object.keys(PASSPORTS).length,
     conformanceExperiments: EXPERIMENTS.length,
-    contracts: CONTRACTS.length + AGENT_CONTRACTS.length + VISUAL_CONTRACTS.length + RECIPE_CONTRACTS.length,
+    contracts: CONTRACTS.length + AGENT_CONTRACTS.length + VISUAL_CONTRACTS.length + PATTERN_CONTRACTS.length,
     agentTypes: AGENT_CONTRACTS.length,
     recipes: FIELD_RECIPES.length,
     forcesMissingPassport: tokens.filter((t) => !PASSPORTS[t]),
