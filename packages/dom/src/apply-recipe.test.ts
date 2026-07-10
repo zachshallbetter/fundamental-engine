@@ -7,7 +7,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { recipeById } from '@fundamental-engine/core';
+import { patternById } from '@fundamental-engine/core';
 import { applyRecipe } from './apply-recipe.ts';
 
 interface FakeEl extends Element {
@@ -46,7 +46,7 @@ const fakeRoot = (): Element => ({ querySelectorAll: () => [] as unknown as Node
 const VP = { width: 1000, height: 1000 };
 
 test('no scoped-field options → the input recipe is used as-is (existing call shape unchanged)', () => {
-  const base = recipeById('evidence-field')!;
+  const base = patternById('evidence-field')!;
   const el = fakeEl({ x: 450, y: 450, w: 100, h: 100 });
   const applied = applyRecipe(fakeRoot(), base, { bodies: [el], annotateBodies: false, drive: false, reducedMotion: false });
   assert.equal(applied.recipe, base, 'no derived copy when no option asks for one');
@@ -54,7 +54,7 @@ test('no scoped-field options → the input recipe is used as-is (existing call 
 });
 
 test('renderless strips render for the applied run; the catalog recipe object is untouched', () => {
-  const base = recipeById('evidence-field')!;
+  const base = patternById('evidence-field')!;
   const renderBefore = base.render;
   const renderSnapshot = [...base.render];
   const el = fakeEl({ x: 450, y: 450, w: 100, h: 100 });
@@ -78,7 +78,7 @@ test('renderless strips render for the applied run; the catalog recipe object is
 });
 
 test('extraMetrics appends + dedupes, never mutates the input, and the metric actually flows', () => {
-  const base = recipeById('evidence-field')!;
+  const base = patternById('evidence-field')!;
   const metricsBefore = base.metrics;
   const metricsSnapshot = [...base.metrics]; // ['coherence', 'entropy']
   // centered in the 1000×1000 viewport → proximity 1, fully visible → attention computes to 1
@@ -117,7 +117,7 @@ test('a supplied field target is DRIVEN by the compiled render plan, and destroy
     setOverlay: (m: string | string[]) => void calls.push(`overlay:${Array.isArray(m) ? m.join('+') : m}`),
     setHeatmap: (on: boolean) => void calls.push(`heatmap:${on}`),
   };
-  const base = recipeById('contour-charge')!; // render: ['particles', 'heatmap'] → dots + heatmap
+  const base = patternById('contour-charge')!; // render: ['particles', 'heatmap'] → dots + heatmap
   const el = fakeEl({ x: 450, y: 450, w: 100, h: 100 });
   const applied = applyRecipe(fakeRoot(), base, { bodies: [el], annotateBodies: false, drive: false, reducedMotion: false, field });
   assert.deepEqual(calls, ['render:dots', 'overlay:off', 'heatmap:true'], 'the plan executed on apply');
@@ -129,7 +129,7 @@ test('a supplied field target is DRIVEN by the compiled render plan, and destroy
 test('renderless keeps a supplied field untouched — the guard also covers reduced motion (#370)', () => {
   const calls: string[] = [];
   const field = { setRender: () => void calls.push('x'), setOverlay: () => void calls.push('x'), setHeatmap: () => void calls.push('x') };
-  const base = recipeById('contour-charge')!;
+  const base = patternById('contour-charge')!;
   const el = fakeEl({ x: 450, y: 450, w: 100, h: 100 });
   applyRecipe(fakeRoot(), base, { bodies: [el], annotateBodies: false, drive: false, reducedMotion: false, field, renderless: true }).destroy();
   assert.deepEqual(calls, [], 'renderless never drives the field (reduced motion shares the same single guard)');
@@ -139,7 +139,7 @@ test('density metric does not clobber --field-density written by the particle en
   // `priority-well` declares metrics: ['density', 'attention', 'priority'].
   // The recipe pipeline must NOT write --field-density = 0 when data-field-density is absent —
   // that would overwrite the engine's own gathered-density write from feedback-sink.
-  const base = recipeById('priority-well')!;
+  const base = patternById('priority-well')!;
   assert.ok(base.metrics.includes('density'), 'precondition: recipe declares density metric');
   const el = fakeEl({ x: 450, y: 450, w: 100, h: 100 });
 

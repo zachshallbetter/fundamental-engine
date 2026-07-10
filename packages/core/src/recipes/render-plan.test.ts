@@ -7,12 +7,12 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { recipeRenderPlan } from './compile.ts';
-import { validateRecipe } from './schema.ts';
+import { patternRenderPlan } from './compile.ts';
+import { validatePattern } from './schema.ts';
 import type { FieldRecipe } from './schema.ts';
 
 test('matter + overlay + heatmap split onto their surfaces', () => {
-  assert.deepEqual(recipeRenderPlan(['particles', 'streamlines', 'heatmap']), {
+  assert.deepEqual(patternRenderPlan(['particles', 'streamlines', 'heatmap']), {
     underlay: 'dots',
     overlay: ['streamlines'],
     heatmap: true,
@@ -21,16 +21,16 @@ test('matter + overlay + heatmap split onto their surfaces', () => {
 });
 
 test('one underlay only — a second matter mode is named, not silently dropped', () => {
-  const plan = recipeRenderPlan(['trails', 'metaballs', 'field-lines']);
+  const plan = patternRenderPlan(['trails', 'metaballs', 'field-lines']);
   assert.equal(plan.underlay, 'trails');
   assert.deepEqual(plan.overlay, ['field-lines']);
   assert.deepEqual(plan.unapplied, ['metaballs']);
 });
 
 test('streamlines alone serves as the underlay render mode; with matter it reads over content', () => {
-  assert.equal(recipeRenderPlan(['streamlines']).underlay, 'streamlines');
-  assert.deepEqual(recipeRenderPlan(['streamlines']).overlay, []);
-  const both = recipeRenderPlan(['dots', 'streamlines']);
+  assert.equal(patternRenderPlan(['streamlines']).underlay, 'streamlines');
+  assert.deepEqual(patternRenderPlan(['streamlines']).overlay, []);
+  const both = patternRenderPlan(['dots', 'streamlines']);
   assert.equal(both.underlay, 'dots');
   assert.deepEqual(both.overlay, ['streamlines']);
 });
@@ -43,8 +43,8 @@ test('an unknown body.when gate is a validation error — never a silent never-p
     render: ['particles'], metrics: [], diagnostics: [],
     accessibility: { reducedMotion: 'static', meaningWithoutMotion: 'static' },
   };
-  const problems = validateRecipe(r);
+  const problems = validatePattern(r);
   assert.ok(problems.some((p) => p.path === 'bodies[0].when' && /unknown condition/.test(p.issue)), JSON.stringify(problems));
   r.bodies[0]!.when = 'active';
-  assert.deepEqual(validateRecipe(r), []);
+  assert.deepEqual(validatePattern(r), []);
 });

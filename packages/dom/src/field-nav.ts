@@ -12,7 +12,7 @@
  * reachable. The caller owns the visit log and the recipe lookup; this helper owns the binding and its
  * teardown. Unfrozen (experimental) — option names may refine before 1.0.
  */
-import { recipeById, type FieldRecipe } from '@fundamental-engine/core';
+import { patternById, type FieldRecipe } from '@fundamental-engine/core';
 import { applyRecipe } from './apply-recipe.ts';
 import { prefersReducedMotion } from './env.ts';
 
@@ -51,7 +51,7 @@ export function bindFieldNav(
   opts: FieldNavOptions = {},
 ): FieldNavHandle | null {
   if (opts.reducedMotion ?? prefersReducedMotion()) return null;
-  const resolved = typeof recipe === 'string' ? recipeById(recipe) : recipe;
+  const resolved = typeof recipe === 'string' ? patternById(recipe) : recipe;
   if (!resolved) return null;
   const links = [...root.querySelectorAll<HTMLAnchorElement>('a[href]')];
   if (!links.length) return null;

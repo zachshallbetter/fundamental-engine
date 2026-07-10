@@ -6,7 +6,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateRecipe, serializeRecipe, parseRecipe, primitivesOf, FIELD_MODES } from './schema.ts';
+import { validatePattern, serializePattern, parseRecipe, primitivesOf, FIELD_MODES } from './schema.ts';
 import { WAYFINDING_FIELD, WAYFINDING_CURRENT, WAYFINDING_RECIPES, EXPERIMENTAL_RECIPES } from './wayfinding.ts';
 import { FIELD_RECIPES } from './gallery.ts';
 import { compileRecipe, metricVar } from './compile.ts';
@@ -14,7 +14,7 @@ import { passportFor } from '../contracts/passport.ts';
 
 test('both wayfinding variations validate (real tokens, known layers + diagnostics, matching primitives)', () => {
   for (const r of WAYFINDING_RECIPES) {
-    const problems = validateRecipe(r);
+    const problems = validatePattern(r);
     assert.deepEqual(problems, [], `${r.name}: ${problems.map((p) => `${p.path} ${p.issue}`).join(', ')}`);
     assert.deepEqual(r.primitives, primitivesOf(r.bodies), `${r.name}: primitives match body tokens`);
   }
@@ -60,5 +60,5 @@ test('both compile to a runtime plan with metric feedback and a reduced-motion o
 });
 
 test('both round-trip through JSON', () => {
-  for (const r of WAYFINDING_RECIPES) assert.deepEqual(parseRecipe(serializeRecipe(r)), r);
+  for (const r of WAYFINDING_RECIPES) assert.deepEqual(parseRecipe(serializePattern(r)), r);
 });

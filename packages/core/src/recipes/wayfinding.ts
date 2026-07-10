@@ -11,7 +11,7 @@
  *   • Wayfinding Field (gravity)           — "where am I, what's adjacent" (present-tense orientation).
  *   • Wayfinding Current (electromagnetic)  — "where have I been" (the path travelled, the current from home).
  *
- * Both pass `validateRecipe` (real passported tokens, known render layers + diagnostics, primitives =
+ * Both pass `validatePattern` (real passported tokens, known render layers + diagnostics, primitives =
  * body tokens, a fundamental field, a reduced-motion equivalent). They are kept OUT of the canonical
  * 64-recipe `FIELD_RECIPES` catalog (a locked 4×16 of shipped recipes, cited as such across the
  * papers) and marked `experimental` — they surface on the /recipes hub as a labelled experimental

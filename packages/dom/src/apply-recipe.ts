@@ -13,7 +13,7 @@ import { lintPlatform } from './lint.ts';
 import { prefersReducedMotion } from './env.ts';
 import { computeMetrics, groundedRecency, METRIC_KINDS, type MetricKind } from './metrics.ts';
 import {
-  validateRecipe,
+  validatePattern,
   compileRecipe,
   type FieldRecipe,
   type CompiledRecipe,
@@ -48,7 +48,7 @@ export interface ApplyPatternOptions {
    * toggle — and `destroy()` resets the surfaces it drove (dots / off / false). Omitted → the
    * recipe stays signals-only, exactly as before (fully additive).
    */
-  field?: RecipeFieldTarget;
+  field?: PatternFieldTarget;
   /**
    * Extra metric lanes appended to the recipe's `metrics` (deduped, original order preserved) —
    * e.g. `['attention', 'recency']`. Each appended metric gains the standard feedback binding
@@ -109,14 +109,14 @@ const elementKey = (el: Element, i: number): string => el.id || `${el.tagName.to
  * relationships, installs the reduced-motion output, and returns a destroyable, inspectable handle.
  */
 /** The slice of a live field a recipe can drive — FieldHandle and <field-root> both fit. */
-export interface RecipeFieldTarget {
+export interface PatternFieldTarget {
   setRender?(mode: string): void;
   setOverlay?(mode: string | string[]): void;
   setHeatmap?(on: boolean): void;
 }
 
 /** Execute a compiled render plan on a field target. Exported for tests and custom hosts. */
-export function driveRenderPlan(field: RecipeFieldTarget, plan: { underlay: string | null; overlay: string[]; heatmap: boolean }): void {
+export function driveRenderPlan(field: PatternFieldTarget, plan: { underlay: string | null; overlay: string[]; heatmap: boolean }): void {
   if (plan.underlay && field.setRender) field.setRender(plan.underlay);
   if (field.setOverlay) field.setOverlay(plan.overlay.length ? plan.overlay : 'off');
   if (field.setHeatmap) field.setHeatmap(plan.heatmap);
@@ -138,7 +138,7 @@ export function applyPattern(root: Element, recipe: FieldRecipe, options: ApplyP
     };
   }
 
-  const problems = validateRecipe(recipe);
+  const problems = validatePattern(recipe);
   if (problems.length) throw new Error(`applyRecipe: invalid recipe "${recipe.id}": ${problems.map((p) => `${p.path} (${p.issue})`).join('; ')}`);
 
   const compiled = compileRecipe(recipe);
@@ -146,7 +146,7 @@ export function applyPattern(root: Element, recipe: FieldRecipe, options: ApplyP
   // the execution half of recipe.render (#370): drive the supplied field with the compiled plan.
   // Reduced motion skips the drive entirely — the recipe's static plan is the equivalent, and a
   // field left at its resting surfaces (dots / off) IS the static reading.
-  let droveField: RecipeFieldTarget | null = null;
+  let droveField: PatternFieldTarget | null = null;
   const reducedMotion = options.reducedMotion ?? prefersReducedMotion();
 
   const platform = createFieldPlatform(root);
@@ -372,3 +372,6 @@ export function destroyRecipe(applied: AppliedRecipe): void {
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
 }
+
+/** @deprecated Renamed to {@link PatternFieldTarget} (recipe → Pattern rename); removed at 1.0. */
+export type RecipeFieldTarget = PatternFieldTarget;

@@ -14,7 +14,7 @@ import { createField } from './engine/field.ts';
 import type { FieldHost } from './engine/host.ts';
 import type { FocusEvent } from './engine/types.ts';
 import { FOCUS_WELL } from './recipes/focus.ts';
-import { validateRecipe, EXPERIMENTAL_PATTERNS } from './recipes/index.ts';
+import { validatePattern, EXPERIMENTAL_PATTERNS } from './recipes/index.ts';
 import { FIELD_PATTERNS } from './recipes/catalog.ts';
 
 function drivableHost(reducedMotion = false): { host: FieldHost; step: (frames: number) => void } {
@@ -212,7 +212,7 @@ test('focus well (active): a focused attract body gathers matter tighter than an
 });
 
 test('FOCUS_WELL Pattern validates and lives in EXPERIMENTAL_PATTERNS, not the locked 64', () => {
-  assert.deepEqual(validateRecipe(FOCUS_WELL), [], 'the focus-well Pattern is valid');
+  assert.deepEqual(validatePattern(FOCUS_WELL), [], 'the focus-well Pattern is valid');
   assert.ok(EXPERIMENTAL_PATTERNS.some((p) => p.id === 'focus-well'), 'surfaced in EXPERIMENTAL_PATTERNS');
   assert.ok(!FIELD_PATTERNS.some((p) => p.id === 'focus-well'), 'NEVER in the locked 64 FIELD_PATTERNS');
 });
