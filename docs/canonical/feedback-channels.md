@@ -15,11 +15,11 @@ property writer and the page is a CSS property reader.
 > Read **either** — they never disagree.
 >
 > `--field-density` is **not** a "legacy alias," and neither is `--d`. There was a real bug
-> (now fixed): `applyRecipe()`'s metric pipeline used to bind a recipe's `density` metric onto
+> (now fixed): `applyRecipe()`'s metric pipeline used to bind a pattern's `density` metric onto
 > `--field-density`, overwriting the engine's live write with the host-supplied
 > `data-field-density` attribute (absent → `0`), so `var(--field-density)` read `0` while `--d`
 > held the value. The fix (`packages/dom/src/apply-recipe.ts` — the `ENGINE_OWNED_METRICS` set)
-> **excludes `density` from the recipe metric pipeline**, so the engine's live write is
+> **excludes `density` from the pattern metric pipeline**, so the engine's live write is
 > authoritative and `--field-density === --d` on every element, recipe-driven or not. The old
 > advice "prefer `--field-density`; `--d` is the legacy alias" was doubly wrong — it named the
 > broken variable as primary *and* mislabelled the working one as legacy. Neither is legacy;
@@ -34,7 +34,7 @@ There are three categories of engine-written CSS properties:
 | Category | Where written | Driven by |
 |---|---|---|
 | **Body feedback** | `[data-feedback]` elements | Engine per-body particle density |
-| **Recipe metric** | `[data-feedback]` elements | Declared recipe metric pipeline |
+| **Pattern metric** | `[data-feedback]` elements | Declared pattern metric pipeline |
 | **Environment / root** | `:root` | Scroll state, global field presence |
 
 ---
@@ -51,7 +51,7 @@ Written on every element carrying `[data-feedback]`, every frame:
 | `--load` | 0 → 1 | A sink body's accretion fill fraction. 0 = empty, 1 = saturated. Written when the body has `data-absorb`. |
 | `--mass` | 0 → 1 | Back-compat alias of `--load`. Prefer `--load`. |
 | `--lit` | 0 → 1 | Spillover-lit density when a saturated neighbouring sink bleeds density across a boundary (causality). |
-| `--entropy` | 0 → 1 | Local disorder — velocity-direction dispersion, gated by agitation. Distinct from the platform-inferred `--field-entropy` recipe lane. |
+| `--entropy` | 0 → 1 | Local disorder — velocity-direction dispersion, gated by agitation. Distinct from the platform-inferred `--field-entropy` pattern lane. |
 | `--coherence` | 0 → 1 | Local order (= 1 − entropy; velocity alignment). Numeric value — not the `--coherence` palette colour on `:root`. |
 | `--temperature` | 0 → 1 | Local agitation — half mean heat, half normalised kinetic energy. |
 
@@ -69,9 +69,9 @@ target and the vars are never written onto it.
 
 ---
 
-## 3. The `--field-<metric>` recipe lanes — and their provenance
+## 3. The `--field-<metric>` pattern lanes — and their provenance
 
-When a recipe declares `metric` lanes, `applyRecipe()` writes each as `--field-<metric>` on the
+When a pattern declares `metric` lanes, `applyRecipe()` writes each as `--field-<metric>` on the
 bound `[data-feedback]` element during the `write` phase — **alongside** (never instead of) the
 engine body-feedback vars in §2. The `--field-<metric>` namespace is reserved for these lanes;
 don't author custom properties into it on the same elements.
@@ -89,10 +89,10 @@ whole feedback surface:
 | `--field-pressure` | **computed** | The engine each frame — relationship/age pressure. |
 | `--field-recency` | **computed** | The engine each frame — interaction recency, **grounded** to world time when the body declares `data-field-at` (then `freshness(at, now, halfLife)`). |
 | `--field-priority` | **computed** | The engine each frame — derived importance. |
-| `--field-confidence` | **supplied-only** | The **host** — present ONLY when supplied (`data-field-confidence` / recipe option / domain model). The engine never infers it: a citation is not certainty. |
+| `--field-confidence` | **supplied-only** | The **host** — present ONLY when supplied (`data-field-confidence` / pattern option / domain model). The engine never infers it: a citation is not certainty. |
 | `--field-risk` | **supplied-only** | The **host** — present ONLY when supplied. Never defaulted to `0`: "no risk" is a claim, not a safe blank. |
 
-A third provenance class, **designed**, covers any *other* `--field-<name>` a recipe references
+A third provenance class, **designed**, covers any *other* `--field-<name>` a pattern references
 (e.g. `signal`, `route-strength`, `sync`): the host must supply it via `data-field-<name>`, and
 with neither a supply nor a computed source the lane is **inert** — declared but never written.
 `classifyMetric(name)` returns `computed` / `supplied-only` / `designed`, and the
@@ -213,17 +213,17 @@ the same element, or they can be separate elements in the same region:
 |---|---|---|
 | Engine (core) | Particle density computation | Every frame (frame-rate) |
 | Platform (dom) | `[data-feedback]` write registry | Every frame, write phase only |
-| Recipe pipeline | `applyRecipe()` metric lanes | On recipe apply + body re-measurement |
+| Pattern pipeline | `applyRecipe()` metric lanes | On pattern apply + body re-measurement |
 | Root platform | Scroll velocity, field presence | Every frame, deduped |
 
 The six-phase scheduler enforces the split: the `write` phase happens after `compute` and
 `state`, so CSS properties are always written from a stable, post-simulation snapshot.
 
-**`density` is engine-owned, not a recipe lane.** Even when a recipe declares a `density`
+**`density` is engine-owned, not a pattern lane.** Even when a pattern declares a `density`
 metric, `applyRecipe()` **does not** bind it into the metric pipeline — the `ENGINE_OWNED_METRICS`
 set (`packages/dom/src/apply-recipe.ts`) excludes it, so the engine's live per-frame write to
 `--d` / `--field-density` stays authoritative. This is the fix behind the density note at the top:
-a recipe can no longer clobber the live density value with a host attribute default.
+a pattern can no longer clobber the live density value with a host attribute default.
 
 ---
 

@@ -67,7 +67,7 @@ Five modules map to the npm / Swift packages: `:fundamental-core` ↔ `@fundamen
   fixture onto its test classpath and reproduces every force delta within tolerance. The Android build
   (core conformance + host assembly) is a CI gate (`android.yml`), re-run whenever the golden changes.
 - **Parity (honest):** like the web, the JS plane moves first. Core forces, the integrator, the
-  scheduler/registries, the `FieldHandle` API (incl. relationship edges), formations, recipes, and
+  scheduler/registries, the `FieldHandle` API (incl. relationship edges), formations, patterns, and
   overlays are present; the matter-render extras (metaballs / voronoi) and the declarative `[data-body]`
   view scanner remain follow-ups. Status is **preview** on the hosts — stable in shape, trailing the web
   on the newest additions.
@@ -92,7 +92,7 @@ load (`TIER_DPR = [∞, 1.5, 1.25, 1]`). *Pinned by:* `core/dpr-cap.test.ts`, th
 - **Engine** — integration freezes (`dt = 0`): no particle travel, no boot animation, no sparks, draw
   quarter-rated. *Pinned by:* `core/reduced-motion.test.ts` (particles provably don't move under reduce,
   and provably do without it).
-- **Recipes / examples** — `applyRecipe` renders the static, meaning-preserving fallback instead of
+- **Patterns / examples** — `applyRecipe` renders the static, meaning-preserving fallback instead of
   driving the field; emission alpha flattens, travel drops, focus is kept. *Pinned by:*
   `contracts/a11y.test.ts` ("meaning survives without motion").
 
@@ -126,7 +126,7 @@ spot-check (the human half of RC-8) is logged here:
 
 | Date | Tool | Surface | Result |
 |---|---|---|---|
-| automated | CI (`a11y.test.ts`, `reduced-motion.test.ts`) | engine + recipes | ✅ reduced-motion fallback, semantic-truth, no motion-only meaning |
+| automated | CI (`a11y.test.ts`, `reduced-motion.test.ts`) | engine + patterns | ✅ reduced-motion fallback, semantic-truth, no motion-only meaning |
 | _pending_ | VoiceOver / NVDA | fundamental-engine.com homepage + `/eli5` | _maintainer spot-check — confirm the field is skipped and content is fully navigable_ |
 
 > The decorative field being `aria-hidden` means a conforming screen reader walks straight past it to the

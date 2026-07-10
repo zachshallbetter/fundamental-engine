@@ -1,4 +1,4 @@
-# Recipes as Behavioral Design Tokens
+# Patterns as Behavioral Design Tokens
 
 > **Status: citation-complete expansion draft (editorial review copy).** Paper 14 of the Fundamental expansion family. This paper generalizes claims from the first eight Fundamental papers into a broader design-systems paper. It is not yet externally peer reviewed, and any empirical section below is a study design rather than a result.
 
@@ -11,7 +11,7 @@
 
 ## Abstract
 
-Design systems need portable tokens for behavior, not only visual values: named, validated, inspectable recipes can make motion, attention, evidence, priority, and relationship behavior reusable without turning prose into hidden imperative code. This paper isolates that claim from the implementation-specific language of the first Fundamental paper family and states it as a portable interface principle. The contribution is threefold. First, it defines the core concept in operational terms: what state must exist, where that state lives, who can read it, and what makes the claim falsifiable. Second, it positions the concept against adjacent interface traditions — design tokens, behavior tokens, recipes, design systems, and authoring — so the difference is not merely terminological. Third, it sketches a concrete evaluation and conformance plan that can be run without assuming that Fundamental is the only possible implementation. The paper is therefore a bridge: grounded in Fundamental's shipped vocabulary and documentation, but written so the model can be argued, criticized, and reproduced outside that codebase.
+Design systems need portable tokens for behavior, not only visual values: named, validated, inspectable patterns can make motion, attention, evidence, priority, and relationship behavior reusable without turning prose into hidden imperative code. This paper isolates that claim from the implementation-specific language of the first Fundamental paper family and states it as a portable interface principle. The contribution is threefold. First, it defines the core concept in operational terms: what state must exist, where that state lives, who can read it, and what makes the claim falsifiable. Second, it positions the concept against adjacent interface traditions — design tokens, behavior tokens, patterns, design systems, and authoring — so the difference is not merely terminological. Third, it sketches a concrete evaluation and conformance plan that can be run without assuming that Fundamental is the only possible implementation. The paper is therefore a bridge: grounded in Fundamental's shipped vocabulary and documentation, but written so the model can be argued, criticized, and reproduced outside that codebase.
 
 ---
 
@@ -19,11 +19,11 @@ Design systems need portable tokens for behavior, not only visual values: named,
 
 Modern interfaces routinely contain more meaning than their rendered components expose. A result is not only a card; it has relevance, source support, uncertainty, recency, and relation to neighboring results. A document section is not only a block of text; it has position, prior attention, cross-references, and a role in the reader's mental map. A dashboard tile is not only a rectangle; it participates in a larger state of risk, priority, anomaly, and dependency. Conventional UI systems can render these properties, but they rarely make them first-class interface state.
 
-The first Fundamental paper family approaches this problem through a relational field runtime. The flagship paper names the general model; the supporting papers test that model against reading, evidence, motion/accessibility, host portability, recipes, data binding, and diagnostics. This paper pulls one reusable claim out of that family: design systems need portable tokens for behavior, not only visual values: named, validated, inspectable recipes can make motion, attention, evidence, priority, and relationship behavior reusable without turning prose into hidden imperative code.
+The first Fundamental paper family approaches this problem through a relational field runtime. The flagship paper names the general model; the supporting papers test that model against reading, evidence, motion/accessibility, host portability, patterns, data binding, and diagnostics. This paper pulls one reusable claim out of that family: design systems need portable tokens for behavior, not only visual values: named, validated, inspectable patterns can make motion, attention, evidence, priority, and relationship behavior reusable without turning prose into hidden imperative code.
 
 The point is not to argue that every interface should contain particles, simulated forces, or visual field lines. Those are representations. The deeper claim is about interface state. A system becomes interesting when relationships, evidence, attention, memory, diagnostics, accessibility equivalents, and data lifecycle stop being scattered across component props and one-off event handlers and become inspectable participants in a shared model.
 
-This distinction matters because many expressive interfaces fail in the same pattern. They use motion, canvas, color, badges, animation, or layout to suggest a relation, but the relation itself is not available to the system. It cannot be inspected, tested, degraded for accessibility, serialized as a recipe, or bound to data in another view. Meaning appears at the surface but is not carried as a durable substrate. Fundamental's vocabulary is one answer to that failure, but the broader research question is whether interface systems should treat such meaning as a first-class layer.
+This distinction matters because many expressive interfaces fail in the same pattern. They use motion, canvas, color, badges, animation, or layout to suggest a relation, but the relation itself is not available to the system. It cannot be inspected, tested, degraded for accessibility, serialized as a pattern, or bound to data in another view. Meaning appears at the surface but is not carried as a durable substrate. Fundamental's vocabulary is one answer to that failure, but the broader research question is whether interface systems should treat such meaning as a first-class layer.
 
 ---
 
@@ -36,7 +36,7 @@ This distinction matters because many expressive interfaces fail in the same pat
 
 ## 2. Background and related work
 
-This paper uses design-token work as an analogy, not as a claim of equivalence. Design Tokens Format work supports the premise that portable named values can stabilize visual decisions across systems [w3c-design-tokens]. DSL and end-user/visual programming literature supports the broader authoring claim that constrained, typed vocabularies can make complex behavior more reusable and reviewable than one-off imperative code [fowler2010dsl; resnick2009scratch; myers1990garnet]. Fundamental's recipe documentation supplies the system-specific case: recipes are behavior records whose concepts, runtime tokens, metrics, diagnostics, conditions, and accessibility equivalents are separated into auditable lanes [fundamental-engine-recipes].
+This paper uses design-token work as an analogy, not as a claim of equivalence. Design Tokens Format work supports the premise that portable named values can stabilize visual decisions across systems [w3c-design-tokens]. DSL and end-user/visual programming literature supports the broader authoring claim that constrained, typed vocabularies can make complex behavior more reusable and reviewable than one-off imperative code [fowler2010dsl; resnick2009scratch; myers1990garnet]. Fundamental's pattern documentation supplies the system-specific case: patterns are behavior records whose concepts, runtime tokens, metrics, diagnostics, conditions, and accessibility equivalents are separated into auditable lanes [fundamental-engine-recipes].
 
 The adjacent systems differ by what they treat as primary. Component systems treat local component state as the organizing unit. Reactive renderers treat a view as a function of application state. Scene graphs treat drawable objects and their transform hierarchy as the durable model. Information visualization treats data structure and visual encoding as primary. Accessibility standards treat semantic availability and operability as non-negotiable constraints. Fundamental's field model intersects all of these but is not reducible to any one of them: it treats rendered elements, data records, relationships, metrics, accessibility equivalents, and diagnostics as participants in a shared interface substrate.
 
@@ -67,7 +67,7 @@ This paper contributes the following claims.
 - Map visual-token properties to behavioral-token properties.
 - Define a behavioral token as a named, versioned, validated behavior contract.
 - Show why behavior tokens need diagnostics, reduced-mode equivalents, and runtime symbol tables.
-- Position recipes as data, not code.
+- Position patterns as data, not code.
 
 Together these claims make the concept stronger than a metaphor. They state what must be implemented, what must be inspectable, and what can fail.
 
@@ -75,7 +75,7 @@ Together these claims make the concept stronger than a metaphor. They state what
 
 ## 5. Design implications
 
-The first implication is that interface behavior should be authored against explicit relations rather than against visual side effects. A designer should be able to name a support relation, a contradiction, a memory trace, an attention budget, or a priority field without smuggling that concept into an animation curve or color rule. This is the reason the recipe model matters: it separates product-language concepts from executable runtime tokens.
+The first implication is that interface behavior should be authored against explicit relations rather than against visual side effects. A designer should be able to name a support relation, a contradiction, a memory trace, an attention budget, or a priority field without smuggling that concept into an animation curve or color rule. This is the reason the pattern model matters: it separates product-language concepts from executable runtime tokens.
 
 The second implication is that accessibility should be evaluated at the level of meaning. Turning off motion is not enough if motion was the only carrier of origin, direction, or causality. Removing color is not enough if color was the only carrier of confidence or risk. Replacing a canvas with fallback text is not enough if the relationships encoded by the canvas disappear. The substrate has to preserve the source meaning and expose an alternate carrier.
 
@@ -103,7 +103,7 @@ The studies should be preregistered and analyzed with mixed-effects models where
 
 ## 7. Implementation status and limitations
 
-This draft should not be read as a claim that all proposed behavior is currently shipped. The first family already distinguishes shipped runtime features, study-page demonstrations, proposed harnesses, and unrun evaluations. The same discipline applies here. Fundamental provides a concrete implementation vocabulary — bodies, fields, recipes, registries, diagnostics, data binding, host boundaries — but this expansion paper argues the broader model.
+This draft should not be read as a claim that all proposed behavior is currently shipped. The first family already distinguishes shipped runtime features, study-page demonstrations, proposed harnesses, and unrun evaluations. The same discipline applies here. Fundamental provides a concrete implementation vocabulary — bodies, fields, patterns, registries, diagnostics, data binding, host boundaries — but this expansion paper argues the broader model.
 
 The main limitation is abstraction risk. A general paper can become too broad to falsify. To avoid that, every concept above is tied to a failure condition: unqueryable relations, unsupported signals, inaccessible channel loss, mutating diagnostics, and flattened data. Future revisions should preserve those failure tests.
 
@@ -113,4 +113,4 @@ A second limitation is empirical status. The external bibliography now supports 
 
 ## 8. Conclusion
 
-Design systems need portable tokens for behavior, not only visual values: named, validated, inspectable recipes can make motion, attention, evidence, priority, and relationship behavior reusable without turning prose into hidden imperative code. The claim is broader than Fundamental but made concrete by it. The first paper family shows the pieces: reading memory, evidence graphs, reduced-motion equivalence, host-driven runtime structure, recipes, data binding, and diagnostics. This expansion paper turns those pieces into a general research question: what would interface systems look like if relational meaning were treated as a substrate rather than an ornament?
+Design systems need portable tokens for behavior, not only visual values: named, validated, inspectable patterns can make motion, attention, evidence, priority, and relationship behavior reusable without turning prose into hidden imperative code. The claim is broader than Fundamental but made concrete by it. The first paper family shows the pieces: reading memory, evidence graphs, reduced-motion equivalence, host-driven runtime structure, patterns, data binding, and diagnostics. This expansion paper turns those pieces into a general research question: what would interface systems look like if relational meaning were treated as a substrate rather than an ornament?

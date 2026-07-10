@@ -11,13 +11,13 @@
 
 A comprehensive map of the engine: every source module, what it owns, the data-flow that ties
 them together, and the catalogs (forces, classes, services, render modes, formations,
-conditions, presets, recipes) it ships.
+conditions, presets, patterns) it ships.
 
 Two packages do the engine work (three thin authoring surfaces — `@fundamental-engine/{elements,react,vanilla}`
 — wrap them):
 
 - **`@fundamental-engine/core`** — `packages/core/src/`. The renderer + force math + the conserved
-  simulation, plus the contracts, diagnostics, recipes, semantic/visual layers, and inspection.
+  simulation, plus the contracts, diagnostics, patterns, semantic/visual layers, and inspection.
   **Zero runtime dependencies** and renderer-agnostic: the `core/dom-boundary.test.ts` guard keeps an
   **empty allowlist** — no file in core may reference a DOM global. `field.ts` reaches the page only
   through the injected `FieldHost`; `export.ts` serializes a caller-supplied canvas.
@@ -144,15 +144,15 @@ Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platf
 | `diagnostics/modes.ts` | The four debug/graph modes: topology, inspector, causality, prediction. |
 | `diagnostics/fields.ts` / `potential.ts` / `energy.ts` | Heatmap-variant samplers; scalar potential `Φ = −s/√(d²+ε²)` + grid sampler; pure kinetic/thermal/total energy accounting. |
 
-### Recipes (portable field programs — authoring §5/§7)
+### Patterns (portable field programs — authoring §5/§7)
 
 | Module | Purpose |
 |---|---|
-| `recipes/schema.ts` | `FieldRecipe` schema + validation + serialization — a portable, inspectable field program. |
-| `recipes/compile.ts` | Compiles a validated recipe → a runtime plan (DOM counterpart is platform `applyRecipe`). |
+| `recipes/schema.ts` | `FieldPattern` schema + validation + serialization — a portable, inspectable field program. |
+| `recipes/compile.ts` | Compiles a validated pattern → a runtime plan (DOM counterpart is platform `applyRecipe`). |
 | `recipes/intent.ts` | Intent compiler: author says "draw-focus" → concrete tokens/attrs/render layers. |
 | `recipes/explain.ts` | "Explain this field" + "field diff" — plain-language strings built from the passports. |
-| `recipes/catalog.ts` / `gallery.ts` | The **64 portable recipes** in four `RECIPE_TIERS`; each doubles as a worked example + conformance fixture. |
+| `recipes/catalog.ts` / `gallery.ts` | The **64 portable patterns** in four `RECIPE_TIERS`; each doubles as a worked example + conformance fixture. |
 
 ### Semantic & visual language
 
@@ -170,7 +170,7 @@ Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platf
 | Module | Purpose |
 |---|---|
 | `inspect/snapshot.ts` | Deterministic seeded-scenario fingerprint (count + mean speed/heat) → catches accidental physics change (§12). |
-| `inspect/report.ts` | Aggregates the whole model (contracts, passports, experiments, agents, recipes) + "is every force passported AND conformance-covered?". |
+| `inspect/report.ts` | Aggregates the whole model (contracts, passports, experiments, agents, patterns) + "is every force passported AND conformance-covered?". |
 | `inspect/budget.ts` | Live counts vs a `PerformanceBudget`; reports every metric over its limit (§15). |
 | `engine/scanner.ts` | `[data-body]`/`[data-preset]` → bodies (parsing pure; measurement runs in the platform read-phase). |
 | `engine/shadow.ts` | `FieldController` / `ShadowRegistry` — host-first shadow-DOM registration (register the HOST, never the shadow tree). |
@@ -312,7 +312,7 @@ Shared per-frame environment (`engine/types.ts`), filled by the engine: `dx/dy/d
 | `data-field-visual-for` + `scan()` | declarative visual binding (an expressive visual ↔ its semantic source) |
 | `setOverlay` / `overlay="…"` | Field Surfaces overlay layers over/under content |
 | `field.flowTo(x,y)` | retarget the flow focus each frame |
-| `bindData(...)` / `applyRecipe(...)` | data + portable recipes as field programs |
+| `bindData(...)` / `applyRecipe(...)` | data + portable patterns as field programs |
 
 ---
 

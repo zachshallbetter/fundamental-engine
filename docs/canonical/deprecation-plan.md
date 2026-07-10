@@ -54,13 +54,20 @@ forever. They are not migration cruft and get **no** deprecation warning:
 | 7 | `FIELD_RECIPES` / `ESSENTIAL_RECIPES` / `FIRST_RELEASE_RECIPE_IDS` consts — aliases of `FIELD_PATTERNS` / `FIRST_RELEASE_PATTERN_IDS` | `FIELD_PATTERNS` / `FIRST_RELEASE_PATTERN_IDS` | `packages/core/src/recipes/catalog.ts` | No — `@deprecated` JSDoc | **`1.0`** — remove |
 | 8 | `EXPERIMENTAL_RECIPES` const — alias of `EXPERIMENTAL_PATTERNS` | `EXPERIMENTAL_PATTERNS` | `packages/core/src/recipes/wayfinding.ts` | No — `@deprecated` JSDoc | **`1.0`** — remove |
 | 9 | `applyRecipe` value + `ApplyRecipeOptions` / `AppliedRecipe` / `AppliedRecipeInspection` types — aliases of `applyPattern` / `ApplyPatternOptions` / `AppliedPattern` / `AppliedPatternInspection` | `applyPattern` (+ the `Pattern` types) | `packages/dom/src/apply-recipe.ts` | No — `const`/`type` re-exports, `@deprecated` JSDoc | **`1.0`** — remove |
+| 10 | phase-4 helper aliases — `BodyRecipe` / `RelationshipRecipe` / `AccessibilityRecipe` / `RecipeTier` / `RecipeStatus` / `RecipeProblem` / `RecipeTierGroup` / `RecipeRenderPlan` / `Recipe{Body,Relationship}Registration` / `RecipeFeedbackBinding` / `RecipeReducedMotionPlan` / `RecipeAuthoring` / `RecipeFieldTarget` (types); `RECIPE_TIERS` / `RECIPE_CONTRACTS` (consts); `validateRecipe` / `serializeRecipe` / `recipeById` / `recipeBodyAttributes` / `recipeRenderPlan` / `recipeToMarkup` / `recipeAuthoring` (fns); `bindData({ recipe })` option | the `Pattern`-named equivalents (`BodyPattern`, `PatternTier`, `validatePattern`, `patternById`, …; `bindData({ pattern })`) | `packages/core/src/recipes/*`, `packages/dom/src/{apply-recipe,bind-data}.ts` | No — `@deprecated` JSDoc / `const` re-exports | **`1.0`** — remove |
 
 > **Rows 4–9 (the recipe → Pattern rename, phase 1).** The concept "recipe" is renamed to **Pattern**
 > end-to-end; the frozen public API (`FieldRecipe`/`compileRecipe`/`applyRecipe`) and the documented data
 > consts gain `FieldPattern`/`compilePattern`/`applyPattern`/`FIELD_PATTERNS`/… canonical names, with the
 > old names kept as `@deprecated` aliases (the same no-runtime-warn convention `SceneRecipe`/
-> `ESSENTIAL_RECIPES` already use). Additive — nothing breaks pre-`1.0`. Internal-only helper type names
-> (`BodyRecipe`, `RecipeTier`, `RECIPE_TIERS`, …) and the `data/recipes.json` filename are a later phase.
+> `ESSENTIAL_RECIPES` already use). Additive — nothing breaks pre-`1.0`.
+>
+> **Row #10 (phase 4).** The remaining internal helper surface (`BodyRecipe`→`BodyPattern`,
+> `RecipeTier`→`PatternTier`, `RECIPE_TIERS`→`PATTERN_TIERS`, `validateRecipe`→`validatePattern`, …) is
+> renamed with `@deprecated` aliases, and `bindData` gains a `pattern` option. The Swift + Kotlin ports
+> mirror the rename as a **clean rename (no aliases)** — they have no external consumers. Intentionally
+> kept as invisible plumbing (not concept surface): the `recipes/` source folder, `apply-recipe.ts`, the
+> `data/recipes.json` filename, and the `RelationshipSource` `'recipe'` value tag.
 
 **On row #1 (`--mass`) and CSS vars generally:** the engine *writes* the var; a CSS `var(--mass)` read
 happens entirely in the style engine and is invisible to JS, so there is no interception point for a

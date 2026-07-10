@@ -22,7 +22,7 @@ A behavior or visual is **wallpaper** — and violates this rule — iff **all t
 Prong 3 is what separates wallpaper from decoration. **Decoration is legal when declared**:
 opt-in and truth-mode passported ([system-contracts.md](system-contracts.md),
 [fundamental-field-behavior-table.md](fundamental-field-behavior-table.md)). The presets and
-recipes were never the problem; the Currents were, because they were default-on and undeclared.
+patterns were never the problem; the Currents were, because they were default-on and undeclared.
 
 A feature that fails only prong 1 — a content-independent reference point or unseeded
 randomness *inside* an otherwise honest feature — is a **gray debt**, not wallpaper: it gets

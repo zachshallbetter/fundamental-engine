@@ -19,7 +19,7 @@ flowchart LR
   S --> A["Agents consume influence"]
   A --> R["Forces<br/>reaction / state change"]
 
-  X["Relationships<br/>association"] --> Y{"Mapped by a Field Formation?"}
+  X["Relationships<br/>association"] --> Y{"Mapped by a Field Pattern?"}
   Y -->|No| Z["No dynamical effect"]
   Y -->|Yes| C["Coupling"]
   C --> R
@@ -28,7 +28,7 @@ flowchart LR
   M --> G["Diagnostics<br/>explain cause"]
   M --> P["Projection<br/>visible output"]
 
-  CFG["Field Formation / FieldRecipe"] --> F
+  CFG["Field Pattern / FieldPattern"] --> F
   CFG --> X
   CFG --> R
   CFG --> M
@@ -47,12 +47,12 @@ Coupling says one thing changes the other.
 
 A **relationship** is a statement of association — it does **not** exert force just because it exists.
 A **force** is a dynamical effect — it couples state and causes change. A relationship may *later* feed a
-force, but only when a **Field Formation** says so, explicitly.
+force, but only when a **Field Pattern** says so, explicitly.
 
 ```txt
 Citation A supports Claim B.        ← association alone. Moves nothing.
 
-Evidence Field formation:            ← the Field Formation turns association into coupling.
+Evidence Field formation:            ← the Field Pattern turns association into coupling.
   support relation     → cohesion
   contradiction relation → charge separation
   confidence metric    → gravity strength
@@ -153,7 +153,7 @@ flowchart TD
   G1 --> G4["event relates to moment"]
   G1 --> G5["body relates to depth"]
 
-  G --> H{"Does a Field Formation<br/>map relation into force?"}
+  G --> H{"Does a Field Pattern<br/>map relation into force?"}
   H -->|No| I["Association only<br/>no dynamical effect"]
   H -->|Yes| J["Coupling<br/>relation becomes force input"]
 
@@ -169,7 +169,7 @@ flowchart TD
   K5 --> F
   K4 --> L
 
-  M["Field Formation / FieldRecipe"] --> M1["Authored mapping"]
+  M["Field Pattern / FieldPattern"] --> M1["Authored mapping"]
   M1 --> B
   M1 --> G
   M1 --> F
@@ -256,33 +256,33 @@ The current system is therefore not *wrong* — it is **Anchored interface mode.
 mode (or Kinematic-with-readback), which is why the body-authority decision gates recoil (see the
 [substrate frontier](../planning/substrate-architecture-frontier.md)).
 
-## On Field Formation (without renaming the API)
+## On Field Pattern (without renaming the API)
 
-After this physics framing, "recipe" reads as casual — a cooking metaphor in a physics substrate. So
+After this physics framing, "pattern" reads as casual — a cooking metaphor in a physics substrate. So
 the concept is being renamed end-to-end: the authored arrangement of forces is a **Field Pattern**
-(replacing the former "Field Formation," which collided with the `setFormation` modes). The API
-`FieldRecipe`/`compileRecipe`/`applyRecipe` ([`api-stability.md`](api-stability.md)) is renamed to
+(replacing the former "Field Pattern," which collided with the `setFormation` modes). The API
+`FieldPattern`/`compileRecipe`/`applyRecipe` ([`api-stability.md`](api-stability.md)) is renamed to
 `FieldPattern`/`compilePattern`/`applyPattern` with one-cycle **deprecation aliases** (the old names
 re-export and dev-warn, removed at 1.0 — see the Pattern rename epic). Lane separation still holds:
 
 ```txt
 Pattern          the human-facing reusable behavior name
-Field Formation  the canonical field-native authored arrangement
-FieldRecipe      the current API representation of a Field Formation
+Field Pattern  the canonical field-native authored arrangement
+FieldPattern      the current API representation of a Field Pattern
 Field Contract   the compiled executable plan
 Configuration    ordinary settings/options only
 Matter           participants/substance only
 ```
 
-> A `FieldRecipe` is the API representation of a Field Formation: a declared arrangement of semantic
+> A `FieldPattern` is the API representation of a Field Pattern: a declared arrangement of semantic
 > intent, dimensions, bodies, fields, forces, relationships, metrics, diagnostics, projections, and
 > accessibility equivalents.
 
-A Field Formation is more than a bundle of tokens. It is the authored arrangement that decides which
+A Field Pattern is more than a bundle of tokens. It is the authored arrangement that decides which
 associations become couplings, which dimensions participate, which forces act, which metrics are exposed,
 which diagnostics explain cause, and which projections preserve meaning. This terminology change does not
 rename any API symbol, route, catalog identifier, validator, or check. (The terminology decision —
-"Field Formation" canonical, no API rename before a major-version migration — is tracked as a **board
+"Field Pattern" canonical, no API rename before a major-version migration — is tracked as a **board
 decision**.)
 
 ## Reading any force (the five-question method)
@@ -309,13 +309,13 @@ Relationships declare association.
 Metrics expose state.
 Diagnostics explain cause.
 Projections make dimensions visible.
-Field Formations decide which associations become couplings.
+Field Patterns decide which associations become couplings.
 ```
 
 ```mermaid
 flowchart TD
   A["Fields describe structure"] --> B["Forces create coupling"]
-  C["Relationships declare association"] --> D["Field Formations decide whether association becomes coupling"]
+  C["Relationships declare association"] --> D["Field Patterns decide whether association becomes coupling"]
   E["Metrics expose state"] --> F["Diagnostics explain cause"]
   G["Projections make dimensions visible"]
 

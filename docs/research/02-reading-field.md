@@ -115,7 +115,7 @@ This paper contributes:
 The scope is deliberately narrow, per the family's *one-claim-per-paper* rule. This paper concerns
 **reading and long-form documents only.** It does *not* re-explain the runtime architecture (deferred
 to Paper 5), the reduced-motion conformance model (Paper 4 — we use reduced motion here as an
-experimental *condition*, not as a contribution), recipe authoring (Paper 6), data binding (Paper 7),
+experimental *condition*, not as a contribution), pattern authoring (Paper 6), data binding (Paper 7),
 or diagnostics (Paper 8). Where those systems are load-bearing for a claim, we cross-reference rather
 than re-derive.
 
@@ -253,7 +253,7 @@ graph the topology overlay would draw.
 This is the foundation of *relationship awareness*. A citation ceases to be a dead-end superscript and
 becomes an edge the field can pull along, light up, and remember: hovering or focusing a source can
 light the claim it supports, and hovering a claim can reveal its source path (the *Citation Thread*
-recipe of the live-examples plan). The `relation-target-missing` lint rule (Paper 1, §5.3) flags any
+pattern of the live-examples plan). The `relation-target-missing` lint rule (Paper 1, §5.3) flags any
 cross-reference whose target body is not registered, so the authored relational structure stays
 consistent with what the runtime sees — a quiet data pathology surfaced rather than silently dropped.
 
@@ -362,7 +362,7 @@ substantiates the model of §3 against running code; it does **not** substantiat
 
 **Not yet done.** The user study described in §5 **has not been run.** Per the caveat canon (item 6),
 every empirical statement in this paper is a *design* or a *hypothesis*, never a measured outcome. The
-richer reading recipes named in the planning material — *Citation Thread*, *Context Halo*, *Relation
+richer reading patterns named in the planning material — *Citation Thread*, *Context Halo*, *Relation
 Lens*, *Evidence Field* over a reading page — are recipe-authoring and evidence concerns deferred to
 Papers 6 and 3; the Reading Field as studied here is the shipped attention/memory/relationship
 treatment above.
@@ -766,7 +766,7 @@ Every model claim in this paper is checkable against the repository as of the ve
 The corroborating canonical documents: `docs/canonical/interaction-and-relationship-model.md`
 (§5 Attention as a Field, §7 RelationshipAgent + platform binding, §11 User Movement as Memory, §22
 Reading and Editorial Experiences) and `docs/canonical/natural-fields.md` (the Reading Field
-recipe = gravity + memory + relationships). The study materials, answer keys, analysis code, and
+pattern = gravity + memory + relationships). The study materials, answer keys, analysis code, and
 pre-registration are to be released with the study when it is run (§5.9).
 
 ## Appendix B. Conversion notes (markdown → preprint)

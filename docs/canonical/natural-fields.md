@@ -38,8 +38,8 @@ Canonical forces are designed verbs.
 Derived behaviors are not additional fundamental forces.
 Fieldflow is transport along field structure.
 Diagnostics reveal invisible structure.
-Field Formations compose behavior into interface meaning.
-FieldRecipe is the current API representation of a Field Formation.
+Field Patterns compose behavior into interface meaning.
+FieldPattern is the current API representation of a Field Pattern.
 ```
 
 Short version: **natural fields are not tokens; tokens are translations.** So `gravity` is both a
@@ -52,7 +52,7 @@ fields, flow along field lines, scatter under thermal agitation, diffuse, collid
 memory trails. The four-field model only gives each behavior a clean place in the hierarchy:
 
 ```
-Natural field → interface translation → engine primitive → metric → diagnostic → Field Formation
+Natural field → interface translation → engine primitive → metric → diagnostic → Field Pattern
 ```
 
 ## The four fields
@@ -105,7 +105,7 @@ handoff. Reach for it for state change, decay, expiration, and transformation.
 | **Transport** | motion along field structure | `fieldflow`, `pigment` |
 | **Metric** | a persistence/measurement signal, not physics | `memory` |
 | **Canonical force** | a designed UI verb with bounded behavior | `attract`, `repel`, `swirl`, `stream`, `viscosity`, `jet`, `tether`, `wall`, `sink` |
-| **Composite** | a recipe of tokens | `blackhole`, `galaxy`, `star`, … |
+| **Composite** | a pattern of tokens | `blackhole`, `galaxy`, `star`, … |
 
 This keeps the full implementation vocabulary while preventing the confusion of a flat "natural forces"
 list. (The machine-readable form is `FORCE_KIND` + `FORCE_FIELD` in `config/manual.ts`.)
@@ -152,12 +152,12 @@ and the live [/docs/diagnostics](https://fundamental-engine.com/docs/diagnostics
 
 ## Formations by meaning
 
-These are Field Formations conceptually. In the current API and catalog they are represented as
-`FieldRecipe` records, so existing recipe names and APIs remain unchanged.
+These are Field Patterns conceptually. In the current API and catalog they are represented as
+`FieldPattern` records, so existing pattern names and APIs remain unchanged.
 
-Interface-native Field Formations name the *meaning*, then map to a field:
+Interface-native Field Patterns name the *meaning*, then map to a field:
 
-| Recipe | Field | Use | Primitives |
+| Pattern | Field | Use | Primitives |
 |---|---|---|---|
 | Priority Well | Gravity | search, dashboards, navigation | `gravity`, potential, prediction |
 | Signal Path | Electromagnetic | citations, dependencies, evidence | `charge`, `propagate`, `fieldflow` |

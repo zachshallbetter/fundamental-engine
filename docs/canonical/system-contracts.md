@@ -1,5 +1,5 @@
 > **Status: canonical.**
-> Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
+> Hard contracts for bodies, fields, forces, agents, events, feedback, patterns, accessibility, performance, conformance, and the platform. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
 # Fundamental System Contracts
 
@@ -243,26 +243,26 @@ debug metadata
 **The three metric-output lanes.** Not every `--field-*` variable flows automatically — the lane
 that produces a variable determines whether it arrives at all:
 
-- **Engine-computed** — written by core's feedback sink every frame, regardless of recipes or
+- **Engine-computed** — written by core's feedback sink every frame, regardless of patterns or
   platform configuration: `--d` / `--field-density` (local particle density), `--load` / `--mass`
   (sink accretion fill), `--lit` (continuous engagement, paired with `field:lit` / `field:dim`
   hysteretic events), and the engine-measured thermodynamics `--entropy`, `--coherence`,
   `--temperature` (velocity alignment, agitation, heat — written to `data-feedback` bodies; these
   bare-named variables are distinct from the platform-inferred ones below).
-- **Platform-computed** — written by `applyRecipe` / `computeMetrics` when a recipe runs its
+- **Platform-computed** — written by `applyRecipe` / `computeMetrics` when a pattern runs its
   metric pipeline: `--field-attention`, `--field-memory`, `--field-coherence`, `--field-entropy`,
   `--field-pressure`, `--field-recency`, `--field-priority`. These flow every frame that the
-  recipe pipeline ticks. `--field-confidence` and `--field-risk` are supplied-only — the engine
+  pattern pipeline ticks. `--field-confidence` and `--field-risk` are supplied-only — the engine
   never invents them; they appear only when the host supplies `data-field-confidence` /
   `data-field-risk`.
-- **Data-supplied (designed)** — lanes a recipe declares but that neither the engine nor the
-  platform metric pipeline computes. A recipe listing `signal`, `route-strength`, or any
+- **Data-supplied (designed)** — lanes a pattern declares but that neither the engine nor the
+  platform metric pipeline computes. A pattern listing `signal`, `route-strength`, or any
   domain-specific metric must have the host supply `data-field-<metric>` (or a domain model) or
   the `--field-<metric>` lane stays **inert** — declared, bound, never written. The lint rule
   `lintInertFeedback` surfaces this gap: a binding to an inert designed lane is the same
   silent-contract class as a sink that captures but never reports.
 
-Recipe authors must not expect a designed lane to flow unless the host provides the data. The
+Pattern authors must not expect a designed lane to flow unless the host provides the data. The
 platform writes what it can compute; `classifyMetric(name)` returns `'computed'`,
 `'supplied-only'`, or `'designed'` for any metric name.
 
@@ -464,9 +464,9 @@ events
 
 No unbounded creation.
 
-## 13. Scene Recipe Contract
+## 13. Scene Pattern Contract
 
-A `FieldRecipe` is the API representation of a Field Formation — a portable scene or behavior definition.
+A `FieldPattern` is the API representation of a Field Pattern — a portable scene or behavior definition.
 
 Required fields:
 
@@ -484,7 +484,7 @@ expected conformance
 notes
 ```
 
-Recipes must be serializable and inspectable.
+Patterns must be serializable and inspectable.
 
 ## 14. Accessibility Contract
 
@@ -544,7 +544,7 @@ type FieldBudget = {
 
 ## 16. Conformance Contract
 
-Every new force, render mode, agent type, source/sink, and recipe must define proof.
+Every new force, render mode, agent type, source/sink, and pattern must define proof.
 
 Proof may include:
 

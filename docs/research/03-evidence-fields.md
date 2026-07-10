@@ -37,7 +37,7 @@ to a field metric — not physics.
 We are deliberately more hedged than the flagship paper on two points. First, **Fundamental visualizes
 evidence; it does not adjudicate it.** The runtime surfaces the support, contradiction, and
 confidence that the *host* supplies; it has no fact-checking capability and makes no claim about
-whether a source is correct. Second, although the Evidence Field *recipe* and the data-binding
+whether a source is correct. Second, although the Evidence Field *pattern* and the data-binding
 mechanism (`bindData()`) that wires real claim/source records into the field both ship, and a
 data-bound Evidence Field *study page* exists as an interactive demonstration, **no controlled
 user-study results exist**. This paper therefore contributes a *model* and a *full study design*,
@@ -116,7 +116,7 @@ This paper contributes:
 
 1. **A relational evidence model** (§3): a mapping from evidence semantics — claim, source, support,
    contradiction, confidence, uncertainty, provenance, revision — onto Fundamental bodies,
-   relationships, and metrics, grounded in the shipped Evidence Field recipe family and classified by
+   relationships, and metrics, grounded in the shipped Evidence Field pattern family and classified by
    truth mode. The model's honesty constraint (visualize, do not adjudicate) is made concrete by the
    code: the platform *derives* coherence and entropy from relationship resolution, while a claim's
    *confidence* is carried from the host — since #220 the engine computes **no** confidence fallback,
@@ -218,7 +218,7 @@ transformation. Evidence is a near-ideal domain for this translation, because an
 *already has* priority (confidence), polarity (support vs. contradiction), binding (a source backing
 a claim), and transformation (revision and decay). The canonical natural-fields document already
 files the Evidence Field under *electromagnetic + strong*
-(`docs/canonical/natural-fields.md`), and the shipped recipe agrees.
+(`docs/canonical/natural-fields.md`), and the shipped pattern agrees.
 
 The mapping, with each row's truth mode:
 
@@ -246,13 +246,13 @@ Contradiction uses `charge`/`repel` to *push* conflicting bodies apart and to ra
 *not* misuse `magnetism` (which bends moving charge and does no work) or `fieldflow` (transport along
 structure). Keeping these lanes separate is what lets the model stay legible.
 
-### 3.3 The shipped Evidence Field recipe
+### 3.3 The shipped Evidence Field pattern
 
-The Evidence Field is recipe #5 in the 64-recipe gallery and ships as a validated `FieldRecipe`
+The Evidence Field is pattern #5 in the 64-recipe gallery and ships as a validated `FieldPattern`
 (`packages/core/src/recipes/catalog.ts`). Its definition, verbatim in substance:
 
 ```ts
-export const EVIDENCE_FIELD: FieldRecipe = {
+export const EVIDENCE_FIELD: FieldPattern = {
   id: 'evidence-field',
   name: 'Evidence Field',
   intent: 'show how sources support, weaken, or contradict a claim',
@@ -277,20 +277,20 @@ export const EVIDENCE_FIELD: FieldRecipe = {
 };
 ```
 
-Every token here is real and passported (the recipe conformance gate, Paper 1 §7.3, rejects any
-recipe whose primitives are not real passported tokens, whose render layers or diagnostics are not
+Every token here is real and passported (the pattern conformance gate, Paper 1 §7.3, rejects any
+pattern whose primitives are not real passported tokens, whose render layers or diagnostics are not
 real modes, or whose declared primitives drift from its body tokens). The four bodies translate the
 evidence semantics directly: `charge` sets the support/contradiction polarity; `link` and `cohesion`
 *bind* a supporting source to its claim (the strong-interaction translation); `repel` pushes a
-contradicting source away and is what raises local entropy. The recipe's two declared `metrics` —
+contradicting source away and is what raises local entropy. The pattern's two declared `metrics` —
 `coherence` and `entropy` — are exactly the two the platform *derives* from relationship resolution,
-so the recipe's output is grounded in supplied edges, not invented. The `feedback: true` flag on
+so the pattern's output is grounded in supplied edges, not invented. The `feedback: true` flag on
 `cohesion` opts the binding into the reverse write-back (Paper 1, §8).
 
-The Evidence Field does not stand alone. Five sibling recipes in the same family complete the
+The Evidence Field does not stand alone. Five sibling patterns in the same family complete the
 evidence vocabulary, all shipped and all validated:
 
-| Recipe (shipped) | Natural field | What it shows | Primitives |
+| Pattern (shipped) | Natural field | What it shows | Primitives |
 |---|---|---|---|
 | **Evidence Field** | electromagnetic (+ strong) | support, contradiction, claim coherence | `charge`, `link`, `cohesion`, `repel` |
 | **Trust Gradient** | electromagnetic | confidence, verification, unsupported claims | `charge`, `link`, `cohesion`, `memory` |
@@ -300,7 +300,7 @@ evidence vocabulary, all shipped and all validated:
 | **Conflict Field** | weak (+ electromagnetic) | contradiction, uncertainty, unstable state | `charge`, `repel`, `morph`, `diffuse` |
 
 Read together they belong to the canonical *Signal Path* theme — "citations, dependencies, evidence"
-(`natural-fields.md`) — though at the token level the evidence recipes draw on `charge`,
+(`natural-fields.md`) — though at the token level the evidence patterns draw on `charge`,
 `link`, `cohesion`, `repel`, `memory`, `morph`, and `diffuse` rather than the Signal Path triad
 (`charge`/`propagate`/`fieldflow`) itself. Three are worth a
 line. **Trust Gradient** is where confidence and the *unsupported-claim* surface live — its metrics
@@ -358,10 +358,10 @@ A preprint earns trust by being precise about what is real. The verify-against-c
 governs here, and we apply it strictly — including where the codebase has moved *ahead* of earlier
 planning notes.
 
-**Shipped** (verifiable in the recipe catalog, the platform exports, and the tests as of 2026-06-07):
+**Shipped** (verifiable in the pattern catalog, the platform exports, and the tests as of 2026-06-07):
 
-- The **Evidence Field recipe** and its five siblings (Trust Gradient, Source Constellation, Citation
-  Thread, Provenance Trail, Conflict Field) ship as validated `FieldRecipe`s in
+- The **Evidence Field pattern** and its five siblings (Trust Gradient, Source Constellation, Citation
+  Thread, Provenance Trail, Conflict Field) ship as validated `FieldPattern`s in
   `packages/core/src/recipes/catalog.ts`, gated by `validateRecipe`
   (`packages/core/src/recipes/schema.ts`).
 - The **coherence/entropy metric derivation** and the supplied-vs-derived metric discipline ship in
@@ -374,7 +374,7 @@ planning notes.
   subject of Paper 7; we use it here only as the evidence wiring.)
 - A **data-bound Evidence Field study page** exists as an interactive demonstration at
   `apps/site/src/pages/docs/studies/evidence-field.astro`: claims are records, each mapping to a body
-  with `supports`/`contradicts` relationships to its sources; the `evidence-field` recipe turns those
+  with `supports`/`contradicts` relationships to its sources; the `evidence-field` pattern turns those
   edges into coherence/entropy; flipping a source's polarity or adding/removing a claim updates the
   field deterministically; and a reduced-motion path is wired in.
 
@@ -440,12 +440,12 @@ A between-subjects (or counterbalanced within-subjects; see §5.6) comparison of
 1. **Baseline — current practice.** The AI answer as prose with **inline citation markers and a
    confidence badge**. This is the honest state of the art, not a strawman: real citations the reader
    can open, and a per-answer confidence indicator.
-2. **Evidence Field.** The same answer, same sources, rendered with the Evidence Field recipe family
+2. **Evidence Field.** The same answer, same sources, rendered with the Evidence Field pattern family
    via `bindData()`: claims are bodies, support/contradiction are visible typed edges, coherence and
    entropy are written back per claim, and unsupported claims read unstable. Confidence is the *same
    supplied* value as the baseline — the only thing that changes is that evidence is *relational and
    visible* rather than a marker plus a number.
-3. **Evidence Field, reduced motion.** The recipe's required static equivalent: the claim/source
+3. **Evidence Field, reduced motion.** The pattern's required static equivalent: the claim/source
    table with support and conflict badges, the unsupported-claim list, and confidence labels — no
    travel. This condition controls for the possibility that any benefit is a motion/novelty artifact
    and ties the study to the accessibility conformance claim of Paper 4.
@@ -621,7 +621,7 @@ We restate the relevant caveat-canon items (README) and the model's specific lim
    labels will produce a confident, coherent-looking field around a false claim. The system's value
    is conditional on the quality of the supplied evidence, and the study's corpus is annotated
    *independently of the display* precisely so the evaluation is not circular.
-2. **No user-study results exist** (caveat-canon item 6). The recipe family ships, `bindData()`
+2. **No user-study results exist** (caveat-canon item 6). The pattern family ships, `bindData()`
    ships, and a data-bound demonstration page ships — but the controlled study of §5 has not been
    run. Every empirical statement in this paper is a hypothesis or a design.
 3. **The danger is real and unresolved.** The over-trust failure mode (§6) is not a hypothetical we
@@ -664,7 +664,7 @@ increasing discrimination. The honest summary is that Fundamental makes a relati
 better-calibrated trust judgments is an open empirical question with a real chance of a negative
 answer — which is exactly why the study is worth running.
 
-The discipline that makes the model trustworthy *as software* — the recipe conformance gate, the
+The discipline that makes the model trustworthy *as software* — the pattern conformance gate, the
 truth-mode classification, the supplied-vs-derived metric boundary, the required reduced-motion
 equivalent — is the same discipline that makes it trustworthy *as a research object*: every claim
 about what the Evidence Field does is checkable against the catalog, the metric library, and the
@@ -681,7 +681,7 @@ provenance is. We presented the **Evidence Field**, a relational evidence model 
 sources are bodies, support is binding, contradiction is electromagnetic opposition, uncertainty is
 entropy, provenance is a memory trail, and revision is a memory overwrite — each classified by truth
 mode, almost all of them semantic, and all of them *visualized, never adjudicated*. The Evidence
-Field recipe and its five siblings ship and are conformance-validated; `bindData()` and a data-bound
+Field pattern and its five siblings ship and are conformance-validated; `bindData()` and a data-bound
 demonstration page ship; **no controlled user-study results exist**. The contribution is therefore a
 model and a full, pre-registerable study design whose primary outcome is *trust calibration* against
 ground truth — and which is built, above all, to detect the failure case in which a richer evidence
@@ -694,9 +694,9 @@ paper's job is to make that question answerable, honestly.
 
 Every model claim in this paper is checkable against the repository.
 
-- **The Evidence Field recipe family** (Evidence Field, Trust Gradient, Source Constellation,
+- **The Evidence Field pattern family** (Evidence Field, Trust Gradient, Source Constellation,
   Citation Thread, Provenance Trail, Conflict Field): `packages/core/src/recipes/catalog.ts`.
-- **Recipe schema and conformance gate** (`validateRecipe`, the strict primitives/render/diagnostic
+- **Pattern schema and conformance gate** (`validateRecipe`, the strict primitives/render/diagnostic
   checks, the required accessibility equivalent): `packages/core/src/recipes/schema.ts`.
 - **The metric library** — the supplied-vs-derived boundary, and the coherence/entropy derivation
   that grounds "visualize, don't adjudicate": `packages/dom/src/metrics.ts`.
@@ -714,7 +714,7 @@ Every model claim in this paper is checkable against the repository.
 Canonical design corroboration: `docs/canonical/natural-fields.md` (Evidence Field =
 electromagnetic + strong; Signal Path = `charge`/`propagate`/`fieldflow`; the electromagnetic rule),
 `docs/canonical/interaction-and-relationship-model.md` §26 (AI interface use cases) and §7
-(`RelationshipAgent`), and `docs/canonical/authoring-and-recipes.md` §5 (the recipe schema).
+(`RelationshipAgent`), and `docs/canonical/authoring-and-recipes.md` §5 (the pattern schema).
 
 ## Appendix B. Conversion notes (markdown → preprint)
 
