@@ -44,7 +44,7 @@ const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/
 <Base title={`Fundamental — ${r.name}`} description={`${r.name}: ${r.intent}. A live, validated Fundamental recipe — runs in your browser, with the runtime tokens, metrics, diagnostics, accessibility equivalent, and copyable HTML / web component / React / JSON.`}>
   <SiteNav />
   <main id="main" class="rp-shell" style={`--rc: ${color}`}>
-    <p class="rp-back"><a href="/recipes">← all recipes</a></p>
+    <p class="rp-back"><a href="/patterns">← all recipes</a></p>
     <header class="rp-hero">
       <div class="rc-tags">
         <span class="rc-field">{fieldLabel}</span>
@@ -110,7 +110,7 @@ const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/
     {seeAlso.length > 0 && (
       <section class="rp-seealso">
         <h2>See also</h2>
-        <ul>{seeAlso.map((x) => <li><a href={`/recipes/${x.id}`}>{x.name}</a> <span>{x.intent}</span></li>)}</ul>
+        <ul>{seeAlso.map((x) => <li><a href={`/patterns/${x.id}`}>{x.name}</a> <span>{x.intent}</span></li>)}</ul>
       </section>
     )}
   </main>

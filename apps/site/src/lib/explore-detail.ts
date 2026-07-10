@@ -5,7 +5,7 @@
 // use cases, tokens, metrics, render stack) slides in alongside; the URL gains `?r=<id>` so the view
 // is shareable and the back button closes it. Esc / backdrop / close button all dismiss.
 //
-// Progressive enhancement: the cards are real <a href="/recipes/<id>"> links, so with no JS — or on
+// Progressive enhancement: the cards are real <a href="/patterns/<id>"> links, so with no JS — or on
 // cmd/middle-click — they navigate to the full recipe page. JS intercepts a plain click to open the
 // overlay instead. Phase 2b enhances the preview region into the full visualization workbench.
 
@@ -84,7 +84,7 @@ export function initExploreDetail(): () => void {
     const tokens = lane('Tokens', d.tokens);
     const metrics = lane('Metrics', d.metrics);
     const render = lane('Render', d.render);
-    const link = `<a class="exd-open" href="/recipes/${encodeURIComponent(id)}">Open full recipe <span aria-hidden="true">→</span></a>`;
+    const link = `<a class="exd-open" href="/patterns/${encodeURIComponent(id)}">Open full recipe <span aria-hidden="true">→</span></a>`;
     return tierField + title + intent + domainRow + how + solves + tokens + metrics + render + link;
   };
 

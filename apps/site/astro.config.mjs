@@ -18,6 +18,7 @@ export default defineConfig({
       filter: (page) =>
         !page.includes('/reference/') &&
         !page.includes('/research/') &&
+        !page.includes('/recipes/') &&
         !page.includes('/docs/guides/vanilla/') &&
         !page.includes('/design/') &&
         !page.includes('/resting-tuner/'),
@@ -34,6 +35,9 @@ export default defineConfig({
   },
   // The Field Manual became the home page; keep the old URL working.
   redirects: {
+    '/recipes': '/patterns',
+    '/recipes/[id]': '/patterns/[id]',
+    '/docs/recipes': '/docs/patterns',
     '/reference': '/',
     // The core-engine guide moved off the ambiguous "vanilla" slug (it collided
     // with the @fundamental-engine/vanilla package, documented under /typescript).

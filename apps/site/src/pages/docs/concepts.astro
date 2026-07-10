@@ -163,7 +163,7 @@ const DEMOS = [
     <p>
       Density is one channel. The field also computes higher-level <strong>metrics</strong> — attention,
       priority, coherence, entropy — and writes each back as a <code>--field-&lt;metric&gt;</code> custom
-      property. A <a href="/docs/recipes">recipe</a> declares which metrics it tracks; the runtime writes
+      property. A <a href="/docs/patterns">recipe</a> declares which metrics it tracks; the runtime writes
       them. Below, real elements carry a runtime token (<code>data-body="attract"</code>) and a supplied
       <code>priority</code>; <code>applyPattern()</code> writes it back as <code>--field-priority</code>,
       and the CSS reads it — no canvas, no cursor needed:
@@ -191,7 +191,7 @@ const DEMOS = [
     </ul>
     <p class="note">
       So: a concept is not a token, a token is not a metric, and a diagnostic is not behavior. The
-      <a href="/docs/recipes">recipe model</a> composes these lanes without ever inventing a new force.
+      <a href="/docs/patterns">recipe model</a> composes these lanes without ever inventing a new force.
     </p>
   </section>
 

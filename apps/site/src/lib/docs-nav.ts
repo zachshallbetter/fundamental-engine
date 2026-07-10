@@ -73,7 +73,7 @@ export const DOCS_NAV: DocGroup[] = [
       { href: '/docs/guides/kotlin', label: 'Kotlin (Android)', ready: true },
       { href: '/docs/guides/core', label: 'Core engine', ready: true },
       { href: '/docs/authoring', label: 'Authoring across surfaces', ready: true },
-      { href: '/docs/recipes', label: 'Recipe model', ready: true },
+      { href: '/docs/patterns', label: 'Pattern model', ready: true },
       { href: '/docs/field-channels', label: 'Data binding & channels', ready: true },
       { href: '/docs/implementations', label: 'Implementations', ready: true },
       { href: '/docs/contour-typography', label: 'Contour typography', ready: true },
@@ -213,7 +213,7 @@ export const DOCS_NAV: DocGroup[] = [
       { href: '/demo', label: 'Substrate Demo', ready: true, external: true },
       { href: '/evidence', label: 'Invisible Fields', ready: true, external: true },
       ...flagships,
-      { href: '/recipes', label: 'Recipe gallery', ready: true, external: true },
+      { href: '/patterns', label: 'Pattern gallery', ready: true, external: true },
     ],
   },
 ];
@@ -254,7 +254,7 @@ export const ROUTE_FAMILIES: string[] = [
   '/evidence',
   '/ai-evidence',
   '/demo',
-  '/recipes',
+  '/patterns',
   '/lab',
   '/writings',
 ];

@@ -1,6 +1,6 @@
 // explore-preview.ts — mount ONE live recipe field inside the expand-in-place detail overlay.
 //
-// Unlike the /recipes hub (which lazily runs up to six tiny card previews), the explore overlay shows
+// Unlike the /patterns hub (which lazily runs up to six tiny card previews), the explore overlay shows
 // exactly one recipe at a time, large, in its own render mode — so this is a single explicit mount,
 // no IntersectionObserver. It runs the REAL recipe via applyPattern against a contained field, with
 // representative scaffold bodies so the field has something to react to. Phase 2b layers the

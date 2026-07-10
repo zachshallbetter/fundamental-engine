@@ -25,7 +25,7 @@ const schema = `type FieldPattern = {
 
   bodies: BodyRecipe[];       // how the runtime tokens are authored on elements
   render: RenderLayer[];
-  accessibility: {            // required — no recipe is motion-only
+  accessibility: {            // required — no pattern is motion-only
     reducedMotion: string;
     meaningWithoutMotion: string;
   };
@@ -51,33 +51,33 @@ const tokenCount = new Set(FIELD_PATTERNS.flatMap((r) => r.primitives)).size;
 ---
 
 <DocsLayout
-  title="Fundamental — Recipe model"
-  description="The FieldPattern model: how a recipe separates runtime tokens, concepts, metrics, diagnostics, and conditions into distinct lanes. Recipe prose can be expressive; runtime tokens must be real and conformance-gated."
+  title="Fundamental — Pattern model"
+  description="The FieldPattern model: how a pattern separates runtime tokens, concepts, metrics, diagnostics, and conditions into distinct lanes. Pattern prose can be expressive; runtime tokens must be real and conformance-gated."
 >
   <header class="docs-hero">
-    <p class="kicker">Recipes</p>
-    <h1>The <span class="accent">recipe model</span></h1>
+    <p class="kicker">Patterns</p>
+    <h1>The <span class="accent">pattern model</span></h1>
     <p class="lede">
       A <code>FieldPattern</code> is a portable, serializable field program — the reusable unit that
       connects the natural-field model, engine primitives, DOM authoring, platform feedback, diagnostics,
       and the accessibility fallback. The catalog ships
-      <b>{FIELD_PATTERNS.length}</b> recipes across <b>{RECIPE_TIERS.length}</b> tiers
+      <b>{FIELD_PATTERNS.length}</b> patterns across <b>{RECIPE_TIERS.length}</b> tiers
       (<b>{FIRST_RELEASE_PATTERN_IDS.length}</b> first-release), composed from {tokenCount} distinct runtime
-      tokens. See them all in the <a href="/recipes">recipe gallery</a>.
+      tokens. See them all in the <a href="/patterns">pattern gallery</a>.
     </p>
   </header>
 
   <div class="callout">
-    <b>Recipe prose can be expressive. Runtime tokens must be real.</b> A recipe may say “completion
+    <b>Pattern prose can be expressive. Runtime tokens must be real.</b> A pattern may say “completion
     releases pressure and decays into memory,” but its runtime fields stay strict:
-    <code>primitives: ["morph", "memory"]</code>. The conformance gate rejects any recipe whose
+    <code>primitives: ["morph", "memory"]</code>. The conformance gate rejects any pattern whose
     primitives are not real passported tokens — or that puts a diagnostic, metric, condition, or concept
     in the token lane.
   </div>
 
   <section class="docs-sec">
     <h2>The vocabulary lanes</h2>
-    <p>A recipe separates these on purpose. A word lives in exactly one lane, and the lane says which:</p>
+    <p>A pattern separates these on purpose. A word lives in exactly one lane, and the lane says which:</p>
     <VocabLegend />
   </section>
 
@@ -90,7 +90,7 @@ const tokenCount = new Set(FIELD_PATTERNS.flatMap((r) => r.primitives)).size;
     <h2>Concept → token mapping</h2>
     <p>
       When a product word is not a real engine token, it goes to its proper lane — it is never invented
-      as a force. No new force tokens are added for recipes.
+      as a force. No new force tokens are added for patterns.
     </p>
     <table class="rm-table">
       <thead><tr><th>Concept word</th><th>Lane</th><th>Resolution</th></tr></thead>
@@ -107,9 +107,9 @@ const tokenCount = new Set(FIELD_PATTERNS.flatMap((r) => r.primitives)).size;
   </section>
 
   <section class="docs-sec">
-    <h2>A worked recipe</h2>
+    <h2>A worked pattern</h2>
     <p>
-      Every recipe is plain, serializable data. This is <code>Guided Flow</code> straight from the
+      Every pattern is plain, serializable data. This is <code>Guided Flow</code> straight from the
       catalog — note the strict <code>primitives</code> beside the expressive <code>notes</code>:
     </p>
     <CodeTabs variants={[{ label: 'guided-flow.json', lang: 'json', code: example }]} />
@@ -123,16 +123,16 @@ const tokenCount = new Set(FIELD_PATTERNS.flatMap((r) => r.primitives)).size;
       <li>Declared <code>primitives</code> exactly match the body tokens (no drift).</li>
       <li>Every <VocabBadge kind="diagnostic" label="diagnostic" /> is a real render / inspection mode.</li>
       <li>Every <VocabBadge kind="field" label="natural field" /> is one of gravity / electromagnetic / strong / weak.</li>
-      <li>Every recipe declares a reduced-motion equivalent — no recipe is motion-only.</li>
+      <li>Every pattern declares a reduced-motion equivalent — no pattern is motion-only.</li>
     </ul>
   </section>
 
   <section class="docs-sec">
     <h2>Data binding — <code>bindData()</code></h2>
     <p>
-      Recipes make behavior portable; <code>bindData()</code> makes real records participate in it.
+      Patterns make behavior portable; <code>bindData()</code> makes real records participate in it.
       Records become bodies, mapped metrics become state, mapped relationships become edges, and a
-      recipe supplies the behavior. Updates are deterministic and removed records decay rather than pop.
+      pattern supplies the behavior. Updates are deterministic and removed records decay rather than pop.
     </p>
     <div class="bd-demo">
       <div class="bd-controls" role="group" aria-label="Data binding demo">
@@ -147,7 +147,7 @@ const tokenCount = new Set(FIELD_PATTERNS.flatMap((r) => r.primitives)).size;
 
   <SeeAlso
     links={[
-      { href: '/recipes', label: 'Recipes' },
+      { href: '/patterns', label: "Patterns" },
       { href: '/docs/natural-fields', label: 'Natural fields' },
       { href: '/docs/authoring', label: 'Authoring across surfaces' },
     ]}

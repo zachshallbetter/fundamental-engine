@@ -17,7 +17,7 @@ const recipes = ids.map((id) => recipeById(id)).filter((r): r is FieldPattern =>
 <section class="recipes-applied" aria-label="Recipes applied">
   <h2>Recipes applied</h2>
   <p class="ra-lede">
-    Each is a real <a href="/docs/recipes"><code>FieldPattern</code></a> from the catalog. The ones marked
+    Each is a real <a href="/docs/patterns"><code>FieldPattern</code></a> from the catalog. The ones marked
     <span class="ra-livedot">live</span> are driven through <code>applyPattern()</code> on this page; the
     rest are the conceptual family this study embodies.
   </p>
@@ -26,7 +26,7 @@ const recipes = ids.map((id) => recipeById(id)).filter((r): r is FieldPattern =>
       recipes.map((r) => (
         <article class="ra-card">
           <header>
-            <a href={`/recipes#${r.id}`} class="ra-name">{r.name}</a>
+            <a href={`/patterns#${r.id}`} class="ra-name">{r.name}</a>
             {r.naturalField && <VocabBadge kind="field" label={r.naturalField} />}
             {liveSet.has(r.id) && <span class="ra-live">live</span>}
           </header>
