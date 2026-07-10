@@ -15,7 +15,7 @@ import kotlin.math.sin
 fun metricVar(metric: String): String = "field-$metric"
 
 /** One compiled body: configured params + runtime tokens; `makeBody()` builds a ready Body. */
-data class RecipeBodyRegistration(
+data class PatternBodyRegistration(
     val tokens: List<String>,
     val strength: Float,
     val range: Float,
@@ -31,21 +31,21 @@ data class RecipeBodyRegistration(
     }
 }
 
-data class RecipeRelationshipRegistration(val from: String, val to: String, val type: String, val strength: Float?)
-data class RecipeFeedbackBinding(val metric: String, val variable: String)
-data class RecipeReducedMotionPlan(val reducedMotion: String, val meaningWithoutMotion: String, val staticOutputs: List<String>)
+data class PatternRelationshipRegistration(val from: String, val to: String, val type: String, val strength: Float?)
+data class PatternFeedbackBinding(val metric: String, val variable: String)
+data class PatternReducedMotionPlan(val reducedMotion: String, val meaningWithoutMotion: String, val staticOutputs: List<String>)
 
 /** A compiled recipe — the runtime plan, lanes preserved. */
 data class CompiledPattern(
     val id: String,
     val recipe: FieldPattern,
-    val bodies: List<RecipeBodyRegistration>,
-    val relationships: List<RecipeRelationshipRegistration>,
-    val feedback: List<RecipeFeedbackBinding>,
+    val bodies: List<PatternBodyRegistration>,
+    val relationships: List<PatternRelationshipRegistration>,
+    val feedback: List<PatternFeedbackBinding>,
     val diagnostics: List<String>,
     val metrics: List<String>,
     val conditions: List<String>,
-    val reducedMotion: RecipeReducedMotionPlan,
+    val reducedMotion: PatternReducedMotionPlan,
 )
 
 private fun staticOutputs(r: FieldPattern): List<String> {
@@ -64,7 +64,7 @@ fun compilePattern(r: FieldPattern): CompiledPattern = CompiledPattern(
     recipe = r,
     bodies = r.bodies.map { b ->
         val angle = b.angle ?: (-PI.toFloat() / 2f) // the JS default heading: up
-        RecipeBodyRegistration(
+        PatternBodyRegistration(
             tokens = b.body.split(" ").filter { it.isNotEmpty() },
             strength = b.strength ?: 1f,
             range = b.range ?: 100f,
@@ -74,13 +74,13 @@ fun compilePattern(r: FieldPattern): CompiledPattern = CompiledPattern(
         )
     },
     relationships = (r.relationships ?: emptyList()).map {
-        RecipeRelationshipRegistration(it.from, it.to, it.type, it.strength)
+        PatternRelationshipRegistration(it.from, it.to, it.type, it.strength)
     },
-    feedback = r.metrics.map { RecipeFeedbackBinding(it, metricVar(it)) },
+    feedback = r.metrics.map { PatternFeedbackBinding(it, metricVar(it)) },
     diagnostics = r.diagnostics,
     metrics = r.metrics,
     conditions = r.conditions ?: emptyList(),
-    reducedMotion = RecipeReducedMotionPlan(
+    reducedMotion = PatternReducedMotionPlan(
         reducedMotion = r.accessibility.reducedMotion,
         meaningWithoutMotion = r.accessibility.meaningWithoutMotion,
         staticOutputs = staticOutputs(r),

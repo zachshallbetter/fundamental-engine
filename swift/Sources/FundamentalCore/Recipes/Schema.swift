@@ -23,7 +23,7 @@ public enum DiagnosticMode: String, Codable, Sendable, CaseIterable {
 }
 
 /// One body in a recipe: a force token (or space-separated tokens) + attributes.
-public struct BodyRecipe: Codable, Sendable {
+public struct BodyPattern: Codable, Sendable {
     public var body: String
     public var strength: Float?
     public var range: Float?
@@ -33,14 +33,14 @@ public struct BodyRecipe: Codable, Sendable {
     public var scope: String?
 }
 
-public struct RelationshipRecipe: Codable, Sendable {
+public struct RelationshipPattern: Codable, Sendable {
     public var from: String
     public var to: String
     public var type: String
     public var strength: Float?
 }
 
-public struct AccessibilityRecipe: Codable, Sendable {
+public struct AccessibilityPattern: Codable, Sendable {
     /// What replaces motion under reduced motion.
     public var reducedMotion: String
     /// How meaning survives without color/motion.
@@ -53,11 +53,11 @@ public struct ExpectedMetrics: Codable, Sendable {
     public var energyDriftMax: Float?
 }
 
-public enum RecipeTier: String, Codable, Sendable {
+public enum PatternTier: String, Codable, Sendable {
     case core, applied, systems, operational
 }
 
-public enum RecipeStatus: String, Codable, Sendable {
+public enum PatternStatus: String, Codable, Sendable {
     case shipped, experimental, planned, conceptual
 }
 
@@ -70,7 +70,7 @@ public struct FieldPattern: Codable, Sendable {
     public var id: String
     public var name: String
     public var intent: String
-    public var tier: RecipeTier?
+    public var tier: PatternTier?
     public var naturalField: String?
     public var translation: String?
     /// RUNTIME TOKENS: the strict, real engine forces this recipe composes.
@@ -83,11 +83,11 @@ public struct FieldPattern: Codable, Sendable {
     public var diagnostics: [String]
     /// CONDITIONS: activation logic — not forces.
     public var conditions: [String]?
-    public var bodies: [BodyRecipe]
-    public var relationships: [RelationshipRecipe]?
+    public var bodies: [BodyPattern]
+    public var relationships: [RelationshipPattern]?
     public var render: [String]
-    public var accessibility: AccessibilityRecipe
-    public var status: RecipeStatus?
+    public var accessibility: AccessibilityPattern
+    public var status: PatternStatus?
     public var notes: String?
 }
 
@@ -99,13 +99,13 @@ let DIAGNOSTIC_MODE_IDS: Set<String> = Set(DiagnosticMode.allCases.map(\.rawValu
 public let FIELD_MODES: Set<String> = RENDER_LAYER_IDS.union(DIAGNOSTIC_MODE_IDS)
 let VALID_FIELDS: Set<String> = ["gravity", "electromagnetic", "strong", "weak"]
 
-public struct RecipeProblem: Sendable {
+public struct PatternProblem: Sendable {
     public var path: String
     public var issue: String
 }
 
 /// The distinct engine primitives used across a recipe's bodies, in first-seen order.
-public func primitivesOf(_ bodies: [BodyRecipe]) -> [String] {
+public func primitivesOf(_ bodies: [BodyPattern]) -> [String] {
     var seen = Set<String>()
     var out: [String] = []
     for b in bodies {
@@ -118,18 +118,18 @@ public func primitivesOf(_ bodies: [BodyRecipe]) -> [String] {
 
 /// Validate a recipe's shape and references against a force registry. Returns every
 /// problem (empty = valid).
-public func validateRecipe(_ r: FieldPattern, against registry: Registry) -> [RecipeProblem] {
-    var problems: [RecipeProblem] = []
-    if r.id.isEmpty { problems.append(RecipeProblem(path: "id", issue: "required")) }
-    if r.name.isEmpty { problems.append(RecipeProblem(path: "name", issue: "required")) }
-    if r.bodies.isEmpty { problems.append(RecipeProblem(path: "bodies", issue: "at least one body is required")) }
+public func validatePattern(_ r: FieldPattern, against registry: Registry) -> [PatternProblem] {
+    var problems: [PatternProblem] = []
+    if r.id.isEmpty { problems.append(PatternProblem(path: "id", issue: "required")) }
+    if r.name.isEmpty { problems.append(PatternProblem(path: "name", issue: "required")) }
+    if r.bodies.isEmpty { problems.append(PatternProblem(path: "bodies", issue: "at least one body is required")) }
     for (i, b) in r.bodies.enumerated() {
         let tokens = b.body.split(separator: " ").map(String.init)
         if tokens.isEmpty {
-            problems.append(RecipeProblem(path: "bodies[\(i)].body", issue: "empty force token list"))
+            problems.append(PatternProblem(path: "bodies[\(i)].body", issue: "empty force token list"))
         }
         for t in tokens where registry.forces[t] == nil {
-            problems.append(RecipeProblem(path: "bodies[\(i)].body", issue: "unknown force token \"\(t)\""))
+            problems.append(PatternProblem(path: "bodies[\(i)].body", issue: "unknown force token \"\(t)\""))
         }
     }
     // declared primitives must be exactly the distinct body tokens (no drift).
@@ -138,22 +138,22 @@ public func validateRecipe(_ r: FieldPattern, against registry: Registry) -> [Re
     if declared.count != derived.count
         || derived.contains(where: { !declared.contains($0) })
         || declared.contains(where: { !derived.contains($0) }) {
-        problems.append(RecipeProblem(
+        problems.append(PatternProblem(
             path: "primitives",
             issue: "must list exactly the body tokens (expected: \(derived.joined(separator: ", ")))"
         ))
     }
     for (i, layer) in r.render.enumerated() where !RENDER_LAYER_IDS.contains(layer) {
-        problems.append(RecipeProblem(path: "render[\(i)]", issue: "unknown render layer \"\(layer)\""))
+        problems.append(PatternProblem(path: "render[\(i)]", issue: "unknown render layer \"\(layer)\""))
     }
     for (i, mode) in r.diagnostics.enumerated() where !FIELD_MODES.contains(mode) {
-        problems.append(RecipeProblem(path: "diagnostics[\(i)]", issue: "unknown diagnostic mode \"\(mode)\""))
+        problems.append(PatternProblem(path: "diagnostics[\(i)]", issue: "unknown diagnostic mode \"\(mode)\""))
     }
     if let nf = r.naturalField, !VALID_FIELDS.contains(nf) {
-        problems.append(RecipeProblem(path: "naturalField", issue: "unknown fundamental field \"\(nf)\""))
+        problems.append(PatternProblem(path: "naturalField", issue: "unknown fundamental field \"\(nf)\""))
     }
     if r.accessibility.reducedMotion.isEmpty || r.accessibility.meaningWithoutMotion.isEmpty {
-        problems.append(RecipeProblem(
+        problems.append(PatternProblem(
             path: "accessibility",
             issue: "reducedMotion + meaningWithoutMotion are required (no recipe is motion-only)"
         ))
@@ -185,7 +185,7 @@ public enum FieldPatterns {
         all.first { $0.id == id }
     }
 
-    public static func recipes(tier: RecipeTier) -> [FieldPattern] {
+    public static func recipes(tier: PatternTier) -> [FieldPattern] {
         all.filter { $0.tier == tier }
     }
 }
