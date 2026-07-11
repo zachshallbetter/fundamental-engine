@@ -14,19 +14,25 @@ interface Props {
   robots?: string;
   /** the OG type — 'article' on writing pages, 'website' elsewhere. */
   ogType?: string;
+  /** false omits the canonical link (the 404 page — its URL is not a real resource). */
+  canonical?: string | false;
   /** page-specific Schema.org JSON-LD (object or array), emitted alongside the site WebSite graph. */
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 const {
-  title = 'Fundamental — a reciprocal DOM-physics field',
-  description = "Fundamental — elements bend the field; the field's density bends them back. A medium your interface lives inside, not a backdrop it sits on.",
+  title = 'Fundamental — a readable behavior layer for host objects',
+  description = "Fundamental is a relational field runtime: UI and data become bodies in an inspectable field — importance pulls, relations bind, state decays.",
   ogImage = '/og.jpg',
   ogImageAlt,
   robots = 'index, follow',
   ogType = 'website',
+  canonical: canonicalProp,
   jsonLd,
 } = Astro.props;
-const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://fundamental-engine.com').href;
+const canonical =
+  canonicalProp === false
+    ? null
+    : (canonicalProp ?? new URL(Astro.url.pathname, Astro.site ?? 'https://fundamental-engine.com').href);
 const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.com').href;
 const pageJsonLd = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || Astro.url.pathname.endsWith('/eli5/');
@@ -46,7 +52,7 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
     <meta name="description" content={description} />
     <meta name="author" content="Zach Shallbetter" />
     <meta name="robots" content={robots} />
-    <link rel="canonical" href={canonical} />
+    {canonical && <link rel="canonical" href={canonical} />}
     <link rel="alternate" type="application/rss+xml" title="Fundamental — Writings" href="/rss.xml" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
@@ -54,7 +60,7 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content={ogType} />
-    <meta property="og:url" content={canonical} />
+    {canonical && <meta property="og:url" content={canonical} />}
     <meta property="og:site_name" content="Fundamental" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:image" content={ogImageUrl} />
@@ -80,9 +86,10 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: 'Fundamental',
+        alternateName: 'Fundamental Engine',
         url: 'https://fundamental-engine.com/',
         description:
-          'A platform-native relational field runtime — on the web, elements become bodies in an invisible physics field that bends them back.',
+          'A relational field runtime — an inspectable substrate where software meaning becomes behavior: importance pulls, relations bind, state decays.',
         sameAs: [
           'https://github.com/zachshallbetter/fundamental-engine',
           'https://x.com/usefundamental',

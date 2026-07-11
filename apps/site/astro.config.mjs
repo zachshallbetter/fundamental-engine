@@ -21,7 +21,8 @@ export default defineConfig({
         !page.includes('/recipes/') &&
         !page.includes('/docs/guides/vanilla/') &&
         !page.includes('/design/') &&
-        !page.includes('/resting-tuner/'),
+        !page.includes('/resting-tuner/') &&
+        !page.includes('/perf-bench/'),
     }),
   ],
   // The /writings datastore (and the research papers under it) carry rich markdown:

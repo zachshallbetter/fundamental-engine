@@ -19,7 +19,10 @@ const checks = [
 const pass = checks.filter(c => c.status === 'pass').length;
 const total = checks.length;
 ---
-<Base title="RC1 — Production readiness · Fundamental">
+<Base
+  title="RC1 — Production readiness · Fundamental"
+  description="The RC1 production-readiness checklist for Fundamental — the release gates between the 0.x preview and 1.0, with live status for each."
+>
   <main style="max-width:740px;margin:0 auto;padding:56px 24px 80px;font-family:var(--font-mono,monospace)">
     <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
       <h1 style="margin:0;font-size:1.6rem;letter-spacing:-.02em">RC1 — Production readiness</h1>
