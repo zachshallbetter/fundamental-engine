@@ -22,7 +22,7 @@ export const GET: APIRoute = async () => {
 
   const items = entries
     .map((e) => {
-      const url = `${SITE}/writings/${e.id}`;
+      const url = `${SITE}/writings/${e.id}/`;
       const desc = e.data.description ? `\n      <description>${esc(e.data.description)}</description>` : '';
       const cat = (e.data as { category?: string }).category
         ? `\n      <category>${esc((e.data as { category?: string }).category as string)}</category>`

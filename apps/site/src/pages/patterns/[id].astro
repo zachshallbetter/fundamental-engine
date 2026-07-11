@@ -41,7 +41,7 @@ const tokenDef = (t: string): string => passportFor(t as never)?.designUse ?? ''
 const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/, '');
 ---
 
-<Base title={`Fundamental — ${r.name}`} description={`${r.name}: ${r.intent}. A live, validated Fundamental recipe — runs in your browser, with the runtime tokens, metrics, diagnostics, accessibility equivalent, and copyable HTML / web component / React / JSON.`}>
+<Base title={`${r.name} Pattern — Fundamental`} description={`${r.name}: ${r.intent}. A live, validated Fundamental Pattern — runs in your browser, with runtime tokens, metrics, diagnostics, and an accessibility equivalent.`}>
   <SiteNav />
   <main id="main" class="rp-shell" style={`--rc: ${color}`}>
     <p class="rp-back"><a href="/patterns">← all recipes</a></p>

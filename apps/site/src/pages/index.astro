@@ -42,10 +42,12 @@ const softwareLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
   name: 'Fundamental',
+  alternateName: 'Fundamental Engine',
   applicationCategory: 'DeveloperApplication',
   operatingSystem: 'Web, iOS, macOS, Android',
+  programmingLanguage: ['TypeScript', 'Swift', 'Kotlin'],
   description:
-    'A platform-native relational field runtime — elements become bodies in an invisible physics field that measures importance, attention, and relationships, then writes them back as CSS variables and agent-readable queries.',
+    'A relational field runtime: elements, records, and views become bodies in a shared field that measures importance, attention, and relationships, and writes them back as CSS variables and agent-readable queries.',
   url: 'https://fundamental-engine.com',
   softwareVersion: currentVersion(),
   author: {
@@ -66,12 +68,25 @@ const softwareLd = {
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   license: 'https://opensource.org/licenses/MIT',
 };
+// The source-code entity carries the repository + language facts search engines use to
+// disambiguate "Fundamental Engine" (the software) from engines of the combustion kind.
+const sourceLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareSourceCode',
+  name: 'Fundamental',
+  alternateName: 'Fundamental Engine',
+  codeRepository: 'https://github.com/zachshallbetter/fundamental-engine',
+  programmingLanguage: ['TypeScript', 'Swift', 'Kotlin'],
+  runtimePlatform: ['Web (DOM)', 'Three.js / WebGL', 'iOS / macOS / visionOS', 'Android / JVM', 'Headless'],
+  license: 'https://opensource.org/licenses/MIT',
+  author: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
+};
 ---
 
 <Base
   title="Fundamental — a readable behavior layer for host objects"
-  description="Fundamental is a readable behavior layer for host objects. Add a data-* attribute and the runtime turns an element, record, or view into a body in a shared field, then writes importance, attention, and relationships back as --field-* variables you style with — and exposes the same state to agents via field.query(). The DOM is the first host, not the boundary: the renderer-agnostic core also runs in WebGL, natively on Apple and Android, and headlessly. Zero runtime dependencies in core. 0.x preview."
-  jsonLd={softwareLd}
+  description="A readable behavior layer for host objects: elements and data become bodies in a live field, and importance, attention, and relationships come back as readable state."
+  jsonLd={[softwareLd, sourceLd]}
 >
   <SiteNav current="home" />
   <main id="main" class="manual-shell">
