@@ -222,7 +222,7 @@ fetch('https://api.openalex.org/works'
                 data-ev-deferred={i >= 8 ? "" : undefined}
               >
                 {/* the citation edges as REAL platform relationships: the registry discovers
-                    these (data-field-relation + data-field-target), the recipe pipeline counts
+                    these (data-field-relation + data-field-target), the pattern pipeline counts
                     them per finding, and --field-coherence stops reading zero — the same edges
                     the hover threads draw. */}
                 {w.supports.map((s) => (
@@ -293,7 +293,7 @@ fetch('https://api.openalex.org/works'
         listeners on individual elements. Four channels do the work: <code>--w</code> is the
         server-computed weight, <code>--cat</code> the lens color, <code>--d</code> the engine's
         live local density (hold a finding and the field gathers), and
-        <code>--field-attention</code> the recipe's eased attention metric.
+        <code>--field-attention</code> the pattern's eased attention metric.
       </p>
 
       <div class="ev-how-cols">

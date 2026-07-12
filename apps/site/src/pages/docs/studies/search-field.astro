@@ -1,10 +1,10 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
-import RecipesApplied from '../../../components/RecipesApplied.astro';
+import PatternsApplied from '../../../components/PatternsApplied.astro';
 import StatusChip from '../../../components/StatusChip.astro';
 import DataHonesty from '../../../components/DataHonesty.astro';
 
-// Search Field Study — data-driven via bindData(). Results are records; the trust-gradient recipe turns
+// Search Field Study — data-driven via bindData(). Results are records; the trust-gradient pattern turns
 // each result's confidence into a --field-confidence gradient, and contradictory results carry polarity.
 // Relevance is the ranked order; opening a result marks it. No hand-wired behavior — results come from data.
 const RECIPES = ['search-relevance-field', 'trust-gradient', 'source-constellation', 'polarity-filter', 'memory-trace'];
@@ -20,7 +20,7 @@ const LIVE = ['trust-gradient'];
   <StatusChip label="Concept study" tone="concept" />
   <p class="lede">
     A ranked list becomes an evidence landscape. Results are <b>records</b> bound through
-    <code>bindData()</code>; the <a href="/patterns/trust-gradient">Trust Gradient</a> recipe turns
+    <code>bindData()</code>; the <a href="/patterns/trust-gradient">Trust Gradient</a> pattern turns
     each result's confidence into a gradient and contradictions stand apart — still a plain list with the
     field off.
   </p>
@@ -55,7 +55,7 @@ const LIVE = ['trust-gradient'];
     <div class="se-results" id="se-results"></div>
   </div>
 
-  <RecipesApplied ids={RECIPES} live={LIVE} />
+  <PatternsApplied ids={RECIPES} live={LIVE} />
 </DocsLayout>
 
 <script>
@@ -78,7 +78,7 @@ const LIVE = ['trust-gradient'];
     const mapper = (r: Result) => ({
       id: r.id,
       body: { tokens: ['charge', 'link'], strength: 0.4 + r.confidence, range: 280, feedback: true, spin: r.polarity === 'contradict' ? -1 : 1 },
-      metrics: { confidence: r.confidence }, // trust-gradient tracks confidence; recency is not a recipe metric
+      metrics: { confidence: r.confidence }, // trust-gradient tracks confidence; recency is not a pattern metric
       label: r.title,
     });
     const content = (r: Result) =>
@@ -87,7 +87,7 @@ const LIVE = ['trust-gradient'];
       `<span class="se-conf">confidence ${Math.round(r.confidence * 100)}%</span>` +
       `${r.polarity === 'contradict' ? '<span class="se-contra">contradicts</span>' : ''}</p>`;
     mountBindStudy((reduced, on) => [
-      bindData(root, results, mapper, { recipe: on ? 'trust-gradient' : undefined, className: 'se-result', content, reducedMotion: reduced }),
+      bindData(root, results, mapper, { pattern: on ? 'trust-gradient' : undefined, className: 'se-result', content, reducedMotion: reduced }),
     ]);
     // opening a result marks it
     root.addEventListener('click', (e) => { (e.target as HTMLElement)?.closest('.se-result')?.toggleAttribute('data-active'); });

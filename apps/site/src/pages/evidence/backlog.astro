@@ -113,7 +113,7 @@ const SNIP_CSS = `.wl-title {
   /* --d: the engine's live local density,
      written every frame; it gathers toward 1
      when a data-hot card is hovered/focused.
-     --field-attention: the scoped recipe's
+     --field-attention: the scoped pattern's
      eased attention lane (hover/focus +
      viewport-center proximity + visibility). */
   --live: var(--d, 0);
@@ -372,7 +372,7 @@ function drop() { // pointerup — Esc/pointercancel aborts
       list and the type carries the measurement: activity as weight, kind as color, references
       as hover threads. No canvas, no chart library. Two live channels ride on top: the page's
       hidden engine writes <code>--d</code> (local particle density) to every
-      <code>data-hot</code> card each frame, and the scoped recipe's attention lane writes an
+      <code>data-hot</code> card each frame, and the scoped pattern's attention lane writes an
       eased <code>--field-attention</code> — CSS turns both into a felt glow and lift, and both
       go quiet when the field is off. Each card also declares its <code>updatedAt</code> as
       <code>data-field-at</code>, so the pipeline's recency lane is grounded in the data's own

@@ -1,11 +1,11 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
-import RecipesApplied from '../../../components/RecipesApplied.astro';
+import PatternsApplied from '../../../components/PatternsApplied.astro';
 import StatusChip from '../../../components/StatusChip.astro';
 import DataHonesty from '../../../components/DataHonesty.astro';
 
 // Evidence Field Study — built data-first with bindData(). Claims are records; each maps to a body with
-// support/contradiction relationships to its sources, and the evidence-field recipe turns those edges
+// support/contradiction relationships to its sources, and the evidence-field pattern turns those edges
 // into coherence/entropy. Flip a source's polarity or add/remove claims and the field updates
 // deterministically — no hand-wired behavior. Sources are static targets the relationship edges resolve.
 
@@ -21,14 +21,14 @@ const LIVE = ['evidence-field'];
 
 <DocsLayout
   title="Fundamental — Evidence Field Study"
-  description="A concept study built data-first with bindData(): claims are records, sources are targets, support and contradiction are relationship edges, and the evidence-field recipe turns them into coherence and entropy. Flip a source or add a claim and the field updates deterministically."
+  description="A concept study built data-first with bindData(): claims are records, sources are targets, support and contradiction are relationship edges, and the evidence-field pattern turns them into coherence and entropy. Flip a source or add a claim and the field updates deterministically."
 >
   <p class="kicker">Concept study · data-bound</p>
   <h1>Evidence Field Study</h1>
   <StatusChip label="Concept study" tone="concept" />
   <p class="lede">
     Claims become bodies, sources bind to them, and contradictions raise entropy — the
-    <a href="/patterns/evidence-field">Evidence Field</a> recipe, driven by real data through
+    <a href="/patterns/evidence-field">Evidence Field</a> pattern, driven by real data through
     <code>bindData()</code>. Flip a source's polarity or add a claim and the field updates
     deterministically; removed claims decay rather than pop. Still a plain claim/source list with the
     field off.
@@ -62,7 +62,7 @@ const LIVE = ['evidence-field'];
   </div>
 
   <p class="study-hint">
-    <b>Field off</b> here stops the whole simulation — the recipe detaches and the claims fall back to a
+    <b>Field off</b> here stops the whole simulation — the pattern detaches and the claims fall back to a
     plain list. That is different from turning a single <em>projection</em> off, where the field keeps
     running and only one expression stops being drawn.
   </p>
@@ -80,7 +80,7 @@ const LIVE = ['evidence-field'];
     </section>
   </div>
 
-  <RecipesApplied ids={RECIPES} live={LIVE} />
+  <PatternsApplied ids={RECIPES} live={LIVE} />
 </DocsLayout>
 
 <script>
@@ -122,7 +122,7 @@ const LIVE = ['evidence-field'];
       label: c.text,
     });
 
-    let binding: DataBinding<Claim> = bindData(root, claims, mapper, { recipe: 'evidence-field', className: 'ev-claim', reducedMotion: reduced });
+    let binding: DataBinding<Claim> = bindData(root, claims, mapper, { pattern: 'evidence-field', className: 'ev-claim', reducedMotion: reduced });
     let on = true;
     let raf = 0;
     const loop = (): void => {
@@ -138,7 +138,7 @@ const LIVE = ['evidence-field'];
     raf = requestAnimationFrame(loop);
 
     const refresh = () => binding.update(claims);
-    const rebuild = () => { binding.destroy(); binding = bindData(root, claims, mapper, { recipe: on ? 'evidence-field' : undefined, className: 'ev-claim', reducedMotion: reduced }); };
+    const rebuild = () => { binding.destroy(); binding = bindData(root, claims, mapper, { pattern: on ? 'evidence-field' : undefined, className: 'ev-claim', reducedMotion: reduced }); };
 
     for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-ev]')) {
       btn.addEventListener('click', () => {
@@ -156,7 +156,7 @@ const LIVE = ['evidence-field'];
           if (on) rebuild();
         } else if (k === 'field') {
           on = !on; btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', String(on)); btn.textContent = on ? 'Field: on' : 'Field: off';
-          rebuild(); // keep claims rendered; recipe only attaches when on
+          rebuild(); // keep claims rendered; pattern only attaches when on
         }
       });
     }

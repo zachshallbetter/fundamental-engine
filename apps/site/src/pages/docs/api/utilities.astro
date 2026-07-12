@@ -190,24 +190,24 @@ card.addEventListener('pointerleave', () =&gt; overlay.clear());</code></pre>
   <section class="docs-sec" id="bindFieldNav">
     <h2>bindFieldNav</h2>
     <p>
-      Runs a recipe <strong>signals-only</strong> (<code>render: []</code>) over the
+      Runs a pattern <strong>signals-only</strong> (<code>render: []</code>) over the
       <code>&lt;a href&gt;</code> links inside a navigation root. Every link becomes a body; the
       current link can be pinned as the "well" (<code>data-field-attention=1</code>); previously
       visited links can be marked (<code>data-field-memory=1</code> + a <code>nav-visited</code>
-      class). The platform writes the recipe's <code>--field-*</code> channels back onto each link;
+      class). The platform writes the pattern's <code>--field-*</code> channels back onto each link;
       CSS turns them into ink weight, glows, and markers. Nothing is drawn.
     </p>
     <p>
       Progressive enhancement is the contract: under <code>prefers-reduced-motion</code>, or when
-      the recipe can't be resolved / there are no links, <code>bindFieldNav</code> returns
+      the pattern can't be resolved / there are no links, <code>bindFieldNav</code> returns
       <code>null</code> and writes nothing — the links stay plain and reachable.
     </p>
 
     <dl class="api-table">
       <div class="api-row">
-        <dt class="k"><code>bindFieldNav(root, recipe, opts?)</code></dt>
+        <dt class="k"><code>bindFieldNav(root, pattern, opts?)</code></dt>
         <dd class="d">
-          <code>recipe</code> is a <code>FieldPattern</code> object or a catalog ID string.
+          <code>pattern</code> is a <code>FieldPattern</code> object or a catalog ID string.
           Returns a <code>&#123; destroy() &#125;</code> handle, or <code>null</code> on reduced-motion or
           empty root.
         </dd>

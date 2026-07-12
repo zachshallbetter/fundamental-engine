@@ -4,7 +4,7 @@
 // how these connect") rather than the engine's own taxonomy. See
 // docs/design/explore-interaction-model.md for the full interaction model.
 //
-// PHASE 0 (this file): server-render the complete, semantic, no-JS catalog — every recipe as a
+// PHASE 0 (this file): server-render the complete, semantic, no-JS catalog — every pattern as a
 // linked <article>, tagged with its problem domains, grouped under the nine-domain filter bar.
 // Works with zero JavaScript (the filter bar + live previews are progressive enhancement layered
 // on in later phases). The page suppresses the global ambient particle field (signals-first): the
@@ -26,7 +26,7 @@ const fieldKeyOf = (r: FieldPattern) => r.naturalField ?? 'platform';
 const fieldLabelOf = (r: FieldPattern) =>
   r.naturalField != null ? r.naturalField[0]!.toUpperCase() + r.naturalField.slice(1) : 'Platform';
 
-// Assemble one view-model row per recipe (the 64), carrying everything the card + the Phase-1
+// Assemble one view-model row per pattern (the 64), carrying everything the card + the Phase-1
 // filter island need. Data attributes keep the filter logic out of the markup.
 const cards = FIELD_PATTERNS.map((r) => {
   const tax = taxonomyFor(r.id);
@@ -65,7 +65,7 @@ const detailData = Object.fromEntries(
       fieldLabel: fieldLabelOf(r),
       accent: FIELD_COLOR[fieldKeyOf(r)] ?? FIELD_COLOR.platform,
       domains: tax.domains.map((d) => ({ id: d, label: domainLabel[d] })),
-      // "How it works" — the recipe's authored notes, minus the deep technical parentheticals
+      // "How it works" — the pattern's authored notes, minus the deep technical parentheticals
       // (CSS-var / data-attr caveats) so the detail panel reads as plain language, not token-speak.
       how: (r.notes ?? '').replace(/\s*\([^)]*(?:--|data-)[^)]*\)/g, '').trim(),
       solves: tax.solves,
@@ -142,12 +142,12 @@ const detailData = Object.fromEntries(
       </div>
     </div>
 
-    <!-- Constellation view — a force-directed map of the catalog: recipes cluster around their
+    <!-- Constellation view — a force-directed map of the catalog: patterns cluster around their
          primary domain. Built + laid out client-side; hidden until toggled (and on no-JS). -->
     <div class="ex-constellation" data-constellation hidden aria-hidden="true"></div>
 
-    <!-- The catalog. One <article> per recipe — minimal by design: field accent, name, the problem
-         it solves, the domains it answers, a link to the full recipe page. Implementation metadata
+    <!-- The catalog. One <article> per pattern — minimal by design: field accent, name, the problem
+         it solves, the domains it answers, a link to the full pattern page. Implementation metadata
          (tokens, metrics, render stack) deliberately lives on the expanded view, not here. -->
     <ul class="ex-grid" role="list">
       {cards.map((c) => (
@@ -225,7 +225,7 @@ const detailData = Object.fromEntries(
   <SiteFooter />
 </Base>
 
-<!-- Suppress the global ambient particle field on the recipes catalog only (signals-first: the
+<!-- Suppress the global ambient particle field on the patterns catalog only (signals-first: the
      catalog is calm; the engine wakes where the visitor interacts). Page-scoped class — does NOT
      touch the global `data-field` nav toggle, so the visitor's own preference is preserved on leave.
      The /patterns/<id> pages have their own contained workbench field, so suppress only the index. -->

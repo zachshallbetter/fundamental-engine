@@ -244,7 +244,7 @@ const GROUPS = [
     <em>orbit</em>, and <em>drag</em> describe what a demo does — they are not engine tokens. The
     spring here is the <a href="/docs/api/forces"><code>tether</code></a> force, <em>drag</em> maps to
     <code>viscosity</code>, and <em>orbit</em> is composed motion (gravity + magnetism + tether), not a
-    token. Runtime tokens always appear in <code>data-body</code> and recipe <code>primitives</code>.
+    token. Runtime tokens always appear in <code>data-body</code> and pattern <code>primitives</code>.
     These demos read <code>--field-density</code>, the field-namespaced form of the density channel; the canonical raw channel is <code>--d</code>, which the engine writes alongside it (same value).
   </div>
 
@@ -450,9 +450,9 @@ const GROUPS = [
     </div>
     <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: burstSrc }]} />
     <div class="callout">
-      <b>Want the recipes as a reference?</b> The full catalog — all 64, each with copy-paste HTML,
+      <b>Want the patterns as a reference?</b> The full catalog — all 64, each with copy-paste HTML,
       React, web-component, and JSON — lives in the <a href="/patterns">pattern gallery</a>; the
-      <a href="/docs/patterns">recipe model</a> page explains how a recipe is built. These examples are
+      <a href="/docs/patterns">pattern model</a> page explains how a pattern is built. These examples are
       the same patterns, running.
     </div>
   </section>

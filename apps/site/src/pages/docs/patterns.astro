@@ -6,7 +6,7 @@ import VocabLegend from '../../components/VocabLegend.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
 import { FIELD_PATTERNS, PATTERN_TIERS, FIRST_RELEASE_PATTERN_IDS, patternById, serializePattern } from '@fundamental-engine/core';
 
-// The Recipe Model page: how a FieldPattern separates the vocabulary lanes, the schema, the strict rule
+// The Pattern Model page: how a FieldPattern separates the vocabulary lanes, the schema, the strict rule
 // (prose expressive, runtime tokens real), and the concept->token mapping. Counts are data-driven.
 const schema = `type FieldPattern = {
   id: string;
@@ -174,7 +174,7 @@ const tokenCount = new Set(FIELD_PATTERNS.flatMap((r) => r.primitives)).size;
       label: r.title,
     });
 
-    const binding = bindData(stage, records, mapper, { recipe: 'trust-gradient', className: 'bd-rec' });
+    const binding = bindData(stage, records, mapper, { pattern: 'trust-gradient', className: 'bd-rec' });
 
     const loop = (): void => {
       const ins = binding.inspect();

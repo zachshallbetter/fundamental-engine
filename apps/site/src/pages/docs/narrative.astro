@@ -29,7 +29,7 @@ const stages = [
   },
   {
     title: 'Metrics',
-    body: 'From the body and its neighbours the field computes metrics — attention, priority, coherence, entropy. Metrics are measured numbers, not forces. A recipe declares which metrics a field tracks.',
+    body: 'From the body and its neighbours the field computes metrics — attention, priority, coherence, entropy. Metrics are measured numbers, not forces. A pattern declares which metrics a field tracks.',
     markup: '// computeMetrics(body, neighbours, relationships)\n→ { attention: 0.7, priority: 0.85, … }\n// a metric measures; it does not push',
   },
   {
@@ -109,7 +109,7 @@ const stages = [
   let i = 0;
   let applied: ReturnType<typeof applyPattern> | null = null;
 
-  // Drive the running example deterministically with applyPattern: supply a priority, the recipe writes
+  // Drive the running example deterministically with applyPattern: supply a priority, the pattern writes
   // --field-priority back. No requestAnimationFrame, no cursor — the feedback is real and repeatable.
   function driveFeedback(reduced: boolean) {
     const root = $('nr-demo-root');
@@ -118,9 +118,9 @@ const stages = [
     demo.setAttribute('data-feedback', '');
     demo.setAttribute('data-field-priority', '0.85');
     applied?.destroy();
-    const recipe = patternById('priority-well');
-    if (!recipe) return;
-    applied = applyPattern(root, recipe, { bodies: [demo], annotateBodies: false, drive: false, reducedMotion: reduced });
+    const pattern = patternById('priority-well');
+    if (!pattern) return;
+    applied = applyPattern(root, pattern, { bodies: [demo], annotateBodies: false, drive: false, reducedMotion: reduced });
     applied.tick();
     applied.tick();
   }
