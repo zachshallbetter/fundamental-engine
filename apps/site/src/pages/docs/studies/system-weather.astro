@@ -1,11 +1,11 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
-import RecipesApplied from '../../../components/RecipesApplied.astro';
+import PatternsApplied from '../../../components/PatternsApplied.astro';
 import StatusChip from '../../../components/StatusChip.astro';
 import DataHonesty from '../../../components/DataHonesty.astro';
 
 // System Weather Study — data-driven via bindData(). Dashboard metric cards are records; the
-// attention-weather recipe turns supplied heat/pressure into --field-* the CSS renders as weather.
+// attention-weather pattern turns supplied heat/pressure into --field-* the CSS renders as weather.
 // Calm regions stay quiet, hot regions warm. No hand-wired behavior — the cards come from data.
 const RECIPES = ['attention-weather', 'anomaly-bloom', 'risk-horizon', 'dependency-tension', 'system-pulse'];
 const LIVE = ['attention-weather'];
@@ -20,7 +20,7 @@ const LIVE = ['attention-weather'];
   <StatusChip label="Concept study" tone="concept" />
   <p class="lede">
     A dashboard read as weather. Metric cards are <b>records</b> bound through <code>bindData()</code>;
-    the <a href="/patterns/attention-weather">Attention Weather</a> recipe turns each card's heat and
+    the <a href="/patterns/attention-weather">Attention Weather</a> pattern turns each card's heat and
     pressure into field state, so hot or overloaded metrics gain weight and calm regions stay quiet —
     still a legible grid with the field off.
   </p>
@@ -52,7 +52,7 @@ const LIVE = ['attention-weather'];
   <div class="sw-pulse"><span class="sw-dot"></span><b>System pulse</b><span class="sw-health" data-sw-health>—</span></div>
   <div class="sw-grid" id="sw-grid"></div>
 
-  <RecipesApplied ids={RECIPES} live={LIVE} />
+  <PatternsApplied ids={RECIPES} live={LIVE} />
 </DocsLayout>
 
 <script>
@@ -84,7 +84,7 @@ const LIVE = ['attention-weather'];
       `<p class="sw-label">${esc(c.label)}${c.anomaly ? '<span class="sw-bloom">anomaly</span>' : ''}</p>` +
       `<p class="sw-value">${esc(c.value)}</p><span class="sw-meter"><span class="sw-fill"></span></span>`;
     mountBindStudy((reduced, on) => [
-      bindData(grid, cards, mapper, { recipe: on ? 'attention-weather' : undefined, className: 'sw-card', content, reducedMotion: reduced }),
+      bindData(grid, cards, mapper, { pattern: on ? 'attention-weather' : undefined, className: 'sw-card', content, reducedMotion: reduced }),
     ]);
   }
 </script>

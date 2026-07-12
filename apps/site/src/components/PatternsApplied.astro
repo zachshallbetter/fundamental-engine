@@ -1,6 +1,6 @@
 ---
-// "Recipes applied" panel for the concept studies — rendered from the engine catalog (patternById), so
-// a study declares the actual recipe objects it runs, with their lanes. The `live` ids are the ones the
+// "Patterns applied" panel for the concept studies — rendered from the engine catalog (patternById), so
+// a study declares the actual pattern objects it runs, with their lanes. The `live` ids are the ones the
 // study drives through applyPattern(); the rest are the conceptual family the study embodies.
 import VocabBadge from './VocabBadge.astro';
 import { patternById, type FieldPattern } from '@fundamental-engine/core';
@@ -14,8 +14,8 @@ const liveSet = new Set(live);
 const recipes = ids.map((id) => patternById(id)).filter((r): r is FieldPattern => !!r);
 ---
 
-<section class="recipes-applied" aria-label="Recipes applied">
-  <h2>Recipes applied</h2>
+<section class="patterns-applied" aria-label="Patterns applied">
+  <h2>Patterns applied</h2>
   <p class="ra-lede">
     Each is a real <a href="/docs/patterns"><code>FieldPattern</code></a> from the catalog. The ones marked
     <span class="ra-livedot">live</span> are driven through <code>applyPattern()</code> on this page; the
@@ -39,7 +39,7 @@ const recipes = ids.map((id) => patternById(id)).filter((r): r is FieldPattern =
 </section>
 
 <style>
-  .recipes-applied { margin: 1.5rem 0; }
+  .patterns-applied { margin: 1.5rem 0; }
   .ra-lede { color: var(--muted, #9aa); font-size: 0.9rem; max-width: 70ch; }
   .ra-livedot, .ra-live { font-size: 0.66rem; color: #0b0b10; background: #2dd4bf; border-radius: 4px; padding: 0.02rem 0.35rem; font-weight: 600; }
   .ra-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.7rem; margin-top: 0.8rem; }

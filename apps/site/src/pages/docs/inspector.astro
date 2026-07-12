@@ -47,7 +47,7 @@ const recipeOptions = FIELD_PATTERNS.map((r) => ({ id: r.id, name: r.name }));
       <div class="stat"><b>{report.conformanceExperiments}</b><span>conformance</span></div>
       <div class="stat"><b>{report.contracts}</b><span>contracts</span></div>
       <div class="stat"><b>{report.agentTypes}</b><span>agent types</span></div>
-      <div class="stat"><b>{report.recipes}</b><span>recipes</span></div>
+      <div class="stat"><b>{report.recipes}</b><span>patterns</span></div>
     </div>
     <p class="coverage">
       {report.forcesMissingPassport.length === 0 && report.forcesMissingConformance.length === 0
@@ -70,7 +70,7 @@ const recipeOptions = FIELD_PATTERNS.map((r) => ({ id: r.id, name: r.name }));
     <nav class="lp-jump" aria-label="Jump to inspector sections">
       <a href="#sr">System report</a>
       <a href="#lp">Platform</a>
-      <a href="#ri">Recipe inspector</a>
+      <a href="#ri">Pattern inspector</a>
       <a href="#rp">Reciprocity</a>
       <a href="#ct">Contracts</a>
       <a href="#pp">Passports</a>
@@ -104,14 +104,14 @@ const recipeOptions = FIELD_PATTERNS.map((r) => ({ id: r.id, name: r.name }));
   </section>
 
   <section aria-labelledby="ri">
-    <h2 id="ri">Recipe inspector</h2>
+    <h2 id="ri">Pattern inspector</h2>
     <p>
-      Pick a recipe to see its <b>compiled plan</b> (<code>compilePattern</code>) and then run it through
+      Pick a pattern to see its <b>compiled plan</b> (<code>compilePattern</code>) and then run it through
       <code>applyPattern</code> live. This answers <em>why is this moving</em>: which runtime tokens execute,
       which metrics are written, which relationships bind, and what the reduced-motion output is.
     </p>
     <div class="ri-bar">
-      <label class="ri-pick">Recipe
+      <label class="ri-pick">Pattern
         <select data-ri-pick>
           {recipeOptions.map((r) => <option value={r.id}>{r.name}</option>)}
         </select>
@@ -135,7 +135,7 @@ const recipeOptions = FIELD_PATTERNS.map((r) => ({ id: r.id, name: r.name }));
       <div class="ri-run">
         <h3 class="lp-h3">Live application</h3>
         <div class="ri-stage" data-ri-stage></div>
-        <ul class="lp-list" data-ri-metrics><li class="lp-empty">run a recipe to see live metrics</li></ul>
+        <ul class="lp-list" data-ri-metrics><li class="lp-empty">run a pattern to see live metrics</li></ul>
       </div>
     </div>
   </section>
@@ -300,8 +300,8 @@ const recipeOptions = FIELD_PATTERNS.map((r) => ({ id: r.id, name: r.name }));
 </script>
 
 <script>
-  // Recipe inspector: compile a chosen recipe (compilePattern) + run it (applyPattern), exposing the
-  // plan and live metrics — "why is this moving" made answerable from the recipe object.
+  // Pattern inspector: compile a chosen pattern (compilePattern) + run it (applyPattern), exposing the
+  // plan and live metrics — "why is this moving" made answerable from the pattern object.
   import { compilePattern, patternById } from '@fundamental-engine/core';
   import { applyPattern, type AppliedPattern } from '@fundamental-engine/dom';
 
@@ -336,7 +336,7 @@ const recipeOptions = FIELD_PATTERNS.map((r) => ({ id: r.id, name: r.name }));
           const first = Object.values(ins.metrics)[0] ?? {};
           riMetrics.innerHTML = Object.keys(first).length
             ? Object.entries(first).map(([m, v]) => `<li><code>${m}</code> ${(v as number).toFixed(2)}</li>`).join('')
-            : '<li class="lp-empty">no metrics for this recipe</li>';
+            : '<li class="lp-empty">no metrics for this pattern</li>';
         }
       }
       riRaf = requestAnimationFrame(loop);

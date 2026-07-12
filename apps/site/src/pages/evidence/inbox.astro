@@ -186,7 +186,7 @@ field.destroy(); field = applyPattern(…);
 const SNIPPET_CSS = `.ix-item {
   /* --w  = the server-allocated share (conserved)
      --d  = live engine density — data-hot gathers it
-     --field-attention = the recipe's eased attention */
+     --field-attention = the pattern's eased attention */
   --live: var(--d, 0);
   opacity: calc(0.58 + var(--w) * 0.42);
   box-shadow: 0 0 calc(var(--live) * 16px) -6px
@@ -292,7 +292,7 @@ const SNIPPET_CSS = `.ix-item {
       <span class="ev-k ix-k-live" aria-hidden="true"></span> the ink is <b>live</b> —
       <b>--w</b> is the server-allocated share and <b>--cat</b> the lens color; <b>--d</b> is the
       engine's local density (hold an ask and the field gathers) and <b>--field-attention</b> the
-      recipe's eased attention as you scroll. The live channels touch only ink, never the budget.
+      pattern's eased attention as you scroll. The live channels touch only ink, never the budget.
     </li>
   </ul>
 
@@ -376,7 +376,7 @@ const SNIPPET_CSS = `.ix-item {
       each weight into type heft, ink, and anchor. The field never invents attention; it only
       moves it. On top of that sit live channels the engine writes back every frame —
       <code>--d</code> (local density, gathered by <code>data-hot</code> on hover) and
-      <code>--field-attention</code> (the recipe's eased attention) — which touch only ink, never
+      <code>--field-attention</code> (the pattern's eased attention) — which touch only ink, never
       the budget. Each ask also declares its <code>askedAt</code> as <code>data-field-at</code>,
       so the pipeline's recency lane is grounded in the data's own timestamp:
       <code>--field-recency</code> decays against the real clock, not your interaction.

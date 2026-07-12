@@ -1,6 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
-import RecipesApplied from '../../../components/RecipesApplied.astro';
+import PatternsApplied from '../../../components/PatternsApplied.astro';
 import StatusChip from '../../../components/StatusChip.astro';
 import DataHonesty from '../../../components/DataHonesty.astro';
 
@@ -33,7 +33,7 @@ const coherent = checks.filter((c) => c.ok).length / checks.length;
   <p class="lede">
     A generic pull request, reinterpreted as a field. Changed files and reviewers are <b>records</b>
     bound through <code>bindData()</code> — the <a href="/patterns/dependency-tension">Dependency
-    Tension</a> and <a href="/patterns/review-constellation">Review Constellation</a> recipes turn
+    Tension</a> and <a href="/patterns/review-constellation">Review Constellation</a> patterns turn
     them into heat, tension, and attention; comments bind to the files they touch. Usable with the field off.
   </p>
 
@@ -63,7 +63,7 @@ const coherent = checks.filter((c) => c.ok).length / checks.length;
 
   <div class="rv">
     <header class="rv-head">
-      <h2 class="rv-title">Make the recipe runtime executable</h2>
+      <h2 class="rv-title">Make the pattern runtime executable</h2>
       <p class="rv-branch"><code>feat/recipe-runtime</code> → <code>main</code></p>
       <div class="rv-merge" style={`--field-coherence:${coherent}`}>
         <b>Merge readiness</b><span class="rv-coh">{Math.round(coherent * 100)}% coherent</span>
@@ -97,7 +97,7 @@ const coherent = checks.filter((c) => c.ok).length / checks.length;
     </section>
   </div>
 
-  <RecipesApplied ids={RECIPES} live={LIVE} />
+  <PatternsApplied ids={RECIPES} live={LIVE} />
 </DocsLayout>
 
 <script>
@@ -137,8 +137,8 @@ const coherent = checks.filter((c) => c.ok).length / checks.length;
       label: r.name,
     });
     mountBindStudy((reduced, on) => [
-      bindData(filesRoot, files, fileMapper, { recipe: on ? 'dependency-tension' : undefined, className: 'rv-file', content: fileContent, reducedMotion: reduced }),
-      bindData(reviewersRoot, reviewers, reviewerMapper, { recipe: on ? 'review-constellation' : undefined, className: 'rv-reviewer', reducedMotion: reduced }),
+      bindData(filesRoot, files, fileMapper, { pattern: on ? 'dependency-tension' : undefined, className: 'rv-file', content: fileContent, reducedMotion: reduced }),
+      bindData(reviewersRoot, reviewers, reviewerMapper, { pattern: on ? 'review-constellation' : undefined, className: 'rv-reviewer', reducedMotion: reduced }),
     ]);
   }
 </script>

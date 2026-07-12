@@ -141,7 +141,7 @@ viewAc =         // listeners die with it
 zone.innerHTML = render(records, now);
 
 // the bodies changed — destroy the
-// scoped field and re-apply the recipe
+// scoped field and re-apply the pattern
 // over the new geometry:
 field?.destroy();
 const bodies = [
@@ -162,7 +162,7 @@ field = applyPattern(zone, base, {
 const SNIPPET_CSS = `.cal-row {
   /* --w = imminence (1 Hz clock) · --d = live engine
      density, data-hot gathers it · --field-attention =
-     the recipe's eased attention */
+     the pattern's eased attention */
   --live: var(--d, 0);
   opacity: calc(0.58 + var(--w) * 0.42);
   box-shadow: 0 0 calc(var(--live) * 16px) -6px
@@ -251,7 +251,7 @@ const SNIPPET_CSS = `.cal-row {
       <span class="ev-k cal-k-live" aria-hidden="true"></span> the ink is <b>live</b> —
       <b>--w</b> is the clock's imminence and <b>--cat</b> the status lens; <b>--d</b> is the
       engine's local density (hold a card and the field gathers — the hero's countdown burns
-      brighter) and <b>--field-attention</b> the recipe's eased attention as you scroll.
+      brighter) and <b>--field-attention</b> the pattern's eased attention as you scroll.
     </li>
   </ul>
 
@@ -398,7 +398,7 @@ const SNIPPET_CSS = `.cal-row {
       custom property, and the type carries the measurement. No canvas, no chart library — the
       only moving part is time. On top of the clock sit two live channels the engine writes back
       every frame — <code>--d</code> (local density, gathered by <code>data-hot</code> on hover)
-      and <code>--field-attention</code> (the recipe's eased attention) — which touch only ink;
+      and <code>--field-attention</code> (the pattern's eased attention) — which touch only ink;
       the 1 Hz weight ramp is untouched. The day / week / month toggle re-renders the records
       zone from the same launch list and re-applies the scoped field over the new bodies — full
       cards in day, compact cards in week, chips in month — and every channel keeps working.

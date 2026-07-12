@@ -11,14 +11,14 @@ import { metricTitle, designedMetrics } from '../../lib/metric-lanes.ts';
 import { taxonomyFor } from '../../lib/recipe-taxonomy.ts';
 import '../../styles/workbench.css';
 
-// One page per recipe (getStaticPaths over the 64 FIELD_PATTERNS + the experimental set): a large live
+// One page per pattern (getStaticPaths over the 64 FIELD_PATTERNS + the experimental set): a large live
 // preview, the full five-lane breakdown + render + a11y + notes + plain-language explanation, copyable
 // HTML / web component / React / JSON (patternAuthoring), and "see also" siblings (same field/tier).
 export function getStaticPaths() {
-  return [...FIELD_PATTERNS, ...EXPERIMENTAL_PATTERNS].map((r) => ({ params: { id: r.id }, props: { recipe: r } }));
+  return [...FIELD_PATTERNS, ...EXPERIMENTAL_PATTERNS].map((r) => ({ params: { id: r.id }, props: { pattern: r } }));
 }
-interface Props { recipe: FieldPattern }
-const { recipe: r } = Astro.props;
+interface Props { pattern: FieldPattern }
+const { pattern: r } = Astro.props;
 
 const FIELD_COLOR: Record<string, string> = {
   gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c', diagnostic: '#9aa7b4', platform: '#9aa7b4',
@@ -44,7 +44,7 @@ const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/
 <Base title={`${r.name} Pattern — Fundamental`} description={`${r.name}: ${r.intent}. A live, validated Fundamental Pattern — runs in your browser, with runtime tokens, metrics, diagnostics, and an accessibility equivalent.`}>
   <SiteNav />
   <main id="main" class="rp-shell" style={`--rc: ${color}`}>
-    <p class="rp-back"><a href="/patterns">← all recipes</a></p>
+    <p class="rp-back"><a href="/patterns">← all patterns</a></p>
     <header class="rp-hero">
       <div class="rc-tags">
         <span class="rc-field">{fieldLabel}</span>
@@ -67,7 +67,7 @@ const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/
         data-reduced={r.accessibility.meaningWithoutMotion}
         aria-hidden="true"
       ></div>
-      <p class="rp-note">Running the actual recipe live via <code>applyPattern()</code> — switch the substrate, stack overlays, watch the signals, or reverse the dynamics. Not a mock.</p>
+      <p class="rp-note">Running the actual pattern live via <code>applyPattern()</code> — switch the substrate, stack overlays, watch the signals, or reverse the dynamics. Not a mock.</p>
     </section>
 
     <p class="explain">{explainScene(r)}</p>
@@ -98,7 +98,7 @@ const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/
     </dl>
 
     <section class="rp-export">
-      <h2>Copy this recipe</h2>
+      <h2>Copy this pattern</h2>
       <CodeTabs variants={[
         { label: 'HTML', lang: 'html', code: exports.html },
         { label: 'Web component', lang: 'html', code: exports.wc },
@@ -123,7 +123,7 @@ const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/
   let preview: PreviewHandle | undefined;
   function init() {
     // the full workbench preview — substrate/overlay/dynamics controls + live signal readout, the
-    // same component the Explore detail uses (mountRecipePreview reads the recipe metadata off the
+    // same component the Explore detail uses (mountRecipePreview reads the pattern metadata off the
     // mount element's data-* attributes, set server-side).
     const el = document.querySelector<HTMLElement>('[data-recipe-mount]');
     preview?.destroy();
@@ -157,7 +157,7 @@ const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/
   .rp-hero h1 { font-size: clamp(2rem, 5vw, 3rem); margin: 0.5rem 0 0.4rem; line-height: 1.05; }
   .intent { color: var(--muted, #c3c9d4); font-size: 1.05rem; margin: 0 0 0.3rem; }
   .translation { color: var(--muted, #9aa); font-style: italic; margin: 0; }
-  /* --detail-accent drives the workbench signal bars + active-pill glow to the recipe's field colour */
+  /* --detail-accent drives the workbench signal bars + active-pill glow to the pattern's field colour */
   .rp-stage { margin: 1.6rem 0; border: 1px solid var(--line, #2a2a35); border-radius: 14px; overflow: hidden; --detail-accent: var(--rc); background: radial-gradient(120% 120% at 50% 30%, color-mix(in srgb, var(--rc) 9%, transparent), transparent 70%); }
   /* host for the shared workbench preview: positioned + clipped, tall enough for the control rows */
   .rp-preview { position: relative; overflow: hidden; min-height: 440px; display: grid; place-items: center; }
