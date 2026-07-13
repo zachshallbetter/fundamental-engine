@@ -8,12 +8,13 @@
 > say so explicitly (see *The caveat canon* below). When the code and a paper disagree, the code
 > wins — fix the paper.
 >
-> **Terminology (2026 update).** The canonical conceptual term for an authored field arrangement is a
-> **Field Formation**; `FieldRecipe` is its current API representation. These papers predate that
-> decision and use "recipe"/`FieldRecipe` for both the concept and the implementation — read "recipe"
-> here as the API representation of a Field Formation. The shipped API names (`FieldRecipe`,
-> `compileRecipe`, `applyRecipe`, `FIELD_RECIPES`) are unchanged. See
-> [`../canonical/dimensional-coupling.md`](../canonical/dimensional-coupling.md).
+> **Terminology (2026 update).** The canonical term for an authored field arrangement — both the
+> concept AND its API representation — is **Field Pattern** (`FieldPattern`, `compilePattern`,
+> `applyPattern`, `FIELD_PATTERNS`); the old names (`FieldRecipe`, `compileRecipe`, `applyRecipe`,
+> `FIELD_RECIPES`) are kept as `@deprecated` aliases through `1.0`. These papers predate that
+> rename and use "recipe"/`FieldRecipe` throughout — read "recipe" as `FieldPattern`. See
+> [`../canonical/dimensional-coupling.md`](../canonical/dimensional-coupling.md) and
+> [`../canonical/deprecation-plan.md`](../canonical/deprecation-plan.md).
 
 This folder holds a **small family of focused papers** on the ideas behind
 [Fundamental](../../README.md), a platform-native relational field runtime for the DOM. The family is

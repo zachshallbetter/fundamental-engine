@@ -364,10 +364,13 @@ export function applyPattern(root: Element, recipe: FieldRecipe, options: ApplyP
   return { id: recipe.id, recipe, compiled, platform, root, elements, reducedMotion, inspect, tick, destroy };
 }
 
-/** Tear down an applied recipe (alias of `applied.destroy()`). */
-export function destroyRecipe(applied: AppliedRecipe): void {
+/** Tear down an applied Field Pattern (alias of `applied.destroy()`). */
+export function destroyPattern(applied: AppliedPattern): void {
   applied.destroy();
 }
+
+/** @deprecated Renamed to {@link destroyPattern}. */
+export const destroyRecipe = destroyPattern;
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);

@@ -11,7 +11,7 @@
  * and inspection modes. These are classification + authoring artifacts — they compose existing
  * primitives and add NO new engine behavior. Eight ids are the recommended first-release set.
  */
-import type { FieldRecipe, PatternTier } from './schema.ts';
+import type { FieldPattern, FieldRecipe, PatternTier } from './schema.ts';
 import { EXPERIMENTAL_RECIPES } from './wayfinding.ts';
 
 // ── Gravity: priority, convergence, hierarchy ───────────────────────────────────────
@@ -1549,10 +1549,12 @@ export const FIRST_RELEASE_PATTERN_IDS: readonly string[] = [
 /** @deprecated Renamed to {@link FIRST_RELEASE_PATTERN_IDS} (recipe → Pattern); removed at 1.0. */
 export const FIRST_RELEASE_RECIPE_IDS = FIRST_RELEASE_PATTERN_IDS;
 
-/** The first-release recipes, resolved from {@link FIRST_RELEASE_RECIPE_IDS} in declared order. */
-export const FIRST_RELEASE_RECIPES: readonly FieldRecipe[] = FIRST_RELEASE_RECIPE_IDS.map(
-  (id) => FIELD_RECIPES.find((r) => r.id === id)!,
+/** The first-release Field Patterns, resolved from {@link FIRST_RELEASE_PATTERN_IDS} in declared order. */
+export const FIRST_RELEASE_PATTERNS: readonly FieldPattern[] = FIRST_RELEASE_PATTERN_IDS.map(
+  (id) => FIELD_PATTERNS.find((r) => r.id === id)!,
 );
+/** @deprecated Renamed to {@link FIRST_RELEASE_PATTERNS} (recipe → Pattern); removed at 1.0. */
+export const FIRST_RELEASE_RECIPES = FIRST_RELEASE_PATTERNS;
 
 /** Look up a recipe by id — the canonical 64 first, then the experimental set (undefined if unknown). */
 export function patternById(id: string): FieldRecipe | undefined {

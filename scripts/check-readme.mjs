@@ -5,7 +5,7 @@
  * contradicts. It checks the facts most prone to rot:
  *   1. every package has a README that names its real package (the title/install can't point at the
  *      wrong package),
- *   2. the root README's catalog counts (forces, presets, formations, render modes, recipes) match the
+ *   2. the root README's catalog counts (forces, presets, formations, render modes, patterns) match the
  *      live catalog,
  *   3. the root README names every publishable package.
  *
@@ -53,7 +53,7 @@ if (core) {
     ['presets', len(core.MANUAL_PRESETS)],
     ['formations', len(core.FORMATIONS)],
     ['render modes', len(core.RENDER_MODES)],
-    ['recipes', len(core.FIELD_RECIPES)],
+    ['patterns', len(core.FIELD_PATTERNS)],
   ];
   for (const [noun, n] of COUNTS) {
     // accept "<n> <noun>" anywhere (markdown bold/punctuation around the number is fine)

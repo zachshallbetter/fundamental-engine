@@ -1,37 +1,37 @@
 /**
  * The whole Fundamental integration for this starter, in one file.
  *
- * Three surfaces, one recipe (priority-well):
+ * Three surfaces, one Field Pattern (priority-well):
  *   1. Declarative — importing '@fundamental-engine/elements' upgrades <field-root>, which scans the page for
  *      [data-body] elements. Nothing else to do.
- *   2. applyRecipe() — run a recipe over markup that already exists; it writes --field-* state back.
- *   3. bindData()    — records drive the field; updates diff by id, removed records decay out.
+ *   2. applyPattern() — run a Field Pattern over markup that already exists; it writes --field-* state back.
+ *   3. bindData()      — records drive the field; updates diff by id, removed records decay out.
  *
- * A reduced-motion toggle re-runs (2) and (3) with the recipe's static fallback, and a per-frame
+ * A reduced-motion toggle re-runs (2) and (3) with the pattern's static fallback, and a per-frame
  * loop reads each handle's inspect() so you can watch the field's own accounting.
  */
 import '@fundamental-engine/elements'; // side effect: registers <field-root>, <field-cell>, <field-field>
-import { recipeById, compileRecipe } from '@fundamental-engine/core';
-import { applyRecipe, bindData } from '@fundamental-engine/dom';
+import { patternById, compilePattern } from '@fundamental-engine/core';
+import { applyPattern, bindData } from '@fundamental-engine/dom';
 
-const RECIPE_ID = 'priority-well';
-const recipe = recipeById(RECIPE_ID);
-if (!recipe) throw new Error(`recipe "${RECIPE_ID}" not found`);
+const PATTERN_ID = 'priority-well';
+const pattern = patternById(PATTERN_ID);
+if (!pattern) throw new Error(`pattern "${PATTERN_ID}" not found`);
 
 // Shared reduced-motion state. The toggle flips it and re-runs both runtime surfaces.
 let reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// ── 2 · applyRecipe over existing markup ──────────────────────────────────────────────────────
+// ── 2 · applyPattern over existing markup ─────────────────────────────────────────────────────
 const applyRoot = document.getElementById('apply-tasks');
 const applyInspect = document.getElementById('apply-inspect');
-let applied: ReturnType<typeof applyRecipe> | null = null;
+let applied: ReturnType<typeof applyPattern> | null = null;
 
 function runApply(): void {
   if (!applyRoot) return;
   applied?.destroy();
   const bodies = [...applyRoot.querySelectorAll<HTMLElement>('[data-body]')];
   // bodies already carry data-body + data-field-priority, so don't re-annotate them.
-  applied = applyRecipe(applyRoot, recipe!, { bodies, annotateBodies: false, reducedMotion: reduced });
+  applied = applyPattern(applyRoot, pattern!, { bodies, annotateBodies: false, reducedMotion: reduced });
 }
 
 // ── 3 · bindData from records ─────────────────────────────────────────────────────────────────
@@ -58,7 +58,7 @@ const tier = (p: number): string => (p >= 0.66 ? 'high' : p >= 0.33 ? 'medium' :
 const mapper = (t: Task) => ({
   id: t.id,
   body: { tokens: ['attract'], strength: 0.4 + t.priority, range: 300, feedback: true },
-  metrics: { priority: t.priority }, // → data-field-priority → --field-priority (the recipe tracks it)
+  metrics: { priority: t.priority }, // → data-field-priority → --field-priority (the pattern tracks it)
   label: t.title,
 });
 const content = (t: Task): string =>
@@ -70,14 +70,14 @@ function runBind(): void {
     binding.update(tasks); // diff by id — keeps DOM, animates the change
   } else {
     binding = bindData(bindRoot, tasks, mapper, {
-      recipe: RECIPE_ID,
+      pattern: PATTERN_ID,
       className: 'task',
       content,
       reducedMotion: reduced,
     });
   }
 }
-// A full rebuild is only needed when the reduced-motion mode changes (it reframes the recipe).
+// A full rebuild is only needed when the reduced-motion mode changes (it reframes the pattern).
 function rebindForMotion(): void {
   binding?.destroy();
   binding = null;
@@ -93,8 +93,8 @@ function syncReduceUi(): void {
     reduceBtn.setAttribute('aria-pressed', String(reduced));
     reduceBtn.classList.toggle('on', reduced);
   }
-  // Show the recipe's own static fallback description — the meaning that survives without motion.
-  if (rmNote) rmNote.textContent = reduced ? `static: ${compileRecipe(recipe!).reducedMotion.reducedMotion}` : '';
+  // Show the pattern's own static fallback description — the meaning that survives without motion.
+  if (rmNote) rmNote.textContent = reduced ? `static: ${compilePattern(pattern!).reducedMotion.reducedMotion}` : '';
 }
 reduceBtn?.addEventListener('click', () => {
   reduced = !reduced;

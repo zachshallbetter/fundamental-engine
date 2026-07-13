@@ -319,9 +319,9 @@ Replay should be able to reconstruct:
 force contribution → accumulator → integrator → state change → projection
 ```
 
-## Interaction with Field Formations
+## Interaction with Field Patterns
 
-A Field Formation may map semantic state into force parameters.
+A Field Pattern may map semantic state into force parameters.
 
 Example:
 
@@ -331,7 +331,7 @@ support relation → cohesion
 contradiction relation → charge separation
 ```
 
-The accumulator should record the runtime effect, but the attribution should also preserve the Formation responsible for the mapping.
+The accumulator should record the runtime effect, but the attribution should also preserve the Pattern responsible for the mapping.
 
 ## Risks
 

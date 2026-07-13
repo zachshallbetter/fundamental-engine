@@ -253,15 +253,17 @@ export function serializePattern(r: FieldRecipe): string {
   return JSON.stringify(r, null, 2);
 }
 
-/** Parse + validate a recipe from JSON; throws on invalid shape. */
-export function parseRecipe(json: string): FieldRecipe {
-  const r = JSON.parse(json) as FieldRecipe;
+/** Parse + validate a Field Pattern from JSON; throws on invalid shape. */
+export function parsePattern(json: string): FieldPattern {
+  const r = JSON.parse(json) as FieldPattern;
   const problems = validatePattern(r);
-  if (problems.length) throw new Error(`invalid recipe: ${problems.map((p) => `${p.path} (${p.issue})`).join('; ')}`);
+  if (problems.length) throw new Error(`invalid pattern: ${problems.map((p) => `${p.path} (${p.issue})`).join('; ')}`);
   return r;
 }
 
 // ── Deprecated aliases (recipe → Pattern rename, phase 4; removed at 1.0) ──────────────────────
+/** @deprecated Renamed to {@link parsePattern}. */
+export const parseRecipe = parsePattern;
 /** @deprecated Renamed to {@link BodyPattern}. */ export type BodyRecipe = BodyPattern;
 /** @deprecated Renamed to {@link RelationshipPattern}. */ export type RelationshipRecipe = RelationshipPattern;
 /** @deprecated Renamed to {@link AccessibilityPattern}. */ export type AccessibilityRecipe = AccessibilityPattern;

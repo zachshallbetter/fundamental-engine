@@ -23,7 +23,7 @@
         <h1>The first five minutes</h1>
         <p class="lede">
           A plain Vite + HTML app that uses Fundamental the way any outside project would: one
-          declarative <code>&lt;field-root&gt;</code>, then the same recipe applied three ways. No
+          declarative <code>&lt;field-root&gt;</code>, then the same Field Pattern applied three ways. No
           framework, no canvas code, no per-element wiring. Toggle reduced motion at any time — the
           page stays meaningful with the motion off.
         </p>
@@ -38,7 +38,7 @@
         <h2>1 · Declarative</h2>
         <p>
           Put a real body token on any element with <code>data-body</code>. These are the
-          <code>priority-well</code> recipe's own tokens — <code>attract</code> and
+          <code>priority-well</code> pattern's own tokens — <code>attract</code> and
           <code>gravity</code> — so the elements participate the moment the page loads.
         </p>
         <div class="row">
@@ -48,11 +48,11 @@
         </div>
       </section>
 
-      <!-- 2 · applyRecipe — run a recipe over existing markup; read --field-* state it writes. -->
+      <!-- 2 · applyPattern — run a Field Pattern over existing markup; read --field-* state it writes. -->
       <section class="card">
-        <h2>2 · <code>applyRecipe()</code></h2>
+        <h2>2 · <code>applyPattern()</code></h2>
         <p>
-          Apply <code>priority-well</code> to elements already on the page. The recipe frames which
+          Apply <code>priority-well</code> to elements already on the page. The pattern frames which
           metrics it tracks; it writes them back as <code>--field-*</code> custom properties the CSS
           reads — here <code>--field-priority</code> sets each task's weight.
         </p>
@@ -69,7 +69,7 @@
         <h2>3 · <code>bindData()</code></h2>
         <p>
           Hand <code>bindData()</code> your data and a mapper. Each record becomes a body, its mapped
-          metrics become field state, and the same recipe supplies the behavior. Add and remove
+          metrics become field state, and the same pattern supplies the behavior. Add and remove
           records — the diff is deterministic and removed records decay before they leave.
         </p>
         <div class="controls">
@@ -83,7 +83,7 @@
 
       <footer class="foot">
         <p>
-          Three surfaces, one recipe. Read <code>src/main.ts</code> — it is the whole integration.
+          Three surfaces, one Field Pattern. Read <code>src/main.ts</code> — it is the whole integration.
         </p>
       </footer>
     </main>

@@ -2,6 +2,16 @@
 
 ## Status
 
+**SUPERSEDED — implemented, but not as proposed below.** The concept landed as **Field Pattern**
+("Pattern"), not "Field Formation" — and unlike this proposal's "no API rename," the API *was*
+renamed end-to-end (`FieldRecipe`→`FieldPattern`, `compileRecipe`→`compilePattern`, `applyRecipe`→
+`applyPattern`, `FIELD_RECIPES`→`FIELD_PATTERNS`, …), with `@deprecated` aliases of the old names kept
+through `1.0`. The three-lane split this doc proposes (Pattern / Field Formation / FieldRecipe) also
+collapsed into one lane: **Pattern** is both the concept and the (renamed) API. See
+[`documentation-standards.md`](../../canonical/documentation-standards.md) and
+[`deprecation-plan.md`](../../canonical/deprecation-plan.md) for the shipped decision. Kept below as
+the historical record of the original proposal — do not treat the terminology below as current.
+
 Proposed canonical terminology refinement. Documentation-only. No API rename.
 
 ## Purpose

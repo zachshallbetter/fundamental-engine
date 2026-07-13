@@ -75,20 +75,19 @@ Fundamental keeps its vocabulary separated so the system remains inspectable rat
 
 | Lane | What it is |
 |---|---|
-| **Pattern** | human-facing reusable behavior name |
-| **Field Formation** | canonical conceptual authored arrangement |
-| **FieldRecipe** | current API representation of a Field Formation |
+| **Field Pattern** | the authored arrangement — concept AND API name (`FieldPattern`) are the same word |
 | **Field Contract** | compiled executable plan |
 | **Configuration** | ordinary settings / options only |
 | **Matter** | participants / substance only |
 
-A **Field Formation** is an authored arrangement of semantic intent, dimensions, bodies, fields, forces,
-relationships, metrics, diagnostics, projections, and accessibility equivalents. A **FieldRecipe** is its
-current API representation — `FieldRecipe`, `compileRecipe`, `applyRecipe`, `FIELD_RECIPES`, the recipe
-catalog, recipe validation, recipe routes, and `check:recipes` are all unchanged. A **Field Contract** is
-the compiled executable plan. A **Configuration** is ordinary settings only (render / host / engine /
-adapter). **Matter** is the participant lane: particles, bodies, records, nodes, glyphs, agents, or other
-things that participate in the field.
+A **Field Pattern** is an authored arrangement of semantic intent, dimensions, bodies, fields, forces,
+relationships, metrics, diagnostics, projections, and accessibility equivalents — `FieldPattern`,
+`compilePattern`, `applyPattern`, `FIELD_PATTERNS`, the pattern catalog, pattern validation, pattern
+routes, and `check:recipes` (the gate's real name, unchanged). The old names (`FieldRecipe`,
+`compileRecipe`, `applyRecipe`, `FIELD_RECIPES`) are kept as `@deprecated` aliases through `1.0`. A
+**Field Contract** is the compiled executable plan. A **Configuration** is ordinary settings only
+(render / host / engine / adapter). **Matter** is the participant lane: particles, bodies, records,
+nodes, glyphs, agents, or other things that participate in the field.
 
 ## Quick start
 
@@ -114,8 +113,9 @@ field.burst(window.innerWidth / 2, 200);
 ```
 
 `setFormation()` controls the global field-shape mode (`ambient`, `wells`, `lanes`, `scatter`,
-`accretion`). This is *not* the same as a Field Formation, which is the authored conceptual arrangement
-represented by a FieldRecipe.
+`accretion`). This is *not* the same as a **Field Pattern**, which is the authored conceptual
+arrangement represented by `FieldPattern` — same word, different lane; a mode and a Pattern don't
+collide because "formation" (bare word) now refers only to the modes.
 
 `@fundamental-engine/vanilla` is the framework-free door and the recommended starting point: a typed
 `FieldField` class, with `mountField()` and a host-bundled `createField()` re-exported, and no
@@ -196,7 +196,7 @@ interaction.
 ## Native ports
 
 The DOM is the first host, not the only one. The engine is ported natively to other platforms, each
-mirroring the same model — forces, FieldRecipes, the body contract, the handle surface, and conformance —
+mirroring the same model — forces, Field Patterns, the body contract, the handle surface, and conformance —
 and held to the JS core by a shared golden-conformance gate.
 
 - **Swift (Apple platforms)** — a native Swift port in [`swift/`](swift/README.md), running on a
@@ -300,8 +300,8 @@ matter in and curves the streamlines; retarget it each frame to follow the point
 or a synthetic host object (`field.clearFlow()` to release).
 
 **5 formations** bias the whole field at once: `ambient`, `wells`, `lanes`, `scatter`, `accretion`. These
-are lightweight field-shape modes exposed by `setFormation()` — not Field Formations in the
-authored-pattern sense.
+are lightweight field-shape modes exposed by `setFormation()` — not Field Patterns (the authored,
+composed arrangement); "formation" (bare word) refers only to these modes.
 
 **Reciprocal write-back.** Density returns to participants through `--d` (canonical raw live density),
 `--field-density` (the field-namespaced alias / named-metric form), `--load` (a sink's accretion fill;
@@ -315,40 +315,42 @@ build on that loop:
 - **Self-laying-out layout.** Nodes find equilibrium positions from anchor, mutual repulsion, and density
   pressure, then re-settle on resize.
 
-## Field Formations, FieldRecipes, and data
+## Field Patterns and data
 
-A **Field Formation** is an authored arrangement of semantic intent, dimensions, bodies, fields, forces,
-relationships, metrics, diagnostics, projections, and accessibility equivalents. In the current API it is
-represented by a **FieldRecipe** — `FieldRecipe`, `compileRecipe`, `applyRecipe`, `FIELD_RECIPES`, the
-recipe catalog, recipe routes, recipe validation, and `check:recipes` are unchanged.
+A **Field Pattern** is an authored arrangement of semantic intent, dimensions, bodies, fields, forces,
+relationships, metrics, diagnostics, projections, and accessibility equivalents. The concept and its API
+name are the same word — `FieldPattern`, `compilePattern`, `applyPattern`, `FIELD_PATTERNS`, the pattern
+catalog, pattern routes, pattern validation, and `check:recipes` (the gate's real name, unchanged). The
+old names (`FieldRecipe`, `compileRecipe`, `applyRecipe`, `FIELD_RECIPES`) are kept as `@deprecated`
+aliases through `1.0`.
 
-A FieldRecipe names an intent and composes existing tokens into behavior, with strict lanes:
+A Field Pattern names an intent and composes existing tokens into behavior, with strict lanes:
 
 > Concepts describe. Dimensions hold state. Fields structure. Relationships associate. Forces couple.
 > Tokens execute. Metrics measure. Diagnostics explain. Conditions activate. Projections reveal.
-> Formations compose. FieldRecipe represents. Field Contracts execute. **No word lives in two lanes.**
+> Field Patterns compose. FieldPattern represents. Field Contracts execute. **No word lives in two lanes.**
 
-A FieldRecipe validates, compiles, applies, can be inspected, and carries a reduced-motion output. It
-adds **no** engine behavior. **64 FieldRecipes across 4 tiers** (core / workflow / professional /
+A Field Pattern validates, compiles, applies, can be inspected, and carries a reduced-motion output. It
+adds **no** engine behavior. **64 Field Patterns across 4 tiers** (core / workflow / professional /
 enterprise) ship in the catalog. The runtime is three calls:
 
 ```ts
-import { recipeById, compileRecipe } from '@fundamental-engine/core';            // pure: recipe → plan (no DOM)
-import { applyRecipe, bindData } from '@fundamental-engine/dom';      // DOM: run it / bind data to it
+import { patternById, compilePattern } from '@fundamental-engine/core';         // pure: pattern → plan (no DOM)
+import { applyPattern, bindData } from '@fundamental-engine/dom';    // DOM: run it / bind data to it
 
-const recipe   = recipeById('reading-field')!;
-const contract = compileRecipe(recipe);             // pure: FieldRecipe → Field Contract
-const applied  = applyRecipe(root, recipe);         // DOM: run it over a region
+const pattern  = patternById('reading-field')!;
+const contract = compilePattern(pattern);           // pure: FieldPattern → Field Contract
+const applied  = applyPattern(root, pattern);        // DOM: run it over a region
 applied.inspect();                                  // { frame, measurements, relationships, lint }
 
 bindData(listEl, tasks, (t) => ({                   // records → bodies; data drives the field
   id: t.id,
   body: { tokens: ['attract'], strength: 0.4 + t.priority },
   metrics: { priority: t.priority },
-}), { recipe: 'priority-well' });
+}), { pattern: 'priority-well' });
 ```
 
-Browse and run all 64 recipes at the [recipe gallery](https://fundamental-engine.com/docs/gallery), pick apart a
+Browse and run all 64 patterns at the [pattern gallery](https://fundamental-engine.com/docs/patterns), pick apart a
 compiled plan in the [inspector](https://fundamental-engine.com/docs/inspector), and see the three
 surfaces wired together in the [starter app](apps/starter). The
 [concept studies](https://fundamental-engine.com/docs/studies/reading-field) (Reading, Review, Search,
@@ -421,7 +423,7 @@ reveal a dimension without allowing that dimension to cause motion or mutation.
 **Reduced motion does not remove meaning — it changes the projection.** A density that becomes movement,
 orbit, flow, or pull under a motion projection becomes contrast, weight, outline, spacing, annotation,
 order, sound, or haptic feedback under a reduced-motion one. **Accessibility is not fallback;
-accessibility is alternate projection.** Every FieldRecipe must carry an accessibility equivalent, and
+accessibility is alternate projection.** Every Field Pattern must carry an accessibility equivalent, and
 projections can be auto-applied each write phase (`field.projections.bind`) — including the `agent-json`
 surface, whose output is a serializable reading rather than a visual write.
 
@@ -457,7 +459,7 @@ There is also a [performance suite](docs/engine-reference/performance.md) that m
 algorithmic cost and documents why the field is fill-rate-bound, not particle-bound. The
 release-readiness gates are pinned too: a [lifecycle contract](docs/canonical/lifecycle-contract.md), a
 [support matrix](docs/canonical/support-matrix.md), a contract-coverage guard, an API-surface guard, a
-README truth guard, recipe-catalog validation, custom-elements-manifest validation, and internal-link
+README truth guard, pattern-catalog validation, custom-elements-manifest validation, and internal-link
 validation.
 
 **The stable public surface is frozen; new surface is added additively.** `pnpm check:api` fails the build
@@ -473,8 +475,8 @@ All seven publish to [npm](https://www.npmjs.com/org/fundamental-engine) under t
 
 | Package | npm | What it is |
 |---|---|---|
-| [`@fundamental-engine/core`](packages/core) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/core?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/core) | renderer-agnostic field runtime: bodies, agents, forces, FieldRecipes, Field Contracts, integrator, diagnostics, snapshots, query, conformance |
-| [`@fundamental-engine/dom`](packages/dom) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/dom?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/dom) | web host adapter: `browserHost()`, the FrameScheduler, measurement / state / feedback / relationships / visual bindings / overlays, `applyRecipe()` / `bindData()`, and `lintPlatform()` |
+| [`@fundamental-engine/core`](packages/core) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/core?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/core) | renderer-agnostic field runtime: bodies, agents, forces, Field Patterns, Field Contracts, integrator, diagnostics, snapshots, query, conformance |
+| [`@fundamental-engine/dom`](packages/dom) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/dom?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/dom) | web host adapter: `browserHost()`, the FrameScheduler, measurement / state / feedback / relationships / visual bindings / overlays, `applyPattern()` / `bindData()`, and `lintPlatform()` |
 | [`@fundamental-engine/vanilla`](packages/vanilla) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/vanilla?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/vanilla) | framework-free web door: `FieldField`, `mountField()`, and a host-bundled `createField()`, no custom element |
 | [`@fundamental-engine/elements`](packages/elements) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/elements?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/elements) | the `<field-root>` and `<field-cell>` custom elements (`<field-root>` is also registered as `<field-field>`) |
 | [`@fundamental-engine/react`](packages/react) | [![npm](https://img.shields.io/npm/v/@fundamental-engine/react?label=&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/react) | the `<FieldField>` component and the `useFieldField()` hook |
@@ -529,7 +531,7 @@ surface is frozen, with new surface added additively; the support and versioning
   over the engine.
 - **Lab** at [fundamental-engine.com/lab](https://fundamental-engine.com/lab): fire particles into a
   force, watch the track, share the result through a URL.
-- **Recipe gallery** at [fundamental-engine.com/docs/gallery](https://fundamental-engine.com/docs/gallery)
+- **Pattern gallery** at [fundamental-engine.com/docs/patterns](https://fundamental-engine.com/docs/patterns)
   and the **inspector** at [fundamental-engine.com/docs/inspector](https://fundamental-engine.com/docs/inspector).
 - [`docs/README.md`](docs/README.md): the full documentation map.
 - [`docs/canonical/api-stability.md`](docs/canonical/api-stability.md) ·
@@ -542,7 +544,7 @@ surface is frozen, with new surface added additively; the support and versioning
 - [`docs/engine-reference/forces-formulas.md`](docs/engine-reference/forces-formulas.md): per-force formulas and the attribute handbook.
 - [`docs/engine-reference/performance.md`](docs/engine-reference/performance.md): the performance suite and the fill-rate-vs-particle-bound story.
 - [`docs/canonical/dimensional-coupling.md`](docs/canonical/dimensional-coupling.md): dimensions, association, coupling, projections, body authority, and restoring collapsed dimensions.
-- [`docs/canonical/authoring-and-recipes.md`](docs/canonical/authoring-and-recipes.md): FieldRecipe, Field Formation, authoring levels, validation, and reduced-motion requirements.
+- [`docs/canonical/authoring-and-recipes.md`](docs/canonical/authoring-and-recipes.md): FieldPattern, authoring levels, validation, and reduced-motion requirements.
 - [`docs/planning/critical-path`](docs/planning/critical-path): Field Query, Field Snapshot, Causal Replay, the dimension-aware accumulator, body authority, the projection registry, and governance planning.
 
 ## Develop
@@ -558,7 +560,7 @@ pnpm -r build       # the packages (tsc) and the site (Astro)
 pnpm check:dist     # every package's entry points resolve and import cleanly
 pnpm check:api      # the frozen public surface is intact (additive-only)
 pnpm check:readme   # the READMEs stay true to the code (catalog counts, package names)
-pnpm check:recipes  # the recipe catalog is well-formed
+pnpm check:recipes  # the pattern catalog is well-formed
 pnpm check:cem      # the custom-elements manifest is current
 pnpm check:links    # internal doc links resolve
 pnpm dev            # run the site locally
@@ -587,8 +589,8 @@ build-time tool and ships no runtime JavaScript by default.
   whole system.
 - **Lanes stay separate.** Concepts describe. Dimensions hold state. Fields structure. Relationships
   associate. Forces couple. Tokens execute. Metrics measure. Diagnostics explain. Conditions activate.
-  Projections reveal. Formations compose. FieldRecipe represents. Field Contracts execute. No word lives
-  in two lanes, and FieldRecipes never invent engine behavior.
+  Projections reveal. Field Patterns compose. FieldPattern represents. Field Contracts execute. No word
+  lives in two lanes, and Field Patterns never invent engine behavior.
 - **Accessibility is alternate projection.** Reduced motion removes motion, not meaning. Every
   motion-heavy behavior must have a semantic, static, or host-native equivalent.
 - **Explainability is a feature.** Every visible behavior should be explainable through diagnostics,

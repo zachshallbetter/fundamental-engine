@@ -9,7 +9,7 @@
 > research [Paper 31](../research/31-behavioral-models-after-boids.md). The canonical possibility space
 > is [`../canonical/field-possibilities.md`](../canonical/field-possibilities.md) — §"What this unlocks"
 > below maps each rethink to the frontier capabilities it makes buildable. The **critical-path specs**
-> for the next substrate program — Field Formation terminology, the Field Query API, Field Snapshot +
+> for the next substrate program — Field Pattern terminology, the Field Query API, Field Snapshot +
 > Causal Replay, the dimension-aware accumulator + body-authority modes, and the Projection Registry +
 > Governance — live in [`critical-path/`](critical-path/README.md) (each filed as an RC1 epic).
 
@@ -130,7 +130,7 @@ A seven-survey sweep of the codebase (JS core, Swift, Kotlin, diagnostics, contr
   + Kotlin. `recoilImpulse` exists (`reactions.ts:29`) but is **never called in `integrator.ts`** for
   body-acting forces (only `collide` uses pairwise recoil). So the genuinely-new surface is: the
   **symplectic integrator (#1)**, **wiring recoil into body forces (#2)**, **mass default-flip +
-  recipe recalibration**, and **closed-system conservation**. This is *wire-and-flip-and-add*, not
+  pattern recalibration**, and **closed-system conservation**. This is *wire-and-flip-and-add*, not
   greenfield. (`physics-workover.md:79–82` already documents mass as shipped — no status fix owed.)
 
 ### Two linchpin decisions gate the whole program
@@ -162,7 +162,7 @@ A seven-survey sweep of the codebase (JS core, Swift, Kotlin, diagnostics, contr
 
 ```
 #3  impulse-accumulator refactor   ← clean first PR: behaviorally identical (test wall stays green),
-    (JS core; migrate diagnostics      moves no golden, flips no recipe, breaks no freeze, touches no DOM coupling
+    (JS core; migrate diagnostics      moves no golden, flips no pattern, breaks no freeze, touches no DOM coupling
      + conformance to the accumulator)
         ↓
 #1  opt-in symplectic integrator   ← behind a flag; default Euler path's tests untouched; keep
@@ -173,7 +173,7 @@ A seven-survey sweep of the codebase (JS core, Swift, Kotlin, diagnostics, contr
 #2  wire recoil into body forces   ← only safe after that decision; add new golden cases (golden
                                        doesn't cover recoil today) on all 3 planes in one PR
         ↓
-mass default-flip → recipe recalibration lands in EXPERIMENTAL_RECIPES (the 64 are locked)
+mass default-flip → pattern recalibration lands in EXPERIMENTAL_PATTERNS (the 64 are locked)
 ```
 
 ### Blast-radius map (verdict per artifact)
@@ -185,7 +185,7 @@ mass default-flip → recipe recalibration lands in EXPERIMENTAL_RECIPES (the 64
 | `diagnostics/{probes,modes}.ts`, `streamlines.ts`, `field.ts` movers | **Update** Δv extraction to read the accumulator |
 | `conformance/{experiments,expectations}.ts` | **Add** recoil/closed-system cases (`momentumConserved` exists) |
 | Cross-plane golden (`conformance-golden.json`) | **Regenerate** on 3 planes in one PR — but only *force-math* changes move it (samples single-`apply` Δv); pure integrator/recoil-wiring does not |
-| 64 LOCKED `FIELD_RECIPES` | **Can't retune in place** → mass-on variants go to `EXPERIMENTAL_RECIPES` |
+| 64 LOCKED `FIELD_PATTERNS` | **Can't retune in place** → mass-on variants go to `EXPERIMENTAL_PATTERNS` |
 | `passport.ts` schema + 36 rows + `validatePassports` | **Additive** (`conservesMomentum`, `reactsOnSource`) |
 | Freeze gate (`api-surface.data.mjs`, 14 entries) | **Untouched** — mass/momentum live on unfrozen `FieldOptions`/`FieldHandle`; additive-safe |
 | `dom`: `measurement`/`overlays`/`apply-recipe`/`feedback`/`visual-bindings`/`thread-overlay` | **Review** — all assume body-position = DOM-rect; impacted only when recoil moves bodies |
@@ -195,7 +195,7 @@ mass default-flip → recipe recalibration lands in EXPERIMENTAL_RECIPES (the 64
 | `check:recipes` / `check:golden` / `check:cem` (only if new element attr) | **Regenerate** to pass |
 | Determinism / record-replay / `FRICTION`/`c` tests | Break only on *behavior* change → opt-in flag isolates them; new modes get their own determinism tests |
 
-**The two true bottlenecks:** the LOCKED recipe catalog (recalibration → `EXPERIMENTAL_RECIPES`) and the
+**The two true bottlenecks:** the LOCKED pattern catalog (recalibration → `EXPERIMENTAL_PATTERNS`) and the
 cross-plane golden (JS + Swift + Android in lockstep, one PR). The clean root that touches neither is
 **#3 as a behavior-preserving impulse-accumulator refactor.**
 
@@ -278,9 +278,9 @@ orientation, then 3D, then time) be re-expanded as an opt-in Faithful mode.
 
 ## The headline frontier: restoring collapsed dimensions (not adding tokens)
 
-> **Terminology.** The canonical term for an authored field arrangement is now **Field Formation** (see
+> **Terminology.** The canonical term for an authored field arrangement is now **Field Pattern** (see
 > the [Dimensional Coupling Doctrine](../canonical/dimensional-coupling.md)). The current API
-> representation remains `FieldRecipe`; no API rename is implied here.
+> representation remains `FieldPattern`; no API rename is implied here.
 
 The next frontier is **not another force token — it is restoring dimensions of state the interface
 engine collapsed.** The [designed-vs-natural map](../canonical/designed-vs-natural-map.md) names three:

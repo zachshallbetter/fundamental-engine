@@ -3,7 +3,7 @@
 > sharing state, or a local field talking to a remote one. Nothing here is shipped. This doc exists to
 > lock the *rules* before any code lands, so the first implementation is not free to invent an unsafe
 > topology. It follows the [status rule](../canonical/documentation-standards.md): nothing is called
-> shipped, and the terminology locks (association≠coupling, Field Formation, projection purity, Field
+> shipped, and the terminology locks (association≠coupling, Field Pattern, projection purity, Field
 > Agent vs Software Agent) are the canon this bridge must obey.
 
 # Field bridge (multi-root / cross-app / remote)
@@ -46,12 +46,12 @@ coupling wearing a bridge's clothes, and produces the "haunted field" (state cha
 cause) across a root boundary instead of within one. Agent-readable is not agent-writable; **bridge-
 readable is not bridge-writable.**
 
-## Constraint 3 — cross-field relationships are ASSOCIATIONS by default; coupling requires a declared bridge Field Formation
+## Constraint 3 — cross-field relationships are ASSOCIATIONS by default; coupling requires a declared bridge Field Pattern
 
 **Rule.** A relationship drawn *across* the bridge (body `card-3` in root A relates to body `claim-7` in
 root B) is an **association** by default — it records that the two are related and can be read, but it
 does not make either field push the other. Turning a cross-field association into **coupling** — where A's
-state actually bends B — requires a declared **bridge Field Formation** (a Field Formation, in the
+state actually bends B — requires a declared **bridge Field Pattern** (a Field Pattern, in the
 authoring lane; see the terminology locks in
 [documentation-standards.md](../canonical/documentation-standards.md)), authored explicitly and subject
 to Constraint 2's permission.
@@ -61,7 +61,7 @@ two look identical until something moves. If cross-field relationships coupled b
 *observing* that two bodies in different roots are related would start transmitting force between roots —
 action at a distance nobody authored. Keeping the default at association means a bridge can express rich
 cross-root structure (for a Software Agent to read) while force stays contained to whichever root
-declared a Formation to carry it. (Note the lane: particles and bodies are **Field Agents**; the tool
+declared a Pattern to carry it. (Note the lane: particles and bodies are **Field Agents**; the tool
 reading across the bridge is a **Software Agent** — it reads Field Agents, it does not become one.)
 
 ## Constraint 4 — snapshots crossing a bridge MUST preserve field identity + body identity
@@ -103,7 +103,7 @@ explicit, named conversion that keeps each root's field space its own.
 ```txt
 A bridge SHARES readings (query/snapshot data), not raw authority.
 A bridge does NOT let a remote field mutate a local field — only a declared, permissioned action does.
-A bridge's cross-field relationships are ASSOCIATIONS; coupling needs a declared bridge Field Formation.
+A bridge's cross-field relationships are ASSOCIATIONS; coupling needs a declared bridge Field Pattern.
 A bridge PRESERVES field identity + body identity (id + namespace/host) across roots.
 A bridge MAPS between field spaces explicitly; it never assumes shared coordinates.
 ```
@@ -118,4 +118,4 @@ conversions. The bridge does not relax any of them — it carries them across th
 |---|---|
 | [`substrate-api.md`](../canonical/substrate-api.md) | The read surface a bridge carries — `query`/`snapshot`/`diff`/`replay`, `FieldBodyIdentity`, projection purity |
 | [`coordinate-spaces.md`](../canonical/coordinate-spaces.md) | Why each root's field space is its own; the one-way conversions a bridge must respect |
-| [`documentation-standards.md`](../canonical/documentation-standards.md) | The terminology locks — association≠coupling, Field Formation, Field Agent vs Software Agent |
+| [`documentation-standards.md`](../canonical/documentation-standards.md) | The terminology locks — association≠coupling, Field Pattern, Field Agent vs Software Agent |

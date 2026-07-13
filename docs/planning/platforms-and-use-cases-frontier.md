@@ -52,9 +52,9 @@ Two structural reminders shape the whole list:
 
 | Idea | Sketch | Why it's interesting | Component |
 |---|---|---|---|
-| **Force-directed graph/diagram layout** | Nodes = bodies, edges = `addEdge` springs, read positions each frame. A live, settling system, not a one-shot algorithm. | Probably the most *defensible product* hiding in here. Reciprocity is the moat — almost no layout library has it. Drag a node, the neighborhood reorganizes. **Recipe-shaped** → candidate for `EXPERIMENTAL_RECIPES` (`relationships` domain). | Consumer DX & API |
+| **Force-directed graph/diagram layout** | Nodes = bodies, edges = `addEdge` springs, read positions each frame. A live, settling system, not a one-shot algorithm. | Probably the most *defensible product* hiding in here. Reciprocity is the moat — almost no layout library has it. Drag a node, the neighborhood reorganizes. **Recipe-shaped** → candidate for `EXPERIMENTAL_PATTERNS` (`relationships` domain). | Consumer DX & API |
 | **Headless layout / constraint solver** | Settle bodies under attract/separation/cohesion with `render:'none'`, read final positions, place real DOM. | The field as an *invisible* layout engine — tag clouds, docks, avatar piles, magnetic snapping — without drawing a particle. | Platform/DOM |
-| **Recommendation / accretion ranking** | Importance=gravity, signal=electromagnetic, binding=strong; items accrete attention via the sink/accretion model (`--load`). | Physics-as-explanation: a *visible, explainable* ranking surface. **Recipe-shaped** → candidate for `EXPERIMENTAL_RECIPES` (`priority` domain). | Consumer DX & API |
+| **Recommendation / accretion ranking** | Importance=gravity, signal=electromagnetic, binding=strong; items accrete attention via the sink/accretion model (`--load`). | Physics-as-explanation: a *visible, explainable* ranking surface. **Recipe-shaped** → candidate for `EXPERIMENTAL_PATTERNS` (`priority` domain). | Consumer DX & API |
 
 ## C. Headless / non-visual — the underexplored frontier
 
@@ -91,8 +91,8 @@ These draw nothing. `headlessHost` already exists.
 ## Note on the site "use cases" surface
 
 The site's use-case metadata (`apps/site/src/lib/recipe-taxonomy.ts`) is **keyed to the 64 locked
-`FIELD_RECIPES`** — each entry needs a `scaffoldId`, a render mode, and one of nine UI-problem domains.
-Most ideas here are *ports and applications*, not UI recipes, so they do **not** belong in that taxonomy.
+`FIELD_PATTERNS`** — each entry needs a `scaffoldId`, a render mode, and one of nine UI-problem domains.
+Most ideas here are *ports and applications*, not UI patterns, so they do **not** belong in that taxonomy.
 The two genuinely recipe-shaped entries — **force-directed graph layout** (`relationships`) and
-**accretion ranking** (`priority`) — are flagged above as candidates for `EXPERIMENTAL_RECIPES` (never the
-locked set; see CLAUDE.md "Recipe canon is locked"). Everything else lives here and on the board.
+**accretion ranking** (`priority`) — are flagged above as candidates for `EXPERIMENTAL_PATTERNS` (never the
+locked set; see CLAUDE.md "Pattern canon is locked"). Everything else lives here and on the board.

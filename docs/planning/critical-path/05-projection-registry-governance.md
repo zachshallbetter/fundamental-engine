@@ -34,7 +34,7 @@ Do not confuse them.
 
 A projection can show a dimension without causing dynamics.
 
-A coupling must be declared by a force or Field Formation.
+A coupling must be declared by a force or Field Pattern.
 
 ## Projection Registry
 
@@ -182,7 +182,7 @@ charge separation → conflict labels
 
 ## Projection and accessibility
 
-Every motion-heavy Field Formation should declare an accessibility equivalent.
+Every motion-heavy Field Pattern should declare an accessibility equivalent.
 
 Required:
 
@@ -237,8 +237,8 @@ Metrics measure.
 Diagnostics explain.
 Conditions activate.
 Projections reveal.
-Formations compose.
-FieldRecipe represents.
+Field Patterns compose.
+FieldPattern represents.
 Contracts execute.
 No word lives in two lanes.
 ```
@@ -247,11 +247,11 @@ No word lives in two lanes.
 
 Relationships are non-causal by default.
 
-Only a Field Formation may map a relationship into force.
+Only a Field Pattern may map a relationship into force.
 
 ```txt
 association alone moves nothing
-formation maps association into coupling
+pattern maps association into coupling
 force causes state change
 ```
 
@@ -286,8 +286,7 @@ visual layer owns expression
 Do not rename frozen API symbols while refining conceptual terminology.
 
 ```txt
-Field Formation = concept
-FieldRecipe = API representation
+Field Pattern = concept AND API name (FieldPattern; was FieldRecipe, kept as a deprecated alias)
 ```
 
 ## Field lint rules
@@ -333,7 +332,7 @@ A relation silently causes attraction.
 Correction:
 
 ```txt
-Declare a Field Formation that maps relation strength into attraction/cohesion.
+Declare a Field Pattern that maps relation strength into attraction/cohesion.
 ```
 
 ### Motion-only projection
@@ -364,7 +363,7 @@ Correction:
 Keep real HTML heading. Bind SVG as aria-hidden visual representation.
 ```
 
-### Field Formation naming error
+### Field Pattern naming error
 
 Problem:
 
@@ -375,7 +374,7 @@ Configuration decides which associations become couplings.
 Correction:
 
 ```txt
-A Field Formation decides which associations become couplings.
+A Field Pattern decides which associations become couplings.
 ```
 
 ## Relationship to design systems
@@ -386,7 +385,7 @@ Each component should declare:
 
 ```txt
 allowed field roles
-allowed Field Formations
+allowed Field Patterns
 allowed projections
 required reduced-motion equivalents
 forbidden tokens
@@ -461,6 +460,6 @@ strict CI lint mode
 - Field Query can read active projections.
 - Field Snapshot can capture active projections.
 - Governance lint rules enforce lane separation.
-- Governance prevents relationship-as-force without Field Formation.
+- Governance prevents relationship-as-force without Field Pattern.
 - Governance prevents motion-only behavior.
 - Governance preserves semantic source vs visual expression.

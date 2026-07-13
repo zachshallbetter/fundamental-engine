@@ -71,7 +71,7 @@ these consumers even where the first implementation ships fewer.
 ```txt
 Concepts describe. Dimensions hold state. Fields structure. Relationships associate.
 Forces couple. Carriers convey. Tokens execute. Metrics measure. Diagnostics explain.
-Conditions activate. Projections reveal. Formations compose. Recipes represent.
+Conditions activate. Projections reveal. Field Patterns compose. FieldPattern represents.
 Contracts execute. No word lives in two lanes.
 ```
 
@@ -82,7 +82,7 @@ waves" (`currents.ts:2`, `types.ts:663`, `integrator.ts:50`). Two disambiguation
   (`visual-language-and-geometry.md`) is prose, not a lane word; it stays as-is. The lane word
   is always capital-C **Carrier** or `carrier` in API surface.
 - **Boundaries with the neighbor lanes.** A **Force couples** — a declared, passported,
-  pairwise interaction between a body and matter. A **Formation composes** — a global bias on
+  pairwise interaction between a body and matter. A **Pattern composes** — a global bias on
   where matter settles. A **Carrier conveys** — directional structure the field's contents
   ride, with no body on the other end. `fieldflow` (the force that advects matter along the
   net body field) sits at the boundary deliberately: it is a *coupling that reads what the
@@ -230,8 +230,8 @@ Step 4  ports mirror (Currents.swift/Reservoir.swift; Currents.kt/Reservoir.kt/W
 Step 5  conformance golden extension: a carrier scenario at a pinned seed joins the
         cross-plane suite (the existing goldens never pass waves — verified — so steps 2-4
         cannot break them; step 5 makes carriers themselves conformance-held)
-Later   grid/curl/semantic carriers; the homepage look re-cut as an EXPERIMENTAL_RECIPES
-        entry composing the waves carrier (recipes canon stays locked)
+Later   grid/curl/semantic carriers; the homepage look re-cut as an EXPERIMENTAL_PATTERNS
+        entry composing the waves carrier (patterns canon stays locked)
 ```
 
 Perf constraints carried from doctrine: the field is fill-rate-bound — carrier sampling must

@@ -4,7 +4,7 @@ This pack contains the focused planning documents for the next major Fundamental
 
 ## Documents
 
-1. [Field Formation Terminology](01-field-formation-terminology.md)
+1. [Field Formation Terminology](01-field-formation-terminology.md) (superseded — shipped as **Pattern**, see the doc's Status)
 2. [Field Query API](02-field-query-api.md)
 3. [Field Snapshot + Causal Replay](03-field-snapshot-causal-replay.md)
 4. [Dimension-Aware Accumulator + Body-Authority Modes](04-dimension-aware-accumulator-body-authority.md)
@@ -14,7 +14,7 @@ This pack contains the focused planning documents for the next major Fundamental
 ## Critical path
 
 ```txt
-Field Formation terminology
+Field Pattern terminology (shipped)
   establishes the conceptual language
 
 Field Query API
@@ -38,7 +38,7 @@ Carrier seam
 Fundamental does not need more spectacle first. It needs queryability, inspectability, persistence, projection, stronger contracts, and governance.
 
 ```txt
-Field Formation = authored arrangement
+Field Pattern = authored arrangement
 Field Query = ask the field
 Field Snapshot = capture the field
 Causal Replay = explain the field
