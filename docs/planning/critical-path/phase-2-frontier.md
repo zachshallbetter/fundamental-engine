@@ -54,8 +54,8 @@ orientation in the data model at all (it touches renderers/golden expectations)?
 
 **Goal:** populate `semantic: Record<string, number>` — attention/confidence/memory as force inputs.
 
-**Blocker:** semantics live on bodies (metrics/attn) + recipes, not as force contributions. A Field
-Formation "maps semantic state into force parameters" (doc 04) — that mapping is unimplemented.
+**Blocker:** semantics live on bodies (metrics/attn) + patterns, not as force contributions. A Field
+Pattern "maps semantic state into force parameters" (doc 04) — that mapping is unimplemented.
 
 **Options**
 - A — capture the conserved-attention multiplier (`b.attn`) a body applies as a `semantic.attention`
@@ -76,7 +76,7 @@ formation work. **Decision needed:** build A now, or bundle semantic with the fo
 **Blocker:** these need data structures that don't exist yet:
 - **lane-separation** needs a canonical word→lane registry (which tokens are forces vs metrics vs
   diagnostics vs projections …). The naming canon is documented in prose, not a checkable map.
-- **relationship-as-force** needs the "a Field Formation maps an edge into coupling" concept — edges
+- **relationship-as-force** needs the "a Field Pattern maps an edge into coupling" concept — edges
   are non-causal today; nothing maps them to force.
 - **coupling-passport** needs forces to declare `couplesDimensions` in their passport (`passport.ts`);
   most don't.

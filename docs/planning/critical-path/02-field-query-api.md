@@ -379,7 +379,7 @@ snapshot/time support
 - Query can target a body, point, rect, or whole field.
 - Query returns structured bodies, metrics, and relationships.
 - Query preserves lane separation.
-- Query can identify active Field Formations.
+- Query can identify active Field Formations (the setFormation mode).
 - Query does not require render surfaces.
 - Query does not mutate field state.
 - Query is experimental until stabilized.

@@ -82,9 +82,9 @@ emergence can't offer.
 
 These fell out of the comparison and are filed as Backlog briefs:
 
-- **`flock` experimental recipe / Lab demo** — `addAgent` + `align` + `cohesion` + separation. Nearly
-  free; makes the `/eli5` "three rules and it flocks" promise literally runnable. (Recipe canon is
-  locked → `EXPERIMENTAL_RECIPES`, never the 64.)
+- **`flock` experimental pattern / Lab demo** — `addAgent` + `align` + `cohesion` + separation. Nearly
+  free; makes the `/eli5` "three rules and it flocks" promise literally runnable. (Pattern canon is
+  locked → `EXPERIMENTAL_PATTERNS`, never the 64.)
 - **Spike: arbitration as a modifier-class force** — Reynolds-style priority/budget that preserves
   per-force attribution. The only explainability-safe path.
 - **Spike: `steer`/`avoid` force fed by `ghostTrajectory`** — the look-ahead already exists (diagnostic);

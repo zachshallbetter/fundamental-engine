@@ -1,7 +1,7 @@
 ---
 title: "Fundamental, explained to a developer"
 description: "Not an animation library, not a particle background — a relational field runtime for interfaces. The conceptual shift, the lane model, field vs force, the Natural Fields, designed-vs-natural, dimensions and coupling, agents, signals-first feedback, and the practical developer rules."
-summary: "The developer-tier companion to 'explained simply' — the mental model (concepts/tokens/metrics/diagnostics/formations/projections), field() vs apply(), designed-vs-natural, association ≠ coupling, signals-first CSS feedback, and the minimal working mindset."
+summary: "The developer-tier companion to 'explained simply' — the mental model (concepts/tokens/metrics/diagnostics/patterns/projections), field() vs apply(), designed-vs-natural, association ≠ coupling, signals-first CSS feedback, and the minimal working mindset."
 date: 2026-06-29
 category: note
 author: "Zach Shallbetter"
@@ -94,8 +94,8 @@ Metrics measure.
 Diagnostics explain.
 Conditions activate.
 Projections reveal.
-Formations compose.
-FieldRecipe represents.
+Field Patterns compose.
+FieldPattern represents.
 Contracts execute.
 No word lives in two lanes.
 ```
@@ -118,17 +118,15 @@ themselves. They are readings.
 heatmap, contours, inspector. The behavior table says it cleanly: `field()` returns invisible
 structure, while `apply()` causes change.
 
-**Field Formations** are authored arrangements of concepts, tokens, metrics, diagnostics,
-projections, and accessibility equivalents. The current API represents one as a `FieldRecipe`. Keep that
-API name. Conceptually:
+**Field Patterns** are authored arrangements of concepts, tokens, metrics, diagnostics,
+projections, and accessibility equivalents — the concept and its API name are the same word.
+Conceptually:
 
 ```txt
-Pattern         = human-facing reusable behavior name
-Field Formation = canonical field-native authored arrangement
-FieldRecipe     = current API representation of a Field Formation
-Field Contract  = compiled executable plan
-Configuration   = ordinary settings/options only
-Matter          = participants/substance only
+Field Pattern  = the authored field-native arrangement (concept AND API: FieldPattern)
+Field Contract = compiled executable plan
+Configuration  = ordinary settings/options only
+Matter         = participants/substance only
 ```
 
 That gives the idea weight without breaking the shipped API.
@@ -267,7 +265,7 @@ values onto elements during the write phase, and the page's CSS reads those valu
 reactions. No polling, no event listeners, no separate state.
 
 The most important variable is `--d` — the canonical raw live density reaction. (`--d` is reliable;
-`--field-density` can be overwritten by Field Formation metric output.)
+`--field-density` can be overwritten by Field Pattern metric output.)
 
 ```html
 <article data-body="attract" data-feedback>
@@ -387,7 +385,7 @@ Now the button participates in a shared field. It can gather density, affect nea
 <cite data-field-relation="supports" data-field-target="#claim">Source</cite>
 ```
 
-The relationship does not have to create force by itself. A Field Formation decides whether `supports`
+The relationship does not have to create force by itself. A Field Pattern decides whether `supports`
 maps into cohesion, confidence, density, topology, or nothing visible.
 
 ## Why this changes things
@@ -453,8 +451,8 @@ diagnosed inspectably
 4.  Add data-feedback when the element should receive CSS variables.
 5.  Use --d for raw live density.
 6.  Use --load for sink fill.
-7.  Use --field-<metric> for Field Formation metrics.
-8.  Keep relationships non-causal unless a Field Formation maps them into force.
+7.  Use --field-<metric> for Field Pattern metrics.
+8.  Keep relationships non-causal unless a Field Pattern maps them into force.
 9.  Keep field() and apply() separate.
 10. Diagnostics explain behavior; they do not mutate it.
 11. Render surfaces are optional.
@@ -479,7 +477,7 @@ The DOM remains semantic.
 The field becomes behavioral.
 CSS becomes the projection layer.
 Diagnostics reveal cause.
-Field Formations decide how relationships become force.
+Field Patterns decide how relationships become force.
 
 That is why this is different.
 ```

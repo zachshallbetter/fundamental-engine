@@ -9,9 +9,9 @@
 > [platforms/host frontier](platforms-and-use-cases-frontier.md), and the
 > [substrate frontier](substrate-architecture-frontier.md).
 >
-> **Terminology:** an authored field arrangement is a **Field Formation** (current API representation:
-> `FieldRecipe`); a relationship is an *association*, a force is a *coupling* (see the doctrine). No API
-> rename is implied by anything here.
+> **Terminology:** an authored field arrangement is a **Field Pattern** (API: `FieldPattern`, was
+> `FieldRecipe` — renamed, kept as a deprecated alias); a relationship is an *association*, a force is a
+> *coupling* (see the doctrine).
 
 ## The premise
 
@@ -32,7 +32,7 @@ the same thing headless and in-DOM.
 
 ### 2. Lenses — scoped, composable views of field state
 A **lens** is a read-only, named projection over a region or a subset of bodies/relationships — e.g. an
-"evidence lens," a "conflict lens," a "memory lens." Distinct from a Field Formation (which *authors*
+"evidence lens," a "conflict lens," a "memory lens." Distinct from a Field Pattern (which *authors*
 behavior); a lens *reads and presents* it. Builds on the diagnostics surface (causality, topology) and
 the Projection lane of the doctrine. Frontier piece: lenses as first-class, stackable, accessibility-aware
 projections.
@@ -63,7 +63,7 @@ each stays accessible. Frontier piece: a material registry + per-material projec
 equivalents.
 
 ### 7. Field-native use cases — what the OS makes ordinary
-The application tier the above unlocks, expressed as Field Formations: live knowledge graphs you can
+The application tier the above unlocks, expressed as Field Patterns: live knowledge graphs you can
 *query*, documents that *remember and resume*, AI evidence surfaces you can *replay and audit*,
 collaborative rooms whose attention is *visible weather*, timelines navigated as fields
 (field-possibilities §33). These are use cases, not engine work — they belong in
@@ -82,7 +82,7 @@ collaborative rooms whose attention is *visible weather*, timelines navigated as
 ## Doctrine guardrails (so these stay authorable, not magical)
 
 - **Association ≠ coupling.** A lens or query *reads*; it never silently exerts force. Only a Field
-  Formation turns association into coupling.
+  Pattern turns association into coupling.
 - **Dimensions orthogonal by default.** Time/depth/orientation that any of these add stay independent
   unless a named coupling connects them.
 - **Reveal-never-mutate.** Lenses, queries, causal replay are read surfaces; they never feed back into

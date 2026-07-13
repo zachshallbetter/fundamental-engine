@@ -158,13 +158,13 @@ export function useFieldField(opts: FieldOptions = {}): {
 
 /**
  * The React wrapper for `bindData()` — drive a live field from React state. Records map to bodies
- * (via `mapper`), a recipe frames the field, and `bindData` does the record → body diffing
+ * (via `mapper`), a Pattern frames the field, and `bindData` does the record → body diffing
  * (added/removed records enter/decay rather than popping). Attach `containerRef` to your own host
  * element; whenever `records` changes, the hook calls `binding.update(records)` so the field stays
  * in step with React state — no manual mount/update wiring.
  *
  * ```tsx
- * const { containerRef, inspect } = useForcesData(results, toBody, { recipe: 'search-relevance-field' });
+ * const { containerRef, inspect } = useForcesData(results, toBody, { pattern: 'search-relevance-field' });
  * return <div ref={containerRef} />;   // inspect() → { records, bodies, relationships } | null
  * ```
  *

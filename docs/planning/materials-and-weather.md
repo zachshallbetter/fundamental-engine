@@ -14,11 +14,11 @@ The naming lanes are load-bearing here, so state them up front:
 ```txt
 Force        a real, passported runtime token (attract, gravity, sink, …). The catalog is locked.
 Material     an authored *feel* preset that MAPS to forces + projections. Not a force. (this doc)
-Field Formation  composed field behavior; FieldRecipe is its current API representation.
+Field Pattern  composed field behavior; FieldPattern is its current API representation.
 Projection   a rendering/summary of existing metrics; adds no new state.
 ```
 
-A Material is not a Field Formation and not a global formation mode. A Material never becomes a Force.
+A Material is not a Field Pattern and not a global formation mode. A Material never becomes a Force.
 Field Weather is a Projection of metrics that already exist. Keeping these lanes separate is the whole
 point of writing this down early.
 
@@ -36,7 +36,7 @@ A Material MAY compose forces, projections, memory, and damping.
 A Material MAY NOT become a new force token.
 ```
 
-The force catalog (36 tokens) and the recipe canon (the locked 4×16 `FIELD_RECIPES` set) stay frozen.
+The force catalog (36 tokens) and the pattern canon (the locked 4×16 `FIELD_PATTERNS` set) stay frozen.
 A Material is a *reference* into that vocabulary, the way a concept word like `absorb` refers to the
 `sink` token without being a token itself. When a Material needs behavior the vocabulary can't express,
 that is a signal to file a force/recipe proposal — not to smuggle a token in through a preset.
@@ -76,7 +76,7 @@ is exactly what the naming canon forbids. Materials keep the descriptive lane (f
 from the executing lane (forces).
 
 **Open questions before this could leave the frontier:** where a Material is declared (a body attribute
-vs. a recipe field), how a Material composes with an explicit force on the same body (override? add?),
+vs. a pattern field), how a Material composes with an explicit force on the same body (override? add?),
 whether the preset set is closed or extensible, and how a Material's reduced-motion equivalent is
 derived. Until those are answered, Materials stay a concept, not a contract.
 
@@ -134,6 +134,6 @@ Material       authoring sugar → forces + projections. Never a new force.
 Field Weather  a projection of metrics → language. Never new state.
 ```
 
-Neither expands the frozen force catalog or the locked recipe set. When either is ready to formalize, it
+Neither expands the frozen force catalog or the locked pattern set. When either is ready to formalize, it
 graduates through the normal path — a canonical doc, a test, and the force/recipe or metric definitions
 it maps to — not by being described as shipped here.

@@ -63,7 +63,7 @@ type FieldSnapshot = {
   frame: number;
   version: string;
   host?: FieldHostInfo;
-  formations: FieldFormationReading[];
+  patterns: FieldPatternReading[];
   bodies: FieldBodySnapshot[];
   relationships: FieldRelationshipSnapshot[];
   metrics: Record<string, number>;
@@ -106,14 +106,23 @@ type FieldRelationshipSnapshot = {
   memory?: number;
   active: boolean;
   causal: boolean;
-  formation?: string;
+  pattern?: string;
 };
 ```
 
-### Formations
+> **Naming note (not in the original proposal).** The MVP status above ships a real, SIMPLE
+> `formations: string[]` / `activeFormations` / `formation`-changes surface — the global
+> `setFormation` MODE (`ambient`/`wells`/`lanes`/`scatter`/`accretion`), a single exclusive value
+> per field. The richer `patterns` / `FieldPatternReading` proposal below is a DIFFERENT,
+> UNSHIPPED concept — which *authored* `FieldPattern`s are currently applied (e.g. `evidence-field`,
+> `priority-well`) — and must not collide in name with the already-shipped `formations` field. This
+> doc predates the recipe → Pattern rename; its historical field name was `formations`, renamed here
+> to `patterns` for exactly that reason.
+
+### Patterns
 
 ```ts
-type FieldFormationReading = {
+type FieldPatternReading = {
   id: string;
   pattern?: string;
   representedBy?: "FieldRecipe";
@@ -180,7 +189,7 @@ Which relationships strengthened or weakened?
 Which metrics rose or fell?
 Which forces contributed to change?
 Which projections changed?
-Which Field Formations became active or inactive?
+Which Field Patterns became active or inactive?
 Which accessibility equivalents were lost or gained?
 ```
 
@@ -193,7 +202,7 @@ type FieldDiff = {
   bodyChanges: BodyChange[];
   relationshipChanges: RelationshipChange[];
   metricChanges: MetricChange[];
-  formationChanges: FormationChange[];
+  patternChanges: PatternChange[];
   projectionChanges: ProjectionChange[];
   eventSummary: EventSummary[];
 };
@@ -244,7 +253,7 @@ At t0, Claim A gained attention.
 At t1, Source B strengthened a support relationship.
 At t2, Contradiction C introduced charge separation.
 At t3, confidence dropped below threshold.
-At t4, the Evidence Field Formation became unstable.
+At t4, the Evidence Field Pattern became unstable.
 At t5, reduced-motion projection rendered a static conflict summary.
 ```
 
@@ -280,7 +289,7 @@ Instead of asking “why did this class change?” the developer asks:
 why did this component become dense?
 which force caused the transform?
 which relationship became causal?
-which Field Formation activated?
+which Field Pattern activated?
 ```
 
 ### AI evidence review
@@ -405,7 +414,7 @@ field.snapshot()
 field.diff(snapshotA, snapshotB)
 body metrics
 relationships
-active Field Formations
+active Field Patterns
 events since last snapshot
 ```
 
@@ -424,7 +433,7 @@ redaction
 
 - Snapshot works in DOM and headless modes.
 - Snapshot can exclude particles for lightweight exports.
-- Snapshot captures bodies, metrics, relationships, and active Field Formations.
+- Snapshot captures bodies, metrics, relationships, and active Field Patterns.
 - Snapshot supports redaction.
 - Diff compares two snapshots.
 - Replay can explain at least metric, relationship, event, and formation changes.
