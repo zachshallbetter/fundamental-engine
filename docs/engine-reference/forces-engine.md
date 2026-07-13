@@ -7,7 +7,7 @@
 > The per-force formulas live in [forces-formulas.md](forces-formulas.md) and the catalog in
 > `packages/core/src/config/manual.ts` (pinned to the registry by a test).
 
-# The Field-UI Engine — Module Map
+# The Fundamental Engine — Module Map
 
 A comprehensive map of the engine: every source module, what it owns, the data-flow that ties
 them together, and the catalogs (forces, classes, services, render modes, formations,
