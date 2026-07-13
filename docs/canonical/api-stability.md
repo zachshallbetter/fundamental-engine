@@ -43,9 +43,9 @@ symbol is removed, renamed, moved between packages, or changes kind.
 | `browserHost` | `@fundamental-engine/dom` | value | The canonical DOM `FieldHost` for `createField`. |
 | `browserHost` | `@fundamental-engine/vanilla` | value | Re-export of the platform host for the no-framework path. |
 | `createFieldPlatform` | `@fundamental-engine/dom` | value | Wires the six native-first registries on a root. |
-| `applyRecipe` | `@fundamental-engine/dom` | value | Applies a recipe to a live platform. |
+| `applyPattern` | `@fundamental-engine/dom` | value | Applies a Field Pattern to a live platform. `applyRecipe` is the frozen `@deprecated` alias (removed at `1.0`). |
 | `bindData` | `@fundamental-engine/dom` | value | Binds records → bodies; data drives the field. |
-| `compileRecipe` | `@fundamental-engine/core` | value | Pure `FieldRecipe` → compiled plan (no DOM). |
+| `compilePattern` | `@fundamental-engine/core` | value | Pure `FieldPattern` → compiled plan (no DOM). `compileRecipe` is the frozen `@deprecated` alias (removed at `1.0`). |
 
 `createField` has **two doors on purpose**: the core primitive is renderer-agnostic and host-required;
 `@fundamental-engine/vanilla` re-exports the host-bundled convenience so the no-framework path stays one call.
@@ -55,7 +55,7 @@ Both are frozen; the vanilla door must keep auto-supplying `browserHost()`.
 
 | Type | Package | What it is |
 | --- | --- | --- |
-| `FieldRecipe` | `@fundamental-engine/core` | The recipe schema. |
+| `FieldPattern` | `@fundamental-engine/core` | The Field Pattern schema. `FieldRecipe` is the frozen `@deprecated` alias (removed at `1.0`). |
 | `FieldHost` | `@fundamental-engine/core` | The renderer-agnostic host contract `createField` requires; `browserHost` implements it. |
 | `FieldPlatform` | `@fundamental-engine/dom` | The surface `createFieldPlatform` returns. |
 
@@ -102,8 +102,10 @@ of the contract until they are added to the table above.
 3. **`createField` keeps both doors.** The host-required core primitive and the host-bundled vanilla
    convenience are both preserved; the vanilla door must keep auto-supplying `browserHost()`.
 4. **Package ownership is part of the contract.** Frozen symbols do not move between packages within
-   `0.x` (`compileRecipe`/`FieldRecipe`/`FieldHost` → core; `createFieldPlatform`/`applyRecipe`/
-   `bindData`/`FieldPlatform`/`browserHost` → dom; `field-root`/`field-cell` → elements).
+   `0.x` (`compilePattern`/`FieldPattern`/`FieldHost` → core; `createFieldPlatform`/`applyPattern`/
+   `bindData`/`FieldPlatform`/`browserHost` → dom; `field-root`/`field-cell` → elements). The old
+   `compileRecipe`/`FieldRecipe`/`applyRecipe` names are frozen `@deprecated` aliases of these, same
+   package, removed at `1.0`.
 5. **Bodies are an attribute contract.** `[data-body]` on ordinary elements is the frozen authoring
    surface; there is no body element.
 6. **The `forces-*` compatibility layer was removed — there is no `forces:*` event compatibility contract.** The
