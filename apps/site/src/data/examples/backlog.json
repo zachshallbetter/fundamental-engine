@@ -1,844 +1,1020 @@
 {
   "source": "GitHub API — zachshallbetter/fundamental-engine work items (issues + pull requests)",
   "license": "public repository data",
-  "snapshotAt": "2026-06-10T00:40:44.216Z",
+  "snapshotAt": "2026-07-13T09:48:44.179Z",
   "items": [
     {
-      "number": 294,
-      "title": "feat: scrollV CSS property, quality governor, evidence accretion reveal",
-      "kind": "pr",
-      "state": "open",
-      "labels": [],
-      "comments": 6,
-      "createdAt": "2026-06-09T21:42:13Z",
-      "updatedAt": "2026-06-10T00:15:54Z",
-      "closedAt": null,
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/294"
-    },
-    {
-      "number": 293,
-      "title": "feat: FieldHandle diagnostics, packaging checks, DataConsole perf panel, observable surface docs",
+      "number": 1076,
+      "title": "docs: clear the standing field-ui lineage notes + fix one leftover heading",
       "kind": "pr",
       "state": "merged",
       "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T20:43:09Z",
-      "updatedAt": "2026-06-09T20:43:16Z",
-      "closedAt": "2026-06-09T20:43:14Z",
+      "comments": 1,
+      "createdAt": "2026-07-13T02:06:23Z",
+      "updatedAt": "2026-07-13T02:07:31Z",
+      "closedAt": "2026-07-13T02:07:29Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/293"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1076"
     },
     {
-      "number": 292,
-      "title": "feat(site): atom card close button + fix all 132 particle link targets",
+      "number": 1075,
+      "title": "feat(site): wire the parity page to the real generator output",
       "kind": "pr",
       "state": "merged",
       "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T20:05:56Z",
-      "updatedAt": "2026-06-09T20:06:02Z",
-      "closedAt": "2026-06-09T20:06:01Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/292"
-    },
-    {
-      "number": 291,
-      "title": "feat(home): atom inspect — dwell-to-focus a particle, click to open (no auto-tooltip)",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T19:36:29Z",
-      "updatedAt": "2026-06-09T19:42:01Z",
-      "closedAt": "2026-06-09T19:42:01Z",
+      "comments": 1,
+      "createdAt": "2026-07-13T01:49:46Z",
+      "updatedAt": "2026-07-13T01:57:44Z",
+      "closedAt": "2026-07-13T01:57:42Z",
       "author": "zachshallbetter",
       "refs": [
-        290
-      ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/291"
-    },
-    {
-      "number": 290,
-      "title": "perf(site): cache the project atoms in IndexedDB (localStorage fallback)",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T19:22:59Z",
-      "updatedAt": "2026-06-09T19:25:12Z",
-      "closedAt": "2026-06-09T19:25:12Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/290"
-    },
-    {
-      "number": 288,
-      "title": "feat(site): evidence — a colour lens (a second visual channel from the engine)",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T18:49:10Z",
-      "updatedAt": "2026-06-09T19:17:43Z",
-      "closedAt": "2026-06-09T19:17:43Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/288"
-    },
-    {
-      "number": 289,
-      "title": "feat: particles carry data — the home field is seeded with the 132 project atoms",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T19:13:29Z",
-      "updatedAt": "2026-06-09T19:17:40Z",
-      "closedAt": "2026-06-09T19:17:40Z",
-      "author": "zachshallbetter",
-      "refs": [
-        1,
-        2,
-        5,
         3,
-        4,
-        6,
-        7
+        1073
       ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/289"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1075"
     },
     {
-      "number": 287,
-      "title": "feat(site): Evidence Field — controls + legend so the uniqueness is clear",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T18:29:32Z",
-      "updatedAt": "2026-06-09T18:36:19Z",
-      "closedAt": "2026-06-09T18:36:19Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/287"
-    },
-    {
-      "number": 286,
-      "title": "docs(site): CDN hero, @fundamental-engine/vanilla as default door, demote kit",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T18:28:34Z",
-      "updatedAt": "2026-06-09T18:31:14Z",
-      "closedAt": "2026-06-09T18:31:11Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/286"
-    },
-    {
-      "number": 282,
-      "title": "feat(site): home 'Gallery' chapter — a live bench of what the field can do",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T17:08:37Z",
-      "updatedAt": "2026-06-09T18:19:36Z",
-      "closedAt": "2026-06-09T18:19:10Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/282"
-    },
-    {
-      "number": 284,
-      "title": "feat(site): /evidence — the Evidence Field (Fundamental, no particles, real OpenAlex data)",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T18:10:08Z",
-      "updatedAt": "2026-06-09T18:17:00Z",
-      "closedAt": "2026-06-09T18:17:00Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/284"
-    },
-    {
-      "number": 285,
-      "title": "docs: coherence pass for @fundamental-engine/core, kit, and CI provenance release",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T18:12:31Z",
-      "updatedAt": "2026-06-09T18:15:11Z",
-      "closedAt": "2026-06-09T18:15:08Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/285"
-    },
-    {
-      "number": 283,
-      "title": "fix(site): hero → @fundamental-engine/kit, dynamic footer version, document the kit",
+      "number": 1074,
+      "title": "docs(readme): qualify the native-ports claim to match support-matrix.md",
       "kind": "pr",
       "state": "merged",
       "labels": [],
       "comments": 1,
-      "createdAt": "2026-06-09T17:28:59Z",
-      "updatedAt": "2026-06-09T17:31:36Z",
-      "closedAt": "2026-06-09T17:31:33Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/283"
-    },
-    {
-      "number": 279,
-      "title": "feat(elements): Custom Elements Manifest for the Fundamental web components",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 3,
-      "createdAt": "2026-06-09T05:42:13Z",
-      "updatedAt": "2026-06-09T06:35:03Z",
-      "closedAt": "2026-06-09T06:35:00Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/279"
-    },
-    {
-      "number": 281,
-      "title": "docs+release: expand adapter READMEs, add provenance workflow (0.2.2)",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T06:03:15Z",
-      "updatedAt": "2026-06-09T06:06:00Z",
-      "closedAt": "2026-06-09T06:05:57Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/281"
-    },
-    {
-      "number": 280,
-      "title": "feat(site): hero → @fundamental-engine/elements + @fundamental-engine/kit on the install grid",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T05:58:44Z",
-      "updatedAt": "2026-06-09T06:00:24Z",
-      "closedAt": "2026-06-09T06:00:24Z",
+      "createdAt": "2026-07-13T01:43:34Z",
+      "updatedAt": "2026-07-13T01:50:00Z",
+      "closedAt": "2026-07-13T01:49:59Z",
       "author": "zachshallbetter",
       "refs": [
-        278,
-        279
+        2
       ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/280"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1074"
     },
     {
-      "number": 278,
-      "title": "Scope core as @fundamental-engine/core, publish 0.2.1, add @fundamental-engine/kit umbrella",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T05:34:00Z",
-      "updatedAt": "2026-06-09T05:43:22Z",
-      "closedAt": "2026-06-09T05:42:40Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/278"
-    },
-    {
-      "number": 277,
-      "title": "fix(site): install + version-posture coherence; resolve web-platform citations",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T05:18:59Z",
-      "updatedAt": "2026-06-09T05:20:47Z",
-      "closedAt": "2026-06-09T05:20:44Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/277"
-    },
-    {
-      "number": 276,
-      "title": "docs: honesty + accuracy pass (perf measured, paper review wording, contract delimiter)",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T05:01:57Z",
-      "updatedAt": "2026-06-09T05:09:55Z",
-      "closedAt": "2026-06-09T05:09:52Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/276"
-    },
-    {
-      "number": 275,
-      "title": "refactor(site): centralize the Field Manual chrome into shared components",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T04:45:40Z",
-      "updatedAt": "2026-06-09T05:09:51Z",
-      "closedAt": "2026-06-09T05:09:49Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/275"
-    },
-    {
-      "number": 274,
-      "title": "feat(site): foundation fields + Body Interaction Model below the home substrate",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T01:17:19Z",
-      "updatedAt": "2026-06-09T01:41:54Z",
-      "closedAt": "2026-06-09T01:41:30Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/274"
-    },
-    {
-      "number": 273,
-      "title": "fix(site): remove the broken StartHereLede container from the home",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T01:02:07Z",
-      "updatedAt": "2026-06-09T01:05:36Z",
-      "closedAt": "2026-06-09T01:05:34Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/273"
-    },
-    {
-      "number": 272,
-      "title": "feat(site): eli5 — Body interaction model section (interactive sink/accretion)",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T00:51:14Z",
-      "updatedAt": "2026-06-09T01:05:33Z",
-      "closedAt": "2026-06-09T01:05:31Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/272"
-    },
-    {
-      "number": 271,
-      "title": "feat(site): eli5 ch.II — Natural Field names + per-field visual grammar",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-09T00:24:29Z",
-      "updatedAt": "2026-06-09T00:33:19Z",
-      "closedAt": "2026-06-09T00:33:17Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/271"
-    },
-    {
-      "number": 270,
-      "title": "feat(recipes): generated local datafile of the recipe catalog (data/recipes.json)",
+      "number": 1073,
+      "title": "docs: fix the three verified-stale claims from the 2026-07-12 self-audit dossier",
       "kind": "pr",
       "state": "merged",
       "labels": [],
       "comments": 1,
-      "createdAt": "2026-06-08T23:54:28Z",
-      "updatedAt": "2026-06-09T00:33:15Z",
-      "closedAt": "2026-06-09T00:33:14Z",
+      "createdAt": "2026-07-13T01:30:27Z",
+      "updatedAt": "2026-07-13T01:39:12Z",
+      "closedAt": "2026-07-13T01:39:11Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1073"
+    },
+    {
+      "number": 1072,
+      "title": "docs+core: close the remaining recipe → Pattern rename gaps",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-13T00:46:46Z",
+      "updatedAt": "2026-07-13T00:55:32Z",
+      "closedAt": "2026-07-13T00:55:31Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1072"
+    },
+    {
+      "number": 1071,
+      "title": "site: sweep the remaining recipe → Pattern prose (studies pages, hero, bindData demos)",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-12T23:26:21Z",
+      "updatedAt": "2026-07-12T23:35:08Z",
+      "closedAt": "2026-07-12T23:35:06Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1071"
+    },
+    {
+      "number": 1070,
+      "title": "site: SEO sweep — current positioning in metadata, entity disambiguation, valid breadcrumbs",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-11T18:24:43Z",
+      "updatedAt": "2026-07-11T19:40:17Z",
+      "closedAt": "2026-07-11T19:40:15Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1070"
+    },
+    {
+      "number": 1069,
+      "title": "docs: complete the recipe → Pattern rename (canon, engine spec, CLAUDE.md)",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-10T22:27:22Z",
+      "updatedAt": "2026-07-10T22:31:51Z",
+      "closedAt": "2026-07-10T22:28:31Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1069"
+    },
+    {
+      "number": 1068,
+      "title": "site: adopt phase-4 Pattern names + sweep 'recipe' → 'Pattern' in the essays",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-10T22:13:11Z",
+      "updatedAt": "2026-07-10T22:21:58Z",
+      "closedAt": "2026-07-10T22:21:56Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1068"
+    },
+    {
+      "number": 1067,
+      "title": "feat(swift,kotlin): mirror the recipe → Pattern helper rename in the ports (phase 4)",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-10T22:03:49Z",
+      "updatedAt": "2026-07-10T22:07:34Z",
+      "closedAt": "2026-07-10T22:07:31Z",
       "author": "zachshallbetter",
       "refs": [
-        268
+        1066
       ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/270"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1067"
     },
     {
-      "number": 269,
-      "title": "feat(site): recipes hub + per-recipe pages with live previews (Phase 1)",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-08T23:37:07Z",
-      "updatedAt": "2026-06-09T00:32:40Z",
-      "closedAt": "2026-06-09T00:32:39Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/269"
-    },
-    {
-      "number": 268,
-      "title": "refactor(recipes): rename tiers to a complexity ladder (applied/systems/operational)",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-08T22:09:18Z",
-      "updatedAt": "2026-06-08T22:10:02Z",
-      "closedAt": "2026-06-08T22:09:59Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/268"
-    },
-    {
-      "number": 267,
-      "title": "docs: rebuild forces-engine.md against current main",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-08T21:55:41Z",
-      "updatedAt": "2026-06-08T21:56:37Z",
-      "closedAt": "2026-06-08T21:56:35Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/267"
-    },
-    {
-      "number": 266,
-      "title": "feat: Field Surfaces — render the field over & under content (setOverlay API)",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-08T20:11:26Z",
-      "updatedAt": "2026-06-08T21:09:41Z",
-      "closedAt": "2026-06-08T20:52:53Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/266"
-    },
-    {
-      "number": 265,
-      "title": "feat(site): eli5 four forces play OVER + UNDER the content (immersive)",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-08T19:05:10Z",
-      "updatedAt": "2026-06-08T21:09:38Z",
-      "closedAt": "2026-06-08T19:58:20Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/265"
-    },
-    {
-      "number": 264,
-      "title": "feat(site): make eli5 ch.II four forces interactive on the main field",
+      "number": 1066,
+      "title": "feat(core,dom): rename recipe → Pattern — phase 4 (internal helper surface)",
       "kind": "pr",
       "state": "merged",
       "labels": [],
       "comments": 1,
-      "createdAt": "2026-06-08T18:52:04Z",
-      "updatedAt": "2026-06-08T21:09:36Z",
-      "closedAt": "2026-06-08T18:52:25Z",
+      "createdAt": "2026-07-10T21:52:03Z",
+      "updatedAt": "2026-07-10T22:00:08Z",
+      "closedAt": "2026-07-10T22:00:06Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/264"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1066"
     },
     {
-      "number": 263,
-      "title": "docs: force count 34→35 in Paper 1 (+ site copy); tighten inspect floor",
+      "number": 1065,
+      "title": "site: bring current with 0.9.4 — Pattern API + /patterns URL + focus in what's-new",
       "kind": "pr",
       "state": "merged",
       "labels": [],
       "comments": 1,
-      "createdAt": "2026-06-08T18:30:00Z",
-      "updatedAt": "2026-06-08T21:09:34Z",
-      "closedAt": "2026-06-08T18:30:13Z",
+      "createdAt": "2026-07-10T21:32:31Z",
+      "updatedAt": "2026-07-10T21:41:34Z",
+      "closedAt": "2026-07-10T21:41:32Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1065"
+    },
+    {
+      "number": 1064,
+      "title": "chore(release): 0.9.4",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-10T18:59:15Z",
+      "updatedAt": "2026-07-10T19:33:19Z",
+      "closedAt": "2026-07-10T19:33:16Z",
       "author": "zachshallbetter",
       "refs": [
-        262
+        1063,
+        1061,
+        1062
       ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/263"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1064"
     },
     {
-      "number": 262,
-      "title": "fix: catalog field:relocated + correct stale 34→35 force count",
+      "number": 1063,
+      "title": "feat(core): focus/attention substrate — operator attention in, agent attention out",
       "kind": "pr",
       "state": "merged",
       "labels": [],
       "comments": 2,
-      "createdAt": "2026-06-08T18:21:46Z",
-      "updatedAt": "2026-06-08T21:09:31Z",
-      "closedAt": "2026-06-08T18:22:09Z",
+      "createdAt": "2026-07-10T18:17:52Z",
+      "updatedAt": "2026-07-10T18:55:59Z",
+      "closedAt": "2026-07-10T18:55:57Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/262"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1063"
     },
     {
-      "number": 261,
-      "title": "docs/site: align terminology with the Field Agent Consumption Model",
+      "number": 1062,
+      "title": "feat(swift,kotlin): mirror the recipe → Pattern rename in the ports — phase 2",
       "kind": "pr",
       "state": "merged",
       "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-08T17:05:25Z",
-      "updatedAt": "2026-06-08T21:09:29Z",
-      "closedAt": "2026-06-08T18:03:48Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/261"
-    },
-    {
-      "number": 258,
-      "title": "feat(site): refactor /eli5 into a story that builds (Substrate-style)",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-08T15:43:48Z",
-      "updatedAt": "2026-06-08T21:09:26Z",
-      "closedAt": "2026-06-08T18:03:52Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/258"
-    },
-    {
-      "number": 254,
-      "title": "docs/site: api/options shows required host; drop dead study metric keys",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 2,
-      "createdAt": "2026-06-08T14:27:41Z",
-      "updatedAt": "2026-06-08T18:33:28Z",
-      "closedAt": "2026-06-08T14:29:21Z",
+      "comments": 1,
+      "createdAt": "2026-07-09T06:10:32Z",
+      "updatedAt": "2026-07-09T06:15:40Z",
+      "closedAt": "2026-07-09T06:13:58Z",
       "author": "zachshallbetter",
       "refs": [
-        249,
-        250
+        1061
       ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/254"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1062"
     },
     {
-      "number": 252,
-      "title": "fix: risk supplied-only (#226) + memory classification guard (#227)",
+      "number": 1061,
+      "title": "feat(core,dom): rename 'recipe' concept to Pattern — phase 1 (public API + aliases)",
       "kind": "pr",
       "state": "merged",
       "labels": [],
       "comments": 2,
-      "createdAt": "2026-06-08T14:20:06Z",
-      "updatedAt": "2026-06-08T18:33:26Z",
-      "closedAt": "2026-06-08T14:21:42Z",
+      "createdAt": "2026-07-09T04:30:53Z",
+      "updatedAt": "2026-07-09T06:08:18Z",
+      "closedAt": "2026-07-09T06:08:16Z",
       "author": "zachshallbetter",
       "refs": [
-        226,
-        227,
-        220,
-        223
+        1060
       ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/252"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1061"
     },
     {
-      "number": 222,
-      "title": "fix(platform): compute real relationship resolution (stop hardcoding relResolved = relTotal)",
+      "number": 1060,
+      "title": "docs: Pattern rename phase 0 — establish 'Field Pattern' concept in the canon",
       "kind": "pr",
       "state": "merged",
       "labels": [],
       "comments": 1,
-      "createdAt": "2026-06-07T20:22:55Z",
-      "updatedAt": "2026-06-08T18:33:25Z",
-      "closedAt": "2026-06-07T21:05:21Z",
+      "createdAt": "2026-07-09T04:01:24Z",
+      "updatedAt": "2026-07-09T04:03:28Z",
+      "closedAt": "2026-07-09T04:02:28Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1060"
+    },
+    {
+      "number": 1059,
+      "title": "docs: reconcile forces:* + integrator-naming drift with the code",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-09T03:34:47Z",
+      "updatedAt": "2026-07-09T03:37:55Z",
+      "closedAt": "2026-07-09T03:35:44Z",
       "author": "zachshallbetter",
       "refs": [
-        220
+        3
       ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/222"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1059"
     },
     {
-      "number": 223,
-      "title": "fix(core): classify memory as a semantic metric, not a physical natural force",
+      "number": 1058,
+      "title": "test(a11y): reduced motion removes motion, not meaning — verified (rigor #5)",
       "kind": "pr",
       "state": "merged",
       "labels": [],
       "comments": 1,
-      "createdAt": "2026-06-07T20:31:39Z",
-      "updatedAt": "2026-06-08T18:33:24Z",
-      "closedAt": "2026-06-07T21:05:53Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/223"
-    },
-    {
-      "number": 239,
-      "title": "fix: unbreak main — @fundamental-engine/core in research papers + HomeHero metric claim",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 1,
-      "createdAt": "2026-06-07T21:45:08Z",
-      "updatedAt": "2026-06-08T18:33:23Z",
-      "closedAt": "2026-06-07T21:46:18Z",
+      "createdAt": "2026-07-09T00:45:00Z",
+      "updatedAt": "2026-07-09T00:54:01Z",
+      "closedAt": "2026-07-09T00:53:59Z",
       "author": "zachshallbetter",
       "refs": [
-        231,
-        230,
-        237
+        5
       ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/239"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1058"
     },
     {
-      "number": 220,
-      "title": "fix(platform): never fabricate confidence from relationship presence",
+      "number": 1057,
+      "title": "docs: caveat-canon #7 — refuted-argument guard (rigor #4)",
       "kind": "pr",
       "state": "merged",
       "labels": [],
       "comments": 1,
-      "createdAt": "2026-06-07T20:02:14Z",
-      "updatedAt": "2026-06-08T18:33:22Z",
-      "closedAt": "2026-06-07T21:04:47Z",
+      "createdAt": "2026-07-09T00:39:01Z",
+      "updatedAt": "2026-07-09T00:40:01Z",
+      "closedAt": "2026-07-09T00:39:58Z",
       "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/220"
+      "refs": [
+        4
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1057"
     },
     {
-      "number": 244,
-      "title": "feat(site): /writings datastore section — mermaid, latex, code; research migrates in",
+      "number": 1056,
+      "title": "fix(site): qualify the homepage 'sub-millisecond' claim as compute (rigor #2)",
       "kind": "pr",
       "state": "merged",
       "labels": [],
       "comments": 1,
-      "createdAt": "2026-06-07T22:47:18Z",
-      "updatedAt": "2026-06-08T18:33:21Z",
-      "closedAt": "2026-06-07T22:48:33Z",
+      "createdAt": "2026-07-09T00:29:17Z",
+      "updatedAt": "2026-07-09T00:37:13Z",
+      "closedAt": "2026-07-09T00:37:11Z",
       "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/244"
+      "refs": [
+        2
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1056"
     },
     {
-      "number": 245,
-      "title": "docs(writings): add \"Fundamental, explained simply\" — the plain-language tour",
+      "number": 1055,
+      "title": "docs: explain WHY cross-plane conformance is tolerance-based (rigor #1)",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-09T00:27:22Z",
+      "updatedAt": "2026-07-09T00:28:19Z",
+      "closedAt": "2026-07-09T00:28:17Z",
+      "author": "zachshallbetter",
+      "refs": [
+        1
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1055"
+    },
+    {
+      "number": 1054,
+      "title": "docs: Stability & convergence canon — what the field damps vs owns",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-09T00:17:54Z",
+      "updatedAt": "2026-07-09T00:20:23Z",
+      "closedAt": "2026-07-09T00:19:17Z",
+      "author": "zachshallbetter",
+      "refs": [
+        3
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1054"
+    },
+    {
+      "number": 1053,
+      "title": "feat(site): reciprocity — re-bodied elements react to the field (--d)",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-08T22:27:28Z",
+      "updatedAt": "2026-07-08T22:36:02Z",
+      "closedAt": "2026-07-08T22:36:01Z",
+      "author": "zachshallbetter",
+      "refs": [
+        1052
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1053"
+    },
+    {
+      "number": 1052,
+      "title": "feat(site): hands-on 'try it' field on the homepage",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-08T22:09:15Z",
+      "updatedAt": "2026-07-08T22:17:48Z",
+      "closedAt": "2026-07-08T22:17:46Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1052"
+    },
+    {
+      "number": 1051,
+      "title": "feat(site): homepage field liveliness + restore the invisible-fields showcase",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-08T21:38:55Z",
+      "updatedAt": "2026-07-08T22:01:02Z",
+      "closedAt": "2026-07-08T22:01:00Z",
+      "author": "zachshallbetter",
+      "refs": [
+        909,
+        538,
+        979
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1051"
+    },
+    {
+      "number": 1050,
+      "title": "docs: cite the real Zenodo DOI",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-07T20:58:58Z",
+      "updatedAt": "2026-07-07T21:00:13Z",
+      "closedAt": "2026-07-07T21:00:11Z",
+      "author": "zachshallbetter",
+      "refs": [
+        1049
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1050"
+    },
+    {
+      "number": 1049,
+      "title": "docs: remove How-to-cite section until the Zenodo DOI exists",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 1,
+      "createdAt": "2026-07-07T20:51:15Z",
+      "updatedAt": "2026-07-07T20:51:41Z",
+      "closedAt": "2026-07-07T20:51:38Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1049"
+    },
+    {
+      "number": 1048,
+      "title": "chore(site): noindex internal pages + auto-submit IndexNow on deploy",
       "kind": "pr",
       "state": "merged",
       "labels": [],
       "comments": 2,
-      "createdAt": "2026-06-08T14:11:53Z",
-      "updatedAt": "2026-06-08T18:33:19Z",
-      "closedAt": "2026-06-08T14:13:27Z",
+      "createdAt": "2026-07-07T03:31:44Z",
+      "updatedAt": "2026-07-07T03:40:54Z",
+      "closedAt": "2026-07-07T03:40:52Z",
       "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/245"
+      "refs": [
+        1035
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1048"
     },
     {
-      "number": 229,
-      "title": "feat(site): Wave 2 — /docs/narrative on the data-attribute model + FieldLoopDemo render fix",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 1,
-      "createdAt": "2026-06-07T20:55:27Z",
-      "updatedAt": "2026-06-08T18:33:18Z",
-      "closedAt": "2026-06-07T20:56:36Z",
+      "number": 1047,
+      "title": "Rust: crates.io publishing — naming + versioning decision",
+      "kind": "issue",
+      "state": "open",
+      "labels": [
+        "track-a-native"
+      ],
+      "comments": 0,
+      "createdAt": "2026-07-07T02:29:02Z",
+      "updatedAt": "2026-07-07T02:29:02Z",
+      "closedAt": null,
       "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/229"
+      "refs": [
+        1036
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1047"
     },
     {
-      "number": 234,
-      "title": "fix(site): diagnostics export reflects active mode; snapshots is a reference table",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 1,
-      "createdAt": "2026-06-07T21:13:16Z",
-      "updatedAt": "2026-06-08T18:33:17Z",
-      "closedAt": "2026-06-07T21:15:01Z",
+      "number": 1046,
+      "title": "Rust: fundamental-platform crate (host/binding layer)",
+      "kind": "issue",
+      "state": "open",
+      "labels": [
+        "track-a-native"
+      ],
+      "comments": 0,
+      "createdAt": "2026-07-07T02:28:54Z",
+      "updatedAt": "2026-07-07T02:28:54Z",
+      "closedAt": null,
       "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/234"
+      "refs": [
+        1036
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1046"
     },
     {
-      "number": 240,
-      "title": "feat(site): publish the Fundamental research paper family at /research",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 1,
-      "createdAt": "2026-06-07T22:11:53Z",
-      "updatedAt": "2026-06-08T18:33:16Z",
-      "closedAt": "2026-06-07T22:13:20Z",
+      "number": 1045,
+      "title": "Rust: conformance hardening — crate-local golden + extend coverage",
+      "kind": "issue",
+      "state": "open",
+      "labels": [
+        "track-a-native"
+      ],
+      "comments": 0,
+      "createdAt": "2026-07-07T02:28:46Z",
+      "updatedAt": "2026-07-07T02:28:46Z",
+      "closedAt": null,
       "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/240"
+      "refs": [
+        1036
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1045"
     },
     {
-      "number": 241,
-      "title": "feat(site): render research-paper math with KaTeX",
-      "kind": "pr",
-      "state": "merged",
-      "labels": [],
-      "comments": 1,
-      "createdAt": "2026-06-07T22:19:51Z",
-      "updatedAt": "2026-06-08T18:33:15Z",
-      "closedAt": "2026-06-07T22:24:50Z",
+      "number": 1044,
+      "title": "Rust: CMS reading layer — scores / clusters / relations",
+      "kind": "issue",
+      "state": "open",
+      "labels": [
+        "track-a-native"
+      ],
+      "comments": 0,
+      "createdAt": "2026-07-07T02:28:39Z",
+      "updatedAt": "2026-07-07T02:28:39Z",
+      "closedAt": null,
       "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/241"
+      "refs": [
+        1036
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1044"
     },
     {
-      "number": 251,
-      "title": "feat(site): add /eli5 — a playful second homepage (ELI5 narrative)",
+      "number": 1043,
+      "title": "Rust: snapshot + causal replay (Field Receipts substrate)",
+      "kind": "issue",
+      "state": "open",
+      "labels": [
+        "track-a-native"
+      ],
+      "comments": 0,
+      "createdAt": "2026-07-07T02:28:32Z",
+      "updatedAt": "2026-07-07T02:28:32Z",
+      "closedAt": null,
+      "author": "zachshallbetter",
+      "refs": [
+        1036,
+        692
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1043"
+    },
+    {
+      "number": 1042,
+      "title": "Rust: solve(until_settled) — step-to-convergence wrapper",
+      "kind": "issue",
+      "state": "open",
+      "labels": [
+        "track-a-native"
+      ],
+      "comments": 0,
+      "createdAt": "2026-07-07T02:28:24Z",
+      "updatedAt": "2026-07-07T02:28:24Z",
+      "closedAt": null,
+      "author": "zachshallbetter",
+      "refs": [
+        1036
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1042"
+    },
+    {
+      "number": 1041,
+      "title": "Rust: field structure hooks + fieldflow (completes 36 forces)",
+      "kind": "issue",
+      "state": "open",
+      "labels": [
+        "track-a-native"
+      ],
+      "comments": 0,
+      "createdAt": "2026-07-07T02:28:17Z",
+      "updatedAt": "2026-07-07T02:28:17Z",
+      "closedAt": null,
+      "author": "zachshallbetter",
+      "refs": [
+        1036
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1041"
+    },
+    {
+      "number": 1040,
+      "title": "Rust: screen — cross-body force attenuation (quiet zones)",
+      "kind": "issue",
+      "state": "open",
+      "labels": [
+        "track-a-native"
+      ],
+      "comments": 0,
+      "createdAt": "2026-07-07T02:28:09Z",
+      "updatedAt": "2026-07-07T02:28:09Z",
+      "closedAt": null,
+      "author": "zachshallbetter",
+      "refs": [
+        1036
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1040"
+    },
+    {
+      "number": 1039,
+      "title": "Rust: scalar grid subsystem + diffuse/propagate/memory",
+      "kind": "issue",
+      "state": "open",
+      "labels": [
+        "track-a-native"
+      ],
+      "comments": 0,
+      "createdAt": "2026-07-07T02:28:02Z",
+      "updatedAt": "2026-07-07T02:28:02Z",
+      "closedAt": null,
+      "author": "zachshallbetter",
+      "refs": [
+        1036
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1039"
+    },
+    {
+      "number": 1038,
+      "title": "Rust: source pass — spawn (mortal matter) + morph (assembly)",
+      "kind": "issue",
+      "state": "open",
+      "labels": [
+        "track-a-native"
+      ],
+      "comments": 0,
+      "createdAt": "2026-07-07T02:27:55Z",
+      "updatedAt": "2026-07-07T02:27:55Z",
+      "closedAt": null,
+      "author": "zachshallbetter",
+      "refs": [
+        1036
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1038"
+    },
+    {
+      "number": 1037,
+      "title": "Rust: collide — elastic pairwise collision via impulse effect",
+      "kind": "issue",
+      "state": "open",
+      "labels": [
+        "track-a-native"
+      ],
+      "comments": 0,
+      "createdAt": "2026-07-07T02:27:48Z",
+      "updatedAt": "2026-07-07T02:27:48Z",
+      "closedAt": null,
+      "author": "zachshallbetter",
+      "refs": [
+        1036
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1037"
+    },
+    {
+      "number": 1036,
+      "title": "Epic: Rust plane — fundamental-core (headless field runtime)",
+      "kind": "issue",
+      "state": "open",
+      "labels": [
+        "track-a-native",
+        "epic"
+      ],
+      "comments": 0,
+      "createdAt": "2026-07-07T02:22:28Z",
+      "updatedAt": "2026-07-07T02:22:28Z",
+      "closedAt": null,
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1036"
+    },
+    {
+      "number": 1035,
+      "title": "site: AI-forward SEO, semantic hierarchy, force carousel, IndexNow",
       "kind": "pr",
       "state": "merged",
       "labels": [],
       "comments": 2,
-      "createdAt": "2026-06-08T14:19:49Z",
-      "updatedAt": "2026-06-08T18:33:12Z",
-      "closedAt": "2026-06-08T15:09:38Z",
+      "createdAt": "2026-07-07T01:45:17Z",
+      "updatedAt": "2026-07-07T01:54:12Z",
+      "closedAt": "2026-07-07T01:54:11Z",
       "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/251"
+      "refs": [
+        1028,
+        1029,
+        949,
+        966
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1035"
     },
     {
-      "number": 257,
-      "title": "Contour/vector typography: text → glyph outlines → bound SVG/Canvas representation",
+      "number": 1034,
+      "title": "docs(changelog): fix 0.9.3 — move post-release entries to [Unreleased], consolidate sections",
+      "kind": "pr",
+      "state": "open",
+      "labels": [],
+      "comments": 2,
+      "createdAt": "2026-07-04T23:06:54Z",
+      "updatedAt": "2026-07-04T23:07:22Z",
+      "closedAt": null,
+      "author": "zachshallbetter",
+      "refs": [
+        1029,
+        1028
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1034"
+    },
+    {
+      "number": 1033,
+      "title": "test(react): use-forces-data.test.ts fails to load on Node 25 (passes on Node 22/CI)",
       "kind": "issue",
       "state": "open",
       "labels": [],
       "comments": 0,
-      "createdAt": "2026-06-08T15:41:44Z",
-      "updatedAt": "2026-06-08T15:41:44Z",
+      "createdAt": "2026-07-04T20:32:59Z",
+      "updatedAt": "2026-07-04T20:32:59Z",
       "closedAt": null,
       "author": "zachshallbetter",
-      "refs": [
-        256
-      ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/257"
-    },
-    {
-      "number": 250,
-      "title": "docs/site: study mappers pass undeclared metrics + RenderLayer particles-vs-dots naming (low)",
-      "kind": "issue",
-      "state": "closed",
-      "labels": [],
-      "comments": 0,
-      "createdAt": "2026-06-08T14:18:58Z",
-      "updatedAt": "2026-06-08T14:29:23Z",
-      "closedAt": "2026-06-08T14:29:23Z",
-      "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/250"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1033"
     },
     {
-      "number": 249,
-      "title": "docs/site: api/options FieldOptions table omits host (required) + feedbackSink",
-      "kind": "issue",
-      "state": "closed",
+      "number": 1031,
+      "title": "docs: accuracy sweep — stale core/ paths, version, force/package counts",
+      "kind": "pr",
+      "state": "merged",
       "labels": [],
-      "comments": 0,
-      "createdAt": "2026-06-08T14:18:57Z",
-      "updatedAt": "2026-06-08T14:29:23Z",
-      "closedAt": "2026-06-08T14:29:23Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/249"
-    },
-    {
-      "number": 248,
-      "title": "docs: interaction-and-relationship agent-type union vs FieldAgentKind (precision)",
-      "kind": "issue",
-      "state": "closed",
-      "labels": [],
-      "comments": 0,
-      "createdAt": "2026-06-08T14:18:55Z",
-      "updatedAt": "2026-06-08T14:28:07Z",
-      "closedAt": "2026-06-08T14:28:07Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/248"
-    },
-    {
-      "number": 247,
-      "title": "docs: authoring-and-recipes has fabricated tokens + incomplete schema (§4/§5/§7/§10)",
-      "kind": "issue",
-      "state": "closed",
-      "labels": [],
-      "comments": 0,
-      "createdAt": "2026-06-08T14:18:54Z",
-      "updatedAt": "2026-06-08T14:28:07Z",
-      "closedAt": "2026-06-08T14:28:06Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/247"
-    },
-    {
-      "number": 246,
-      "title": "docs: visualization-methods-taxonomy render-mode table is stale (lists nonexistent modes)",
-      "kind": "issue",
-      "state": "closed",
-      "labels": [],
-      "comments": 0,
-      "createdAt": "2026-06-08T14:18:53Z",
-      "updatedAt": "2026-06-08T14:28:06Z",
-      "closedAt": "2026-06-08T14:28:06Z",
-      "author": "zachshallbetter",
-      "refs": [],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/246"
-    },
-    {
-      "number": 227,
-      "title": "decision: memory passport family axis (natural vs extended vs new metric value)",
-      "kind": "issue",
-      "state": "closed",
-      "labels": [],
-      "comments": 0,
-      "createdAt": "2026-06-07T20:44:46Z",
-      "updatedAt": "2026-06-08T14:21:43Z",
-      "closedAt": "2026-06-08T14:21:43Z",
+      "comments": 2,
+      "createdAt": "2026-07-04T20:18:11Z",
+      "updatedAt": "2026-07-04T20:31:59Z",
+      "closedAt": "2026-07-04T20:31:58Z",
       "author": "zachshallbetter",
       "refs": [
-        223
+        1028,
+        1029
       ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/227"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1031"
     },
     {
-      "number": 226,
-      "title": "fix(platform): risk metric defaults to 0 (same anti-pattern as the confidence default)",
+      "number": 1032,
+      "title": "refactor(kotlin): mirror JS core folder scheme — ForceColors→config/, Geometry→math/, recipe/→recipes/",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 2,
+      "createdAt": "2026-07-04T20:29:34Z",
+      "updatedAt": "2026-07-04T20:31:52Z",
+      "closedAt": "2026-07-04T20:31:50Z",
+      "author": "zachshallbetter",
+      "refs": [
+        1028,
+        1029,
+        1030
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1032"
+    },
+    {
+      "number": 1030,
+      "title": "refactor(swift): mirror JS folder scheme — Rng→Record/, ForceColors→Config/",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 2,
+      "createdAt": "2026-07-04T20:13:47Z",
+      "updatedAt": "2026-07-04T20:31:43Z",
+      "closedAt": "2026-07-04T20:31:41Z",
+      "author": "zachshallbetter",
+      "refs": [
+        1029
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1030"
+    },
+    {
+      "number": 1029,
+      "title": "refactor(core): rename src/core/ → src/engine/ — step 2 of folder standardization",
+      "kind": "pr",
+      "state": "merged",
+      "labels": [],
+      "comments": 2,
+      "createdAt": "2026-07-04T19:57:30Z",
+      "updatedAt": "2026-07-04T20:07:18Z",
+      "closedAt": "2026-07-04T20:07:16Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/1029"
+    },
+    {
+      "number": 975,
+      "title": "core: expose or derive the hardcoded render reference points (thermal anchor, redshift observer, depth camera, heatmap hero-fade)",
       "kind": "issue",
       "state": "closed",
       "labels": [],
       "comments": 0,
-      "createdAt": "2026-06-07T20:44:46Z",
-      "updatedAt": "2026-06-08T14:21:43Z",
-      "closedAt": "2026-06-08T14:21:43Z",
+      "createdAt": "2026-07-02T22:41:28Z",
+      "updatedAt": "2026-07-03T20:35:19Z",
+      "closedAt": "2026-07-03T20:35:19Z",
       "author": "zachshallbetter",
-      "refs": [
-        220
-      ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/226"
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/975"
     },
     {
-      "number": 228,
-      "title": "Phase 5: migrate legacy engine/field.ts element write-back behind platform registries",
+      "number": 988,
+      "title": "core: rename the 'absorb' event to 'captured' — naming-lane violation on the event bus (pre-1.0 window)",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-07-03T03:40:07Z",
+      "updatedAt": "2026-07-03T19:05:14Z",
+      "closedAt": "2026-07-03T19:05:14Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/988"
+    },
+    {
+      "number": 970,
+      "title": "core: rescan continuity follow-ups — anonymous-id churn + dynamic-body motion reset",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-07-02T22:04:37Z",
+      "updatedAt": "2026-07-03T18:27:36Z",
+      "closedAt": "2026-07-03T18:27:36Z",
+      "author": "zachshallbetter",
+      "refs": [
+        966,
+        969
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/970"
+    },
+    {
+      "number": 1020,
+      "title": "ports: align the consumer event-bus vocabulary to captured/released (post-#988)",
       "kind": "issue",
       "state": "open",
       "labels": [],
       "comments": 0,
-      "createdAt": "2026-06-07T20:44:47Z",
-      "updatedAt": "2026-06-07T20:44:47Z",
+      "createdAt": "2026-07-03T18:08:09Z",
+      "updatedAt": "2026-07-03T18:08:09Z",
       "closedAt": null,
       "author": "zachshallbetter",
       "refs": [
-        224
+        988,
+        1019
       ],
-      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/228"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1020"
+    },
+    {
+      "number": 1006,
+      "title": "chore(react): tsconfig excludes *.test.ts but not *.test.tsx — stale dist test artifact trap",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-07-03T06:16:45Z",
+      "updatedAt": "2026-07-03T18:07:26Z",
+      "closedAt": "2026-07-03T18:07:26Z",
+      "author": "zachshallbetter",
+      "refs": [
+        989,
+        1005
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/1006"
+    },
+    {
+      "number": 992,
+      "title": "guards: drift meta-tests — option forwarding completeness, FieldField delegation, forAgent facade, passports, conformance rng",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-07-03T03:40:27Z",
+      "updatedAt": "2026-07-03T17:47:48Z",
+      "closedAt": "2026-07-03T17:47:48Z",
+      "author": "zachshallbetter",
+      "refs": [
+        981
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/992"
+    },
+    {
+      "number": 977,
+      "title": "site: derive the painted proofs — pigment stage, agitate shock ring, traceDipole geometry",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-07-02T22:41:40Z",
+      "updatedAt": "2026-07-03T14:45:17Z",
+      "closedAt": "2026-07-03T14:45:17Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/977"
+    },
+    {
+      "number": 980,
+      "title": "core/dom: contained + page field both adopt the same bodies — two writers flicker --d every frame",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-07-02T23:22:39Z",
+      "updatedAt": "2026-07-03T14:45:13Z",
+      "closedAt": "2026-07-03T14:45:13Z",
+      "author": "zachshallbetter",
+      "refs": [
+        969
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/980"
+    },
+    {
+      "number": 966,
+      "title": "core: carry body feedback state + remap captures across rescan (kill the rescan discontinuity)",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-07-02T21:37:07Z",
+      "updatedAt": "2026-07-03T14:45:11Z",
+      "closedAt": "2026-07-03T14:45:11Z",
+      "author": "zachshallbetter",
+      "refs": [
+        477
+      ],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/966"
+    },
+    {
+      "number": 991,
+      "title": "perf: spatial-hash bin pooling, measurement O(1) lookup, worker-bridge payload reuse",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-07-03T03:40:22Z",
+      "updatedAt": "2026-07-03T14:45:08Z",
+      "closedAt": "2026-07-03T14:45:08Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/991"
+    },
+    {
+      "number": 993,
+      "title": "DX: dev-warns for silent drops, scan-frequency guard, prune-on-destroy, field-cell boundary statement, create-CLI hardening",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-07-03T03:40:33Z",
+      "updatedAt": "2026-07-03T14:45:05Z",
+      "closedAt": "2026-07-03T14:45:05Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/993"
+    },
+    {
+      "number": 989,
+      "title": "fixes: x-ray injection + owner-document, React useForcesData null-container, e2e fixture bypass",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-07-03T03:40:12Z",
+      "updatedAt": "2026-07-03T08:37:01Z",
+      "closedAt": "2026-07-03T08:37:01Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/989"
+    },
+    {
+      "number": 670,
+      "title": "Depth / parallax render mode",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-06-27T05:30:00Z",
+      "updatedAt": "2026-07-03T07:55:41Z",
+      "closedAt": "2026-07-03T07:55:41Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/670"
+    },
+    {
+      "number": 669,
+      "title": "`blackbody` render mode",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-06-27T05:29:59Z",
+      "updatedAt": "2026-07-03T07:55:41Z",
+      "closedAt": "2026-07-03T07:55:41Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/669"
+    },
+    {
+      "number": 668,
+      "title": "`redshift` render mode",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-06-27T05:29:58Z",
+      "updatedAt": "2026-07-03T07:55:41Z",
+      "closedAt": "2026-07-03T07:55:40Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/668"
+    },
+    {
+      "number": 667,
+      "title": "`knockout` render mode",
+      "kind": "issue",
+      "state": "closed",
+      "labels": [],
+      "comments": 0,
+      "createdAt": "2026-06-27T05:29:58Z",
+      "updatedAt": "2026-07-03T07:55:40Z",
+      "closedAt": "2026-07-03T07:55:40Z",
+      "author": "zachshallbetter",
+      "refs": [],
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/667"
     }
   ]
 }

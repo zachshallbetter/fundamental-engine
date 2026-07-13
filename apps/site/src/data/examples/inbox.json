@@ -1,21 +1,342 @@
 {
   "source": "Stack Exchange API (stackoverflow.com) — unanswered [javascript] questions",
   "license": "CC BY-SA 4.0",
-  "snapshotAt": "2026-06-10T00:38:15.076Z",
+  "snapshotAt": "2026-07-13T09:48:42.143Z",
   "items": [
     {
+      "id": 79980164,
+      "title": "How to make Vite add react-icons to a separate .js file when executing &#39;npm run dev&#39;?",
+      "tags": [
+        "javascript",
+        "reactjs",
+        "vite"
+      ],
+      "score": -2,
+      "views": 54,
+      "askedAt": 1783890670,
+      "author": "Viktor",
+      "reputation": 1537,
+      "link": "https://stackoverflow.com/questions/79980164/how-to-make-vite-add-react-icons-to-a-separate-js-file-when-executing-npm-run"
+    },
+    {
+      "id": 79979806,
+      "title": "How to preserve interim filename extensions when specifying `output.filename` in Webpack?",
+      "tags": [
+        "javascript",
+        "webpack"
+      ],
+      "score": 0,
+      "views": 57,
+      "askedAt": 1783732859,
+      "author": "Takeshi Tokugawa YD",
+      "reputation": 805,
+      "link": "https://stackoverflow.com/questions/79979806/how-to-preserve-interim-filename-extensions-when-specifying-output-filename-in"
+    },
+    {
+      "id": 79978449,
+      "title": "Express + Multer returns &quot;Multipart: Boundary not found&quot; when uploading FormData from React Axios",
+      "tags": [
+        "javascript",
+        "express",
+        "axios",
+        "multer"
+      ],
+      "score": -2,
+      "views": 89,
+      "askedAt": 1783623488,
+      "author": "bahar betvan",
+      "reputation": 7,
+      "link": "https://stackoverflow.com/questions/79978449/express-multer-returns-multipart-boundary-not-found-when-uploading-formdata"
+    },
+    {
+      "id": 79978184,
+      "title": "React Hook Form validation across multiple tabs: is useWatch + custom validation the right approach?",
+      "tags": [
+        "best-practices",
+        "javascript",
+        "reactjs",
+        "react-hook-form"
+      ],
+      "score": 0,
+      "views": 123,
+      "askedAt": 1783583263,
+      "author": "Furqan",
+      "reputation": 37,
+      "link": "https://stackoverflow.com/questions/79978184/react-hook-form-validation-across-multiple-tabs-is-usewatch-custom-validation"
+    },
+    {
+      "id": 79974236,
+      "title": "Is it possible to render forbidden.tsx from proxy.ts in Next.js 16?",
+      "tags": [
+        "javascript",
+        "authentication",
+        "next.js",
+        "proxy"
+      ],
+      "score": 0,
+      "views": 38,
+      "askedAt": 1783109971,
+      "author": "Apollo B.",
+      "reputation": 1,
+      "link": "https://stackoverflow.com/questions/79974236/is-it-possible-to-render-forbidden-tsx-from-proxy-ts-in-next-js-16"
+    },
+    {
+      "id": 79974139,
+      "title": "Plate does not preserve empty paragraphs on paste from HTML source",
+      "tags": [
+        "javascript",
+        "markdown",
+        "slate.js"
+      ],
+      "score": -2,
+      "views": 68,
+      "askedAt": 1783092923,
+      "author": "Fi Li Ppo",
+      "reputation": 323,
+      "link": "https://stackoverflow.com/questions/79974139/plate-does-not-preserve-empty-paragraphs-on-paste-from-html-source"
+    },
+    {
+      "id": 79972809,
+      "title": "SoundManager2 doesn&#39;t play absolutely normal mp3 file",
+      "tags": [
+        "javascript",
+        "audio",
+        "soundmanager2"
+      ],
+      "score": 0,
+      "views": 106,
+      "askedAt": 1783034761,
+      "author": "Asghabard",
+      "reputation": 314,
+      "link": "https://stackoverflow.com/questions/79972809/soundmanager2-doesnt-play-absolutely-normal-mp3-file"
+    },
+    {
+      "id": 79972764,
+      "title": "How do I get IntelliSense for Cosmos DB stored procedures in VS Code?",
+      "tags": [
+        "javascript",
+        "azure-cosmosdb"
+      ],
+      "score": -4,
+      "views": 82,
+      "askedAt": 1783019632,
+      "author": "wayne.blackmon",
+      "reputation": 763,
+      "link": "https://stackoverflow.com/questions/79972764/how-do-i-get-intellisense-for-cosmos-db-stored-procedures-in-vs-code"
+    },
+    {
+      "id": 79972665,
+      "title": "Array groupBy property but then sort by a non alphabetical order",
+      "tags": [
+        "javascript",
+        "arrays",
+        "object"
+      ],
+      "score": -3,
+      "views": 95,
+      "askedAt": 1783002332,
+      "author": "lharby",
+      "reputation": 3351,
+      "link": "https://stackoverflow.com/questions/79972665/array-groupby-property-but-then-sort-by-a-non-alphabetical-order"
+    },
+    {
+      "id": 79972525,
+      "title": "drag-and-drop store builder/plugin for a multi-vendor marketplace (similar to Amazon Brand Stores)?",
+      "tags": [
+        "javascript",
+        "html",
+        "plugins",
+        "drag-and-drop"
+      ],
+      "score": 0,
+      "views": 84,
+      "askedAt": 1782983305,
+      "author": "Alagu sundaram",
+      "reputation": 1,
+      "link": "https://stackoverflow.com/questions/79972525/drag-and-drop-store-builder-plugin-for-a-multi-vendor-marketplace-similar-to-am"
+    },
+    {
+      "id": 79972485,
+      "title": "How to set consistent font fallback for mixed English/Hindi text in PptxGenJS?",
+      "tags": [
+        "javascript",
+        "node.js",
+        "unicode",
+        "powerpoint"
+      ],
+      "score": 0,
+      "views": 62,
+      "askedAt": 1782977468,
+      "author": "CloudMigrationGuy",
+      "reputation": 1,
+      "link": "https://stackoverflow.com/questions/79972485/how-to-set-consistent-font-fallback-for-mixed-english-hindi-text-in-pptxgenjs"
+    },
+    {
+      "id": 79971709,
+      "title": "How do I add a link to a draggable element that doesn&#39;t open when you drag it, only when you click it?",
+      "tags": [
+        "javascript",
+        "drag-and-drop",
+        "draggable"
+      ],
+      "score": 0,
+      "views": 89,
+      "askedAt": 1782821071,
+      "author": "kiki",
+      "reputation": 1,
+      "link": "https://stackoverflow.com/questions/79971709/how-do-i-add-a-link-to-a-draggable-element-that-doesnt-open-when-you-drag-it-o"
+    },
+    {
+      "id": 79970309,
+      "title": "Getting image from external endpoint in Node and passing to React",
+      "tags": [
+        "javascript",
+        "node.js",
+        "image",
+        "base64"
+      ],
+      "score": -3,
+      "views": 112,
+      "askedAt": 1782735557,
+      "author": "Paddy Hallihan",
+      "reputation": 1772,
+      "link": "https://stackoverflow.com/questions/79970309/getting-image-from-external-endpoint-in-node-and-passing-to-react"
+    },
+    {
+      "id": 79968898,
+      "title": "Why does useSyncExternalStore tear across components when the store mutates during a startTransition?",
+      "tags": [
+        "javascript",
+        "reactjs",
+        "react-hooks",
+        "concurrency"
+      ],
+      "score": -1,
+      "views": 69,
+      "askedAt": 1782639998,
+      "author": "Muhammad Owais Jalal",
+      "reputation": 1,
+      "link": "https://stackoverflow.com/questions/79968898/why-does-usesyncexternalstore-tear-across-components-when-the-store-mutates-duri"
+    },
+    {
+      "id": 79966918,
+      "title": "How to prevent jest from adding a stack strace for every message printed to stdout",
+      "tags": [
+        "javascript",
+        "node.js",
+        "jestjs"
+      ],
+      "score": 0,
+      "views": 72,
+      "askedAt": 1782402721,
+      "author": "TwilCynder",
+      "reputation": 49,
+      "link": "https://stackoverflow.com/questions/79966918/how-to-prevent-jest-from-adding-a-stack-strace-for-every-message-printed-to-stdo"
+    },
+    {
+      "id": 79966486,
+      "title": "reCAPTCHA callback function in App.razor is breaking my &lt;EditForm/&gt;",
+      "tags": [
+        "javascript",
+        "c#",
+        "blazor",
+        "recaptcha"
+      ],
+      "score": 1,
+      "views": 76,
+      "askedAt": 1782322623,
+      "author": "Bill Kindig",
+      "reputation": 3682,
+      "link": "https://stackoverflow.com/questions/79966486/recaptcha-callback-function-in-app-razor-is-breaking-my-editform"
+    },
+    {
+      "id": 79966353,
+      "title": "Excel Office.js add-in: WorksheetProtection.unprotect() throws AccessDenied (403) on Desktop",
+      "tags": [
+        "javascript",
+        "office-js"
+      ],
+      "score": 1,
+      "views": 133,
+      "askedAt": 1782308070,
+      "author": "cpr",
+      "reputation": 11,
+      "link": "https://stackoverflow.com/questions/79966353/excel-office-js-add-in-worksheetprotection-unprotect-throws-accessdenied-403"
+    },
+    {
+      "id": 79963399,
+      "title": "Text horizontally next to an image on a navbar",
+      "tags": [
+        "javascript",
+        "html",
+        "css",
+        "class"
+      ],
+      "score": 0,
+      "views": 96,
+      "askedAt": 1781919692,
+      "author": "spin58",
+      "reputation": 15,
+      "link": "https://stackoverflow.com/questions/79963399/text-horizontally-next-to-an-image-on-a-navbar"
+    },
+    {
+      "id": 79962822,
+      "title": "Only load content when accordion is expanded - WordPress &amp; Elementor",
+      "tags": [
+        "javascript",
+        "php",
+        "wordpress",
+        "performance"
+      ],
+      "score": 1,
+      "views": 122,
+      "askedAt": 1781811234,
+      "author": "scarletcyanide",
+      "reputation": 29,
+      "link": "https://stackoverflow.com/questions/79962822/only-load-content-when-accordion-is-expanded-wordpress-elementor"
+    },
+    {
+      "id": 79962682,
+      "title": "Updating WebGLTileLayer without flashing in OpenLayers",
+      "tags": [
+        "javascript",
+        "openlayers"
+      ],
+      "score": 1,
+      "views": 68,
+      "askedAt": 1781789757,
+      "author": "Ali",
+      "reputation": 135,
+      "link": "https://stackoverflow.com/questions/79962682/updating-webgltilelayer-without-flashing-in-openlayers"
+    },
+    {
+      "id": 79957178,
+      "title": "Chrome: Too Many Properties to Enumerate",
+      "tags": [
+        "javascript",
+        "google-chrome",
+        "xlsx"
+      ],
+      "score": 0,
+      "views": 134,
+      "askedAt": 1781275211,
+      "author": "Ulises Abraham Morfa",
+      "reputation": 1,
+      "link": "https://stackoverflow.com/questions/79957178/chrome-too-many-properties-to-enumerate"
+    },
+    {
       "id": 79954208,
-      "title": "Disable NetSuite Sublist FIeld Via SuiteScript",
+      "title": "Disable NetSuite Sublist Field Via SuiteScript",
       "tags": [
         "javascript",
         "netsuite",
         "suitescript2.0"
       ],
-      "score": 0,
-      "views": 33,
+      "score": 2,
+      "views": 94,
       "askedAt": 1780953384,
       "author": "Michael McCauley",
-      "reputation": 959,
+      "reputation": 979,
       "link": "https://stackoverflow.com/questions/79954208/disable-netsuite-sublist-field-via-suitescript"
     },
     {
@@ -25,8 +346,8 @@
         "javascript",
         "cybersource"
       ],
-      "score": -1,
-      "views": 58,
+      "score": -2,
+      "views": 82,
       "askedAt": 1780691382,
       "author": "weissj",
       "reputation": 133,
@@ -39,11 +360,11 @@
         "javascript",
         "youtube-api"
       ],
-      "score": -1,
-      "views": 160,
+      "score": 0,
+      "views": 210,
       "askedAt": 1780598185,
       "author": "Jordan Carter",
-      "reputation": 1348,
+      "reputation": 1358,
       "link": "https://stackoverflow.com/questions/79951547/remove-youtube-pause-button"
     },
     {
@@ -54,11 +375,11 @@
         "typescript",
         "npm"
       ],
-      "score": 0,
-      "views": 49,
+      "score": 1,
+      "views": 80,
       "askedAt": 1780581451,
       "author": "corvid",
-      "reputation": 11317,
+      "reputation": 11327,
       "link": "https://stackoverflow.com/questions/79951423/can-i-add-jsdoc-to-nx-packages-without-creating-a-circular-dependency"
     },
     {
@@ -70,43 +391,12 @@
         "custom-element",
         "content-script"
       ],
-      "score": 2,
-      "views": 92,
+      "score": 4,
+      "views": 144,
       "askedAt": 1780562288,
       "author": "ack_inc",
       "reputation": 1130,
       "link": "https://stackoverflow.com/questions/79951266/defining-and-using-custom-elements-from-an-isolated-content-script-of-a-browser"
-    },
-    {
-      "id": 79950005,
-      "title": "Custom protocol URL (its:?) blocked after async API call in React - &quot;user gesture is required&quot;",
-      "tags": [
-        "javascript",
-        "url",
-        "browser",
-        "protocols"
-      ],
-      "score": 0,
-      "views": 81,
-      "askedAt": 1780372776,
-      "author": "Maulik Jamod",
-      "reputation": 59,
-      "link": "https://stackoverflow.com/questions/79950005/custom-protocol-url-its-blocked-after-async-api-call-in-react-user-gestur"
-    },
-    {
-      "id": 79949811,
-      "title": "What is the best strategy for managing permissions and role-based access control (RBAC) in a large React application?",
-      "tags": [
-        "javascript",
-        "reactjs",
-        "rbac"
-      ],
-      "score": 0,
-      "views": 57,
-      "askedAt": 1780334187,
-      "author": "Asad Saeed",
-      "reputation": 7,
-      "link": "https://stackoverflow.com/questions/79949811/what-is-the-best-strategy-for-managing-permissions-and-role-based-access-control"
     },
     {
       "id": 79949069,
@@ -115,11 +405,11 @@
         "javascript",
         "abcjs"
       ],
-      "score": 0,
-      "views": 113,
+      "score": 1,
+      "views": 136,
       "askedAt": 1780183150,
       "author": "jjon",
-      "reputation": 700,
+      "reputation": 710,
       "link": "https://stackoverflow.com/questions/79949069/highlighting-text-in-abc-when-clicking-on-rendered-music"
     },
     {
@@ -131,308 +421,12 @@
         "ionic-framework",
         "server-side-rendering"
       ],
-      "score": 0,
-      "views": 109,
+      "score": 1,
+      "views": 134,
       "askedAt": 1779888222,
       "author": "Felix Olszewski",
-      "reputation": 915,
+      "reputation": 925,
       "link": "https://stackoverflow.com/questions/79947387/after-changing-from-csr-to-ssr-with-ionic-angular-app-styles-do-not-apply-to-co"
-    },
-    {
-      "id": 79946355,
-      "title": "Handling &#39;clientError&#39; events in http.Server, Node.js",
-      "tags": [
-        "javascript",
-        "node.js",
-        "http",
-        "sockets"
-      ],
-      "score": 0,
-      "views": 87,
-      "askedAt": 1779722445,
-      "author": "Timur",
-      "reputation": 1,
-      "link": "https://stackoverflow.com/questions/79946355/handling-clienterror-events-in-http-server-node-js"
-    },
-    {
-      "id": 79946203,
-      "title": "Is there a way to associate a commit to the branch it was created on?",
-      "tags": [
-        "javascript",
-        "git",
-        "electron",
-        "simple-git"
-      ],
-      "score": -1,
-      "views": 116,
-      "askedAt": 1779699665,
-      "author": "HiHavafa",
-      "reputation": 7,
-      "link": "https://stackoverflow.com/questions/79946203/is-there-a-way-to-associate-a-commit-to-the-branch-it-was-created-on"
-    },
-    {
-      "id": 79944125,
-      "title": "How to retrieve or generate QuickBooks deep links without qzurl after modern reports update in June 2026",
-      "tags": [
-        "javascript",
-        "quickbooks",
-        "intuit-partner-platform",
-        "quickbooks-online"
-      ],
-      "score": 1,
-      "views": 60,
-      "askedAt": 1779288226,
-      "author": "Jess",
-      "reputation": 13,
-      "link": "https://stackoverflow.com/questions/79944125/how-to-retrieve-or-generate-quickbooks-deep-links-without-qzurl-after-modern-rep"
-    },
-    {
-      "id": 79944109,
-      "title": "Mobile Chrome crash when taking a photo with HTML5 input inside a Vue.js dialog",
-      "tags": [
-        "javascript",
-        "vue.js",
-        "google-chrome",
-        "input"
-      ],
-      "score": -2,
-      "views": 80,
-      "askedAt": 1779286263,
-      "author": "user2837684",
-      "reputation": 1,
-      "link": "https://stackoverflow.com/questions/79944109/mobile-chrome-crash-when-taking-a-photo-with-html5-input-inside-a-vue-js-dialog"
-    },
-    {
-      "id": 79943938,
-      "title": "Vite app returns index page content from fetch request when dynamic import fails",
-      "tags": [
-        "javascript",
-        "html",
-        "vite"
-      ],
-      "score": -1,
-      "views": 122,
-      "askedAt": 1779269850,
-      "author": "lharby",
-      "reputation": 3345,
-      "link": "https://stackoverflow.com/questions/79943938/vite-app-returns-index-page-content-from-fetch-request-when-dynamic-import-fails"
-    },
-    {
-      "id": 79943843,
-      "title": "Lighthouse CI failing when running 2nd test due to Eperm issues",
-      "tags": [
-        "javascript",
-        "node.js",
-        "google-chrome",
-        "lighthouse-ci"
-      ],
-      "score": 0,
-      "views": 58,
-      "askedAt": 1779258347,
-      "author": "MeltingDog",
-      "reputation": 15804,
-      "link": "https://stackoverflow.com/questions/79943843/lighthouse-ci-failing-when-running-2nd-test-due-to-eperm-issues"
-    },
-    {
-      "id": 79943361,
-      "title": "Prevent the VirtualKeyboard from popping up on mobile devices when pressing a button",
-      "tags": [
-        "javascript",
-        "html",
-        "css",
-        "mobile"
-      ],
-      "score": 3,
-      "views": 134,
-      "askedAt": 1779183119,
-      "author": "Paul Kendal",
-      "reputation": 637,
-      "link": "https://stackoverflow.com/questions/79943361/prevent-the-virtualkeyboard-from-popping-up-on-mobile-devices-when-pressing-a-bu"
-    },
-    {
-      "id": 79941097,
-      "title": "How to use Tern plugins and type definitions on some files only?",
-      "tags": [
-        "javascript",
-        "emacs",
-        "tern"
-      ],
-      "score": 1,
-      "views": 46,
-      "askedAt": 1778763802,
-      "author": "Amessihel",
-      "reputation": 6656,
-      "link": "https://stackoverflow.com/questions/79941097/how-to-use-tern-plugins-and-type-definitions-on-some-files-only"
-    },
-    {
-      "id": 79941001,
-      "title": "Vite build HTML file snippet with script tag inside, can the JS be transpiled?",
-      "tags": [
-        "javascript",
-        "html",
-        "vite"
-      ],
-      "score": 1,
-      "views": 169,
-      "askedAt": 1778754687,
-      "author": "lharby",
-      "reputation": 3345,
-      "link": "https://stackoverflow.com/questions/79941001/vite-build-html-file-snippet-with-script-tag-inside-can-the-js-be-transpiled"
-    },
-    {
-      "id": 79940359,
-      "title": "Clerk &lt;PricingTable /&gt; fails to render",
-      "tags": [
-        "javascript",
-        "clerk"
-      ],
-      "score": -2,
-      "views": 112,
-      "askedAt": 1778657779,
-      "author": "Clancy Hood",
-      "reputation": 1,
-      "link": "https://stackoverflow.com/questions/79940359/clerk-pricingtable-fails-to-render"
-    },
-    {
-      "id": 79939947,
-      "title": "Why does resolve(Promise) lag behind interleaved promise chains before catching up?",
-      "tags": [
-        "javascript",
-        "node.js",
-        "promise",
-        "es6-promise"
-      ],
-      "score": -3,
-      "views": 173,
-      "askedAt": 1778588842,
-      "author": "amt",
-      "reputation": 17,
-      "link": "https://stackoverflow.com/questions/79939947/why-does-resolvepromise-lag-behind-interleaved-promise-chains-before-catching"
-    },
-    {
-      "id": 79939908,
-      "title": "Trouble calculating HTML line wrapping positions at different zoom levels",
-      "tags": [
-        "javascript",
-        "html",
-        "css",
-        "zooming"
-      ],
-      "score": 7,
-      "views": 301,
-      "askedAt": 1778585006,
-      "author": "Remco Haszing",
-      "reputation": 8062,
-      "link": "https://stackoverflow.com/questions/79939908/trouble-calculating-html-line-wrapping-positions-at-different-zoom-levels"
-    },
-    {
-      "id": 79937906,
-      "title": "Supabase magic-link auth setSession hangs silently in Expo dev client (implicit flow) — no observable error or completion",
-      "tags": [
-        "javascript",
-        "react-native",
-        "supabase-js"
-      ],
-      "score": 0,
-      "views": 79,
-      "askedAt": 1778217847,
-      "author": "Ana Smith",
-      "reputation": 1,
-      "link": "https://stackoverflow.com/questions/79937906/supabase-magic-link-auth-setsession-hangs-silently-in-expo-dev-client-implicit"
-    },
-    {
-      "id": 79937559,
-      "title": "Why Websocket not working production (Siteground)",
-      "tags": [
-        "javascript",
-        "node.js",
-        "sockets",
-        "websocket"
-      ],
-      "score": 0,
-      "views": 100,
-      "askedAt": 1778155789,
-      "author": "Mujahid Ali",
-      "reputation": 23,
-      "link": "https://stackoverflow.com/questions/79937559/why-websocket-not-working-production-siteground"
-    },
-    {
-      "id": 79936448,
-      "title": "How can I make YouTube IFrame API seekTo() calls silent without setting controls: 0?",
-      "tags": [
-        "javascript",
-        "iframe",
-        "youtube",
-        "youtube-api"
-      ],
-      "score": 2,
-      "views": 221,
-      "askedAt": 1777985720,
-      "author": "Kane Marais",
-      "reputation": 19,
-      "link": "https://stackoverflow.com/questions/79936448/how-can-i-make-youtube-iframe-api-seekto-calls-silent-without-setting-controls"
-    },
-    {
-      "id": 79934757,
-      "title": "executeScript: Error: Cannot access contents of url &quot;chrome-extension://.../main.html&quot;.Extension manifest must request permission to access this host",
-      "tags": [
-        "javascript",
-        "firefox-addon-webextensions",
-        "chrome-extension-manifest-v3",
-        "web-extension"
-      ],
-      "score": 1,
-      "views": 139,
-      "askedAt": 1777654819,
-      "author": "bliako",
-      "reputation": 1309,
-      "link": "https://stackoverflow.com/questions/79934757/executescript-error-cannot-access-contents-of-url-chrome-extension-main"
-    },
-    {
-      "id": 79933815,
-      "title": "Implement JavaScript file code for modal popup partial view in NET Core Web App MVC",
-      "tags": [
-        "javascript",
-        "asp.net-core-mvc",
-        "asp.net-mvc-partialview"
-      ],
-      "score": 1,
-      "views": 89,
-      "askedAt": 1777485038,
-      "author": "DigAtRandom",
-      "reputation": 67,
-      "link": "https://stackoverflow.com/questions/79933815/implement-javascript-file-code-for-modal-popup-partial-view-in-net-core-web-app"
-    },
-    {
-      "id": 79931992,
-      "title": "My firefox extension does NOT automatically start when I start my browser, don&#39;t know why",
-      "tags": [
-        "javascript",
-        "firefox",
-        "firefox-addon"
-      ],
-      "score": 0,
-      "views": 132,
-      "askedAt": 1777193401,
-      "author": "I like computers ",
-      "reputation": 9,
-      "link": "https://stackoverflow.com/questions/79931992/my-firefox-extension-does-not-automatically-start-when-i-start-my-browser-dont"
-    },
-    {
-      "id": 79929057,
-      "title": "Tizen - Javascript embedded video failing",
-      "tags": [
-        "javascript",
-        "html5-video",
-        "tizen",
-        "tizen-web-app"
-      ],
-      "score": 1,
-      "views": 92,
-      "askedAt": 1776719453,
-      "author": "Caesar",
-      "reputation": 129,
-      "link": "https://stackoverflow.com/questions/79929057/tizen-javascript-embedded-video-failing"
     },
     {
       "id": 37244903,
@@ -443,7 +437,7 @@
         "dc.js"
       ],
       "score": 21,
-      "views": 15231,
+      "views": 15236,
       "askedAt": 1463356316,
       "author": "user3050590",
       "reputation": 1716,
@@ -459,7 +453,7 @@
         "gjs"
       ],
       "score": 17,
-      "views": 1105,
+      "views": 1106,
       "askedAt": 1398635237,
       "author": "Zic0",
       "reputation": 181,
@@ -475,7 +469,7 @@
         "graphql"
       ],
       "score": 16,
-      "views": 3584,
+      "views": 3586,
       "askedAt": 1572020999,
       "author": "Link",
       "reputation": 381,
@@ -491,7 +485,7 @@
         "visual-studio-code"
       ],
       "score": 16,
-      "views": 3383,
+      "views": 3384,
       "askedAt": 1502924957,
       "author": "vampiire",
       "reputation": 1230,
@@ -507,7 +501,7 @@
         "mobile-safari"
       ],
       "score": 16,
-      "views": 2427,
+      "views": 2428,
       "askedAt": 1457371028,
       "author": "Bodzio",
       "reputation": 2520,
@@ -522,10 +516,10 @@
         "httpconnection"
       ],
       "score": 16,
-      "views": 834,
+      "views": 835,
       "askedAt": 1441795984,
       "author": "asolvent",
-      "reputation": 891,
+      "reputation": 901,
       "link": "https://stackoverflow.com/questions/32477585/web-worker-effect-on-max-http-connections-on-per-browser-per-domain"
     },
     {
@@ -538,7 +532,7 @@
         "sentry"
       ],
       "score": 15,
-      "views": 13085,
+      "views": 13093,
       "askedAt": 1637754321,
       "author": "Sakshi Mahajan",
       "reputation": 651,
@@ -554,7 +548,7 @@
         "jest-mock-axios"
       ],
       "score": 15,
-      "views": 14561,
+      "views": 14562,
       "askedAt": 1583402187,
       "author": "MaiOsman",
       "reputation": 151,
@@ -569,7 +563,7 @@
         "iframe"
       ],
       "score": 15,
-      "views": 1480,
+      "views": 1489,
       "askedAt": 1513277140,
       "author": "user2875404",
       "reputation": 3308,
@@ -585,7 +579,7 @@
         "dependencies"
       ],
       "score": 15,
-      "views": 2961,
+      "views": 2966,
       "askedAt": 1457710194,
       "author": "pjdicke",
       "reputation": 329,
@@ -601,7 +595,7 @@
         "node-modules"
       ],
       "score": 14,
-      "views": 986,
+      "views": 987,
       "askedAt": 1672421283,
       "author": "DaaWaan",
       "reputation": 641,
@@ -617,7 +611,7 @@
         "firefox"
       ],
       "score": 14,
-      "views": 623,
+      "views": 625,
       "askedAt": 1643619937,
       "author": "LosYear",
       "reputation": 533,
@@ -633,7 +627,7 @@
         "gtag.js"
       ],
       "score": 14,
-      "views": 2412,
+      "views": 2416,
       "askedAt": 1607331084,
       "author": "mikep",
       "reputation": 7596,
@@ -648,7 +642,7 @@
         "jestjs"
       ],
       "score": 14,
-      "views": 8593,
+      "views": 8594,
       "askedAt": 1591794081,
       "author": "gomes",
       "reputation": 731,

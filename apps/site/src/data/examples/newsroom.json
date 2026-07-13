@@ -1,248 +1,248 @@
 {
-  "source": "Wikimedia pageviews API — en.wikipedia most-read, 2026/06/08 (trend vs 2026/06/07)",
+  "source": "Wikimedia pageviews API — en.wikipedia most-read, 2026/07/11 (trend vs 2026/07/10)",
   "license": "CC0",
-  "snapshotAt": "2026-06-10T00:38:26.143Z",
-  "day": "2026/06/08",
+  "snapshotAt": "2026-07-13T09:48:55.182Z",
+  "day": "2026/07/11",
   "articles": [
     {
-      "title": "Obsession (2025 film)",
-      "slug": "Obsession_(2025_film)",
-      "views": 291972,
-      "rank": 4,
-      "priorViews": 303010,
-      "url": "https://en.wikipedia.org/wiki/Obsession_(2025_film)"
+      "title": "Erling Haaland",
+      "slug": "Erling_Haaland",
+      "views": 906939,
+      "rank": 2,
+      "priorViews": 503718,
+      "url": "https://en.wikipedia.org/wiki/Erling_Haaland"
     },
     {
-      "title": "2026 Peruvian general election",
-      "slug": "2026_Peruvian_general_election",
-      "views": 281754,
+      "title": "Jude Bellingham",
+      "slug": "Jude_Bellingham",
+      "views": 677868,
+      "rank": 4,
+      "priorViews": 77196,
+      "url": "https://en.wikipedia.org/wiki/Jude_Bellingham"
+    },
+    {
+      "title": "Jayden Adams",
+      "slug": "Jayden_Adams",
+      "views": 615020,
       "rank": 5,
-      "priorViews": 34164,
-      "url": "https://en.wikipedia.org/wiki/2026_Peruvian_general_election"
+      "priorViews": null,
+      "url": "https://en.wikipedia.org/wiki/Jayden_Adams"
+    },
+    {
+      "title": "Ann Widdecombe",
+      "slug": "Ann_Widdecombe",
+      "views": 549199,
+      "rank": 7,
+      "priorViews": 1272087,
+      "url": "https://en.wikipedia.org/wiki/Ann_Widdecombe"
+    },
+    {
+      "title": "Linda Nosková",
+      "slug": "Linda_Nosková",
+      "views": 386024,
+      "rank": 8,
+      "priorViews": 30257,
+      "url": "https://en.wikipedia.org/wiki/Linda_Nosková"
     },
     {
       "title": "2026 FIFA World Cup",
       "slug": "2026_FIFA_World_Cup",
-      "views": 264644,
-      "rank": 6,
-      "priorViews": 238040,
+      "views": 368810,
+      "rank": 9,
+      "priorViews": 398202,
       "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup"
     },
     {
-      "title": "Backrooms (film)",
-      "slug": "Backrooms_(film)",
-      "views": 174832,
-      "rank": 7,
-      "priorViews": 213709,
-      "url": "https://en.wikipedia.org/wiki/Backrooms_(film)"
-    },
-    {
-      "title": "Alexander Zverev",
-      "slug": "Alexander_Zverev",
-      "views": 163973,
-      "rank": 8,
-      "priorViews": 476702,
-      "url": "https://en.wikipedia.org/wiki/Alexander_Zverev"
-    },
-    {
-      "title": "Masters of the Universe (2026 film)",
-      "slug": "Masters_of_the_Universe_(2026_film)",
-      "views": 155937,
-      "rank": 9,
-      "priorViews": 190411,
-      "url": "https://en.wikipedia.org/wiki/Masters_of_the_Universe_(2026_film)"
-    },
-    {
-      "title": "Christian Eriksen",
-      "slug": "Christian_Eriksen",
-      "views": 139845,
+      "title": "Randolph Mantooth",
+      "slug": "Randolph_Mantooth",
+      "views": 281914,
       "rank": 10,
-      "priorViews": 185631,
-      "url": "https://en.wikipedia.org/wiki/Christian_Eriksen"
+      "priorViews": 40858,
+      "url": "https://en.wikipedia.org/wiki/Randolph_Mantooth"
     },
     {
-      "title": "Deaths in 2026",
-      "slug": "Deaths_in_2026",
-      "views": 132986,
+      "title": "Harry Kane",
+      "slug": "Harry_Kane",
+      "views": 250712,
       "rank": 11,
-      "priorViews": 126945,
-      "url": "https://en.wikipedia.org/wiki/Deaths_in_2026"
+      "priorViews": 62591,
+      "url": "https://en.wikipedia.org/wiki/Harry_Kane"
     },
     {
-      "title": "Peddi",
-      "slug": "Peddi",
-      "views": 128308,
+      "title": "S. Janaki",
+      "slug": "S._Janaki",
+      "views": 237304,
       "rank": 12,
-      "priorViews": 137665,
-      "url": "https://en.wikipedia.org/wiki/Peddi"
+      "priorViews": null,
+      "url": "https://en.wikipedia.org/wiki/S._Janaki"
     },
     {
-      "title": "79th Tony Awards",
-      "slug": "79th_Tony_Awards",
-      "views": 127279,
+      "title": "Karolína Muchová",
+      "slug": "Karolína_Muchová",
+      "views": 234586,
       "rank": 13,
-      "priorViews": 21517,
-      "url": "https://en.wikipedia.org/wiki/79th_Tony_Awards"
+      "priorViews": 40427,
+      "url": "https://en.wikipedia.org/wiki/Karolína_Muchová"
     },
     {
-      "title": "Killing of Rachel Nickell",
-      "slug": "Killing_of_Rachel_Nickell",
-      "views": 117991,
+      "title": "Dermot Murnaghan",
+      "slug": "Dermot_Murnaghan",
+      "views": 222291,
       "rank": 14,
-      "priorViews": 164794,
-      "url": "https://en.wikipedia.org/wiki/Killing_of_Rachel_Nickell"
+      "priorViews": null,
+      "url": "https://en.wikipedia.org/wiki/Dermot_Murnaghan"
     },
     {
-      "title": "Spencer Pratt",
-      "slug": "Spencer_Pratt",
-      "views": 116916,
+      "title": "Lamine Yamal",
+      "slug": "Lamine_Yamal",
+      "views": 212039,
       "rank": 15,
-      "priorViews": 40672,
-      "url": "https://en.wikipedia.org/wiki/Spencer_Pratt"
+      "priorViews": 326952,
+      "url": "https://en.wikipedia.org/wiki/Lamine_Yamal"
     },
     {
-      "title": "Scary Movie (2026 film)",
-      "slug": "Scary_Movie_(2026_film)",
-      "views": 114201,
+      "title": "Mitch McConnell",
+      "slug": "Mitch_McConnell",
+      "views": 178191,
       "rank": 16,
-      "priorViews": 141030,
-      "url": "https://en.wikipedia.org/wiki/Scary_Movie_(2026_film)"
+      "priorViews": 171164,
+      "url": "https://en.wikipedia.org/wiki/Mitch_McConnell"
     },
     {
-      "title": "Stacey King",
-      "slug": "Stacey_King",
-      "views": 110003,
+      "title": "The Odyssey (2026 film)",
+      "slug": "The_Odyssey_(2026_film)",
+      "views": 175980,
       "rank": 17,
-      "priorViews": 128512,
-      "url": "https://en.wikipedia.org/wiki/Stacey_King"
+      "priorViews": 161134,
+      "url": "https://en.wikipedia.org/wiki/The_Odyssey_(2026_film)"
     },
     {
-      "title": "Inde Navarrette",
-      "slug": "Inde_Navarrette",
-      "views": 105410,
+      "title": "Obsession (2025 film)",
+      "slug": "Obsession_(2025_film)",
+      "views": 163577,
       "rank": 18,
-      "priorViews": 108420,
-      "url": "https://en.wikipedia.org/wiki/Inde_Navarrette"
+      "priorViews": 163310,
+      "url": "https://en.wikipedia.org/wiki/Obsession_(2025_film)"
     },
     {
-      "title": "ChatGPT",
-      "slug": "ChatGPT",
-      "views": 105017,
+      "title": "Alf-Inge Haaland",
+      "slug": "Alf-Inge_Haaland",
+      "views": 153343,
       "rank": 19,
-      "priorViews": 82585,
-      "url": "https://en.wikipedia.org/wiki/ChatGPT"
+      "priorViews": 67453,
+      "url": "https://en.wikipedia.org/wiki/Alf-Inge_Haaland"
     },
     {
-      "title": "Ford Creek Patrol Cabin",
-      "slug": "Ford_Creek_Patrol_Cabin",
-      "views": 104947,
+      "title": "Thomas Tuchel",
+      "slug": "Thomas_Tuchel",
+      "views": 149502,
       "rank": 20,
-      "priorViews": null,
-      "url": "https://en.wikipedia.org/wiki/Ford_Creek_Patrol_Cabin"
-    },
-    {
-      "title": "Nelly Korda",
-      "slug": "Nelly_Korda",
-      "views": 104138,
-      "rank": 21,
-      "priorViews": 71061,
-      "url": "https://en.wikipedia.org/wiki/Nelly_Korda"
-    },
-    {
-      "title": "Nithya Raman",
-      "slug": "Nithya_Raman",
-      "views": 100163,
-      "rank": 22,
-      "priorViews": 24901,
-      "url": "https://en.wikipedia.org/wiki/Nithya_Raman"
-    },
-    {
-      "title": "Michael Jackson",
-      "slug": "Michael_Jackson",
-      "views": 96378,
-      "rank": 23,
-      "priorViews": 114842,
-      "url": "https://en.wikipedia.org/wiki/Michael_Jackson"
-    },
-    {
-      "title": "2026 Armenian parliamentary election",
-      "slug": "2026_Armenian_parliamentary_election",
-      "views": 93251,
-      "rank": 24,
-      "priorViews": 83116,
-      "url": "https://en.wikipedia.org/wiki/2026_Armenian_parliamentary_election"
-    },
-    {
-      "title": ".xxx",
-      "slug": ".xxx",
-      "views": 90002,
-      "rank": 25,
-      "priorViews": 48394,
-      "url": "https://en.wikipedia.org/wiki/.xxx"
-    },
-    {
-      "title": "Jalen Brunson",
-      "slug": "Jalen_Brunson",
-      "views": 87519,
-      "rank": 26,
-      "priorViews": 78204,
-      "url": "https://en.wikipedia.org/wiki/Jalen_Brunson"
-    },
-    {
-      "title": "Béla Pap",
-      "slug": "Béla_Pap",
-      "views": 86893,
-      "rank": 27,
-      "priorViews": null,
-      "url": "https://en.wikipedia.org/wiki/Béla_Pap"
-    },
-    {
-      "title": "Robert Napper",
-      "slug": "Robert_Napper",
-      "views": 86007,
-      "rank": 28,
-      "priorViews": 120791,
-      "url": "https://en.wikipedia.org/wiki/Robert_Napper"
-    },
-    {
-      "title": "Manav Suthar",
-      "slug": "Manav_Suthar",
-      "views": 84425,
-      "rank": 29,
-      "priorViews": 131908,
-      "url": "https://en.wikipedia.org/wiki/Manav_Suthar"
-    },
-    {
-      "title": "Teach You a Lesson",
-      "slug": "Teach_You_a_Lesson",
-      "views": 83358,
-      "rank": 30,
-      "priorViews": 88984,
-      "url": "https://en.wikipedia.org/wiki/Teach_You_a_Lesson"
+      "priorViews": 22329,
+      "url": "https://en.wikipedia.org/wiki/Thomas_Tuchel"
     },
     {
       "title": "FIFA World Cup",
       "slug": "FIFA_World_Cup",
-      "views": 82434,
-      "rank": 31,
-      "priorViews": 68616,
+      "views": 148212,
+      "rank": 21,
+      "priorViews": 153524,
       "url": "https://en.wikipedia.org/wiki/FIFA_World_Cup"
     },
     {
-      "title": "Lewis Hamilton",
-      "slug": "Lewis_Hamilton",
-      "views": 78769,
-      "rank": 32,
-      "priorViews": 88231,
-      "url": "https://en.wikipedia.org/wiki/Lewis_Hamilton"
+      "title": "Conor McGregor",
+      "slug": "Conor_McGregor",
+      "views": 146014,
+      "rank": 22,
+      "priorViews": 101137,
+      "url": "https://en.wikipedia.org/wiki/Conor_McGregor"
     },
     {
-      "title": "2026 Gilgit Baltistan Assembly election",
-      "slug": "2026_Gilgit_Baltistan_Assembly_election",
-      "views": 77056,
+      "title": "Bonnie Tyler",
+      "slug": "Bonnie_Tyler",
+      "views": 143780,
+      "rank": 23,
+      "priorViews": 437226,
+      "url": "https://en.wikipedia.org/wiki/Bonnie_Tyler"
+    },
+    {
+      "title": "Deaths in 2026",
+      "slug": "Deaths_in_2026",
+      "views": 141825,
+      "rank": 24,
+      "priorViews": 143349,
+      "url": "https://en.wikipedia.org/wiki/Deaths_in_2026"
+    },
+    {
+      "title": "Kylian Mbappé",
+      "slug": "Kylian_Mbappé",
+      "views": 139078,
+      "rank": 25,
+      "priorViews": 311483,
+      "url": "https://en.wikipedia.org/wiki/Kylian_Mbappé"
+    },
+    {
+      "title": "List of FIFA World Cup finals",
+      "slug": "List_of_FIFA_World_Cup_finals",
+      "views": 137325,
+      "rank": 26,
+      "priorViews": 133046,
+      "url": "https://en.wikipedia.org/wiki/List_of_FIFA_World_Cup_finals"
+    },
+    {
+      "title": "Norway national football team",
+      "slug": "Norway_national_football_team",
+      "views": 135902,
+      "rank": 27,
+      "priorViews": 34252,
+      "url": "https://en.wikipedia.org/wiki/Norway_national_football_team"
+    },
+    {
+      "title": "UFC 329",
+      "slug": "UFC_329",
+      "views": 131111,
+      "rank": 28,
+      "priorViews": 43933,
+      "url": "https://en.wikipedia.org/wiki/UFC_329"
+    },
+    {
+      "title": ".xxx",
+      "slug": ".xxx",
+      "views": 127746,
+      "rank": 29,
+      "priorViews": 96584,
+      "url": "https://en.wikipedia.org/wiki/.xxx"
+    },
+    {
+      "title": "Evil Dead Burn",
+      "slug": "Evil_Dead_Burn",
+      "views": 127557,
+      "rank": 30,
+      "priorViews": 134541,
+      "url": "https://en.wikipedia.org/wiki/Evil_Dead_Burn"
+    },
+    {
+      "title": "Count Binface",
+      "slug": "Count_Binface",
+      "views": 126793,
+      "rank": 31,
+      "priorViews": 184182,
+      "url": "https://en.wikipedia.org/wiki/Count_Binface"
+    },
+    {
+      "title": "Cristiano Ronaldo",
+      "slug": "Cristiano_Ronaldo",
+      "views": 122917,
+      "rank": 32,
+      "priorViews": 132781,
+      "url": "https://en.wikipedia.org/wiki/Cristiano_Ronaldo"
+    },
+    {
+      "title": "David Beckham",
+      "slug": "David_Beckham",
+      "views": 121402,
       "rank": 33,
-      "priorViews": 32463,
-      "url": "https://en.wikipedia.org/wiki/2026_Gilgit_Baltistan_Assembly_election"
+      "priorViews": 29512,
+      "url": "https://en.wikipedia.org/wiki/David_Beckham"
     }
   ]
 }
