@@ -2,12 +2,17 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
 
-// Parity matrix — machine-generated from source, regenerated when a new method is added to any plane.
-// Source of truth: docs/canonical/parity-matrix.md
-// JS methods: packages/core/src/engine/types.ts (FieldHandle interface)
+// Parity matrix — the METHODS[] array below is HAND-MAINTAINED, not generated. (This comment used to
+// claim "machine-generated... regenerated when a new method is added" — that was false; this page does
+// NOT read data/parity-matrix.json, the actual output of `pnpm gen:parity-matrix`. Wiring this page to
+// that generator instead of a hand-kept literal is a real follow-up, tracked separately — flagged
+// 2026-07 after a self-audit found this page silently drifted 6 methods behind FieldHandle.)
+// JS methods: packages/core/src/engine/types.ts (FieldHandle interface) — the source of truth
 // Swift methods: swift/Sources/FundamentalVanilla/FieldEngine.swift
 // Kotlin methods: android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/FieldHandle.kt
-// Three.js: packages/three/src/layer.ts (FieldLayer delegates all 44 to the wrapped FieldHandle)
+// Three.js: packages/three/src/layer.ts (FieldLayer delegates to the wrapped FieldHandle)
+// counts below (swiftCount/kotlinCount/threeCount/total) are COMPUTED from METHODS[] — keep them in sync
+// by hand when adding a FieldHandle method, or this drifts again.
 
 interface ParityRow {
   method: string;
@@ -69,6 +74,9 @@ const METHODS: ParityRow[] = [
   { method: 'scrollV',              swift: true,  kotlin: true,  three: true,  note: 'DOM/UIKit scroll velocity; Kotlin: scrollV() + feedScrollV(); Three.js returns 0 in headless' },
   { method: 'setVisible',           swift: true,  kotlin: true,  three: true  },
   { method: 'destroy',              swift: true,  kotlin: true,  three: true  },
+  { method: 'setPolicy',            swift: true,  kotlin: true,  three: true,  note: 'runtime FieldPolicy (motion/privacy budgets); mirrored on all three planes' },
+  { method: 'focus',                swift: false, kotlin: false, three: true,  note: 'focus/attention substrate (EXPERIMENTAL, shipped 0.9.4) — operator/agent attention write; Swift + Kotlin ports are a batched follow-up' },
+  { method: 'focusState',           swift: false, kotlin: false, three: true,  note: 'focus/attention substrate (EXPERIMENTAL, shipped 0.9.4) — the ranked, thresholded attention read; Swift + Kotlin ports are a batched follow-up' },
 ];
 
 const swiftCount  = METHODS.filter(m => m.swift).length;
@@ -79,21 +87,23 @@ const total = METHODS.length;
 
 <DocsLayout
   title="Fundamental — cross-platform parity matrix"
-  description="Which FieldHandle methods ship on @fundamental-engine/three (44/44), Swift (44/44), and Kotlin (44/44). Full cross-platform parity achieved. JS is the source of truth; Three.js, Swift, and Kotlin implement all 44 methods."
+  description={`Which FieldHandle methods ship on @fundamental-engine/three (${threeCount}/${total}), Swift (${swiftCount}/${total}), and Kotlin (${kotlinCount}/${total}). JS is the source of truth; the ports are not yet at full parity — see the table for the exact gaps.`}
 >
   <header class="docs-hero">
     <p class="kicker">API reference</p>
     <h1>Platform <span class="accent">parity</span> matrix</h1>
     <p class="lede">
       Which <a href="/docs/api/handle">FieldHandle</a> methods ship on each surface.
-      JS is the source of truth. <code>@fundamental-engine/three</code> delegates all 44 methods to the
-      wrapped engine — 44/44. Swift and Kotlin are native ports at full parity — 44/44. The cross-plane
-      <em>physics</em> is identical (the 36-force conformance suite asserts it). This matrix tracks
-      <em>API surface</em> parity.
+      JS is the source of truth. <code>@fundamental-engine/three</code> delegates all {total} methods to
+      the wrapped engine — {threeCount}/{total}. Swift ({swiftCount}/{total}) and Kotlin ({kotlinCount}/{total})
+      are native ports, mirrored but currently trailing the newest additions (see the table below for
+      which methods and why). The cross-plane <em>physics</em> is identical (the 36-force conformance
+      suite asserts it) regardless of API-surface gaps. This matrix tracks <em>API surface</em> parity.
     </p>
     <div class="callout">
       <b>Three distinct axes — don't conflate them.</b>
-      <b>API parity</b> (this matrix): the <code>FieldHandle</code> method surface exists — 44/44/44.
+      <b>API parity</b> (this matrix): the <code>FieldHandle</code> method surface — {threeCount}/{total} Three.js,
+      {swiftCount}/{total} Swift, {kotlinCount}/{total} Kotlin.
       <b>Conformance</b>: the force math matches, asserted by the shared cross-plane golden (the 36-force
       suite). <b>Production readiness</b>: packaging, platform polish, and docs — this is
       <em>Preview</em> and differs by host. Native ports are at <code>FieldHandle</code> API parity, but
@@ -161,15 +171,15 @@ const total = METHODS.length;
   <section class="docs-sec">
     <h2>Platform notes</h2>
     <p>
-      All three platforms ship 44/44 as of June 2026 (<a href="https://github.com/zachshallbetter/fundamental-engine/pull/822">#822</a> Swift,
-      <a href="https://github.com/zachshallbetter/fundamental-engine/pull/823">#823</a> Kotlin).
+      All three platforms briefly shipped the full 44-method surface as of June 2026 (<a href="https://github.com/zachshallbetter/fundamental-engine/pull/822">#822</a> Swift,
+      <a href="https://github.com/zachshallbetter/fundamental-engine/pull/823">#823</a> Kotlin) — the JS-side surface has grown since (now {total} methods; see the live counts above), and the ports have not fully caught up.
       Some methods behave differently across platforms by design:
     </p>
     <dl class="api-table">
       <div class="api-row">
-        <dt class="k">Three.js — 44/44, host-context notes</dt>
+        <dt class="k">Three.js — {threeCount}/{total}, host-context notes</dt>
         <dd class="d">
-          <code>@fundamental-engine/three</code> delegates all 44 methods to the wrapped
+          <code>@fundamental-engine/three</code> delegates all {total} methods to the wrapped
           <code>FieldHandle</code>. Some are contextually different in a 3D scene:
           <code>setRender</code> / <code>setOverlay</code> / <code>setBackground</code>
           are owned by the Three.js renderer — use <code>threeBackend()</code> for diagnostic overlays.
