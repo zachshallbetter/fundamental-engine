@@ -1,18 +1,34 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
+import parityData from '../../../../../../data/parity-matrix.json';
 
-// Parity matrix — the METHODS[] array below is HAND-MAINTAINED, not generated. (This comment used to
-// claim "machine-generated... regenerated when a new method is added" — that was false; this page does
-// NOT read data/parity-matrix.json, the actual output of `pnpm gen:parity-matrix`. Wiring this page to
-// that generator instead of a hand-kept literal is a real follow-up, tracked separately — flagged
-// 2026-07 after a self-audit found this page silently drifted 6 methods behind FieldHandle.)
+// Parity matrix — WIRED to data/parity-matrix.json (the real `pnpm gen:parity-matrix` output), fixed
+// 2026-07 after a self-audit found the previous hand-kept array had silently drifted (missing methods)
+// AND its own header comment falsely claimed to be machine-generated when it wasn't.
+//
+// The swift/kotlin/three booleans below are COMPUTED from parityData, never hand-typed — that's the
+// actual fix. What stays hand-curated (legitimately editorial, not derivable): the per-method NOTES and
+// the display ORDER (grouped by concern, not alphabetical — more readable than the generator's raw
+// alpha-sorted list). MEMBERSHIP is enforced at build time below: if ORDERED_METHODS and the generator's
+// JS method set ever disagree (a method added/removed from FieldHandle without updating this list), the
+// site build throws instead of silently drifting a third time.
+//
+// `projections` was REMOVED from this table (2026-07 fix) — it is a `readonly projections: ProjectionRegistry`
+// PROPERTY on FieldHandle, not a callable method (confirmed by reading packages/core/src/engine/types.ts
+// directly); the previous table miscategorized it as a method with swift:false. This table now tracks
+// callable methods only, matching the generator's own "field-handle-methods" dimension.
+//
 // JS methods: packages/core/src/engine/types.ts (FieldHandle interface) — the source of truth
 // Swift methods: swift/Sources/FundamentalVanilla/FieldEngine.swift
 // Kotlin methods: android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/FieldHandle.kt
-// Three.js: packages/three/src/layer.ts (FieldLayer delegates to the wrapped FieldHandle)
-// counts below (swiftCount/kotlinCount/threeCount/total) are COMPUTED from METHODS[] — keep them in sync
-// by hand when adding a FieldHandle method, or this drifts again.
+// Three.js: packages/three/src/layer.ts — FieldLayer delegates directly to the wrapped FieldHandle, so
+// it is 100% by construction (not separately tracked by the generator; there is no porting lag possible).
+
+const dim = parityData.dimensions.find((d: { id: string }) => d.id === 'field-handle-methods')!;
+const swiftSet = new Set<string>(dim.planes.swift);
+const kotlinSet = new Set<string>(dim.planes.kotlin);
+const jsSet = new Set<string>(dim.planes.js);
 
 interface ParityRow {
   method: string;
@@ -22,62 +38,88 @@ interface ParityRow {
   note?: string;
 }
 
-const METHODS: ParityRow[] = [
-  { method: 'scan',                 swift: true,  kotlin: true,  three: true  },
-  { method: 'rescan',               swift: true,  kotlin: true,  three: true,  note: 'alias of scan' },
-  { method: 'setAccent',            swift: true,  kotlin: true,  three: true  },
-  { method: 'setPalette',           swift: true,  kotlin: true,  three: true  },
-  { method: 'setFormation',         swift: true,  kotlin: true,  three: true  },
-  { method: 'setWaveStyle',         swift: true,  kotlin: true,  three: true  },
-  { method: 'setWaveCenter',        swift: true,  kotlin: true,  three: true  },
-  { method: 'setSeparation',        swift: true,  kotlin: true,  three: true,  note: 'Kotlin fun setSeparation(Float) coexists with var separation via @JvmName on the property' },
-  { method: 'setAttention',         swift: true,  kotlin: true,  three: true  },
-  { method: 'setCausality',         swift: true,  kotlin: true,  three: true  },
-  { method: 'setHeatmap',           swift: true,  kotlin: true,  three: true  },
-  { method: 'setDprCap',            swift: true,  kotlin: true,  three: true,  note: 'Three.js delegates but DPR is renderer-owned; native stores in FieldOptions / FieldHandle' },
-  { method: 'setQualityTier',       swift: true,  kotlin: true,  three: true  },
-  { method: 'setRender',            swift: true,  kotlin: true,  three: true,  note: 'render surface is host-owned on native + Three.js; Kotlin host reads renderMode' },
-  { method: 'setOverlay',           swift: true,  kotlin: true,  three: true,  note: 'use threeBackend() for Three.js diagnostic overlays' },
-  { method: 'setBackground',        swift: true,  kotlin: true,  three: true,  note: 'web canvas clearing; native stores in FieldOptions.background' },
-  { method: 'threads',              swift: true,  kotlin: true,  three: true,  note: 'visual layer — glowing connector lines' },
-  { method: 'burst',                swift: true,  kotlin: true,  three: true  },
-  { method: 'flowTo',               swift: true,  kotlin: true,  three: true  },
-  { method: 'clearFlow',            swift: true,  kotlin: true,  three: true  },
-  { method: 'seed',                 swift: true,  kotlin: true,  three: true  },
-  { method: 'addAgent',             swift: true,  kotlin: true,  three: true,  note: 'AgentSpec / AgentHandle; Kotlin init-block wires tickAgents() via onAfterTick; Swift uses UUID-keyed agent list' },
-  { method: 'addBody',              swift: true,  kotlin: true,  three: true  },
-  { method: 'addEdge',              swift: true,  kotlin: true,  three: true  },
-  { method: 'readEdges',            swift: true,  kotlin: true,  three: true  },
-  { method: 'addField',             swift: true,  kotlin: true,  three: true  },
-  { method: 'sampleField',          swift: true,  kotlin: true,  three: true  },
-  { method: 'atomAt',               swift: true,  kotlin: true,  three: true  },
-  { method: 'focusAt',              swift: true,  kotlin: true,  three: true  },
-  { method: 'clearFocus',           swift: true,  kotlin: true,  three: true  },
-  { method: 'particleCount',        swift: true,  kotlin: true,  three: true  },
-  { method: 'energy',               swift: true,  kotlin: true,  three: true  },
+// Curated order + notes only. Grouped by concern (not alphabetical) for readability.
+const ORDERED_METHODS: Array<{ method: string; note?: string }> = [
+  { method: 'scan' },
+  { method: 'rescan',               note: 'alias of scan' },
+  { method: 'setAccent' },
+  { method: 'setPalette' },
+  { method: 'setFormation' },
+  { method: 'setWaveStyle' },
+  { method: 'setWaveCenter' },
+  { method: 'setSeparation',        note: 'Kotlin fun setSeparation(Float) coexists with var separation via @JvmName on the property' },
+  { method: 'setAttention' },
+  { method: 'setCausality' },
+  { method: 'setHeatmap' },
+  { method: 'setDprCap',            note: 'Three.js delegates but DPR is renderer-owned; native stores in FieldOptions / FieldHandle' },
+  { method: 'setQualityTier' },
+  { method: 'setRender',            note: 'render surface is host-owned on native + Three.js; Kotlin host reads renderMode' },
+  { method: 'setOverlay',           note: 'use threeBackend() for Three.js diagnostic overlays' },
+  { method: 'setBackground',        note: 'web canvas clearing; native stores in FieldOptions.background' },
+  { method: 'threads',              note: 'visual layer — glowing connector lines' },
+  { method: 'burst' },
+  { method: 'flowTo' },
+  { method: 'clearFlow' },
+  { method: 'seed' },
+  { method: 'addAgent',             note: 'AgentSpec / AgentHandle; Kotlin init-block wires tickAgents() via onAfterTick; Swift uses UUID-keyed agent list' },
+  { method: 'addBody' },
+  { method: 'addEdge' },
+  { method: 'readEdges' },
+  { method: 'addField' },
+  { method: 'sampleField' },
+  { method: 'atomAt' },
+  { method: 'focusAt' },
+  { method: 'clearFocus' },
+  { method: 'particleCount' },
+  { method: 'energy' },
   // ── substrate read API (critical-path 02/03) — mirrored to the native cores ──
-  { method: 'query',                swift: true,  kotlin: true,  three: true,  note: 'structured read of bodies/metrics/relationships; the influences/projections/dimensions lanes stay empty on the ports until an accumulator/registry/dimension lane lands (JS field names kept)' },
-  { method: 'snapshot',             swift: true,  kotlin: true,  three: true,  note: 'point-in-time field capture; body data withheld by default (tightest-wins profile)' },
-  { method: 'diff',                 swift: true,  kotlin: true,  three: true,  note: 'pure comparison of two snapshots — added/removed/changed bodies, metric deltas, relationship + formation changes' },
-  { method: 'replay',               swift: true,  kotlin: true,  three: true,  note: 'causal replay over a snapshot pair; force-attributed steps empty-for-now on the ports (no impulse accumulator yet)' },
-  { method: 'projections',          swift: false, kotlin: true,  three: true,  note: 'projection registry — JS core + web + Kotlin (agent-json + callback surfaces); Swift port in progress; css/dom/svg surfaces are web-first' },
-  { method: 'forAgent',             swift: true,  kotlin: true,  three: true,  note: 'capability-scoped, redacted, read-only agent view (agent-readable is not agent-writable)' },
-  { method: 'sample',               swift: true,  kotlin: true,  three: true,  note: 'force-probe at world point; Swift delegates to forceAt(); Kotlin delegates to controller.sample() → forceAt()' },
-  { method: 'sampleScalar',         swift: true,  kotlin: true,  three: true  },
-  { method: 'sampleGradient',       swift: true,  kotlin: true,  three: true  },
-  { method: 'grid',                 swift: true,  kotlin: true,  three: true,  note: 'named ScalarGrid — lazy get/create, same grid as env.grid in the force system' },
-  { method: 'on',                   swift: true,  kotlin: true,  three: true,  note: 'UUID-keyed subscriber bus; FieldEvent enum (tick/bodyAdd/bodyRemove/particleCapture/supernova); returns Subscription' },
-  { method: 'readParticles',        swift: true,  kotlin: true,  three: true  },
-  { method: 'readParticleIds',      swift: true,  kotlin: true,  three: true,  note: 'Particle.id (stable, auto-incremented by FieldStore.add); fills an Int buffer' },
-  { method: 'readParticleChannels', swift: true,  kotlin: true,  three: true,  note: 'samples named ScalarGrids at each particle position; stride = names.count/size' },
-  { method: 'registerOverlay',      swift: true,  kotlin: true,  three: true,  note: 'OverlayRenderer protocol/interface; host reads overlayRegistry and calls render() each frame' },
-  { method: 'scrollV',              swift: true,  kotlin: true,  three: true,  note: 'DOM/UIKit scroll velocity; Kotlin: scrollV() + feedScrollV(); Three.js returns 0 in headless' },
-  { method: 'setVisible',           swift: true,  kotlin: true,  three: true  },
-  { method: 'destroy',              swift: true,  kotlin: true,  three: true  },
-  { method: 'setPolicy',            swift: true,  kotlin: true,  three: true,  note: 'runtime FieldPolicy (motion/privacy budgets); mirrored on all three planes' },
-  { method: 'focus',                swift: false, kotlin: false, three: true,  note: 'focus/attention substrate (EXPERIMENTAL, shipped 0.9.4) — operator/agent attention write; Swift + Kotlin ports are a batched follow-up' },
-  { method: 'focusState',           swift: false, kotlin: false, three: true,  note: 'focus/attention substrate (EXPERIMENTAL, shipped 0.9.4) — the ranked, thresholded attention read; Swift + Kotlin ports are a batched follow-up' },
+  { method: 'query',                note: 'structured read of bodies/metrics/relationships; the influences/projections/dimensions lanes stay empty on the ports until an accumulator/registry/dimension lane lands (JS field names kept)' },
+  { method: 'snapshot',             note: 'point-in-time field capture; body data withheld by default (tightest-wins profile)' },
+  { method: 'diff',                 note: 'pure comparison of two snapshots — added/removed/changed bodies, metric deltas, relationship + formation changes' },
+  { method: 'replay',               note: 'causal replay over a snapshot pair; force-attributed steps empty-for-now on the ports (no impulse accumulator yet)' },
+  { method: 'forAgent',             note: 'capability-scoped, redacted, read-only agent view (agent-readable is not agent-writable)' },
+  { method: 'sample',               note: 'force-probe at world point; Swift delegates to forceAt(); Kotlin delegates to controller.sample() → forceAt()' },
+  { method: 'sampleScalar' },
+  { method: 'sampleGradient' },
+  { method: 'grid',                 note: 'named ScalarGrid — lazy get/create, same grid as env.grid in the force system' },
+  { method: 'on',                   note: 'UUID-keyed subscriber bus; FieldEvent enum (tick/bodyAdd/bodyRemove/particleCapture/supernova); returns Subscription' },
+  { method: 'readParticles' },
+  { method: 'readParticleIds',      note: 'Particle.id (stable, auto-incremented by FieldStore.add); fills an Int buffer' },
+  { method: 'readParticleChannels', note: 'samples named ScalarGrids at each particle position; stride = names.count/size' },
+  { method: 'registerOverlay',      note: 'OverlayRenderer protocol/interface; host reads overlayRegistry and calls render() each frame' },
+  { method: 'scrollV',              note: 'DOM/UIKit scroll velocity; Kotlin: scrollV() + feedScrollV(); Three.js returns 0 in headless' },
+  { method: 'setVisible' },
+  { method: 'destroy' },
+  { method: 'setPolicy',            note: 'runtime FieldPolicy (motion/privacy budgets); mirrored on all three planes' },
+  { method: 'focus',                note: 'focus/attention substrate (EXPERIMENTAL, shipped 0.9.4) — operator/agent attention write; Swift + Kotlin ports are a batched follow-up' },
+  { method: 'focusState',           note: 'focus/attention substrate (EXPERIMENTAL, shipped 0.9.4) — the ranked, thresholded attention read; Swift + Kotlin ports are a batched follow-up' },
 ];
+
+// ── build-time consistency check — the actual anti-drift mechanism ──────────────────────────────
+// If FieldHandle gains/loses a method without this list being updated, the site build FAILS here
+// instead of silently rendering a stale table (which is exactly how this page drifted 6 methods
+// behind before the 2026-07 fix).
+const orderedSet = new Set(ORDERED_METHODS.map((m) => m.method));
+const missingFromPage = [...jsSet].filter((m) => !orderedSet.has(m));
+const extraOnPage = [...orderedSet].filter((m) => !jsSet.has(m));
+if (missingFromPage.length || extraOnPage.length) {
+  throw new Error(
+    `docs/api/parity.astro: ORDERED_METHODS has drifted from data/parity-matrix.json's FieldHandle set. ` +
+    `Run \`pnpm gen:parity-matrix\` and update ORDERED_METHODS in this file.\n` +
+    (missingFromPage.length ? `  Missing from this page: ${missingFromPage.join(', ')}\n` : '') +
+    (extraOnPage.length ? `  On this page but not in FieldHandle (or miscategorized, like the old 'projections' property): ${extraOnPage.join(', ')}\n` : '')
+  );
+}
+
+// swift/kotlin are COMPUTED from the generator's live plane data; three is always true (direct
+// delegation to the wrapped FieldHandle — see the header comment).
+const METHODS: ParityRow[] = ORDERED_METHODS.map((m) => ({
+  method: m.method,
+  swift: swiftSet.has(m.method),
+  kotlin: kotlinSet.has(m.method),
+  three: true,
+  note: m.note,
+}));
 
 const swiftCount  = METHODS.filter(m => m.swift).length;
 const kotlinCount = METHODS.filter(m => m.kotlin).length;
