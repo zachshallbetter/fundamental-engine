@@ -195,14 +195,19 @@ interaction.
 
 ## Native ports
 
-The DOM is the first host, not the only one. The engine is ported natively to other platforms, each
-mirroring the same model — forces, Field Patterns, the body contract, the handle surface, and conformance —
-and held to the JS core by a shared golden-conformance gate.
+The DOM is the first host, not the only one. The engine is ported natively to Apple and Android
+(**preview status** — see [`support-matrix.md`](docs/canonical/support-matrix.md) for exactly what's
+not yet covered, and the [live parity matrix](https://fundamental-engine.com/docs/api/parity) for the
+current `FieldHandle` method-coverage numbers), each mirroring the same model — forces, Field Patterns,
+the body contract, the handle surface, and conformance — and held to the JS core by a shared
+golden-conformance gate. Physics conformance and API-surface parity are separate guarantees: the force
+*math* is verified identical across all three planes; the *method surface* is not yet 1:1 — the ports
+trail the newest JS-side additions.
 
 - **Swift (Apple platforms)** — a native Swift port in [`swift/`](swift/README.md), running on a
   Metal/SwiftUI host. See the [Swift guide](https://fundamental-engine.com/docs/guides/swift).
 - **Kotlin (Android)** — a native Kotlin port in [`android/`](android/README.md) (core + platform + a
-  Jetpack Compose host + the lab), at parity with Swift and JS. See the
+  Jetpack Compose host + the lab). See the
   [Kotlin guide](https://fundamental-engine.com/docs/guides/kotlin).
 
 The JS core remains the source of truth; engine/physics fixes land on every plane.
