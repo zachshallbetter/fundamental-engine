@@ -35,10 +35,6 @@ dependencies; framework and platform integrations are adapters, not requirements
 > **[fundamental-engine.com](https://fundamental-engine.com)**, with a physics
 > [Lab](https://fundamental-engine.com/lab) where you fire particles into a force and watch the math hold.
 
-> **Now `@fundamental-engine`.** This project was `forces-ui`, then `field-ui`; it is now
-> **Fundamental** — *fundamental forces acting across a field*. The engine's primitive is unchanged:
-> `<field-root>`, `FieldHandle`, `createField`, and the `--field-*` CSS variables stay.
-
 ## The idea
 
 Most visual effects are one-way: a render surface reacts to a cursor, a component, or a scene.

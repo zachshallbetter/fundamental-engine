@@ -4,7 +4,7 @@
 boundary (the same core runs headlessly and in the Swift/Kotlin ports). On the web, every element can
 become a *body* in an invisible physics field; bodies bend the field, and the field's local density bends
 them back (reciprocity). It began as the homepage of zachshallbetter.com and outgrew it. Author/owner:
-**Zach Shallbetter**. (Formerly `forces-ui`, then `field-ui` — a hard rename, no compat aliases remain.)
+**Zach Shallbetter**.
 
 > The field is a **substrate, not wallpaper**: words, links, cards, controls become bodies. Semantic
 > HTML stays the source of meaning; the field is a behavior + visualization layer on top.
