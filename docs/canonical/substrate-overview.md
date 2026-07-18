@@ -76,4 +76,6 @@ experimental across the surface).
 
 Declare → Influence → Read → Reveal → Govern. If you are looking for the operating model behind the five
 verbs, read [definition-document.md](definition-document.md); for the full catalog of documents, the
-[canonical README](README.md).
+[canonical README](README.md). For how this substrate relates to the external research framework that
+names it — Foundations of Computational Interaction — see
+[computational-interaction-alignment.md](computational-interaction-alignment.md).
