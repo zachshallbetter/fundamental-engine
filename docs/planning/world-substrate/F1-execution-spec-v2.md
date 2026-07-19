@@ -20,7 +20,10 @@
 | **Equivalence harness** — raw vs field-substrate, per-transition | `world/equivalence.ts` | F1.4 | ✅ built, green (`fec2a008`) |
 | **Version envelope** | `world/envelope.ts` | F1.0 | ✅ built, green |
 | **Declarative FieldDynamics** (experiment) | — | F1.5 | ▢ not started |
-| **Ω_sys / episodes / ablation / findings** | — | F1.6–F1.9 | ▢ not started |
+| **Declarative FieldDynamics experiment** | `world/experiments/declarative-dynamics.ts` | F1.5 | ✅ done — *partial-with-opaque-extensions* (`b214a7e9`) |
+| **System-relative opportunity `Ω_sys`** | `world/opportunity/opportunity.ts` | F1.6 | ✅ done (`007a258e`) |
+| **Candidate-episode detection** | `world/episodes/episodes.ts` | F1.7 | ✅ done (`bebb6fce`) |
+| **Ablation / findings** | — | F1.8–F1.9 | ▢ not started |
 
 ## F1.3 — enrich `DynamicsContract` ✅ DONE (`6c117a1b`)
 
