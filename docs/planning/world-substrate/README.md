@@ -59,6 +59,37 @@ Projection Contracts      DOM · native UI · 3D/spatial · sound/haptics · age
 Three clean authoring levels result — **World → Execution → Projection** — so that not every concept
 must become a body, force, or metric merely because those are the abstractions the field handles well.
 
+## Terminology (canonical for this program)
+
+Four neighboring words carry distinct, non-overlapping meanings here. No word lives in two lanes.
+
+**World.** A *world* is the representation-independent declared totality from which every projection
+derives: the complete, consistent configuration of entities, state, relations, operations, dynamics,
+and invariants (the kernel `K`) at a point in its history, together with the participants and
+environment it contains. "World" is used in the **possible-worlds sense** — a complete state of affairs
+that observations are evaluated *at*, and that a projection accesses through an observation relation —
+**not** the 3D-scene sense. A world is defined by what it contains and what may lawfully happen in it,
+never by how it looks. A world is a running **instance**; its declared **type** is a `WorldContract`
+(the serialization of `K`).
+
+**World vs model.** A *model* is the **type / theory** — the lawful structure a world instantiates
+(CompInt's layer; the pairing with "Standard Model" is deliberate). A *world* is an **instance** — one
+realization a model admits (Fundamental's layer). CompInt defines interaction *models*; Fundamental
+executes candidate *worlds*. Never use "model" for a running instance or "world" for the theory: that
+collapses the CompInt ↔ Fundamental distinction the whole program rests on. (Cf. *program* : *process*.)
+
+**World vs environment.** An *environment* is a **part of** a world — the surrounding system that
+participants act within and that mediates their coupling. The world is the superset: participants +
+environment + relations + operations + invariants. `world ⊇ environment`.
+
+**World vs field.** A *field* is **one execution substrate inside** a world — the continuous, relational
+dynamics layer (influence, pressure, attention, confidence, conflict). Discrete transitions are the
+other substrate. `world ⊇ field`; the field is how a world becomes relational and continuous, not the
+world itself.
+
+These are this program's working definitions; they promote to `docs/canonical/` only when a stage ships
+the corresponding runtime surface (status rule, `documentation-standards.md`).
+
 ## What already exists vs what is new
 
 Grounding the leap in the real surface (verified against `scripts/api-surface.data.mjs` and
