@@ -7,6 +7,10 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`@fundamental-engine/core` — F1.0 world version envelope (EXPERIMENTAL, internal).** New `packages/core/src/world/envelope.ts`: an eight-field `WorldVersionEnvelope` (`worldInstance` / `worldSchema` / `kernelSemantics` / `contractSchema` / `projectionContract` / `implementation` / `conformanceVector` / `migrationChain`) with explicit-fail compatibility — `assertCompatibleEnvelope` throws `IncompatibleWorldVersion` naming the differing field, with no silent migration (migration *tooling* is deferred to Stage 4). Not exported from the package entry; the frozen public surface is unchanged. First increment of the world-substrate kernel experiment (see `docs/planning/world-substrate/` and its `m1.5/` semantic freeze).
+
 ### Deprecated
 
 - **`@fundamental-engine/core` + `@fundamental-engine/dom` — the recipe → `Pattern` rename reaches the internal helper surface (phase 4, additive).** The remaining `recipe`-named exported helpers are renamed to `Pattern`, each keeping a `@deprecated` alias of the old name (removed at `1.0`): `BodyPattern` (was `BodyRecipe`), `RelationshipPattern`, `AccessibilityPattern`, `PatternTier`, `PatternStatus`, `PatternProblem`, `PatternTierGroup`, `PatternRenderPlan`, `PatternBodyRegistration`, `PatternRelationshipRegistration`, `PatternFeedbackBinding`, `PatternReducedMotionPlan`, `PatternAuthoring`, `PatternFieldTarget` (dom), the consts `PATTERN_TIERS` / `PATTERN_CONTRACTS`, and the functions `validatePattern` / `serializePattern` / `patternById` / `patternBodyAttributes` / `patternRenderPlan` / `patternToMarkup` / `patternAuthoring`. `bindData` gains a `pattern` option (the `recipe` option is still read as a deprecated fallback). Every old name still works. Intentionally left unchanged (invisible plumbing, not concept surface): the `recipes/` source folder, `apply-recipe.ts`, `data/recipes.json`, and the `RelationshipSource` `'recipe'` value tag.
