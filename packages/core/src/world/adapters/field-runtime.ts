@@ -193,6 +193,35 @@ function evidence(parts: Partial<DynamicsEvidence>): DynamicsEvidence {
 }
 
 /**
+ * Controlled construction inputs for the field substrate. Owned by the FIXTURE (F1.4), NOT the adapter,
+ * so a raw baseline and the adapted path can be built from identical inputs. The adapter is under test;
+ * it must not define or regenerate the baseline.
+ */
+export interface FieldConstruction {
+  readonly hostWidth: number;
+  readonly hostHeight: number;
+  /** Produces a FRESH identical PRNG stream on each call (raw and adapted paths must not share state). */
+  readonly makeRng: () => () => number;
+  /** Produces a FRESH identical clock on each call (controls `now`, so the wall clock is not an input). */
+  readonly makeNow: () => () => number;
+  readonly placement: (index: number) => { readonly left: number; readonly top: number; readonly width: number; readonly height: number };
+}
+
+export const DEFAULT_FIELD_CONSTRUCTION: FieldConstruction = {
+  hostWidth: 400,
+  hostHeight: 300,
+  makeRng: () => {
+    let seed = 1;
+    return () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+  },
+  makeNow: () => {
+    let t = 0;
+    return () => (t += 1000 / 60);
+  },
+  placement: (i) => ({ left: 50 + (i % 5) * 60, top: 50 + Math.floor(i / 5) * 60, width: 40, height: 40 }),
+};
+
+/**
  * A DynamicsContract backed by the OPAQUE Fundamental field runtime. It runs a declared World's entities
  * through a headless field. `executionKind: 'opaque-native'`; it advertises only what the runtime
  * supports (lossy snapshot, no restore/replay); it never claims to know the internal force laws, and it
@@ -200,6 +229,7 @@ function evidence(parts: Partial<DynamicsEvidence>): DynamicsEvidence {
  */
 export function fieldRuntimeDynamics(
   world: World,
+  construction: FieldConstruction = DEFAULT_FIELD_CONSTRUCTION,
 ): DynamicsContract<FieldState, FieldAdvanceInput, FieldAdvanceOutput> {
   return {
     identity: { id: `field-runtime:${world.envelope.worldInstance}`, version: FIELD_VERSION },
@@ -223,23 +253,17 @@ export function fieldRuntimeDynamics(
 
     initialize(request): DynamicsResult<FieldState, DynamicsEvidence> {
       const declared = request.declaration as World;
-      const { host, tick } = headlessHost(400, 300);
-      let seed = 1;
-      const field = createField(undefined as never, {
-        host,
-        render: 'none',
-        rng: () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff,
-      });
+      const { host, tick } = headlessHost(construction.hostWidth, construction.hostHeight);
+      const field = createField(undefined as never, { host, render: 'none', rng: construction.makeRng(), now: construction.makeNow() });
       declared.entities.forEach((e, i) => {
-        const left = 50 + (i % 5) * 60;
-        const top = 50 + Math.floor(i / 5) * 60;
+        const rect = construction.placement(i);
         const p = e.params;
         field.addBody({
           identity: { id: e.identity.id },
           tokens: [...e.tokens],
           ...(typeof p.strength === 'number' ? { strength: p.strength } : {}),
           ...(typeof p.range === 'number' ? { range: p.range } : {}),
-          rect: () => ({ left, top, width: 40, height: 40 }),
+          rect: () => rect,
         });
       });
       return {
