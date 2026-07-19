@@ -1,10 +1,12 @@
 # The Computational-World Substrate — the next-leap program
 
-> **Status: planning (proposed program, not shipped).** A staged plan to evolve Fundamental from a
-> relational field runtime into a governed computational-world substrate. Nothing here is built yet;
-> nothing here changes shipped behavior. Each stage is gated and reversible until its exit criteria
-> are met. Read `docs/planning/critical-path/README.md` first — this program sits above it. The
-> itemized work breakdown, acceptance criteria, and decision gates are in [`PLAN.md`](PLAN.md).
+> **Status: in progress (Stage 1 underway; public substrate NOT shipped).** A staged plan to evolve
+> Fundamental from a relational field runtime into a governed computational-world substrate. The public
+> substrate is not shipped and nothing here changes shipped behavior — but **F1.0–F1.2 exist
+> experimentally** (internal, unexported, on `feat/world-kernel`): a version envelope, a generic `World`
+> declaration, and an MVP `DynamicsContract`. M1.5 is ratified. Each stage is gated and reversible until
+> its exit criteria are met. Read `docs/planning/critical-path/README.md` first — this program sits above
+> it. The authoritative status ledger, itemized WBS, and decision gates are in [`PLAN.md`](PLAN.md) (v2.1).
 
 ## The leap in one sentence
 

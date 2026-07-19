@@ -5,7 +5,7 @@
 > terminology live in the README — this document is the itemized plan. Nothing in F1–F5 or C2 is built.
 > Each item's acceptance criterion is a **falsification** test, not "it compiles."
 
-**Version:** 2.0 (revised per plan review, 2026-07-19) · **Owner:** Zach Shallbetter
+**Version:** 2.1 (Stage 1 reframed around the F1.1 finding, 2026-07-19) · **Owner:** Zach Shallbetter
 
 ## The decisive correction (v2.0)
 
@@ -32,6 +32,18 @@ authority is a typed constraint `Permitted(participant, operation, object, scope
 by the transition system; capability is an operational predicate over participant type, environment, and
 substrate.
 
+**Dynamics vs DynamicsContract (v2.1, per the F1.1 finding).** Do **not** promote `DynamicsContract` into
+an eighth primitive. Role table:
+- **Dynamics** — candidate formal component of `Θ` (lawful evolution).
+- **DynamicsContract** — an *experimental runtime boundary* through which a dynamics realization is
+  identified, invoked, versioned, and evidenced. A runtime interface, **not** a kernel primitive.
+- **ExecutionSubstrate** — the implementation realizing the contract (e.g. `FieldRuntime`); **not**
+  presumed to be a kernel element.
+
+The F1.1 result is evidence against the current *representation* of dynamics (opaque force code), not
+proof of a new primitive. Whether `DynamicsContract` is a formal primitive, runtime interface, or
+authoring construct is an F1.8 ablation question.
+
 ## Governing rules
 - **R1a — Computational derivation.** A runtime-derived claim ships with: executable derivation; formal I/O definition; positive + negative test cases; an ablation/alternative-encoding test; determinism + provenance guarantees.
 - **R1b — Empirical inference.** An empirically-inferred claim ships with: observation model; attribution rule; uncertainty model; rival explanations; a reliability/validity study; stated conditions under which inference is *not* permitted. (These are Track-C obligations; the runtime never asserts them.)
@@ -52,21 +64,32 @@ substrate.
 - **F0.2** Pin canonical `world` terminology. — *done (`b8e512ff`)*
 - **F0.3** Kernel-reframe of README: `K` as explicit center; the **three derivation classes**; `K` vs `K₀`; authority/capability as typed constraints; R1a/R1b. — *done (`d69b8a60`)*
 
-### M1.5 — Semantic freeze for the experiment  *(new gating milestone; precedes F1)*
+### M1.5 — Semantic freeze for the experiment  ·  **DONE (ratified 2026-07-19)**  *(gating milestone; preceded F1)*
 Enough semantic stability to make F1 interpretable (not a full theory freeze). Required outputs:
 derivation taxonomy (the three classes); provisional **participant-admission rule** (feeds `Entities`);
 provisional **boundary-validity model** (feeds Interaction); **authority-encoding decision** (typed
 constraint); kernel element role definitions; the runtime-vs-empirical claim boundary; the **version
 envelope**; the four-ablation methodology. — accept: all eight recorded + provisionally ratified · M · Med · docs+theory · **gate: G2 precondition**. Depends on **provisional decisions corresponding to C1.7–C1.10 and C1.12**; full canonical implementation may follow ratification. (M1.5 *ratifies* the semantics that then govern the C1 canonical edits and F1 — it is not blocked on those edits.)
 
-### F1 — Stage 1: kernel + first derivations  *(code begins; gated on M1.5)*
-- **F1.0** Kernel identity + version envelope. — accept: every serialized world names its kernel-schema + contract versions; traces retain the version they were produced under; incompatible versions fail explicitly; **no silent migration** · M · Med · JS · gate: M1.5
-- **F1.1** Typed kernel core `K` hosting an existing `FieldPattern`, proven by **three equivalences**. — accept: a current Field Pattern is represented through `K` with (a) **operational** equivalence — identical numerical output + transition traces; (b) **structural** equivalence — bodies/relations/dimensions/config map in without hidden/lossy translation; (c) **invariant** equivalence — invariants, replay, failure conditions unchanged; and **no field-specific escape hatch** in the kernel API · L · High · JS · gate: F1.0
-- **F1.2** Derive **system-relative opportunity** `Ω_sys = f(X, 𝒪, Cap, Auth, Reach, Π, H)` only — one predicate for one participant/operation/state/projection (`evaluateOpportunity(context, operation)`): domain-validity, capability, permission, enablement, reachability, exposure, signaling, reversibility, recovery. Notation (pinned once): `X` world configuration · `𝒪` candidate operation · `Cap` capability constraints · `Auth` authority constraints · `Reach` transition reachability · `Π` active projection · `H` execution history. **Participant belief `Ω̂` is out of scope** (empirical). — accept: `Ω_sys` computes + serializes; no belief/interpretation field present · M · Med · JS · gate: F1.1
-- **F1.3** **Parameterized candidate-episode detection**, not unconditional interaction facts. `detectInteractions(trace, {participants, boundary, timescale, recurrenceWindow, couplingPredicate, minimumInfluence})` returning: detected episode · supporting transition pairs · boundary used · recurrence/reciprocity basis · determinacy · alternative segmentations · failure reason. Ship with **adversarial examples**: unilateral effect · delayed response · timeout · retry · nested · one-shot no-reply · async-outside-window · shared-environmental-cause. — accept: each adversarial case matches its **preregistered expected result under the declared boundary, timescale, coupling predicate, and recurrence window**; alternate valid parameterizations are *reported*, not silently treated as errors (a boundary-relative case is not an intrinsic error) · L · High · JS · gate: F1.1
-- **F1.4** **Four-ablation harness** (per R3): Projection test (can exposure live in participant-relative state/observation without a distinct `P`?); Relation test (coupling in transitions without distinct `R`?); Operation test (operations as labeled `Dynamics`?); Invariant test (invariants as transition guards/postconditions?). — accept: each element receives a necessity classification; the report distinguishes theory-necessity from implementation-locality · M · Med · JS · gate: F1.2, F1.3
-- **F1.5** Stage-1 finding report: derivation classes confirmed/revised; per-element necessity classification (R3); `K` vs `K₀` verdict. — accept: written finding + updated plan · S · Low · docs · gate: F1.4
-- **F1.6** *(moved)* Native port of the kernel + derivations. — **deferred to after F2 review** per R4; JS conformance vectors emitted now, native implementation later · L · Med · +Swift +Kotlin · gate: F2 review
+### F1 — Stage 1: kernel + first derivations  *(reframed v2.1 around the F1.1 finding)*
+
+The original F1.1 ("host a `FieldPattern`, prove three equivalences") was **falsified** by the F1.1 audit:
+`CompiledPattern` is authoring configuration, not a world declaration, and lawful evolution exists only as
+executable force code. Stage 1 is reframed around a generic `World` + a `DynamicsContract` execution
+boundary. The three-equivalence test survives **only** as F1.4 (raw field vs field-substrate), never as
+proof that a kernel hosts field evolution. Detailed design: [`F1-execution-spec-v2.md`](F1-execution-spec-v2.md).
+
+- **F1.0 — Version envelope.** — *done* (`a1a69858`). Eight-field `WorldVersionEnvelope`; explicit-fail compatibility; no silent migration. Acceptance criteria unchanged. · M · Med · JS
+- **F1.1 — Field representation characterization.** — *finding complete* (`aaea9ca0`). Deliverable: the integration audit mapping which parts of FieldPattern/FieldRuntime are declarative / runtime-owned / lossy / host-relative / opaque; the determination that `CompiledPattern` is not a complete world declaration; the stop-condition record (why direct hosting was rejected). — accept: the field representation is characterized **without** a delegating kernel wrapper, and every unrepresentable element is named. *(Preserved as the completed falsification result — not replaced.)* · L · High · docs
+- **F1.2 — Generic world declaration.** — *built, green* (`c2f8cb1c`; `world/world.ts`). Generic `World`: identity · version envelope · state schema + current state · entities · relations · invariant declarations · operation references · projection references · dynamics reference · provenance. — accept: no field imports; no opaque field instance retained; no adapter closures/side-maps hold authoritative world state; all omitted/substrate-owned information declared as such. *(no-escape-hatch guard green.)* · M · Med · JS · gate: F1.1
+- **F1.3 — DynamicsContract.** — *MVP built; needs enrichment* (`c2f8cb1c`; `world/dynamics.ts` + `kernel.ts`). A plane-neutral execution boundary between declared world and substrate, exposing: identity · version · execution kind · capabilities · determinism declaration · initialization requirements · advance/transition request · returned state/delta · evidence · failure semantics · snapshot/replay capability. Classify each implementation: `declarative | interpreted | compiled | opaque-native | external | nondeterministic | hybrid`. — accept: kernel imports no field impl; `FieldRuntime` only behind a substrate adapter; opaque execution labeled opaque; the runtime does not claim knowledge of unobserved internal laws; transition evidence distinguishes declared input / substrate response / checked invariants / inferred interpretation. — *current MVP exposes identity/substrate/declarative/step/snapshot only; execution-kind, capabilities, determinism, evidence, and failure semantics remain to build.* · M · Med · JS · gate: F1.2
+- **F1.4 — FieldDynamics substrate.** — *adapter built; equivalence measurement pending* (`c2f8cb1c`; `world/adapters/field-runtime.ts`). Places the existing field runtime behind `DynamicsContract`. — accept: existing field behavior unchanged; the substrate may retain the field runtime internally, the generic world/kernel does **not**; state ownership explicit; snapshots labeled by actual fidelity; replay declared truthfully; **operational equivalence measured between raw field execution and the field substrate** (not field vs a falsely-declarative kernel). — *adapter + opaque wrap exist; the raw-vs-substrate operational-equivalence measurement is not yet done.* · L · High · JS · gate: F1.3
+- **F1.5 — Declarative FieldDynamics experiment.** — *not started.* Can force laws be represented as data / an interpretable IR? — accept: **any** of three valid outcomes — (a) complete declarative representation · (b) partial declarative + opaque extensions · (c) failure to represent without equivalent embedded code. A partial/negative result is a valid finding, not a failure. · L · High · JS · gate: F1.4
+- **F1.6 — System-relative opportunity `Ω_sys`.** *(moved from old F1.2.)* — one predicate `Ω_sys = f(X, 𝒪, Cap, Auth, Reach, Π, H)`; belief `Ω̂` out of scope (empirical). — accept: computes + serializes; no belief/interpretation field present. · M · Med · JS · gate: F1.3
+- **F1.7 — Candidate-episode detection.** *(moved from old F1.3.)* — `detectInteractions(trace, ⟨B,T,C,R,I⟩)`; boundary-relative result; 8 adversarial fixtures; alternate parameterizations reported, not errors. — accept: each fixture matches its preregistered result under its declared boundary. · L · High · JS · gate: F1.3
+- **F1.8 — Ablation harness** (per R3): four ablations (delete/substitute/collapse/factor) over the revised architecture, plus explicit tests for: is `DynamicsContract` a formal primitive / runtime interface / authoring construct? does execution-substrate identity belong in the kernel or the version envelope? should `Operations` and `Dynamics` remain distinct? do opaque and declarative dynamics need one contract or separate types? — accept: each element classified; theory-necessity vs implementation-locality separated. · M · Med · JS · gate: F1.6, F1.7
+- **F1.9 — Stage-1 findings.** — `CompiledPattern` not a world declaration; lawful evolution was runtime code; `DynamicsContract` introduced as an experimental boundary; whether the field substrate validates it; whether declarative FieldDynamics is feasible; updated `K` vs `K₀`; updated Operations/Dynamics role classification. · S · Low · docs · gate: F1.8
+- **F1.10** *(moved)* Native port of the kernel + substrate. — **deferred to after F2 review** per R4; JS conformance vectors emitted now, native later. · L · Med · +Swift +Kotlin · gate: F2 review
 
 ### F2 — Stage 2: projections as executable contracts
 - **F2.1** `ProjectionContract` type + a **property language** typing each claim into three classes: **mechanically-decidable** (identity/operation coverage, label preservation, value tolerance), **model-checkable** (reachable-outcome preservation, stutter-equivalent ordering, authority-not-expanded, reversibility retained), **empirically-testable** (discoverability, comprehension, accessibility, salience). — accept: a projection declares typed claims · M · Med · JS · gate: F1
@@ -75,7 +98,7 @@ envelope**; the four-ablation methodology. — accept: all eight recorded + prov
 - **F2.4** *(after F1/F2 architecture review)* Native kernel + projection port. — accept: JS conformance vectors pass on Swift + Kotlin · L · Med · +Swift +Kotlin · gate: F2.2 + review
 
 ### F3 — Stage 3: opportunity graph + transition evidence
-- **F3.1** **Opportunity Graph + horizon analysis** (distinct from F1.2's single predicate): `world.opportunities({participant, state, projection, horizon})` — graph traversal, reachable outcomes, recovery paths, reversibility, explanation of failed predicates. — accept: typed profile over a state space; failed predicates named · L · Med · JS · gate: F1.2, F2.1
+- **F3.1** **Opportunity Graph + horizon analysis** (distinct from F1.6's single predicate): `world.opportunities({participant, state, projection, horizon})` — graph traversal, reachable outcomes, recovery paths, reversibility, explanation of failed predicates. — accept: typed profile over a state space; failed predicates named · L · Med · JS · gate: F1.6, F2.1
 - **F3.2** **Transition evidence ledger** (not "causal" by default): per-transition provenance (prior state → trigger → authority → preconditions → transition → projection → result → invariants). Causal claims are **typed**: execution-causal · mechanism-declared · counterfactual-simulated · intervention-supported · empirically-causal. The runtime authoritatively reports only **execution-causal** within its deterministic substrate. — accept: a real decision reconstructs end-to-end; no claim above execution-causal is emitted by the runtime · L · Med · JS · gate: F1.0
 - **F3.3** False-opportunity detection. — accept: an agent claiming an operation it lacks is flagged with the missing predicate named · M · Med · JS · gate: F3.1
 - **F3.4** *(after interface stabilization)* Native port. — accept: opportunity + ledger vectors pass on all planes · L · Med · +Swift +Kotlin · gate: F3.1, F3.2
@@ -137,8 +160,10 @@ M1     Plan reframe (F0.3) · safe corpus cleanup (C1.2–C1.4) · identifier mi
 M1.5   Derivation taxonomy · participant admission (C1.7) · boundary validity (C1.8) ·
        authority encoding (C1.12) · causal claim classes (C1.9) · shared contract base (C1.10) ·
        version envelope · ablation methodology
-M2     JS kernel (F1.0/F1.1) · system-relative opportunity (F1.2) · candidate interaction (F1.3) ·
-       deletion/substitution/collapse/factorization ablations (F1.4) · finding report (F1.5)
+M2     Version envelope (F1.0 ✓) · representation finding (F1.1 ✓) · generic World (F1.2 ✓) ·
+       DynamicsContract (F1.3) · FieldDynamics substrate + raw-vs-substrate equivalence (F1.4) ·
+       declarative-FieldDynamics experiment (F1.5) · Ω_sys (F1.6) · episode detection (F1.7) ·
+       ablation (F1.8) · findings (F1.9)
 M3     Projection property language + validator (F2) · admissibility + unresolved empirical obligations ·
        native kernel/projection conformance (F1.6/F2.4)
 M4     Opportunity graph (F3.1) · transition evidence ledger (F3.2) · false-opportunity (F3.3) ·
@@ -152,7 +177,7 @@ shows a construct is *not* derivable from `K`, stop and revise the kernel — a 
 
 ## Decision gates (revised per review)
 - **G1 — F0.3 reframe:** *approve with revision* — kernel stays center; must distinguish runtime / contract-relative / empirical derivation, and state that seven-element `K` is one candidate factorization (vs `K₀`).
-- **G2 — Stage 1 build:** *conditional approval* — begin F1 only after: authority encoding decided; participant + boundary rules provisionally ratified; F1.2 limited to `Ω_sys`; F1.3 parameterized candidate detection; F1.4 supports substitution + collapse ablations; version identity (F1.0) added; native ports deferred until JS survives Stage 1 + F2 review. (These = M1.5.)
+- **G2 — Stage 1 build:** **APPROVED** — M1.5 ratified (2026-07-19); F1.0–F1.2 built; the conditions are met and Stage 1 is underway on the v2.1 reframe. The original F1.1 (host a `FieldPattern`) is superseded by the F1.1 finding; Stage 1 proceeds as F1.2 world → F1.3 DynamicsContract → F1.4 substrate → (F1.5 declarative experiment) → F1.6 Ω_sys → F1.7 episodes → F1.8 ablation → F1.9 findings.
 - **G3 — C1 cleanup:** approve **C1.2/C1.3/C1.4** now; **C1.1** with alias/migration registry; **C1.5** dual-license (Apache-2.0 code / CC BY 4.0 corpus) pending commercialization review; **C1.7–C1.10 + C1.12** proceed as provisional semantic prerequisites (feed M1.5), not parallel editorial.
 - **G4 — Branding reposition:** *defer* — public category changes only after the kernel survives ablation, ≥2 projections validate mechanically, `Ω_sys` derives without semantic cheating, the adversarial suite passes, and one non-field world runs without bespoke exceptions (i.e., after **F4**, not at F5 start). Internal language may broaden now.
 
@@ -161,10 +186,14 @@ The authoritative program statement lives in [`README.md`](README.md#the-descrip
 ("Fundamental derives authoritative computational facts from the world model; CompInt defines the
 contracts and empirical methods by which those facts may support claims").
 
-## Status ledger
-- **Done:** F0.1, F0.2 (`b8e512ff`), F0.3 (`d69b8a60`); earlier — FCI↔Fundamental alignment (`docs/fci-alignment`), CompInt remediation + audit standard (`CompInt/main`).
-- **In progress (parallel branches):** G3 cleanup (`CompInt: chore/v1-canonical-cleanup`); M1.5 package (`Fundamental: docs/m1.5-semantic-freeze`).
-- **Precondition for F1:** M1.5 (with provisional C1.7–C1.10, C1.12).
-- **Needs explicit go:** F1 and after (G2, conditional).
-- **Deferred by decision:** native ports (until post-Stage-1/F2 review); branding (until post-F4).
-- **Cannot be done by me:** C1.14 and the C-execution (human-subjects) parts of C2; I build A/B/D (apparatus, synthetic dry runs, analysis scaffolding).
+## Status ledger (v2.1 — factual, commit-specific)
+- **Done:** F0.1–F0.3; M1.5 ratification (2026-07-19); **F1.0** version envelope (`a1a69858`); **F1.1** field-representation audit/finding (`aaea9ca0`); **F1.2** generic world declaration (`c2f8cb1c`, 940/940 green). Earlier: FCI↔Fundamental alignment (`docs/fci-alignment`); CompInt remediation + audit standard (`CompInt/main`); CompInt cleanup (`CompInt: chore/v1-canonical-cleanup`).
+- **Partial (built, acceptance NOT fully met):** **F1.3** DynamicsContract — MVP boundary only (`c2f8cb1c`); **F1.4** FieldDynamics substrate — opaque adapter exists, raw-vs-substrate operational-equivalence measurement pending.
+- **Approved:** G2.
+- **In progress:** A′ architecture (`feat/world-kernel`); CompInt canonical application (C1.7–C1.10, C1.12) — parallel, secondary.
+- **Superseded:** the original F1.1 FieldPattern-hosting criterion; the original F1 execution spec (`F1-execution-spec.md` → `F1-execution-spec-v2.md`).
+- **Deferred:** native ports (post-F1/F2 review); branding (post-F4); full declarative FieldDynamics (F1.5) until the contract boundary is validated (F1.3/F1.4).
+- **Not started:** F1.5–F1.10, F2+.
+- **Cannot be done by me:** C1.14; the C-execution (human-subjects) parts of C2; I build A/B/D.
+
+**Precise note on the "green" implementation (per instruction):** what is built and passing is **F1.2 (generic `World`)** + an **F1.3 MVP `DynamicsContract`** + an **F1.4 opaque `FieldRuntime` adapter** — NOT a kernel that hosts field evolution. The interim label "F1.1c" is retired.

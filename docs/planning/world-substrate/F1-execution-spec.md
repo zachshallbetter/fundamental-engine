@@ -1,11 +1,12 @@
-# F1 — build-ready execution spec
+# F1 — build-ready execution spec (SUPERSEDED)
 
-> **Status: proposed build spec (no code written).** Converts the ratified-provisional M1.5 decisions
-> into an implementable design so F1 can start immediately on your explicit go. **Writing kernel code is
-> still gated (G2)** — this document commits nothing to `packages/core` and touches no frozen surface.
-> Decisions are parameterized on the M1.5 records ([`m1.5/`](m1.5/README.md)); if a decision changes at
-> ratification, only the referenced record + the matching section here change. See [`PLAN.md`](PLAN.md)
-> F1.0–F1.6 for acceptance criteria.
+> **Status: SUPERSEDED by the F1.1 architecture finding.** This spec assumed F1.1 = "host a `FieldPattern`
+> via `hostFieldPattern(pattern): World`, prove three equivalences." The F1.1 integration audit
+> ([`F1.1-integration-audit.md`](F1.1-integration-audit.md)) **falsified** that premise: `CompiledPattern`
+> is authoring configuration, not a world declaration, and lawful evolution exists only as executable
+> force code. **The current build reference is [`F1-execution-spec-v2.md`](F1-execution-spec-v2.md)**
+> (World → DynamicsContract → ExecutionSubstrate). This document is **preserved unchanged below** as the
+> pre-finding hypothesis — the record of what was tested and falsified. Do not build from it.
 
 ## Placement & surface policy
 All F1 code lands under a new **experimental** module, exported through no frozen door:
