@@ -16,7 +16,8 @@
 | **Declaration** — generic `World` | `world/world.ts` | F1.2 | ✅ built, green |
 | **Kernel/runtime orchestration** — `hostWorld` threads State via initialize/advance/snapshot | `world/kernel.ts` | F1.3 | ✅ built, green |
 | **DynamicsContract** — the enriched execution boundary (executionKind/capabilities/determinism/evidence/results) | `world/dynamics.ts` | F1.3 | ✅ built, green (`6c117a1b`) |
-| **ExecutionSubstrate + Field adapter** — opaque field wrap | `world/adapters/field-runtime.ts` | F1.4 | ✅ adapter; ▢ equivalence measurement |
+| **ExecutionSubstrate + Field adapter** — opaque field wrap | `world/adapters/field-runtime.ts` | F1.4 | ✅ adapter |
+| **Equivalence harness** — raw vs field-substrate, per-transition | `world/equivalence.ts` | F1.4 | ✅ built, green (`fec2a008`) |
 | **Version envelope** | `world/envelope.ts` | F1.0 | ✅ built, green |
 | **Declarative FieldDynamics** (experiment) | — | F1.5 | ▢ not started |
 | **Ω_sys / episodes / ablation / findings** | — | F1.6–F1.9 | ▢ not started |
