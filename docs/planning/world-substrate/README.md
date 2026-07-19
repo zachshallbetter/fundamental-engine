@@ -3,7 +3,8 @@
 > **Status: planning (proposed program, not shipped).** A staged plan to evolve Fundamental from a
 > relational field runtime into a governed computational-world substrate. Nothing here is built yet;
 > nothing here changes shipped behavior. Each stage is gated and reversible until its exit criteria
-> are met. Read `docs/planning/critical-path/README.md` first — this program sits above it.
+> are met. Read `docs/planning/critical-path/README.md` first — this program sits above it. The
+> itemized work breakdown, acceptance criteria, and decision gates are in [`PLAN.md`](PLAN.md).
 
 ## The leap in one sentence
 
