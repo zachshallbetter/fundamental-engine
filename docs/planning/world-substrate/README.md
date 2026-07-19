@@ -157,10 +157,11 @@ Stage 4  Typed conformance
   compare() returns typed profiles; the golden expands to world/operation/projection/opportunity.
   EXIT: Swift, Kotlin, and web pass the SAME world contract against declared invariance claims.
 
-Stage 4.5  Adversarial world suite  (precedes the flagship — a demo must not define the architecture)
+Stage 4.5  Adversarial world suite  (precedes the flagship — tests expressiveness, not porting)
   ≥4 worlds: deterministic workflow · async distributed · continuous embodied/simulated · institution
   with changing authority.
-  EXIT: the kernel represents each with NO bespoke primitive and NO core exceptions; failures documented.
+  EXIT: all four run on the JS reference with NO bespoke primitive and NO core exceptions; ≥1 passes
+  cross-plane; failures + unsupported host-specific behavior declared.
 
 Stage 5  Flagship world  (demonstrates a tested architecture, not defines it)
   One serious cross-platform application on the architecture: visual, native, conversational, headless
