@@ -41,4 +41,5 @@ C1.12) and the F1 implementation. It is not blocked on those canonical edits.
 
 Ratification procedure: (1) draft (this branch); (2) cross-record contradiction audit; (3) present only
 the unresolved decisions; (4) record ratification per record; (5) apply ratified semantics to the CompInt
-canonical corpus; (6) mark M1.5 complete; (7) then F1.0 → F1.1.
+canonical corpus; (6) mark M1.5 complete; (7) then F1.0 → F1.1, following the build-ready
+[F1 execution spec](../F1-execution-spec.md).
