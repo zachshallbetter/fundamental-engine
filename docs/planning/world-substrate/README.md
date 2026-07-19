@@ -91,6 +91,26 @@ world itself.
 These are this program's working definitions; they promote to `docs/canonical/` only when a stage ships
 the corresponding runtime surface (status rule, `documentation-standards.md`).
 
+## Three classes of derivation
+
+"Derived from the kernel" is not one thing. Constructs split by evidence standard, and the split governs
+the whole program:
+
+- **Runtime-derived** — computable from the world `K`: system-relative opportunity, reachability, enabled operations, permission, exposure, signaling, transition traces, candidate interaction episodes.
+- **Contract-relative** — defined only against an explicit analytical contract (property family, transforms, tolerances, purpose): projection preservation, typed similarity, equivalence, invariance, comparison admissibility. Not properties of the runtime alone.
+- **Empirically inferred** — *not* derivable by executing `K`: attributed behavior, human strategy, transfer, participant *belief* about opportunity, measurement claims, interpretation, experience. The runtime supplies evidence; it never asserts these as facts.
+
+> The kernel produces world state, transitions, system-relative opportunity, candidate interaction
+> episodes, and evidence. Contract-relative comparison and empirically inferred constructs are defined
+> *over* those outputs but are not asserted by the runtime.
+
+**The kernel is a hypothesis, not seven settled primitives.** Working form
+`K = ⟨Entities, State, Relations, Operations, Dynamics, Projection, Invariants⟩`; a smaller competing
+hypothesis to test against it is `K₀ = ⟨X, Θ, Π, V⟩` (configuration · lawful evolution+operations ·
+projection/access · validity/invariants). **Authority and capability are typed constraints, not
+primitives.** Which factorization survives ablation is a question the program answers, not an assumption
+it makes — see [`PLAN.md`](PLAN.md) (rules R1a/R1b, R3; the four-ablation method).
+
 ## What already exists vs what is new
 
 Grounding the leap in the real surface (verified against `scripts/api-surface.data.mjs` and
@@ -100,11 +120,11 @@ Grounding the leap in the real surface (verified against `scripts/api-surface.da
 |---|---|---|
 | Declared arrangement | `FieldPattern` / `compilePattern` (frozen) | `WorldContract` **above** `FieldPattern` (ontology, operations, transitions, authority, invariants, versioning) |
 | Projection | `ProjectionRegistry`, `setRender`/`setOverlay`, governance lint (experimental) | `ProjectionContract` as a **compilable, comparable** artifact declaring preserve/transform/omit/introduce/expose/signal/accessibility |
-| Reading | `query()`, `sample*` (experimental) | **Opportunity Graph**: enumerate domain-valid/capable/permitted/enabled/reachable/exposed/signaled/reversible operations per state+projection |
-| History | `snapshot()`/`diff()`/`replay()`, causality ladder (experimental) | **World evidence ledger**: per-transition provenance (prior state → trigger → authority → preconditions → transition → projection → result → invariants) |
-| Comparison | `diff(a,b)` (experimental) | **Typed `compare()`** → a profile (identity/relations/operations/opportunity/projection/trace), never a scalar |
+| Reading | `query()`, `sample*` (experimental) | **System-relative opportunity** `Ω_sys` (a predicate) → **Opportunity Graph** (horizon analysis). Participant *belief* `Ω̂` is empirical — out of the runtime |
+| History | `snapshot()`/`diff()`/`replay()`, causality ladder (experimental) | **Transition evidence ledger**: per-transition provenance; causal claims are *typed* — the runtime reports only *execution-causal* within its substrate |
+| Comparison | `diff(a,b)` (experimental) | **Typed `compare()`** with an *admissibility gate* → a profile (never a scalar), or an explicit *incomparable* result |
 | Conformance | cross-plane golden (shipped, `depth:0`) | Expand golden to **world / operation / projection / opportunity** conformance |
-| Governance | `FieldPolicy`, passports, truth modes, `forAgent` (mixed) | **Authority rules** as a world-level concern; kernel/policy/analysis separation |
+| Governance | `FieldPolicy`, passports, truth modes, `forAgent` (mixed) | **Authority as a typed constraint** (`Permitted(participant, op, object, scope, state, time)`), not a primitive; kernel/policy/analysis separation |
 
 The field remains the **differentiator**: it is the substrate for influence that is continuous,
 cumulative, reciprocal, uncertain, pressure-like, and history-sensitive. Discrete world semantics say
@@ -114,10 +134,15 @@ hard to get from a workflow engine, graph DB, physics engine, or UI framework al
 ## The five stages (each irreversible only after its exit gate)
 
 ```text
-Stage 1  World Contract
-  entities, relations, operations, transitions, authority, invariants, versioning ABOVE the field.
-  EXIT: existing Field Patterns host inside a WorldContract with byte-identical field behavior.
-  Guardrail: no user-facing complexity yet; no kernel behavior change.
+Stage 1  Kernel (K) + version envelope
+  entities, relations, operations, transitions, authority (typed constraint), invariants, and version
+  identity ABOVE the field.
+  EXIT: an existing Field Pattern hosts inside K under three equivalences (operational + structural +
+  invariant), no field-specific escape hatch; system-relative opportunity + candidate interaction
+  derive; the four-ablation report classifies each kernel element (primitive / index / syntax /
+  explanation-only / reducible).
+  Guardrail: no user-facing complexity yet; no kernel behavior change. Gated on a semantic freeze
+  (M1.5): participant-admission, boundary-validity, and authority-encoding decided first.
 
 Stage 2  Projection Compiler + Registry
   ProjectionContract becomes first-class, compilable, versioned. Every projection declares
@@ -132,7 +157,12 @@ Stage 4  Typed conformance
   compare() returns typed profiles; the golden expands to world/operation/projection/opportunity.
   EXIT: Swift, Kotlin, and web pass the SAME world contract against declared invariance claims.
 
-Stage 5  Flagship world
+Stage 4.5  Adversarial world suite  (precedes the flagship — a demo must not define the architecture)
+  ≥4 worlds: deterministic workflow · async distributed · continuous embodied/simulated · institution
+  with changing authority.
+  EXIT: the kernel represents each with NO bespoke primitive and NO core exceptions; failures documented.
+
+Stage 5  Flagship world  (demonstrates a tested architecture, not defines it)
   One serious cross-platform application on the architecture: visual, native, conversational, headless
   — from one declared world.
   EXIT: a state change in one projection appears in all; a false-opportunity claim is caught live;
@@ -149,10 +179,11 @@ one.** That is progress, not failure.
 
 ## Governed evolution (changing worlds, not only stable schemas)
 
-The `WorldContract` needs versioned migration from day one: ontology/relation/operation migration,
-authority changes, projection compatibility, and historical-state reinterpretation — so a snapshot from
-world v3 stays interpretable at world v7. Without it, this is a sophisticated runtime for *declared*
-worlds; with it, it is infrastructure for *living* worlds.
+The `WorldContract` needs version *identity* from day one (Stage 1) and governed *migration* later
+(Stage 4): ontology/relation/operation migration, authority changes, projection compatibility, and
+historical-state reinterpretation — so a snapshot from world v3 stays interpretable at world v7, and no
+migration is silent. Without it, this is a sophisticated runtime for *declared* worlds; with it, it is
+infrastructure for *living* worlds.
 
 ## Kernel / policy / analysis separation
 
@@ -188,6 +219,16 @@ Target:
 
 The field is how the world becomes relational and continuous. Projection is how it becomes available.
 Contracts are how its claims become governed. Replay is how its history becomes explainable.
+
+The full program statement — precise about what the runtime asserts versus what CompInt's contracts
+assert:
+
+> Define a computational world once; execute it through compatible substrates; project it into
+> participant-relative forms; record its transitions and constraints; and test which properties survive
+> transformation. **Fundamental derives authoritative computational facts from the world model. CompInt
+> defines the contracts and empirical methods by which those facts may support claims** about
+> interaction, behavior, strategy, similarity, transfer, and measurement. The win condition is the
+> smallest kernel that preserves explanatory, operational, and empirical value.
 
 ## Open decisions (require maintainer sign-off before the relevant stage starts)
 
