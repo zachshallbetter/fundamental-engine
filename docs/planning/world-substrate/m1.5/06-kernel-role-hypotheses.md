@@ -49,3 +49,38 @@ reports movements from it.
 
 ## Ratification
 **Ratified 2026-07-19.** Original proposal: ratify the baseline role table as the pre-registration for F1.4.
+
+---
+
+## F1.8 outcome — evidence recorded (2026-07-19)
+
+The baseline table above is **preserved as the pre-registration**. This section records what the F1.3–F1.8
+evidence actually showed. Where the outcome differs from the hypothesis, that is a finding, not a
+correction of the record. Full synthesis: [`../F1.9-stage1-findings.md`](../F1.9-stage1-findings.md).
+
+| Element | Hypothesized role (pre-registered) | Ablation result | Recorded role after evidence |
+|---|---|---|---|
+| State (`X`) | formal primitive · irreducible | `necessary-primitive` | **confirmed** — every derivation reads it; nothing reconstructs it |
+| Dynamics (`Θ`) | formal primitive · irreducible | `non-substitutable` | **confirmed as a necessary component of Θ**, with a *declarative region + opaque execution region* (F1.5). Not shown to be a primitive independent of Θ |
+| Entities | runtime index over `State` · likely reducible | `representation-dependent` | **partly confirmed** — identity is necessary for attribution; hosting as a typed structure in `X` is a representation choice |
+| Relations | runtime index / structured state · likely reducible | `collapsible-with-loss` | **hypothesis rejected** — observed edges reconstruct, but latent/persistent relations and relation *type* do not. Retained (as typed structure in `X`) |
+| Operations | authoring construct over `Dynamics` · reducible | `non-substitutable` | **hypothesis rejected** — latent, never-invoked operations are unrecoverable from transitions. Retained |
+| Projection (`Π`) | formal primitive · *open: possibly first-derived* | `non-substitutable` | **OPEN QUESTION RESOLVED — Projection is NOT merely a derived observation layer.** Identical state under two projections yields different `Ω_sys` availability, so it materially changes derivations. Retained in `K₀` |
+| Invariants (`V`) | formal primitive · *open: possibly guards over Dynamics* | `necessary-component` | **OPEN QUESTION RESOLVED (for opaque substrates) — invariants cannot be guards inside Dynamics.** The field substrate declares `inspectInternalState=false` / `declareTransitionLaw=false`; there is no guard-installation point, so invariants must be checked kernel-side. *Unresolved for fully declarative substrates* |
+| Authority / Capability | typed constraints; not primitives | `collapsible-with-loss` | **confirmed** — independent predicates (removing one leaves the other intact); collapsing them loses the diagnosis. Not kernel elements |
+| DynamicsContract | *(introduced after this record, F1.3)* | `execution-boundary-only` | **runtime interface, not a kernel primitive** — one kernel drives an `opaque-native` and an `interpreted` substrate unchanged. Deliberately **not** added as an eighth element |
+
+### Consequences for the two pre-registered unknowns
+
+Both highest-value questions in *Open questions* above are now answered **for the tested domain**:
+
+1. *Is `Projection` kernel or first-derived?* → **kernel** (`Π` retained): it changes derivation results,
+   so it does not collapse into observation.
+2. *Is `Invariants` a distinct category or guards over `Dynamics`?* → **distinct** (`V` retained) for
+   opaque substrates; guard-reduction remains **unresolved** for fully declarative substrates.
+
+### K versus K₀
+
+`K₀ = ⟨X, Θ, Π, V⟩` is **supported by the ablation as a representational reduction**: Entities,
+Relations, and Operations fold into `X` as typed structures. They are *not derived away* — every
+distinction they carry survived ablation and must still be represented.

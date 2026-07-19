@@ -23,7 +23,8 @@
 | **Declarative FieldDynamics experiment** | `world/experiments/declarative-dynamics.ts` | F1.5 | ✅ done — *partial-with-opaque-extensions* (`b214a7e9`) |
 | **System-relative opportunity `Ω_sys`** | `world/opportunity/opportunity.ts` | F1.6 | ✅ done (`007a258e`) |
 | **Candidate-episode detection** | `world/episodes/episodes.ts` | F1.7 | ✅ done (`bebb6fce`) |
-| **Ablation / findings** | — | F1.8–F1.9 | ▢ not started |
+| **Kernel ablation harness** | `world/ablation/ablation.ts` | F1.8 | ✅ done (`4fcdf74d`) |
+| **Stage-1 findings synthesis** | `F1.9-stage1-findings.md` | F1.9 | ✅ done — **Stage 1 closed** |
 
 ## F1.3 — enrich `DynamicsContract` ✅ DONE (`6c117a1b`)
 

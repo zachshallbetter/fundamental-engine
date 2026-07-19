@@ -1,12 +1,15 @@
 # The Computational-World Substrate — the next-leap program
 
-> **Status: in progress (Stage 1 underway; public substrate NOT shipped).** A staged plan to evolve
-> Fundamental from a relational field runtime into a governed computational-world substrate. The public
-> substrate is not shipped and nothing here changes shipped behavior — but **F1.0–F1.2 exist
-> experimentally** (internal, unexported, on `feat/world-kernel`): a version envelope, a generic `World`
-> declaration, and an MVP `DynamicsContract`. M1.5 is ratified. Each stage is gated and reversible until
-> its exit criteria are met. Read `docs/planning/critical-path/README.md` first — this program sits above
-> it. The authoritative status ledger, itemized WBS, and decision gates are in [`PLAN.md`](PLAN.md) (v2.1).
+> **Status: Stage 1 COMPLETE (F1.0–F1.9); public substrate NOT shipped.** A staged plan to evolve
+> Fundamental from a relational field runtime into a governed computational-world substrate. Nothing here
+> changes shipped behavior and nothing is exported — the frozen public API is untouched (`check:api`: 20
+> entries). **Stage 1 exists experimentally** (internal, unexported, on `feat/world-kernel`): version
+> envelope · generic `World` · `DynamicsContract` · opaque `FieldRuntime` substrate + transition-level
+> equivalence · declarative-dynamics experiment · `Ω_sys` · candidate-episode detection · kernel ablation.
+> M1.5 is ratified. The Stage-1 scientific synthesis — including the **K vs K₀** result — is
+> [`F1.9-stage1-findings.md`](F1.9-stage1-findings.md). Stage 2 has **not** begun. Read
+> `docs/planning/critical-path/README.md` first — this program sits above it. The authoritative status
+> ledger, itemized WBS, and decision gates are in [`PLAN.md`](PLAN.md) (v2.1).
 
 ## The leap in one sentence
 
