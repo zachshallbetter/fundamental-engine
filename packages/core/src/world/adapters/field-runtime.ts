@@ -1,20 +1,22 @@
 /**
- * FieldRuntime adapter (A′, F1.1c) — the ONE-WAY bridge, and the ONLY file in `world/` permitted to
- * import the field runtime. Direction is strictly:
+ * FieldRuntime adapter (F1.3/F1.4) — the ONE-WAY bridge, and the ONLY file in `world/` permitted to
+ * import the field runtime. Direction:
  *
  *     CompiledPattern  →(worldFromCompiledPattern)→  generic World declarations
  *     World            →(fieldRuntimeDynamics)→      DynamicsContract over an OPAQUE field substrate
  *
- * The field runtime is wrapped as an opaque execution substrate: `declarative: false`, and NO claim of
- * declarative equivalence — lawful evolution stays executable force code inside the field (the F1.1
- * finding). The kernel never sees anything below `DynamicsContract` / `WorldStateSnapshot`.
+ * The field runtime is an `opaque-native` execution substrate. It advertises ONLY what it genuinely
+ * supports (lossy snapshot ⇒ no restore/replay), never claims declarative equivalence, and records that
+ * behavioral interpretation is unresolved rather than asserting it. Evolution stays executable force
+ * code inside the field (the F1.1 finding).
  */
 import { createField } from '../../engine/field.ts';
 import { FIELD_VERSION } from '../../version.ts';
 import type { CompiledPattern } from '../../recipes/compile.ts';
+import type { FieldHandle, FieldSnapshot } from '../../engine/types.ts';
 import type { FieldHost } from '../../engine/host.ts';
-import type { FieldSnapshot } from '../../engine/types.ts';
 import { createWorldEnvelope } from '../envelope.ts';
+import type { WorldVersionEnvelope } from '../envelope.ts';
 import type {
   EntityStateReading,
   ParamValue,
@@ -25,7 +27,15 @@ import type {
   WorldRelation,
   WorldStateSnapshot,
 } from '../world.ts';
-import type { DynamicsContract, DynamicsStepInput } from '../dynamics.ts';
+import type {
+  DynamicsContract,
+  DynamicsEvidence,
+  DynamicsExecutionContext,
+  DynamicsResult,
+  DynamicsSnapshot,
+  EvidenceRecord,
+  Transition,
+} from '../dynamics.ts';
 
 export interface FieldRuntimeMappingReport {
   readonly preserved: readonly string[];
@@ -151,65 +161,138 @@ function headlessHost(width: number, height: number): { host: FieldHost; tick: (
   };
 }
 
-/**
- * A DynamicsContract backed by the OPAQUE Fundamental field runtime. Instantiates a headless field,
- * runs the world's entities through it, and exposes only a generic read-only snapshot. Deterministic
- * placement + injected rng keep runs reproducible. This is a wrapper, explicitly labeled opaque; it
- * does not — and must not — claim the field's evolution is declarative.
- */
-export function fieldRuntimeDynamics(world: World): DynamicsContract {
-  const { host, tick } = headlessHost(400, 300);
-  let seed = 1;
-  const field = createField(undefined as never, { host, render: 'none', rng: () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff });
-  world.entities.forEach((e, i) => {
-    const left = 50 + (i % 5) * 60;
-    const top = 50 + Math.floor(i / 5) * 60;
-    const p = e.params;
-    field.addBody({
-      identity: { id: e.identity.id },
-      tokens: [...e.tokens],
-      ...(typeof p.strength === 'number' ? { strength: p.strength } : {}),
-      ...(typeof p.range === 'number' ? { range: p.range } : {}),
-      rect: () => ({ left, top, width: 40, height: 40 }),
-    });
-  });
-  let step = 0;
+interface FieldState {
+  readonly field: FieldHandle;
+  readonly tick: () => void;
+  readonly step: number;
+  readonly envelope: WorldVersionEnvelope;
+}
 
-  function toStateSnapshot(): WorldStateSnapshot {
-    const snap = field.snapshot() as FieldSnapshot;
-    const entities: EntityStateReading[] = snap.bodies.map((b) => ({
-      id: b.id,
-      ...(b.position ? { position: { x: b.position.x, y: b.position.y, z: b.position.z } } : {}),
-      metrics: { ...b.metrics },
-    }));
-    return {
-      envelope: world.envelope,
-      step,
-      entities,
-      metrics: {
-        particles: snap.metrics.particles ?? 0,
-        bodies: snap.metrics.bodies ?? 0,
-        meanDensity: snap.metrics.meanDensity ?? 0,
-      },
-    };
-  }
+export interface FieldAdvanceInput {
+  readonly steps?: number;
+}
 
+export interface FieldAdvanceOutput {
+  readonly steps: number;
+}
+
+const SOURCE = { kind: 'substrate', id: 'field-runtime' } as const;
+
+function record(id: string, kind: string, observedAt: number, payload: unknown): EvidenceRecord {
+  return { id, kind, source: SOURCE, observedAt, payload };
+}
+
+function evidence(parts: Partial<DynamicsEvidence>): DynamicsEvidence {
   return {
-    id: `field-runtime:${world.envelope.worldInstance}`,
-    substrate: `field-runtime@${FIELD_VERSION}`,
-    declarative: false, // OPAQUE — evolution is executable force code, not data (F1.1 finding).
-    step(input?: DynamicsStepInput) {
-      const n = input?.steps ?? 1;
-      for (let i = 0; i < n; i++) {
-        tick();
-        step++;
-      }
+    declaredInputs: parts.declaredInputs ?? [],
+    substrateResponses: parts.substrateResponses ?? [],
+    checkedInvariants: parts.checkedInvariants ?? [],
+    executionTrace: parts.executionTrace ?? [],
+    unresolvedInterpretations: parts.unresolvedInterpretations ?? [],
+  };
+}
+
+/**
+ * A DynamicsContract backed by the OPAQUE Fundamental field runtime. It runs a declared World's entities
+ * through a headless field. `executionKind: 'opaque-native'`; it advertises only what the runtime
+ * supports (lossy snapshot, no restore/replay); it never claims to know the internal force laws, and it
+ * records that behavioral interpretation is unresolved rather than asserting it.
+ */
+export function fieldRuntimeDynamics(
+  world: World,
+): DynamicsContract<FieldState, FieldAdvanceInput, FieldAdvanceOutput> {
+  return {
+    identity: { id: `field-runtime:${world.envelope.worldInstance}`, version: FIELD_VERSION },
+    executionKind: 'opaque-native',
+    capabilities: {
+      initialize: true,
+      advance: true,
+      snapshot: true,
+      restore: false, // snapshot is lossy — cannot reconstruct State
+      replay: false,
+      inspectInternalState: false, // the force laws are opaque code
+      declareTransitionLaw: false, // incompatible with opaque-native by design
+      deterministicReplay: false,
     },
-    snapshot() {
-      return toStateSnapshot();
+    determinism: {
+      classification: 'conditionally-deterministic',
+      controlledInputs: ['injected-rng', 'clock'],
+      uncontrolledInputs: ['host-geometry', 'body-ordering'],
+      requirements: ['injected rng', 'dt===1 for cross-run equivalence'],
     },
-    dispose() {
-      field.destroy();
+
+    initialize(request): DynamicsResult<FieldState, DynamicsEvidence> {
+      const declared = request.declaration as World;
+      const { host, tick } = headlessHost(400, 300);
+      let seed = 1;
+      const field = createField(undefined as never, {
+        host,
+        render: 'none',
+        rng: () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff,
+      });
+      declared.entities.forEach((e, i) => {
+        const left = 50 + (i % 5) * 60;
+        const top = 50 + Math.floor(i / 5) * 60;
+        const p = e.params;
+        field.addBody({
+          identity: { id: e.identity.id },
+          tokens: [...e.tokens],
+          ...(typeof p.strength === 'number' ? { strength: p.strength } : {}),
+          ...(typeof p.range === 'number' ? { range: p.range } : {}),
+          rect: () => ({ left, top, width: 40, height: 40 }),
+        });
+      });
+      return {
+        ok: true,
+        value: { field, tick, step: 0, envelope: declared.envelope },
+        evidence: evidence({ declaredInputs: [record('init', 'declaration', 0, { entities: declared.entities.length })] }),
+      };
     },
+
+    advance(state, input, context): DynamicsResult<Transition<FieldState, FieldAdvanceOutput>, DynamicsEvidence> {
+      const steps = input.steps ?? 1;
+      for (let i = 0; i < steps; i++) state.tick();
+      const nextStep = state.step + steps;
+      return {
+        ok: true,
+        value: {
+          state: { field: state.field, tick: state.tick, step: nextStep, envelope: state.envelope },
+          output: { steps },
+        },
+        evidence: evidence({
+          declaredInputs: [record('advance-input', 'steps', context.step, { steps })],
+          substrateResponses: [record('advance-response', 'ticked', nextStep, { step: nextStep })],
+          executionTrace: [{ id: `t-${nextStep}`, step: nextStep, source: SOURCE, summary: `advanced ${steps} step(s)` }],
+          unresolvedInterpretations: [
+            { id: 'behavior', claim: 'field motion interpreted as participant behavior', authority: 'empirical', status: 'unresolved' },
+          ],
+        }),
+      };
+    },
+
+    snapshot(state, _context): DynamicsResult<DynamicsSnapshot, DynamicsEvidence> {
+      const snap = state.field.snapshot() as FieldSnapshot;
+      const entities: EntityStateReading[] = snap.bodies.map((b) => ({
+        id: b.id,
+        ...(b.position ? { position: { x: b.position.x, y: b.position.y, z: b.position.z } } : {}),
+        metrics: { ...b.metrics },
+      }));
+      const reading: WorldStateSnapshot = {
+        envelope: state.envelope,
+        step: state.step,
+        entities,
+        metrics: {
+          particles: snap.metrics.particles ?? 0,
+          bodies: snap.metrics.bodies ?? 0,
+          meanDensity: snap.metrics.meanDensity ?? 0,
+        },
+      };
+      return {
+        ok: true,
+        value: { reading, restorable: false }, // lossy: no payload, cannot restore
+        evidence: evidence({ substrateResponses: [record('snapshot', 'field-snapshot', state.step, { bodies: reading.metrics.bodies })] }),
+      };
+    },
+    // no `restore` — capabilities.restore is false (a lossy snapshot cannot reconstruct State).
   };
 }
