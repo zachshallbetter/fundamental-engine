@@ -1,13 +1,15 @@
 # M1.5-03 — Boundary validity
 
-**Status:** proposed (awaiting ratification)
+**Status:** ratified (2026-07-19)
 
 ## Decision
 An interaction/episode boundary is treated as: **declared · question-relative · evidence-constrained ·
 resolution-dependent · challengeable by viable alternate boundaries.** The detector (F1.3) returns
-**candidate episodes under a declared boundary**; it does **not** establish that the boundary itself is
-scientifically privileged. When more than one boundary is defensible, alternate parameterizations are
-**reported**, not silently treated as errors.
+**candidate episodes under a declared detection contract** ⟨boundary B, timescale T, coupling predicate C,
+recurrence window R, influence threshold I⟩, asserting only the conditional *"given these parameters, this
+trace satisfies the candidate-episode rule."* It does **not** establish that the boundary is scientifically
+privileged. Alternate viable parameterizations **must remain visible where they materially change
+detection** — reported, not silently treated as errors.
 
 A boundary declaration must name: participants in scope, system/environment partition, timescale,
 recurrence window, coupling predicate, minimum material-influence threshold, and start/closure rules.
@@ -42,4 +44,4 @@ the boundary to be an explicit, challengeable parameter rather than an implicit 
   alternatives) — specified here as reporting; ranking criteria deferred to V2.
 
 ## Ratification
-Proposed. Ratify as the boundary-validity model governing F1.3 and C1.8.
+**Ratified 2026-07-19** as the boundary-validity model (detection-contract form) governing F1.3 and C1.8.

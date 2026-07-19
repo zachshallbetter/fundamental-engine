@@ -1,6 +1,6 @@
 # M1.5-05 — Causal claim classes
 
-**Status:** proposed (awaiting ratification)
+**Status:** ratified (2026-07-19)
 
 ## Decision
 Causal claims form a **permissions ladder**, not a set of interchangeable labels. Each rung has explicit
@@ -39,4 +39,4 @@ generalizing — the same discipline as the causality ladder in `docs/canonical/
   declared mechanism — provisional order above; revisit if they collapse.
 
 ## Ratification
-Proposed. Ratify the ladder, its evidence/forbidden columns, and the runtime-asserts-only-rung-1 rule.
+**Ratified 2026-07-19.** Original proposal: ratify the ladder, its evidence/forbidden columns, and the runtime-asserts-only-rung-1 rule.

@@ -1,6 +1,6 @@
 # M1.5-01 — Derivation taxonomy
 
-**Status:** proposed (awaiting ratification)
+**Status:** ratified (2026-07-19)
 
 ## Decision
 Every construct the program discusses belongs to exactly one of three derivation classes, and the class
@@ -40,9 +40,11 @@ R1b (empirical). Keeping them distinct is what bounds Fundamental's authority to
 - A construct cannot be cleanly assigned to one class (suggests the taxonomy is incomplete).
 - A runtime-derived construct is found to require empirical input to compute (misclassified).
 
-## Open questions
-- Do "candidate interaction episodes" stay runtime-derived, or become contract-relative once a boundary
-  contract is required (see record 03)? Provisional: runtime-derived *under a declared boundary*.
+## Resolved (2026-07-19)
+- Candidate interaction episodes are **runtime-derived under a declared detection contract**
+  ⟨boundary B, timescale T, coupling predicate C, recurrence window R, influence threshold I⟩. The
+  runtime asserts the conditional *"given ⟨B,T,C,R,I⟩, this trace satisfies the candidate-episode rule"*;
+  it does **not** assert the boundary is uniquely correct. See record 03.
 
 ## Ratification
-Proposed. Ratify as the governing taxonomy for all of Track F and R1a/R1b.
+**Ratified 2026-07-19** as the governing taxonomy for all of Track F and R1a/R1b.

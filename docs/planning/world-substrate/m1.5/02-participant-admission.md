@@ -1,22 +1,29 @@
 # M1.5-02 — Participant admission
 
-**Status:** proposed (awaiting ratification)
+**Status:** ratified (2026-07-19), with the two-level distinction below
 
 ## Decision
-A candidate qualifies as an **interaction participant** only when the declared model assigns it an
-**independently attributable interaction role** involving **one or more** of:
+Admission is **two-level**. A candidate qualifies through the seven-role test — an **independently
+attributable role** via one or more of: state carried, observation, operation, mediation, authority,
+constraint application, consequence reception/propagation — but the *level* it qualifies at depends on
+**where** that role is materially involved:
 
-- state carried across the episode;
-- observation;
-- operation (action production);
-- mediation;
-- authority (exercised or held);
-- constraint application;
-- consequence reception or propagation.
+- **World participant** — the role is attributable within the declared **world**. Feeds kernel `Entities`.
+- **Episode participant** — a world participant whose state, operation, observation, authority, constraint,
+  mediation, or consequence is **materially involved within a declared episode boundary**. Feeds F1.3
+  interaction detection.
 
-**Mere causal relevance is insufficient.** A passive physical condition remains *environment* (record 03,
-and the `environment ⊆ world` terminology) unless the explanatory model specifically treats it as a
-bounded system in the coupling with an attributable role above.
+**Mere causal relevance is insufficient** at either level. A passive physical condition remains
+*environment* (the `environment ⊆ world` terminology) unless the model treats it as a bounded system with
+an attributable role.
+
+**Authority, specifically:**
+- held but never exercised or operationally relevant → may qualify a **world** participant, **not** an episode participant;
+- that constrains, enables, denies, delegates, or otherwise changes possible **episode** trajectories → qualifies an **episode** participant;
+- entirely irrelevant to the episode → does **not** qualify an episode participant.
+
+This stops every latent administrator, regulator, policy owner, or upstream institution from entering
+every episode merely by possessing theoretical authority.
 
 ## Alternatives considered
 - Implementation-typed admission (user / service / device / agent). Rejected: classifies by surface, not
@@ -30,10 +37,10 @@ as evidence) is the analogue of identifying particles by the interactions they e
 `Entities` in `K` from silently absorbing the whole environment.
 
 ## Operational consequences
-- Feeds kernel `Entities`: an entity admitted here is a first-class participant with attributable state;
-  everything else is environment.
-- The admission predicate is checkable at world declaration and is required before F1.1 hosting.
-- A participant must expose at least one attributable role or the world declaration is rejected.
+- **World** admission feeds kernel `Entities` (checkable at world declaration; a candidate exposing no
+  attributable role is rejected). **Episode** admission is evaluated by F1.3 against the declared boundary.
+- An entity may be a world participant without being an episode participant in a given episode.
+- Everything not admitted at either level is environment.
 
 ## Falsification conditions
 - A phenomenon everyone agrees is interaction requires a participant that satisfies none of the seven
@@ -42,10 +49,9 @@ as evidence) is the analogue of identifying particles by the interactions they e
   (the test is under-determined).
 
 ## Open questions
-- Is "authority held but never exercised" sufficient alone? Provisional: yes, if independently
-  attributable (it constrains others' opportunity).
 - Collective participants (institutions) — admitted as single participants or as composed sub-worlds?
   Provisional: either, declared explicitly; nesting handled by the world model.
 
 ## Ratification
-Proposed. Ratify as the canonical participant-admission rule (also C1.7 in the CompInt corpus).
+**Ratified 2026-07-19** with the world/episode two-level distinction (authority held-but-unexercised
+qualifies a *world* participant only). Applies as C1.7 in the CompInt canonical corpus.

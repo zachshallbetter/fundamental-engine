@@ -1,6 +1,6 @@
 # M1.5-08 — Ablation methodology
 
-**Status:** proposed (awaiting ratification)
+**Status:** ratified (2026-07-19)
 
 ## Decision
 Kernel minimization (R3) uses **four ablation forms**, each specifying the **tested capability** and an
@@ -49,4 +49,4 @@ a field, not that the theory requires the element — the core methodological ri
   element/field count + description length + evaluation cost; calibrated during F1.4.
 
 ## Ratification
-Proposed. Ratify the four ablation forms, the substitution-validity rule, and the tracked-metrics set.
+**Ratified 2026-07-19.** Original proposal: ratify the four ablation forms, the substitution-validity rule, and the tracked-metrics set.

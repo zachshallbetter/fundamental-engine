@@ -1,6 +1,6 @@
 # M1.5-07 — Version envelope
 
-**Status:** proposed (awaiting ratification)
+**Status:** ratified (2026-07-19)
 
 ## Decision
 A single `version` field is insufficient. Every serialized world and trace carries a **version envelope**
@@ -48,4 +48,4 @@ transition for replay and historical interpretation to remain valid (a v3 snapsh
   recorded in the trace so a replay knows what it was validated against.
 
 ## Ratification
-Proposed. Ratify the eight-field envelope and the explicit-fail / no-silent-migration rule.
+**Ratified 2026-07-19.** Original proposal: ratify the eight-field envelope and the explicit-fail / no-silent-migration rule.

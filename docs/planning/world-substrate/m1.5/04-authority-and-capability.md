@@ -1,6 +1,6 @@
 # M1.5-04 — Authority and capability
 
-**Status:** proposed (awaiting ratification)
+**Status:** ratified (2026-07-19)
 
 ## Decision
 Authority and capability are **typed constraints evaluated over a context**, not entities and not
@@ -45,4 +45,4 @@ which the opportunity profile must not conflate.
 - Delegated/derived authority chains — representation deferred, but `authoritySource` leaves room.
 
 ## Ratification
-Proposed. Ratify the two predicate signatures and the can/may split.
+**Ratified 2026-07-19.** Original proposal: ratify the two predicate signatures and the can/may split.

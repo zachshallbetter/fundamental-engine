@@ -1,6 +1,6 @@
 # M1.5-06 — Kernel role hypotheses
 
-**Status:** proposed (awaiting ratification)
+**Status:** ratified (2026-07-19)
 
 ## Decision
 Record, for every candidate kernel element, its **hypothesized role** *before* F1.4 runs, so the ablation
@@ -48,4 +48,4 @@ reports movements from it.
   distinct category or guards over `Dynamics`? These are the highest-value F1.4 questions.
 
 ## Ratification
-Proposed. Ratify the baseline role table as the pre-registration for F1.4.
+**Ratified 2026-07-19.** Original proposal: ratify the baseline role table as the pre-registration for F1.4.

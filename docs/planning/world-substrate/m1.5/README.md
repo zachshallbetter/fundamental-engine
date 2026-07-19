@@ -1,11 +1,10 @@
 # M1.5 — Semantic freeze for the Stage-1 kernel experiment
 
-> **Status: proposed decision records awaiting ratification.** These eight records specify — precisely
-> enough for F1 to *test* them — the semantics the kernel experiment depends on. This is **not** where the
-> decisions are proven correct; it is where they are stated precisely and revisably. This branch
-> (`docs/m1.5-semantic-freeze`) must not merge until the decisions are explicitly ratified. **F1 does not
-> begin until then** (gate G2). See the program in [`../README.md`](../README.md) and the WBS in
-> [`../PLAN.md`](../PLAN.md).
+> **Status: RATIFIED 2026-07-19 — M1.5 complete.** These eight records specify — precisely enough for F1
+> to *test* them — the semantics the kernel experiment depends on. They are ratified (record 02 with a
+> two-level participant correction), so **G2 is open and F1 may build** following the
+> [F1 execution spec](../F1-execution-spec.md). This is not where the decisions are proven correct; F1
+> tests them. See the program in [`../README.md`](../README.md) and the WBS in [`../PLAN.md`](../PLAN.md).
 
 *(Placed under the program at `docs/planning/world-substrate/m1.5/` rather than a top-level `docs/m1.5/`,
 to keep the planning tree consistent — the content matches the reviewer's eight-record structure.)*
@@ -37,9 +36,17 @@ C1.12) and the F1 implementation. It is not blocked on those canonical edits.
 
 | Record | Status | Ratified by | Date |
 |---|---|---|---|
-| 01–08 | **proposed** | — | — |
+| 01 Derivation taxonomy | **ratified** | Zach Shallbetter | 2026-07-19 |
+| 02 Participant admission | **ratified** (two-level correction) | Zach Shallbetter | 2026-07-19 |
+| 03 Boundary validity | **ratified** (detection-contract form) | Zach Shallbetter | 2026-07-19 |
+| 04 Authority & capability | **ratified** | Zach Shallbetter | 2026-07-19 |
+| 05 Causal claim classes | **ratified** | Zach Shallbetter | 2026-07-19 |
+| 06 Kernel role hypotheses | **ratified** | Zach Shallbetter | 2026-07-19 |
+| 07 Version envelope | **ratified** | Zach Shallbetter | 2026-07-19 |
+| 08 Ablation methodology | **ratified** | Zach Shallbetter | 2026-07-19 |
 
-Ratification procedure: (1) draft (this branch); (2) cross-record contradiction audit; (3) present only
-the unresolved decisions; (4) record ratification per record; (5) apply ratified semantics to the CompInt
-canonical corpus; (6) mark M1.5 complete; (7) then F1.0 → F1.1, following the build-ready
-[F1 execution spec](../F1-execution-spec.md).
+Procedure completed: drafted → cross-record contradiction audit (clean) → unresolved decisions presented →
+ratified per record (record 02 corrected to the world/episode two-level distinction) → **M1.5 complete**.
+Remaining (does not block F1): apply the ratified semantics to the CompInt canonical corpus (C1.7–C1.10,
+C1.12), preserving aliases and historical interpretability. F1 builds now, per the
+[F1 execution spec](../F1-execution-spec.md); branches are not merged on the maintainer's behalf.
