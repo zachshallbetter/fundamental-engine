@@ -14,16 +14,17 @@
 | Layer | File(s) | PLAN item | State |
 |---|---|---|---|
 | **Declaration** — generic `World` | `world/world.ts` | F1.2 | ✅ built, green |
-| **Kernel/runtime orchestration** — `hostWorld` executes a contract | `world/kernel.ts` | F1.3 | ✅ MVP |
-| **DynamicsContract** — the execution boundary | `world/dynamics.ts` | F1.3 | ▢ MVP → enrich |
+| **Kernel/runtime orchestration** — `hostWorld` threads State via initialize/advance/snapshot | `world/kernel.ts` | F1.3 | ✅ built, green |
+| **DynamicsContract** — the enriched execution boundary (executionKind/capabilities/determinism/evidence/results) | `world/dynamics.ts` | F1.3 | ✅ built, green (`6c117a1b`) |
 | **ExecutionSubstrate + Field adapter** — opaque field wrap | `world/adapters/field-runtime.ts` | F1.4 | ✅ adapter; ▢ equivalence measurement |
 | **Version envelope** | `world/envelope.ts` | F1.0 | ✅ built, green |
 | **Declarative FieldDynamics** (experiment) | — | F1.5 | ▢ not started |
 | **Ω_sys / episodes / ablation / findings** | — | F1.6–F1.9 | ▢ not started |
 
-## F1.3 — enrich `DynamicsContract` (the current increment)
+## F1.3 — enrich `DynamicsContract` ✅ DONE (`6c117a1b`)
 
-The MVP contract exposes `id · substrate · declarative · step · snapshot`. Enrich to the full boundary:
+Built to the full boundary below (typed `DynamicsResult`, evidence channel, consistency validator; no
+`declarative` boolean). **F1.4 is now the current increment.** The shipped shape:
 
 ```ts
 interface DynamicsContract<State, Input, Output, Evidence> {
