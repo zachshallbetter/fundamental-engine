@@ -123,3 +123,83 @@ existing flags prove sufficient. If they do not, the distinction was cosmetic an
 Every entry here is authored in-repo. The corpus reduces the risk of a field-fitted contract; it does
 not eliminate author bias. The genuinely strong test — an existing third-party runtime, adapted by
 someone who did not design the contract — remains outstanding and is not claimed by any result below.
+
+---
+
+# Results — round 1 (FSM control + planner)
+
+Recorded after execution. The pre-registration above is unedited; this section is appended, so the
+prediction and the outcome can be compared without trusting either to have been written honestly.
+
+## Outcome table
+
+| Substrate | Predicted churn | Actual churn | Outcome | Verdict |
+|---|---|---|---|---|
+| FiniteStateMachine (control) | **0** | **1** | generalized-with-refinement | **P1 FALSIFIED** |
+| SearchPlanner (falsification candidate) | 1 | **0** | generalized | P2 confirmed, already paid |
+
+Corpus totals: 4 adapted, 4 pending, total churn 3, **zero substrate conveniences accepted**,
+four `executionKind` variants now exercised by real substrates (`opaque-native`, `interpreted`,
+`declarative`, `hybrid`).
+
+## P1 falsified — and that is the finding
+
+The control was supposed to cost nothing. An FSM has explicit states, a declared table, complete
+observable state, exact determinism and trivial restore; if anything conforms, it does.
+
+It cost one change, because an FSM has **accepting states** — it is the first corpus substrate that
+*finishes*. The contract had no generic way to express that, so a kernel driving it could only learn
+the machine was done by reading substrate-specific output, which is precisely the abstraction leak the
+contract exists to prevent.
+
+**Why the falsification is stronger than a confirmation would have been.** Termination was predicted as
+a *search* property (P2). Finding it in the control instead shows it is a property of lawful evolution
+in general. Neither the field nor the governor could ever have revealed it: both run indefinitely, so
+for two substrates the concept was invisible rather than absent. This is the second time the corpus has
+found a gap that was structurally unreachable from the existing substrates — the first was
+`declareTransitionLaw` without an accessor.
+
+**What was added.** `Transition.lifecycle` (`'continuing' | 'terminal'`), optional, absent read as
+continuing so no existing substrate migrates. Plus `KernelHost.lastLifecycle`, because the kernel was
+discarding the field — leaving it there would have made the concept decorative while appearing to close
+the gap.
+
+**Deliberately not added.** The split between *finished with a result* and *finished without one*
+(goal-reached vs exhausted). Both corpus substrates exhibit it, but the evidence only forces "must the
+kernel keep going?". The richer distinction stays in substrate-specific output until something needs it
+generically.
+
+## P2 — confirmed, at zero cost
+
+The planner terminates too, so it needed the concept the FSM had already bought. Its secondary
+prediction also held: its law is only partially declarable (expansion order and edge costs are a table;
+the euclidean heuristic is computed), which makes it the first substrate to exercise
+`executionKind: 'hybrid'` — a variant declared in F1.3 and never used until now. A union variant that
+had gone three substrates without an instance was a fair candidate for having been speculative; it
+turned out to be real.
+
+## A rejected change, recorded
+
+`TransitionLawDescription.completeness`, which would let the planner publish its declarable half, was
+**rejected as a substrate convenience**. `declareTransitionLaw: false` already answers the question
+truthfully — this substrate cannot declare *the* transition law — and wanting to share part of it is a
+feature request. Recorded in the ledger rather than only in a commit message so the rejection is
+auditable later, when the temptation recurs.
+
+## Honest accounting of the protocol
+
+The substrate-first discipline held: both substrates were committed in `00c8db00` with no adapter in
+existence, and a guard now asserts neither imports the contract, kernel or world. What the protocol
+does **not** eliminate is that the same author wrote both the substrates and the contract. The
+`hybrid`-variant result is the weakest in this round for exactly that reason — I knew the variant
+existed while choosing a planner with a computed heuristic.
+
+## What round 1 does and does not license
+
+**Does:** the contract survived a control and a falsification candidate with total churn 3 across four
+substrates, no accepted conveniences, and a converging trend (the most recent substrate cost nothing).
+
+**Does not:** license calling `DynamicsContract` an execution abstraction. Convergence is claimed on the
+last adapted substrate, and the next one is the event-sourced aggregate — pre-registered at churn 0 with
+a semantic probe of whether `replay` vs `deterministicReplay` is a real distinction or a cosmetic one.
+Four of eight corpus entries remain pending and contribute no evidence.
