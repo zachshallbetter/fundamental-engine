@@ -1,0 +1,12 @@
+{
+  "name": "@fundamental-engine/observatory",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Inspection instrument for the FCI empirical research program. Renders recorded evidence; derives nothing.",
+  "scripts": {
+    "capture": "node ../../scripts/emit-observatory-bundle.mjs",
+    "dev": "node server.mjs",
+    "start": "npm run capture && node server.mjs"
+  }
+}
