@@ -46,7 +46,15 @@ accidental breakage, not a freeze; the surface evolves pre-1.0 and additions nev
    ```sh
    pnpm --filter "@fundamental-engine/*" exec npm version <patch|minor|major> --no-git-tag-version
    ```
-   The private apps (`site`, `starter`) are versioned independently and are not published.
+   The filter also matches the **private** workspace apps, which version independently and are
+   never published — revert them after the bump:
+   ```sh
+   git checkout -- apps/site/package.json apps/starter/package.json apps/observatory/package.json
+   ```
+   This list grows whenever a private app is added under `apps/` with an `@fundamental-engine/*`
+   name. `apps/observatory` joined in 0.9.5. Confirm with
+   `pnpm --filter "@fundamental-engine/*" exec node -e "const p=require('./package.json');console.log(p.name,p.private?'private':'PUBLISHED')"`
+   rather than trusting this list.
 4. **Bump `FIELD_VERSION` on all three planes** — the constant is hand-maintained per plane, and a
    lockstep test on each fails CI if it drifts from `packages/core/package.json`:
    - JS: `packages/core/src/version.ts` (guard: `version.test.ts`)
