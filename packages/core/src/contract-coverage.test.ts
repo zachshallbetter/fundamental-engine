@@ -13,7 +13,7 @@
  * and ship it with zero coverage — the exact gap RC-6 closes.
  *
  * SCAN SCOPE differs by leg on purpose. The option/metric legs use the historical NON-recursive scan
- * (only the top-level test files directly in each package src) — see the CLAUDE.md caveat that a new
+ * (only the top-level test files directly in each package src) — see the docs/engineering-practices.md caveat that a new
  * option needs a top-level reference. The attribute leg uses a RECURSIVE scan, because body-attribute
  * coverage legitimately lives in sub-directory tests (`src/core`, `src/forces`) and forcing redundant
  * top-level references purely to satisfy the scan scope would be noise, not coverage.
