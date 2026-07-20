@@ -154,11 +154,22 @@ test('G3 guard: the second adapter introduces no any/Function/eval/callback esca
     join(here, 'substrates', 'governor.ts'),
     join(here, 'governor-equivalence.ts'),
     join(here, 'cross-substrate.ts'),
+    join(here, 'projection', 'projection.ts'),
+    join(here, 'properties', 'properties.ts'),
   ];
   const forbidden: RegExp[] = [/:\s*any\b/, /<any[>,]/, /\bFunction\b/, /\beval\(/, /new Function/, /\bimportScripts\b/];
   for (const f of files) {
     const src = stripComments(readFileSync(f, 'utf8'));
     for (const p of forbidden) assert.ok(!p.test(src), `${f} must not match ${p}`);
+  }
+});
+
+test('F2 guard: the projection and property foundations stay field-free and substrate-free', () => {
+  for (const f of [join(here, 'projection', 'projection.ts'), join(here, 'properties', 'properties.ts')]) {
+    const src = stripComments(readFileSync(f, 'utf8'));
+    for (const p of [/\bFieldPattern\b/, /\bFieldRuntime\b/, /\bFieldHandle\b/, /engine\/field/, /\bGovernor/, /substrates\//]) {
+      assert.ok(!p.test(src), `${f} must not match ${p}`);
+    }
   }
 });
 
