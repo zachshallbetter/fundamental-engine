@@ -7,6 +7,7 @@
  */
 import { Replay } from './replay.js';
 import * as V from './views.js';
+import { InstrumentLog } from './instrument.js';
 
 const REPLAY_VIEWS = [
   { id: 'world', label: 'World' },
@@ -24,6 +25,7 @@ const RESEARCH_VIEWS = [
   { id: 'projectionLab', label: 'Projection lab' },
   { id: 'ablation', label: 'Ablation' },
   { id: 'crossVersion', label: 'Cross-version' },
+  { id: 'instrument', label: 'Instrument' },
 ];
 
 const state = {
@@ -36,6 +38,8 @@ const state = {
   evidenceFilter: 'all',
   bookmarks: new Set(),
   comparisonBundle: null,
+  instrumentLog: new InstrumentLog(),
+  lastModels: [],
 };
 
 let bundle = null;
@@ -61,6 +65,7 @@ async function boot() {
   }
 
   evidenceById = new Map(bundle.evidence.map((n) => [n.id, n]));
+  state.instrumentLog.record('experiment-loaded', { revision: bundle.revision.commit, schema: bundle.revision.bundleSchema });
   $('revision').textContent = `rev ${bundle.revision.commit} · core ${bundle.revision.coreVersion}`;
   $('schema-tag').textContent = bundle.revision.bundleSchema;
 
@@ -124,6 +129,7 @@ function render() {
       case 'projectionLab': pane.innerHTML = V.projectionLabView(bundle); break;
       case 'ablation': pane.innerHTML = V.ablationView(bundle); break;
       case 'crossVersion': pane.innerHTML = V.crossVersionView(bundle, state); break;
+      case 'instrument': pane.innerHTML = V.instrumentView(bundle, state); break;
       default: pane.innerHTML = V.corpusView(bundle);
     }
   }
@@ -185,6 +191,7 @@ function inspect(id) {
 function wire() {
   document.querySelectorAll('.mode').forEach((btn) => {
     btn.addEventListener('click', () => {
+      state.instrumentLog.record('mode-changed', { to: btn.dataset.mode });
       state.mode = btn.dataset.mode;
       state.view = state.mode === 'replay' ? 'world' : 'corpus';
       document.querySelectorAll('.mode').forEach((b) => b.setAttribute('aria-selected', String(b === btn)));
@@ -197,17 +204,29 @@ function wire() {
     if (!el) return;
     const d = el.dataset;
 
-    if (d.view) { state.view = d.view; render(); return; }
-    if (d.runIndex !== undefined) { selectRun(Number(d.runIndex)); render(); return; }
+    if (d.view) { state.instrumentLog.record('view-changed', { to: d.view }); state.view = d.view; render(); return; }
+    if (d.runIndex !== undefined) {
+      state.instrumentLog.record('substrate-selected', { substrate: bundle.runs[Number(d.runIndex)]?.substrate });
+      selectRun(Number(d.runIndex)); render(); return;
+    }
     if (d.run !== undefined) {
       const i = bundle.runs.findIndex((r) => r.substrate === d.run);
       if (i >= 0) { selectRun(i); render(); }
       return;
     }
-    if (d.projection) { state.projectionId = d.projection; state.opportunityOp = null; render(); return; }
+    if (d.projection) {
+      state.instrumentLog.record('projection-selected', { projection: d.projection });
+      state.projectionId = d.projection; state.opportunityOp = null; render(); return;
+    }
     if (d.opportunity) { state.opportunityOp = d.opportunity; render(); return; }
-    if (d.detection !== undefined) { state.detectionIndex = Number(d.detection); render(); return; }
-    if (d.evfilter) { state.evidenceFilter = d.evfilter; render(); return; }
+    if (d.detection !== undefined) {
+      state.instrumentLog.record('segmentation-changed', { from: state.detectionIndex, to: Number(d.detection) });
+      state.detectionIndex = Number(d.detection); render(); return;
+    }
+    if (d.evfilter) {
+      state.instrumentLog.record('filter-applied', { filter: d.evfilter });
+      state.evidenceFilter = d.evfilter; render(); return;
+    }
     if (d.seek !== undefined) { replay.seek(Number(d.seek)); return; }
     if (d.bookmark !== undefined) {
       const step = Number(d.bookmark);
@@ -216,7 +235,7 @@ function wire() {
       return;
     }
     if (d.jump) { replay.jumpToEvidence(d.jump); return; }
-    if (d.evidence) { inspect(d.evidence); return; }
+    if (d.evidence) { state.instrumentLog.record('evidence-inspected', { evidenceId: d.evidence }); inspect(d.evidence); return; }
   });
 
   $('t-play').addEventListener('click', () => replay.toggle());

@@ -169,7 +169,9 @@ test('O10: the Observatory UI derives nothing — no hardcoded findings, no runt
   const files: string[] = [];
   const walk = (dir: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      if (entry.name === 'node_modules' || entry.name === 'bundle.json') continue;
+      // `test/` is calibration code, not shipped UI: its fixtures legitimately name ids to prove
+      // instrument events cannot collide with subject evidence ids.
+      if (entry.name === 'node_modules' || entry.name === 'bundle.json' || entry.name === 'test') continue;
       const full = join(dir, entry.name);
       if (entry.isDirectory()) walk(full);
       else if (/\.(js|mjs|html)$/.test(entry.name)) files.push(full);

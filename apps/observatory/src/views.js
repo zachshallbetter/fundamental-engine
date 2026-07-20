@@ -9,11 +9,29 @@
  * Where the bundle has nothing, the view says so. It never renders an empty result as a finding.
  */
 
+import { operationsModel, predicatesModel, episodesModel, claimsModel, constructibility, representationProblems } from './semantics.js';
+import { TRANSFORMATIONS, REFUSED_TRANSFORMATIONS, transformationLedger } from './transformations.js';
+import { INSTRUMENT_PREDICTIONS, measureFidelity } from './instrument.js';
+
 export const esc = (v) =>
   String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 export const cite = (id, label = 'cite') =>
   id ? `<button class="cite" data-evidence="${esc(id)}">${esc(label)}</button>` : '';
+
+/** Renders the instrument's own disclosures. A transformation the reviewer is not told about is a defect. */
+export const disclosures = (m) => {
+  const problems = representationProblems(m);
+  const rows = m.disclosures.map((d) =>
+    `<li><span class="mono">${esc(d.transformation)}</span> — ${esc(d.text)}</li>`).join('');
+  if (!rows && !problems.length) return '';
+  return `<div class="card disclosure">
+    <h3>Instrument transformations applied here</h3>
+    ${rows ? `<ul class="sub">${rows}</ul>` : '<p class="note">All transformations in this view are lossless.</p>'}
+    ${problems.length ? `<p class="note vis-inferred">representation problems: ${
+      problems.map((p) => esc(p.rule)).join(', ')}</p>` : ''}
+  </div>`;
+};
 
 const pill = (text, cls = '') => `<span class="pill ${cls}">${esc(text)}</span>`;
 const yn = (b) => (b ? pill('yes', 'ok') : pill('no', 'bad'));
@@ -110,16 +128,14 @@ export function projectionView(bundle, state) {
       ${esc(p.definitionId)}</button>`).join('');
 
   const surface = active.result.surface;
-  const opRows = surface.operations.map((o) => {
-    const base = baseline.result.surface.operations.find((b) => b.operation === o.operation);
-    const changed = base && base.exposure !== o.exposure;
-    return `<tr>
-      <td class="mono">${esc(o.operation)}</td>
-      <td>${pill(o.exposure, o.exposure === 'exposed' ? 'ok' : o.exposure === 'unavailable' ? 'bad' : '')}</td>
+  const opModel = operationsModel(surface, baseline.result.surface, baseline.definitionId);
+  const opRows = opModel.items.map((o) => `
+    <tr>
+      <td class="mono">${esc(o.label)}</td>
+      <td>${pill(o.statusKind, o.statusKind === 'exposed' ? 'ok' : o.statusKind === 'unavailable' ? 'bad' : '')}</td>
       <td>${o.signaled ? pill('signaled', 'accent') : '<span class="note">not signaled</span>'}</td>
-      <td>${changed ? `<span class="note">was <strong>${esc(base.exposure)}</strong> under ${esc(baseline.definitionId)}</span>` : ''}</td>
-    </tr>`;
-  }).join('');
+      <td>${o.comparison ? `<span class="note">was <strong>${esc(o.comparison.was)}</strong> under ${esc(o.comparison.baseline)}</span>` : ''}</td>
+    </tr>`).join('');
 
   const omegaRows = active.opportunities.map((o) => `
     <tr>
@@ -170,9 +186,13 @@ export function projectionView(bundle, state) {
 
     <div class="card">
       <h3>Operations</h3>
-      <table><thead><tr><th>operation</th><th>exposure</th><th>discoverability</th><th>vs ${esc(baseline.definitionId)}</th></tr></thead>
+      <table><thead><tr><th>operation</th><th>exposure</th><th>discoverability</th><th>vs ${esc(baseline.definitionId)} <span class="note">(instrument-chosen baseline)</span></th></tr></thead>
       <tbody>${opRows}</tbody></table>
+      <p class="note">exposed / hidden / unavailable are three different facts and are never merged:
+        <em>hidden</em> exists in the world but is not offered here; <em>unavailable</em> is not in the
+        world's vocabulary at all.</p>
     </div>
+    ${disclosures(opModel)}
 
     <div class="card">
       <h3>Ω<sub>sys</sub> under this projection</h3>
@@ -203,9 +223,10 @@ export function opportunityView(bundle, state) {
 
   const evId = `projection:${active.definitionId}:omega:${result.operation}`;
 
-  const nodes = result.evidence.predicates.map((p) => `
-    <div class="deriv-node" data-evidence="${esc(evId)}">
-      <span class="k">${esc(p.predicate)}</span>
+  const m = predicatesModel(result, evId);
+  const nodes = m.items.map((p) => `
+    <div class="deriv-node" data-evidence="${esc(p.evidenceId)}">
+      <span class="k">${esc(p.label)}</span>
       <span class="v ${p.value ? 'vis-observed' : 'vis-inferred'}">${p.value}</span>
       <span class="note">${esc(p.basis)}${p.authoritySource ? ` · authority: ${esc(p.authoritySource)}` : ''}</span>
     </div>`).join('');
@@ -236,6 +257,7 @@ export function opportunityView(bundle, state) {
         : ''}
       <p>${cite(evId, 'inspect full evaluation')}</p>
     </div>
+    ${disclosures(m)}
 
     <div class="card">
       <h3>Reversibility &amp; recovery</h3>
@@ -256,6 +278,7 @@ export function episodesView(bundle, state) {
   const chooser = bundle.detections.map((d, i) => `
     <button data-detection="${i}" class="${i === idx ? 'active' : ''}">${esc(d.label)}</button>`).join('');
 
+  const m = episodesModel(bundle.detections, idx);
   const r = active.result;
   const episodes = r.episodes.length
     ? r.episodes.map((e, i) => `
@@ -278,6 +301,11 @@ export function episodesView(bundle, state) {
       overwrites another.
     </p>
     <div class="chooser">${chooser}</div>
+    ${disclosures(m)}
+    ${m.conditional?.selectedByInstrument
+      ? `<p class="note">This grouping is the instrument's default (first recorded), not a privileged
+         result — ${m.conditional.alternativesAvailable} equally defensible alternative(s) below.</p>`
+      : ''}
 
     <div class="card">
       <h3>Detection contract</h3>
@@ -765,5 +793,109 @@ export function crossVersionView(bundle, state) {
       <h3>Predictions regraded</h3>
       ${regraded ? `<table><thead><tr><th>id</th><th>grade</th><th>subject</th></tr></thead><tbody>${regraded}</tbody></table>`
         : '<div class="empty">no prediction changed grade between these revisions</div>'}
+    </div>`;
+}
+
+/* ──────────────────────────────────── O11 Instrument: self-observation */
+
+export function instrumentView(bundle, state) {
+  const ledger = transformationLedger();
+  const models = state.lastModels ?? [];
+  const f = measureFidelity(bundle, models);
+  const log = state.instrumentLog?.events ?? [];
+
+  const tRows = TRANSFORMATIONS.map((t) => `
+    <tr>
+      <td class="mono">${esc(t.id)}</td>
+      <td>${esc(t.name)}</td>
+      <td>${t.classification === 'lossless' ? pill('lossless', 'ok')
+        : t.classification === 'lossy-disclosed' ? pill('lossy · disclosed', 'warn')
+        : pill('interpretive', 'bad')}</td>
+      <td class="note">${esc(t.lossDetail)}</td>
+      <td class="note">${esc(t.risk ?? '')}</td>
+      <td class="note">${esc(t.mitigation ?? '')}</td>
+    </tr>`).join('');
+
+  const rRows = REFUSED_TRANSFORMATIONS.map((t) => `
+    <tr><td class="mono">${esc(t.id)}</td><td>${esc(t.name)}</td><td class="note">${esc(t.reason)}</td></tr>`).join('');
+
+  const pRows = INSTRUMENT_PREDICTIONS.map((p) => `
+    <tr>
+      <td class="mono">${esc(p.id)}</td>
+      <td>${esc(p.hypothesis)}</td>
+      <td class="note">${esc(p.failureCondition)}</td>
+      <td>${pill(p.status, 'pending')}</td>
+      <td class="mono">${esc(p.relatedTransformation)}</td>
+    </tr>`).join('');
+
+  const logRows = log.length
+    ? log.slice(-30).reverse().map((e) => `
+        <tr><td class="mono">${esc(e.id)}</td><td>${pill('instrument')}</td><td class="mono">${esc(e.action)}</td>
+        <td class="note">${esc(JSON.stringify(Object.fromEntries(
+          Object.entries(e).filter(([k]) => !['id', 'layer', 'action'].includes(k)))))}</td></tr>`).join('')
+    : `<tr><td colspan="4" class="empty">no instrument events yet in this session</td></tr>`;
+
+  return `
+    <h2>Instrument</h2>
+    <p class="sub">
+      The Observatory is itself a computational system that makes claims, so it is a research subject
+      like any other. This pane reports what the <strong>instrument</strong> does to evidence — not what
+      the runtime established. The two must never be confused.
+    </p>
+
+    <div class="card"><div class="grid three">
+      <div class="metric"><span class="value">${ledger.total}</span><span class="label">transformations named</span></div>
+      <div class="metric"><span class="value vis-observed">${ledger.lossless}</span><span class="label">lossless</span></div>
+      <div class="metric"><span class="value vis-reconstructed">${ledger.lossyDisclosed}</span><span class="label">lossy · disclosed</span></div>
+      <div class="metric"><span class="value vis-inferred">${ledger.interpretive}</span><span class="label">interpretive</span></div>
+      <div class="metric"><span class="value">${ledger.refused}</span><span class="label">refused</span></div>
+      <div class="metric"><span class="value">${ledger.allDisclosed ? '✓' : '✕'}</span><span class="label">all disclosed</span></div>
+    </div></div>
+
+    <div class="card">
+      <h3>Fidelity</h3>
+      <table><tbody>
+        <tr><td>trace completeness</td><td class="mono">${f.traceCompleteness === null ? 'no model rendered yet' : num(f.traceCompleteness)}</td>
+          <td class="note">fraction of visible factual statements resolving to evidence</td></tr>
+        <tr><td>transformation disclosure</td><td class="mono">${num(f.transformationDisclosure)}</td>
+          <td class="note">fraction of lossy/interpretive transformations disclosed</td></tr>
+        <tr><td>semantic distinction preserved</td><td>${f.semanticDistinctionPreserved ? pill('yes', 'ok') : pill('COLLAPSED', 'bad')}</td>
+          <td class="note">${f.statusKindsTracked} status kinds kept distinct after rendering</td></tr>
+        <tr><td>replay fidelity</td><td>${f.replayFidelityExact ? pill('exact', 'ok') : pill('drifted', 'bad')}</td>
+          <td class="note">rendered state at cursor n equals recorded state at n</td></tr>
+        <tr><td>revision fidelity</td><td>${f.revisionFidelity.compatible ? pill('compatible', 'ok') : pill('refused', 'warn')}</td>
+          <td class="note">${esc(f.revisionFidelity.reason)}</td></tr>
+        <tr><td>interpretation error</td><td>${pill('not measured', 'pending')}</td>
+          <td class="note">${esc(f.interpretationError.reason)} — <strong>not measured is not zero</strong></td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="card">
+      <h3>Transformation ledger</h3>
+      <table><thead><tr><th>id</th><th>transformation</th><th>class</th><th>information loss</th><th>risk</th><th>mitigation</th></tr></thead>
+      <tbody>${tRows}</tbody></table>
+      <p class="note">The target is not zero transformations — a visualization necessarily transforms.
+        The target is explicit, bounded, inspectable transformation.</p>
+    </div>
+
+    <div class="card">
+      <h3>Refused transformations</h3>
+      <table><thead><tr><th>id</th><th>would have</th><th>why it is refused</th></tr></thead><tbody>${rRows}</tbody></table>
+    </div>
+
+    <div class="card">
+      <h3>Instrument predictions</h3>
+      <table><thead><tr><th>id</th><th>hypothesis</th><th>failure condition</th><th>status</th><th>concerns</th></tr></thead>
+      <tbody>${pRows}</tbody></table>
+      <p class="note">Registered separately from the FCI prediction registry: mixing claims about a user
+        interface into the theory's accuracy metric would contaminate it. None has been tested.</p>
+    </div>
+
+    <div class="card">
+      <h3>Instrument trace <span class="note">(this session — ${log.length} event(s))</span></h3>
+      <table><thead><tr><th>id</th><th>layer</th><th>action</th><th>detail</th></tr></thead><tbody>${logRows}</tbody></table>
+      <p class="note">A reviewer's path through the instrument is an episode <em>of the instrument</em>.
+        Instrument ids are <span class="mono">I-</span> prefixed so they can never be mistaken for
+        subject evidence.</p>
     </div>`;
 }
