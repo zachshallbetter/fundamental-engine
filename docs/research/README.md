@@ -34,6 +34,12 @@ single paper would weaken every argument.
 
 The first paper names the paradigm. The rest prove it in specific interface domains.
 
+> **Relationship to Foundations of Computational Interaction (FCI).** An external research framework,
+> FCI, names Fundamental as a computational substrate for a subset of its distinctions. The concept
+> mapping and the bounded "neither proves the other" claim are recorded in
+> [`../canonical/computational-interaction-alignment.md`](../canonical/computational-interaction-alignment.md).
+> This paper family is Fundamental's own, self-authored research and is independent of FCI's corpus.
+
 ## The paper family
 
 | # | File | Working title | Primary contribution | Needs first | Venue |

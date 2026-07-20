@@ -12,21 +12,24 @@ The seven published packages — `@fundamental-engine/core`, `@fundamental-engin
 0.7.0 and are no longer published — they are kept `private` in the workspace. `@fundamental-engine/three`
 declares `three` as a peer dependency.) They follow [Semantic Versioning](https://semver.org):
 
-- **patch** (`0.2.x`) — bug fixes, internal changes, **and additive backward-compatible features**
-  (a new force, a new `FieldOption`, a new `FieldHandle` method). Pre-1.0, additions land in a patch —
-  this matches the canonical freeze contract
-  ([API stability](docs/canonical/api-stability.md): the stable surface is additive-only
-  within a 0.MINOR line).
-- **minor** (`0.x.0`) — **the breaking position pre-1.0**: renaming, removing, or changing the
-  signature/shape of a frozen symbol bumps `0.MINOR`, called out in the CHANGELOG under a
-  **Breaking** heading with a migration note. Consumers should pin to `~0.MINOR`.
+- **patch** (`0.9.x`) — bug fixes, internal changes, and **additive** features (a new force,
+  `FieldOption`, or `FieldHandle` method). Pre-1.0 a patch may also retire an **already-deprecated**
+  alias or change **experimental / unfrozen** surface — 0.9.3 dropped the retired alias packages in a
+  patch. What a patch never touches is the `check:api`-gated stable subset.
+- **minor** (`0.x.0`) — a break to that **frozen stable subset** (renaming, removing, or changing the
+  signature of a `check:api`-gated symbol) bumps `0.MINOR`, under a **Breaking** heading with a
+  migration note.
 - **major** (`1.0.0`) — the stability promise itself; from 1.0 on, standard SemVer applies.
+
+**Pre-1.0, pin an exact version.** The stable subset is protected, but the wider surface is still
+moving between releases; `~0.MINOR` is not a safe range yet. Read the CHANGELOG before upgrading.
 
 The engine's public surface is: the `@fundamental-engine/core` exports (`createField`, `FieldOptions`,
 `FieldHandle`, the catalog, the conformance API), the `data-*` attribute vocabulary, the `<field-root>`
 element attributes/methods, the `@fundamental-engine/vanilla` `FieldField` class and `mountField`, and the React
 adapter's props. The internal integrator, render code, and the site are not part of the public
-contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
+contract. Its **stable subset** is frozen for `0.x` and gated by `pnpm check:api`; the broader surface
+(deprecated aliases, the experimental substrate API) still evolves pre-1.0 — see
 [API stability](docs/canonical/api-stability.md).
 
 > The packages are published to npm under the `@fundamental-engine` scope, **with provenance** (a signed

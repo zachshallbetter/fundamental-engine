@@ -33,6 +33,13 @@ Carrier seam
   makes ambient structure declared and readable instead of painted
 ```
 
+## Above this path
+
+The [computational-world substrate program](../world-substrate/README.md) sits **above** this critical
+path: it reframes the field as one execution substrate inside a declared world, and turns the query /
+snapshot / projection / replay pieces built here into one governed operating model. Read this path
+first; that program is the next-leap plan built on top of it.
+
 ## Guiding principle
 
 Fundamental does not need more spectacle first. It needs queryability, inspectability, persistence, projection, stronger contracts, and governance.
