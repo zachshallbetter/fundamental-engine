@@ -36,22 +36,26 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           persist-credentials: false
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            js:
-              - 'packages/**'
-              - 'apps/**'
-              - 'scripts/**'
-              - 'data/**'
-              - 'package.json'
-              - 'pnpm-lock.yaml'
-              - 'pnpm-workspace.yaml'
-              - '.github/workflows/ci.yml'
-              - '.github/workflows/pr-checks.yml'
-
+      # Plain git rather than a third-party filter action. That action targeted Node 20; when the
+      # runners began forcing Node 24 it died silently mid-run and took the whole gate with it.
+      # A path filter is one diff — it does not need a dependency that can break underneath us.
+      - id: filter
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ -n "$BASE_REF" ]; then
+            changed=$(git diff --name-only "origin/${BASE_REF}...HEAD")
+          else
+            changed=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git ls-files)
+          fi
+          echo "changed files:"; echo "$changed" | sed 's/^/  /'
+          if echo "$changed" | grep -qE '^packages/|^apps/|^scripts/|^data/|^package\.json$|^pnpm-lock\.yaml$|^pnpm-workspace\.yaml$|^\.github/workflows/(ci|pr-checks)\.yml$'; then
+            echo "js=true" >> "$GITHUB_OUTPUT"; echo "→ JS gate will run"
+          else
+            echo "js=false" >> "$GITHUB_OUTPUT"; echo "→ JS gate skipped"
+          fi
   gate:
     name: typecheck · test · build
     runs-on: ubuntu-latest

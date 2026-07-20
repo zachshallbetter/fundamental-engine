@@ -7,6 +7,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+- **CI: replaced the third-party path-filter action with plain git.** GitHub began forcing Node 24 onto actions that target Node 20; the filter action dies silently mid-run and takes the whole gate with it via `conclusion`. A path filter is one `git diff` and does not need a dependency that can break underneath the repository. All nine original path patterns preserved and verified against a fixture of paths that must and must not match; the replacement also logs which files it saw and which way it decided.
 - **Documentation accuracy pass.** `docs/README.md` now indexes `docs/method/` (a whole top-level docs directory that was unlisted) and the `planning/world-substrate/` program. `PLAN.md`'s status header said *"Nothing in F1–F5 or C2 is built"* — false since Stage 1 landed — and the document contradicted itself, carrying both a current "Not started" line and a superseded one, plus a note calling F1.4 equivalence "pending" when it is measured. `CLAUDE.md` listed **17** frozen API entries where `check:api` reports **20**, and its layout table omitted `apps/observatory` entirely. Corrected, with the authoritative source named in each case so the next drift is self-diagnosing.
 ### Added
 
