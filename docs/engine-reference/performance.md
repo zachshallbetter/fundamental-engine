@@ -63,12 +63,12 @@ Reading the field is effectively free relative to a frame — agents/tooling can
 `field.ts`); bucketing per-frame time by `frame mod 6` shows the buckets flat within noise (~4% spread).
 The cadence does its job: re-measure cost is amortized below the per-frame particle work, so there is no
 per-6th-frame spike. (This is also why layers driven by body positions only shift on that cadence — see
-the performance notes in `CLAUDE.md`.)
+the performance notes in `docs/engineering-practices.md`.)
 
 ## The other half: fill-rate is GPU-bound
 
 These are **not** in the Node suite — they need a real GPU and are verified on hardware with a browser
-(screenshot + sampled rAF fps), per the visual-verification discipline in `CLAUDE.md`:
+(screenshot + sampled rAF fps), per the visual-verification discipline in `docs/engineering-practices.md`:
 
 - **fps across particle-count × density × DPR** — the real frame budget lives here, dominated by canvas
   compositing, not the math above.

@@ -13,7 +13,8 @@ import { test, expect } from "./fixtures";
 // (landed with the grid-neon-heatmap work) adds per-frame fill-rate cost, bringing the headless
 // CI baseline to ~20fps. The floor is now set at 15 — below the ~20fps CI baseline but still
 // catches any 2×+ regression (a genuine perf cliff). Headless software-rasterization exaggerates
-// fill-rate (CLAUDE.md: "don't kill a feature on a headless fill number alone"), so the floor is
+// fill-rate (see docs/engineering-practices.md: don't kill a feature on a headless fill number
+// alone), so the floor is
 // calibrated to catch gross regressions, not to micro-benchmark.
 const IDLE_FPS_FLOOR = 15;
 
@@ -56,7 +57,7 @@ async function medianFps(page: Page, durationMs: number): Promise<number> {
 test.describe("homepage perf guard (#414)", () => {
   test("idle median fps stays above the floor", async ({ page }, testInfo) => {
     // Chromium-only. Headless WebKit software-rasterizes the full-viewport field to ~2–3fps — the
-    // fill-rate trap (CLAUDE.md: "headless exaggerates fill … don't kill a feature on a headless fill
+    // fill-rate trap (docs/engineering-practices.md: headless exaggerates fill … don't kill a feature on a headless fill
     // number alone"). That number is noise, not a regression signal, and would flake the gate. The
     // floor is calibrated against chromium headless (≈60 idle), so the guard runs there; the mobile
     // project is chromium-engined and also representative.

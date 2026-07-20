@@ -28,7 +28,7 @@ const mdIn = (d: string) =>
   readdirSync(dirURL(d))
     .filter((f) => f.endsWith('.md'))
     .map((f) => ({ rel: `${d}/${f}`, text: readFileSync(new URL(f, dirURL(d)), 'utf8') }));
-// Optional: a repo-root doc may be absent in some checkouts (e.g. CLAUDE.md is a local agent file,
+// Optional: a repo-root doc may be absent in some checkouts (local, untracked files),
 // not committed — so it isn't present in CI). Tolerate that rather than crashing the guard.
 const rootFile = (f: string): { rel: string; text: string } | null => {
   try {

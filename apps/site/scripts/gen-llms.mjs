@@ -187,7 +187,7 @@ const engineRef = readMdTree(join(root, 'docs/engine-reference'));
 const research = readMdTree(join(root, 'docs/research'));
 const planning = readMdTree(join(root, 'docs/planning'), { recursive: true });
 
-const ROOT_FILES = ['README.md', 'CLAUDE.md', 'CHANGELOG.md'];
+const ROOT_FILES = ['README.md', 'CHANGELOG.md'];
 const rootDocs = ROOT_FILES.map((f) => {
   try {
     return { rel: f, src: readFileSync(join(root, f), 'utf8') };

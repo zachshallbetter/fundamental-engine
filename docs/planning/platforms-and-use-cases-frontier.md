@@ -33,7 +33,7 @@ Two structural reminders shape the whole list:
 - **The differentiator is reciprocity, not particles.** Bodies bend the field and the field's local
   density bends them back. The use-cases worth pursuing are the ones where *bidirectional influence is the
   product* — a settling, responsive system — not the ones where a tween would do.
-- **The field is fill-rate-bound, not particle-bound** (see CLAUDE.md "Performance"). Drawing is the cost;
+- **The field is fill-rate-bound, not particle-bound** (see `docs/engineering-practices.md`). Drawing is the cost;
   the sim is cheap. That is exactly why the **headless / non-visual** uses below are so attractive — they
   pay none of the draw cost and `render: 'none'` is already the default (#538).
 
@@ -95,4 +95,4 @@ The site's use-case metadata (`apps/site/src/lib/recipe-taxonomy.ts`) is **keyed
 Most ideas here are *ports and applications*, not UI patterns, so they do **not** belong in that taxonomy.
 The two genuinely recipe-shaped entries — **force-directed graph layout** (`relationships`) and
 **accretion ranking** (`priority`) — are flagged above as candidates for `EXPERIMENTAL_PATTERNS` (never the
-locked set; see CLAUDE.md "Pattern canon is locked"). Everything else lives here and on the board.
+locked set; see `docs/engineering-practices.md`). Everything else lives here and on the board.

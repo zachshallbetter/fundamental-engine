@@ -107,20 +107,7 @@ paid for:
   comments and PR prose too: nothing is "shipped" until code confirms it, and `main` moves
   fast enough that "planned" claims must be re-verified before acting on them.
 
-## 5. Multi-agent builds (what actually works)
-
-- **Foreground agents.** Background agents get orphaned by session restarts.
-- **Strictly disjoint file ownership**, declared in every prompt, with shared files
-  sequenced into waves. Name the concurrent agents' territories so build noise is ignorable.
-- **Verified facts travel in the prompt** ("this is verified — do not re-derive"), and the
-  load-bearing assumption gets verified by the orchestrator *first* (the one unverified
-  assumption we delegated produced the only hollow integration of the arc).
-- Unique `--outDir` per agent for site builds; the e2e webServer port (4399) is contended —
-  wait/retry, don't fight.
-- The orchestrator independently re-verifies the headline claim of each agent report before
-  merging. Agents are honest but their probes have the same failure modes as §3.
-
-## 6. The gate
+## 5. The gate
 
 Before declaring done or merging, always:
 
@@ -140,7 +127,7 @@ partial publish is retried with `gh run rerun --failed` — it is idempotent per
 > contract symbol with neither a test nor an exemption fails the build; this is the positive-check
 > half of the silent-contract-gap defense (§2).
 
-## 7. Scope honesty
+## 6. Scope honesty
 
 Epics get assessments, not cramming. A grounded plan comment on the issue (what exists, what
 the slice is, what the parity harness will be) beats a rushed half-implementation — and the

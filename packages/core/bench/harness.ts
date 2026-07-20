@@ -3,7 +3,7 @@
 // two runs on the same machine are comparable. Timing is wall-clock via performance.now(); we report the
 // MEDIAN and p95 of per-iteration times after a warmup, because a mean is dominated by GC/JIT outliers.
 //
-// IMPORTANT (see CLAUDE.md): the JS field is FILL-RATE-bound, not particle-bound. This suite measures the
+// IMPORTANT (see docs/engineering-practices.md): the JS field is FILL-RATE-bound, not particle-bound. This suite measures the
 // ALGORITHMIC cost of the engine (step/query/snapshot/accumulator) in Node, where there is no compositor.
 // The fps/fill-rate/DPR/mix-blend numbers that actually gate the homepage live on real GPU hardware and
 // are intentionally NOT measured here — Node software-rasterizes and would mislead. See performance.md.
