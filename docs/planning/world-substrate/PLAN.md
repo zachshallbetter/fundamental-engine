@@ -1,11 +1,19 @@
 # Work plan — Computational-World Substrate
 
-> **Status: planning (proposed WBS).** The itemized work breakdown for the program in
-> [`README.md`](README.md). Narrative, the kernel, the derivation classes, and the canonical
-> terminology live in the README — this document is the itemized plan. Nothing in F1–F5 or C2 is built.
-> Each item's acceptance criterion is a **falsification** test, not "it compiles."
+> **Status: Stage 1 built and merged; Stage 2 not begun.** The itemized work breakdown for the program
+> in [`README.md`](README.md). Narrative, the kernel, the derivation classes, and the canonical
+> terminology live in the README — this document is the itemized plan. Each item's acceptance criterion
+> is a **falsification** test, not "it compiles."
+>
+> **What is built:** F1.0–F1.9, G3 (second substrate), the F2 *foundation* (`ProjectionContract` +
+> property classification), the substrate conformance corpus, the discovery / prediction /
+> negative-result registries, and the Observatory. All EXPERIMENTAL and unexported.
+> **What is not:** F1.10 (native ports, deferred) and Stage-2 implementation — the projection runtime,
+> model checker, and empirical validation system. See the status ledger at the end of this document,
+> which is authoritative over this summary.
 
-**Version:** 2.1 (Stage 1 reframed around the F1.1 finding, 2026-07-19) · **Owner:** Zach Shallbetter
+**Version:** 2.1 (Stage 1 reframed around the F1.1 finding, 2026-07-19; status header corrected
+2026-07-20) · **Owner:** Zach Shallbetter
 
 ## The decisive correction (v2.0)
 
@@ -203,7 +211,6 @@ contracts and empirical methods by which those facts may support claims").
 - **In progress:** A′ architecture (`feat/world-kernel`); CompInt canonical application (C1.7–C1.10, C1.12) — parallel, secondary.
 - **Superseded:** the original F1.1 FieldPattern-hosting criterion; the original F1 execution spec (`F1-execution-spec.md` → `F1-execution-spec-v2.md`).
 - **Deferred:** native ports (post-F1/F2 review); branding (post-F4); full declarative FieldDynamics (F1.5) until the contract boundary is validated (F1.3/F1.4).
-- **Not started:** F1.10 (native ports, deferred by R4), F2+.
 - **Cannot be done by me:** C1.14; the C-execution (human-subjects) parts of C2; I build A/B/D.
 
-**Precise note on the "green" implementation (per instruction):** what is built and passing is **F1.2 (generic `World`)** + the **F1.3 enriched `DynamicsContract`** + an **F1.4 opaque `FieldRuntime` adapter** (conforming to the contract, equivalence-measurement pending) — NOT a kernel that hosts field evolution. The interim label "F1.1c" is retired.
+**Precise note on what is built (superseding an earlier, narrower note):** F1.0–F1.9 are complete and passing, plus G3 (second substrate), the F2 *foundation* (`ProjectionContract` + property classification), the substrate conformance corpus (4 adapted, 4 pending), the discovery/prediction/negative-result registries, and the Observatory. F1.4 equivalence is **measured**, not pending. What is still **not** built is a kernel that hosts field evolution directly — the field remains one execution substrate behind the contract (the F1.1 finding) — and Stage-2 implementation. The interim label "F1.1c" is retired.
