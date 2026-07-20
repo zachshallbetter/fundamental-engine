@@ -9,10 +9,10 @@
 //   <ApiStamp name="createField" pkg="@fundamental-engine/vanilla" />  (disambiguate the two doors)
 //   <ApiStamp item="FieldHandle.scrollV()" />      → experimental
 import {
-  FROZEN_VALUES,
-  FROZEN_TYPES,
-  FROZEN_ELEMENTS,
-  FROZEN_BODY_ATTR,
+  PROTECTED_VALUES,
+  PROTECTED_TYPES,
+  PROTECTED_ELEMENTS,
+  PROTECTED_BODY_ATTR,
   EXPERIMENTAL,
 } from '../../../../scripts/api-surface.data.mjs';
 
@@ -38,12 +38,12 @@ if (name) {
   const byPkg = <T extends { pkg: string }>(rows: T[]) =>
     pkg ? rows.filter((r) => r.pkg === pkg) : rows;
   const hit =
-    byPkg(FROZEN_VALUES).find((v: { name: string }) => v.name === name) ??
-    byPkg(FROZEN_TYPES).find((t: { name: string }) => t.name === name) ??
-    byPkg(FROZEN_ELEMENTS).find((e: { tag: string }) => e.tag === name);
+    byPkg(PROTECTED_VALUES).find((v: { name: string }) => v.name === name) ??
+    byPkg(PROTECTED_TYPES).find((t: { name: string }) => t.name === name) ??
+    byPkg(PROTECTED_ELEMENTS).find((e: { tag: string }) => e.tag === name);
   if (hit) {
     stamp = { status: 'frozen', label: `frozen · ${hit.pkg}`, title: hit.note };
-  } else if (name === FROZEN_BODY_ATTR) {
+  } else if (name === PROTECTED_BODY_ATTR) {
     stamp = {
       status: 'frozen',
       label: 'frozen · attribute contract',

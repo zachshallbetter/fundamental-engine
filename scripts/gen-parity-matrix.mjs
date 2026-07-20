@@ -112,7 +112,7 @@ function jsOverlayModes() {
 /** Frozen public value exports (createField, browserHost, bindData, …) from the api-surface data. */
 async function jsFrozenValues() {
   const mod = await import(resolve(root, 'scripts/api-surface.data.mjs'));
-  return new Set(mod.FROZEN_VALUES.map((v) => v.name));
+  return new Set(mod.PROTECTED_VALUES.map((v) => v.name));
 }
 
 // ── Swift extractors ──────────────────────────────────────────────────────────────────────────────

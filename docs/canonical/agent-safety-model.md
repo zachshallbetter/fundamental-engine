@@ -3,7 +3,7 @@
 > consumers that *read* a field — the **Govern** verb of the substrate (Declare → Influence → Read
 > → Reveal → **Govern**). It is an overview: the mechanisms and their code live in
 > [`substrate-api.md`](substrate-api.md), which this doc links outward to. That surface is **shipped
-> and code-confirmed but EXPERIMENTAL / unfrozen** (0.x) — it may change; it is not part of the frozen
+> and code-confirmed but EXPERIMENTAL / unprotected** (0.x) — it may change; it is not part of the protected
 > stable baseline.
 
 # The agent safety model — the Govern verb

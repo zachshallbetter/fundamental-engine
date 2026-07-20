@@ -3,7 +3,7 @@
 > queryable, time-travelable, projectable* substrate — not just a thing that draws or writes CSS
 > variables. Every method below is **shipped** in `@fundamental-engine/core` (verified against
 > `packages/core/src/engine/types.ts` + `field.ts`), but the whole surface is **EXPERIMENTAL**: it is
-> *not* part of the frozen 17 (see [api-stability.md](api-stability.md)) and may change shape or be
+> *not* on the protected list (see [api-stability.md](api-stability.md)) and may change shape or be
 > removed in any release. Use it; don't pin a contract to it yet. Follows the
 > [status rule](documentation-standards.md): nothing here is called shipped unless code confirms it.
 
@@ -474,7 +474,7 @@ behaves exactly as before.
 
 ---
 
-## Status & relation to the frozen surface
+## Status & relation to the protected surface
 
 | Capability | Surface | Status |
 |---|---|---|
@@ -488,7 +488,7 @@ behaves exactly as before.
 | Accumulator channels | `Env.accum` / `FieldImpulseAccumulator` | shipped-unfrozen · EXPERIMENTAL |
 | Runtime policy + budgets | `createField({ policy })` · `setPolicy` · `field.policy` | shipped-unfrozen · EXPERIMENTAL (motion + privacy budgets wired; others declared) |
 
-None of these are in the frozen 17 ([api-stability.md](api-stability.md)). They are present in the
+None of these are on the protected list ([api-stability.md](api-stability.md)). They are present in the
 package and safe to use, but carry **no** stability guarantee until explicitly added to the stable
 table. The substrate API is JS-first; native-plane (`swift/`, `android/`) parity is tracked separately.
 
