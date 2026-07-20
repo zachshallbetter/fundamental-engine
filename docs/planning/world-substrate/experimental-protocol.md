@@ -4,9 +4,12 @@
 `packages/core/src/world/conformance/{corpus,discoveries,predictions}.ts` — the assertions in
 `methodology.test.ts` are about the *method*, not about `DynamicsContract`.
 
-This document describes how this program is allowed to change its own theory. The abstractions —
-`DynamicsContract`, `Ω_sys`, `ProjectionContract` — are domain-specific results. The protocol that
-produced them is the more general contribution, and it is what this file records.
+This document is **this program's instance** of the protocol, with its current numbers. The
+domain-neutral method — applicable to any theory with independent implementations adapted to it — now
+lives separately in [`docs/method/empirical-protocol.md`](../../method/empirical-protocol.md).
+
+The abstractions (`DynamicsContract`, `Ω_sys`, `ProjectionContract`) are domain-specific results. The
+protocol that produced them is the more general contribution.
 
 ---
 
@@ -140,6 +143,42 @@ could therefore have failed to show a difference. The rest is architecture.
 Every ungrounded claim must name the experiment that would ground it, and every hypothesis must
 reference a registered prediction. Both are asserted in tests, so a claim cannot sit ungrounded and
 unexamined.
+
+## Negative results
+
+Abandoned intuitions, kept permanently. Distinct from rejected conveniences and from regraded
+predictions — regrading a prediction erases the *belief* behind it, which is the thing most likely to be
+re-proposed later.
+
+| Id | Hypothesis | Status | Falsified by |
+|---|---|---|---|
+| **N-001** | termination is specific to search/planning substrates | falsified | FiniteStateMachine |
+| **N-002** | projection composition preserves subtractive power | pending | — (P-006) |
+| **N-003** | a `CompiledPattern` is a complete world declaration | falsified | F1.1 audit |
+| **N-004** | field dynamics is fully expressible as declarative data | falsified | F1.5 experiment |
+| **N-005** | `DynamicsExecutionContext.now` is needed by real substrates | pending | — (4/4 substrates decline it) |
+
+N-003, N-004 and N-005 are **reconstructed** — recorded after the fact from Stage-1 findings rather than
+when the belief was abandoned. The ledger counts them separately, because a belief recorded at
+abandonment is stronger evidence of discipline than one remembered later.
+
+## Evidence provenance
+
+Maturity and provenance are tracked as separate dimensions (see the method document for the general
+form). Current state of the projection claims:
+
+| Independence | Claims |
+|---|---|
+| high | 2 |
+| medium | **0** |
+| low | 2 |
+| none | 4 |
+
+The zero is the actionable number: **there is currently no independent adversarial test anywhere in the
+projection evidence.** Supplying one is the point of the next phase.
+
+Both discoveries are `revealed-by-independent-substrate` (high), and a test asserts that no discovery
+may rest on an architectural argument.
 
 ## Why this generalizes
 
