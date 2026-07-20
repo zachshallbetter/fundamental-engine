@@ -203,3 +203,22 @@ substrates, no accepted conveniences, and a converging trend (the most recent su
 last adapted substrate, and the next one is the event-sourced aggregate — pre-registered at churn 0 with
 a semantic probe of whether `replay` vs `deterministicReplay` is a real distinction or a cosmetic one.
 Four of eight corpus entries remain pending and contribute no evidence.
+
+---
+
+# Pre-registration — round 2 (projection)
+
+Registered in `cdb6179f`, before the projection phase begins. The corpus protocol is applied to
+`ProjectionContract`, which currently rests on a grounded fraction of **0.25** (see
+[`experimental-protocol.md`](experimental-protocol.md)).
+
+| Id | Claim | Predicted |
+|---|---|---|
+| **P-005** | authority presentation needs no new concept — presented-vs-effective covers it, including delegation | churn 0 |
+| **P-006** | projecting a projection exposes a **structural** gap; evidence access in particular is expected not to compose | churn ≥ 1, structural |
+| **P-007** | participant-relative state needs no participant model — it reduces to observation access plus scope | churn 0 |
+| **P-008** | invariant scope needs one distinction the foundation lacks: *unevaluable* is not *vacuously satisfied* | churn 1 |
+
+**P-006 is the round's falsification candidate.** Every existing projection fixture tests a single
+projection over a source. Composition is the case where the subtractive-power guarantee is most likely
+to fail — a second layer could launder what the first withheld — and it has never been run.
