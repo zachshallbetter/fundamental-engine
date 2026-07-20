@@ -3,9 +3,9 @@
 The six `@fundamental-engine/*` packages publish to npm **with provenance** via CI. This document is the
 mechanics; the policy (versioning, when to cut) is in [`RELEASING.md`](RELEASING.md).
 
-> The public surface is frozen for `0.x` — see
+> A listed subset of the public surface is protected from silent removal — see
 > [API stability](docs/canonical/api-stability.md). `pnpm check:api` (run in CI and the
-> release workflow) fails if a frozen symbol changes, so a release can't break the contract by accident.
+> release workflow) fails if a protected symbol disappears, so an export cannot vanish from a release by accident.
 
 ## The packages
 
@@ -62,5 +62,5 @@ pnpm --filter "@fundamental-engine/*" exec npm version <patch|minor|major> --no-
 ```
 
 Per the `0.x` rules in [API stability](docs/canonical/api-stability.md), a breaking change to a
-frozen symbol is a **minor** bump (`0.2 → 0.3`); additive and fix-only changes are patches. The private
+protected symbol is a **minor** bump (`0.2 → 0.3`); additive and fix-only changes are patches. The private
 `site` / `starter` apps are versioned independently and not published.

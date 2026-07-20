@@ -14,10 +14,10 @@ declares `three` as a peer dependency.) They follow [Semantic Versioning](https:
 
 - **patch** (`0.9.x`) — bug fixes, internal changes, and **additive** features (a new force,
   `FieldOption`, or `FieldHandle` method). Pre-1.0 a patch may also retire an **already-deprecated**
-  alias or change **experimental / unfrozen** surface — 0.9.3 dropped the retired alias packages in a
-  patch. What a patch never touches is the `check:api`-gated stable subset.
-- **minor** (`0.x.0`) — a break to that **frozen stable subset** (renaming, removing, or changing the
-  signature of a `check:api`-gated symbol) bumps `0.MINOR`, under a **Breaking** heading with a
+  alias or change **unprotected** surface — 0.9.3 dropped the retired alias packages in a
+  patch. What a patch never does is remove a `check:api`-protected symbol.
+- **minor** (`0.x.0`) — removing or renaming a **`check:api`-protected symbol**, or changing its
+  signature, bumps `0.MINOR`, under a **Breaking** heading with a
   migration note.
 - **major** (`1.0.0`) — the stability promise itself; from 1.0 on, standard SemVer applies.
 
@@ -28,8 +28,8 @@ The engine's public surface is: the `@fundamental-engine/core` exports (`createF
 `FieldHandle`, the catalog, the conformance API), the `data-*` attribute vocabulary, the `<field-root>`
 element attributes/methods, the `@fundamental-engine/vanilla` `FieldField` class and `mountField`, and the React
 adapter's props. The internal integrator, render code, and the site are not part of the public
-contract. Its **stable subset** is frozen for `0.x` and gated by `pnpm check:api`; the broader surface
-(deprecated aliases, the experimental substrate API) still evolves pre-1.0 — see
+contract. A listed subset is **protected from silent removal** by `pnpm check:api` — that is a guard against
+accidental breakage, not a freeze; the surface evolves pre-1.0 and additions never fail the check. See
 [API stability](docs/canonical/api-stability.md).
 
 > The packages are published to npm under the `@fundamental-engine` scope, **with provenance** (a signed
@@ -76,7 +76,7 @@ contract. Its **stable subset** is frozen for `0.x` and gated by `pnpm check:api
 - **`pr-checks.yml`** — PR hygiene: a PR that changes `packages/` must add a CHANGELOG entry
   (the diff is checked, not the PR body), and every relative doc link must resolve
   (`pnpm check:links`). Its `conclusion-pr` job is a required check on `main`.
-- **`api-surface.yml`** — on PRs touching the packages, posts the frozen-surface delta
+- **`api-surface.yml`** — on PRs touching the packages, posts the protected-surface delta
   (base vs. head of `scripts/api-surface.data.mjs`) as a PR comment. Visibility only; the
   blocker is `check:api` in `ci.yml`.
 
