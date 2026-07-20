@@ -143,8 +143,19 @@ test('G3.3 migration: the field adapter is unaffected by the refinement', () => 
 test('G3 guard: the generic contract stays free of substrate-specific imports', () => {
   for (const file of ['world.ts', 'dynamics.ts', 'kernel.ts', 'envelope.ts']) {
     const src = stripComments(readFileSync(join(here, file), 'utf8'));
-    assert.ok(!/\bGovernor/.test(src), `${file} must not reference the governor substrate`);
-    assert.ok(!/substrates\//.test(src), `${file} must not import a substrate`);
+    for (const p of [/\bGovernor/, /\bFsm\b/, /\bPlanner/, /substrates\//]) {
+      assert.ok(!p.test(src), `${file} must not match ${p} — the kernel must not know any substrate`);
+    }
+  }
+});
+
+test('corpus guard: each substrate is written without knowledge of the contract', () => {
+  // the corpus protocol depends on this: a substrate that imports the contract could be shaped to fit it
+  for (const f of [join(here, 'substrates', 'fsm.ts'), join(here, 'substrates', 'planner.ts'), join(here, 'substrates', 'governor.ts')]) {
+    const src = stripComments(readFileSync(f, 'utf8'));
+    for (const p of [/DynamicsContract/, /from ['"].*dynamics/, /from ['"].*kernel/, /from ['"].*world\.ts/]) {
+      assert.ok(!p.test(src), `${f} must not match ${p} — substrate-first means substrate-unaware`);
+    }
   }
 });
 
@@ -156,6 +167,11 @@ test('G3 guard: the second adapter introduces no any/Function/eval/callback esca
     join(here, 'cross-substrate.ts'),
     join(here, 'projection', 'projection.ts'),
     join(here, 'properties', 'properties.ts'),
+    join(here, 'substrates', 'fsm.ts'),
+    join(here, 'substrates', 'planner.ts'),
+    join(here, 'adapters', 'fsm-runtime.ts'),
+    join(here, 'adapters', 'planner-runtime.ts'),
+    join(here, 'conformance', 'corpus.ts'),
   ];
   const forbidden: RegExp[] = [/:\s*any\b/, /<any[>,]/, /\bFunction\b/, /\beval\(/, /new Function/, /\bimportScripts\b/];
   for (const f of files) {

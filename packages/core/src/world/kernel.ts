@@ -14,6 +14,7 @@ import type {
   DynamicsEvidence,
   DynamicsResult,
   DynamicsSnapshot,
+  TransitionLifecycle,
 } from './dynamics.ts';
 
 export interface InvariantResult {
@@ -29,6 +30,18 @@ export interface KernelHost<State, Input, Output, Evidence = DynamicsEvidence> {
   readonly initialized: boolean;
   /** Execute the contract once. The kernel threads `State`; it does not inspect it. */
   advance(input: Input): DynamicsResult<Output, Evidence>;
+  /**
+   * Lifecycle reported by the most recent successful `advance` (corpus finding C1) — the generic signal
+   * that tells a kernel whether to keep advancing, without reading substrate-specific output.
+   * `'continuing'` before any transition, and for substrates that predate the concept.
+   *
+   * Deliberately a host reading rather than a field on `advance`'s result: carrying it in the result
+   * would change the shape every existing call site destructures, including the F1.4 equivalence
+   * harness that serves as the raw-vs-adapted authority. Perturbing that authority to improve an API
+   * shape is a bad trade mid-program. Folding it into the result is the better long-term design and is
+   * the natural move the next time this API is revised.
+   */
+  readonly lastLifecycle: TransitionLifecycle;
   /** Read state via the contract's snapshot (if the substrate advertises the capability). */
   readState(): DynamicsResult<DynamicsSnapshot, Evidence> | { readonly ok: false; readonly reason: string };
   /** Generic invariant check over a readable projection — no substrate knowledge. */
@@ -43,12 +56,16 @@ export function hostWorld<State, Input, Output, Evidence = DynamicsEvidence>(
   const init = dynamics.initialize({ declaration: world });
   let state: State | undefined = init.ok ? init.value : undefined;
   let step = 0;
+  let lifecycle: TransitionLifecycle = 'continuing';
 
   return {
     world,
     dynamics,
     get initialized() {
       return state !== undefined;
+    },
+    get lastLifecycle() {
+      return lifecycle;
     },
     advance(input: Input): DynamicsResult<Output, Evidence> {
       if (state === undefined) {
@@ -58,6 +75,8 @@ export function hostWorld<State, Input, Output, Evidence = DynamicsEvidence>(
       if (result.ok) {
         state = result.value.state;
         step += 1;
+        // absent is read as continuing — substrates predating the concept are unaffected
+        lifecycle = result.value.lifecycle ?? 'continuing';
         return { ok: true, value: result.value.output, evidence: result.evidence };
       }
       return { ok: false, error: result.error, evidence: result.evidence };

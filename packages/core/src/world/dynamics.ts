@@ -122,9 +122,26 @@ export type DynamicsResult<T, Evidence> =
   | { readonly ok: true; readonly value: T; readonly evidence: Evidence }
   | { readonly ok: false; readonly error: DynamicsFailure; readonly evidence: Evidence };
 
+/**
+ * Whether further transitions are defined from the resulting state (corpus finding C1).
+ *
+ * Added because the corpus introduced the first substrates that FINISH. The field and the governor run
+ * indefinitely, so no earlier substrate could reveal that a kernel driving a contract has no generic way
+ * to learn it should stop calling `advance`. Without this, a kernel must read substrate-specific output
+ * to decide whether to continue — which is exactly the abstraction leak the contract exists to prevent.
+ *
+ * Deliberately minimal: `terminal` does NOT distinguish "finished with a result" from "finished without
+ * one" (goal-reached vs exhausted). Both corpus substrates exhibit that distinction, but the evidence
+ * only forces "must the kernel keep going?", so the richer split stays in substrate-specific output
+ * until a third substrate needs it generically.
+ */
+export type TransitionLifecycle = 'continuing' | 'terminal';
+
 export interface Transition<State, Output> {
   readonly state: State;
   readonly output: Output;
+  /** Absent is read as `continuing` — the behaviour of every substrate that predates this concept. */
+  readonly lifecycle?: TransitionLifecycle;
 }
 
 export interface TransitionLawRule {
