@@ -127,6 +127,23 @@ export interface Transition<State, Output> {
   readonly output: Output;
 }
 
+export interface TransitionLawRule {
+  readonly [key: string]: number | string | boolean;
+}
+
+/**
+ * A substrate's declared transition law, expressed as DATA (G3.3 refinement).
+ *
+ * Added because the second substrate exposed a gap: `capabilities.declareTransitionLaw` could be set
+ * truthfully, yet the contract offered no way to obtain the law. An `opaque-native` substrate cannot
+ * provide one (and must leave the capability false); a substrate whose law IS a declared table can.
+ */
+export interface TransitionLawDescription {
+  readonly kind: string;
+  readonly rules: readonly TransitionLawRule[];
+  readonly notes?: string;
+}
+
 export interface DynamicsSnapshot {
   /** The generic readable projection the kernel may inspect (e.g. to check invariants). */
   readonly reading: WorldStateSnapshot;
@@ -155,6 +172,8 @@ export interface DynamicsContract<State, Input, Output, Evidence = DynamicsEvide
   advance(state: State, input: Input, context: DynamicsExecutionContext): DynamicsResult<Transition<State, Output>, Evidence>;
   snapshot?(state: State, context: DynamicsExecutionContext): DynamicsResult<DynamicsSnapshot, Evidence>;
   restore?(snapshot: DynamicsSnapshot, context: DynamicsExecutionContext): DynamicsResult<State, Evidence>;
+  /** Present iff `capabilities.declareTransitionLaw` is true. Returns the law as data. */
+  describeTransitionLaw?(): DynamicsResult<TransitionLawDescription, Evidence>;
 }
 
 export interface DynamicsContractProblem {
@@ -167,7 +186,7 @@ export interface DynamicsContractProblem {
  * execution-kind / determinism combinations (F1.3 negative tests).
  */
 export function validateDynamicsContract(
-  c: Pick<DynamicsContract<unknown, unknown, unknown, unknown>, 'executionKind' | 'capabilities' | 'determinism'>,
+  c: Pick<DynamicsContract<unknown, unknown, unknown, unknown>, 'executionKind' | 'capabilities' | 'determinism' | 'describeTransitionLaw'>,
 ): DynamicsContractProblem[] {
   const problems: DynamicsContractProblem[] = [];
   const caps = c.capabilities;
@@ -182,6 +201,14 @@ export function validateDynamicsContract(
   }
   if (c.determinism.classification === 'deterministic' && c.determinism.uncontrolledInputs.length > 0) {
     problems.push({ rule: 'deterministic∦uncontrolled', detail: 'classification deterministic must not list uncontrolled inputs' });
+  }
+  // G3.3 refinement: the capability must be exercisable, and must not be claimed silently.
+  const hasLaw = typeof c.describeTransitionLaw === 'function';
+  if (caps.declareTransitionLaw && !hasLaw) {
+    problems.push({ rule: 'declareTransitionLaw⇒describeTransitionLaw', detail: 'declareTransitionLaw:true requires a describeTransitionLaw() method' });
+  }
+  if (!caps.declareTransitionLaw && hasLaw) {
+    problems.push({ rule: 'describeTransitionLaw⇒declareTransitionLaw', detail: 'describeTransitionLaw() present but declareTransitionLaw is false' });
   }
   return problems;
 }

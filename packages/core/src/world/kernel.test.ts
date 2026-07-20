@@ -106,6 +106,12 @@ test('F1.3 substrate-agnostic: the same kernel executes a NON-field contract ide
       evidence: EMPTY_EVIDENCE,
     }),
     restore: (snap) => ({ ok: true, value: { n: (snap.payload as { n: number }).n }, evidence: EMPTY_EVIDENCE }),
+    // G3.3: claiming declareTransitionLaw now REQUIRES being able to produce the law.
+    describeTransitionLaw: () => ({
+      ok: true,
+      value: { kind: 'increment', rules: [{ kind: 'advance', delta: 'steps', defaultSteps: 1 }] },
+      evidence: EMPTY_EVIDENCE,
+    }),
   };
   assert.deepEqual(validateDynamicsContract(counter), [], 'the counter contract is self-consistent');
   const host = hostWorld(world, counter);

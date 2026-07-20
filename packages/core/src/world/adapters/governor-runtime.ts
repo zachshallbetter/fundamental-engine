@@ -22,6 +22,8 @@ import type {
   DynamicsSnapshot,
   EvidenceRecord,
   Transition,
+  TransitionLawDescription,
+  TransitionLawRule,
 } from '../dynamics.ts';
 import {
   ESCALATE_RULES,
@@ -206,6 +208,27 @@ export function governorDynamics(
         ok: true,
         value: restored,
         evidence: evidence({ substrateResponses: [record('restore', 'governor-state', restored.step, { tier: restored.governor.tier })] }),
+      };
+    },
+
+    /**
+     * G3.3 refinement. Present because `declareTransitionLaw` is true: the law IS data, so it can be
+     * returned as data. The field adapter has no counterpart — it declares the capability false.
+     */
+    describeTransitionLaw(): DynamicsResult<TransitionLawDescription, DynamicsEvidence> {
+      const rules: TransitionLawRule[] = [
+        ...ESCALATE_RULES.map((r) => ({ kind: 'escalate', aboveMs: r.aboveMs, streak: r.streak, tier: r.tier })),
+        { kind: 'recover', cleanStreak: RECOVER_STREAK, tierDelta: -1 },
+        { kind: 'overrun-test', factor: 1.3, budgetMs },
+      ];
+      return {
+        ok: true,
+        value: {
+          kind: 'threshold-table',
+          rules,
+          notes: 'first matching escalate rule wins; recovery drops exactly one tier (asymmetric hysteresis)',
+        },
+        evidence: evidence({ substrateResponses: [record('describe-law', 'transition-law', 0, { ruleCount: rules.length })] }),
       };
     },
   };
