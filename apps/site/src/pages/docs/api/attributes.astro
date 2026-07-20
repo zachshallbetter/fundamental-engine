@@ -3,7 +3,7 @@ import DocsLayout from '../../../layouts/DocsLayout.astro';
 import { ATTRS, WRITEBACK, FIELD_ROOT_ATTRS } from '../../../lib/docs-api.ts';
 import SeeAlso from '../../../components/SeeAlso.astro';
 import ApiStamp from '../../../components/ApiStamp.astro';
-import { FROZEN_BODY_ATTR } from '../../../../../../scripts/api-surface.data.mjs';
+import { PROTECTED_BODY_ATTR } from '../../../../../../scripts/api-surface.data.mjs';
 import { MANUAL_FORCES } from '@fundamental-engine/core';
 import '../../../styles/force-glyphs.css';
 
@@ -35,7 +35,7 @@ const families = [
           <div class="api-row">
             <dt class="k">
               <code>{a.name}</code>
-              {a.name === FROZEN_BODY_ATTR && <ApiStamp name={FROZEN_BODY_ATTR} />}
+              {a.name === PROTECTED_BODY_ATTR && <ApiStamp name={PROTECTED_BODY_ATTR} />}
               <span class="ty">{a.type}{a.def ? <> · <b>default {a.def}</b></> : null}</span>
             </dt>
             <dd class="d">{a.desc}</dd>

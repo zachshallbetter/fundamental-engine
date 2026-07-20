@@ -1,17 +1,20 @@
 /**
- * The frozen public API surface for Fundamental `0.x` — the single data source shared by the lock
+ * The removal-protected public API surface — the single data source shared by the check
  * (`scripts/check-api-surface.mjs`) and the docs page (`/docs/api/stability`). The prose contract is
- * `docs/canonical/api-stability.md`; the hard type/value gate is `scripts/api-surface.ts`.
+ * `docs/canonical/api-stability.md`; the type/value gate is `scripts/api-surface.ts`.
  *
- * Editing this list changes the public contract. Per the compatibility rules below, removing,
- * renaming, or changing the kind/shape of any frozen entry is a BREAKING change (a 0.MINOR bump in
- * the 0.x line) and needs a CHANGELOG migration note. Additions are fine in a PATCH.
+ * This is NOT a freeze. Pre-1.0 the surface evolves and new exports land freely — the check never
+ * fails on an addition. What it protects against is a listed symbol silently DISAPPEARING from a
+ * published package, which a consumer would otherwise discover before CI does.
+ *
+ * Removing or renaming a listed entry is therefore a deliberate act: update this list in the same
+ * change, and record the removal in the CHANGELOG so consumers get a migration note.
  *
  * Package npm names: core = `@fundamental-engine/core`; others = `@fundamental-engine/{dom,elements,react,vanilla,three}`.
  */
 
-/** Frozen value exports — functions/consts that must remain importable, with their owning package. */
-export const FROZEN_VALUES = [
+/** Value exports protected from silent removal — functions/consts, with their owning package. */
+export const PROTECTED_VALUES = [
   { pkg: '@fundamental-engine/core', name: 'createField', note: 'host-required primitive — throws without opts.host (the renderer-agnostic door).' },
   { pkg: '@fundamental-engine/core', name: 'compilePattern', note: 'pure FieldPattern → compiled plan (no DOM).' },
   { pkg: '@fundamental-engine/core', name: 'compileRecipe', note: 'DEPRECATED alias of compilePattern (recipe → Pattern rename) — removed at 1.0; frozen until then.' },
@@ -28,7 +31,7 @@ export const FROZEN_VALUES = [
 ];
 
 /** Frozen type exports — interfaces that must remain exported, with their owning package. */
-export const FROZEN_TYPES = [
+export const PROTECTED_TYPES = [
   { pkg: '@fundamental-engine/core', name: 'FieldPattern', note: 'the pattern schema (recipes/schema.ts).' },
   { pkg: '@fundamental-engine/core', name: 'FieldRecipe', note: 'DEPRECATED alias of FieldPattern (recipe → Pattern rename) — removed at 1.0; frozen until then.' },
   { pkg: '@fundamental-engine/core', name: 'FieldHost', note: 'the renderer-agnostic host contract createField requires; browserHost implements it.' },
@@ -36,7 +39,7 @@ export const FROZEN_TYPES = [
 ];
 
 /** Frozen custom-element tag names, owned by @fundamental-engine/elements. */
-export const FROZEN_ELEMENTS = [
+export const PROTECTED_ELEMENTS = [
   { pkg: '@fundamental-engine/elements', tag: 'field-root', note: 'one background field per page; scans the document for [data-body].' },
   { pkg: '@fundamental-engine/elements', tag: 'field-cell', note: 'a scoped local field region.' },
 ];
@@ -46,7 +49,7 @@ export const FROZEN_ELEMENTS = [
  * ordinary elements (core BODY_SELECTOR). There is NO <field-body> tag and one must not be introduced
  * as the body mechanism.
  */
-export const FROZEN_BODY_ATTR = 'data-body';
+export const PROTECTED_BODY_ATTR = 'data-body';
 
 /** Experimental surface — explicitly NOT frozen; may change shape or be removed in any release. */
 export const EXPERIMENTAL = [
@@ -95,10 +98,11 @@ export const EXPERIMENTAL = [
 
 /** Compatibility rules for the 0.x line. */
 export const COMPAT_RULES = [
-  'Pre-1.0 semver: in 0.x the MINOR is the breaking position. A breaking change to any frozen symbol bumps 0.MINOR (e.g. 0.2 → 0.3); additive and fix-only changes bump PATCH. Consumers should pin to ~0.MINOR.',
-  'The stable surface is additive-only within a 0.MINOR line: new exports, new optional fields, and new recipes/modes may land in a PATCH; renaming, removing, or changing the signature/shape of a frozen symbol requires a MINOR bump and a migration note.',
-  'createField is frozen in BOTH Fundamental (host-required primitive; throws without opts.host) and @fundamental-engine/vanilla (host-bundled convenience). Both contracts are preserved; the vanilla door must keep auto-supplying browserHost.',
-  'Package ownership is part of the contract and must not drift within 0.x: compilePattern / FieldPattern / FieldHost (and the deprecated aliases compileRecipe / FieldRecipe) are core (Fundamental); createFieldPlatform / applyPattern / bindData / FieldPlatform / browserHost (and the deprecated alias applyRecipe) are @fundamental-engine/dom; field-root / field-cell are @fundamental-engine/elements.',
-  'Bodies are a stable ATTRIBUTE contract: [data-body] on ordinary elements is the frozen authoring surface. There is no <field-body> tag and none will be introduced as the body mechanism.',
-  'The experimental surface carries no semver guarantee. Diagnostics/agent/render-mode exports that happen to ship today are shipped-but-unfrozen — treat them as experimental until explicitly added to the frozen list.',
+  'Pre-1.0, the surface evolves. New exports, new optional fields and new patterns/modes land freely; the check never fails on an addition. Treat 0.x as pre-stable and pin to ~0.MINOR.',
+  'What is protected is REMOVAL, not change. If a listed symbol stops being exported, stops being declared, or stops registering, CI fails — because a consumer would otherwise find out before we did.',
+  'Removing or renaming a listed symbol is allowed and expected. Do it deliberately: update the list in the same change and record it in the CHANGELOG so consumers get a migration note.',
+  'createField is listed in BOTH Fundamental (host-required primitive; throws without opts.host) and @fundamental-engine/vanilla (host-bundled convenience). Both doors are protected; the vanilla door must keep auto-supplying browserHost.',
+  'Package ownership is part of what is protected: compilePattern / FieldPattern / FieldHost (and the deprecated aliases compileRecipe / FieldRecipe) are core; createFieldPlatform / applyPattern / bindData / FieldPlatform / browserHost (and the deprecated alias applyRecipe) are @fundamental-engine/dom; field-root / field-cell are @fundamental-engine/elements. Moving one between packages is a removal from the old package.',
+  'Bodies are an ATTRIBUTE contract: [data-body] on ordinary elements is the authoring surface. There is no <field-body> tag and none will be introduced as the body mechanism.',
+  'Anything not listed carries no guarantee at all — including diagnostics, agent and render-mode exports that happen to ship today. Absence from the list is not a promise of instability, only of silence.',
 ];

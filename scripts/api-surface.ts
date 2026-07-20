@@ -20,7 +20,7 @@ import { FIELD_VERSION as reactFieldVersion } from '@fundamental-engine/react';
 import { FIELD_VERSION as elementsFieldVersion } from '@fundamental-engine/elements';
 
 // Reference every frozen VALUE so its removal/rename is a compile error here.
-const FROZEN_VALUES = [
+const PROTECTED_VALUES = [
   coreCreateField,
   compilePattern,
   compileRecipe, // deprecated alias of compilePattern (removed at 1.0) — still frozen until then
@@ -37,7 +37,7 @@ const FROZEN_VALUES = [
   reactFieldVersion,
   elementsFieldVersion,
 ] as const;
-void FROZEN_VALUES;
+void PROTECTED_VALUES;
 
 // Reference every frozen TYPE so its removal/rename is a compile error here.
 export type __FrozenTypes = [FieldPattern, FieldRecipe, FieldHost, FieldPlatform];
