@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FCI Observatory</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"></span>
+      <h1>FCI Observatory</h1>
+      <span class="tag" id="schema-tag"></span>
+    </div>
+    <div class="modes" role="tablist" aria-label="Mode">
+      <button class="mode" data-mode="replay" role="tab" aria-selected="true">Replay</button>
+      <button class="mode" data-mode="research" role="tab" aria-selected="false">Research</button>
+    </div>
+    <div class="revision" id="revision"></div>
+  </header>
+
+  <div class="shell">
+    <nav class="rail" id="rail" aria-label="Views"></nav>
+    <main class="stage">
+      <div class="banner" id="banner">
+        Every statement below is rendered from a recorded evidence bundle. The Observatory performs no
+        derivation — click any <em>cite</em> to see the runtime function that produced the value.
+      </div>
+      <section class="pane" id="pane" aria-live="polite"></section>
+    </main>
+    <aside class="inspector" id="inspector" aria-label="Evidence inspector">
+      <div class="inspector-empty">Select any cited value to inspect its evidence.</div>
+    </aside>
+  </div>
+
+  <footer class="transport" id="transport" hidden>
+    <div class="transport-controls">
+      <button id="t-reset" title="Reset">⏮</button>
+      <button id="t-back" title="Step back">◀</button>
+      <button id="t-play" class="primary" title="Play / pause">▶</button>
+      <button id="t-fwd" title="Step forward">▶|</button>
+    </div>
+    <input type="range" id="t-scrub" min="0" max="0" value="0" aria-label="Timeline" />
+    <div class="transport-readout" id="t-readout"></div>
+  </footer>
+
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

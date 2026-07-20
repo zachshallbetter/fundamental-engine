@@ -61,3 +61,6 @@ apps/site/public/llms-full.txt
 
 # CLAUDE.md is the project agent guide — track it here despite any global ignore
 !CLAUDE.md
+
+# observatory: the bundle is a generated capture, re-emitted from the runtime
+apps/observatory/public/bundle.json
