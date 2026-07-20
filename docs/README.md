@@ -75,6 +75,18 @@ Current planning material. Forward-looking; does not describe planned work as sh
 |---|---|
 | [`fundamental-release-gate-spec.md`](planning/fundamental-release-gate-spec.md) | The RC/1.0 release-gate program — two gates (freezability + survivor), the source spec behind the RC issues (#316–334) |
 | [`fundamental-three-integration.md`](planning/fundamental-three-integration.md) | Three.js renderer integration plan |
+| [`world-substrate/`](planning/world-substrate/) | The Stage-1 world-substrate program — `PLAN.md` (status ledger), `experimental-protocol.md` (this program's instance of the method, with current numbers), `substrate-conformance-corpus.md` (pre-registration **and** results, appended unedited below it), plus the F1/G3/F2 findings records |
+
+
+## method/ — how this program is allowed to change its own theory
+
+Domain-neutral. Stated without reference to fields or substrates because it is meant to apply beyond
+this repository; the world-substrate program is one instance of it.
+
+| Document | Role |
+|---|---|
+| [`empirical-protocol.md`](method/empirical-protocol.md) | Frozen implementations, pre-registered predictions, measured contract churn, the discovery criterion, prediction grading, permanent negative results, evidence provenance — and an explicit section on what the protocol does **not** do |
+| [`observatory.md`](method/observatory.md) | The inspection instrument: topology, why it cannot derive findings, and the O11 calibration record (transformation ledger, representation invariants, instrument fidelity) |
 
 
 ## Authority order
