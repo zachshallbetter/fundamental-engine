@@ -64,3 +64,8 @@ apps/site/public/llms-full.txt
 
 # observatory: the bundle is a generated capture, re-emitted from the runtime
 apps/observatory/public/bundle.json
+
+# Agent guidance is local tooling config, not repository content.
+CLAUDE.md
+AGENTS.md
+.agents/
