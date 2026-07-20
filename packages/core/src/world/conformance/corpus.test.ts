@@ -156,7 +156,7 @@ test('corpus churn: the FSM control FALSIFIED its own prediction, and it is reco
   assert.equal(fsm.predictedChurn, 0);
   assert.equal(churnOf(fsm.changes), 1, 'actual churn exceeded the prediction');
   assert.match(fsm.note ?? '', /FALSIFIED/, 'the falsification must be stated, not smoothed over');
-  assert.equal(fsm.changes[0]!.classification, 'missing-general-concept');
+  assert.equal(fsm.changes[0]!.classification, 'structural');
 });
 
 test('corpus churn: the planner cost nothing — the FSM had already paid for termination', () => {
@@ -165,7 +165,7 @@ test('corpus churn: the planner cost nothing — the FSM had already paid for te
   assert.equal(p.outcome, 'generalized');
   // and its one tempting change was rejected as a convenience
   assert.equal(p.rejectedChanges.length, 1);
-  assert.equal(p.rejectedChanges[0]!.classification, 'substrate-convenience');
+  assert.equal(p.rejectedChanges[0]!.classification, 'convenience');
   assert.match(p.rejectedChanges[0]!.member, /completeness/);
 });
 
@@ -174,7 +174,7 @@ test('corpus churn: no substrate convenience was ever ACCEPTED into the contract
   assert.equal(ledger.conveniencesAccepted, 0, 'convenience is a rejection, not a justification');
   for (const e of corpus()) {
     for (const c of e.changes) {
-      assert.equal(c.classification, 'missing-general-concept', `${e.substrate}/${c.member}`);
+      assert.notEqual(c.classification, 'convenience', `${e.substrate}/${c.member}`);
       assert.ok(c.rationale.length > 20, 'every change carries an argued rationale');
     }
   }

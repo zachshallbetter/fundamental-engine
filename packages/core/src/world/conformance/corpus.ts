@@ -34,7 +34,15 @@ export const CHURN_WEIGHTS: Readonly<Record<ChurnClass, number>> = {
   'changed-semantics': 3,
 };
 
-export type ChangeClassification = 'missing-general-concept' | 'substrate-convenience';
+/**
+ * Three kinds of refinement, not two. The earlier binary silently folded `representational` into
+ * whichever neighbour was convenient, which is exactly the ambiguity that lets a contract drift.
+ *
+ *   structural       - the contract LACKED a concept (D-001 accessor, D-002 lifecycle)
+ *   representational - the concept existed; this expresses it better. Allowed, but not a discovery
+ *   convenience      - makes adaptation easier, adds no explanatory power. NEVER accepted.
+ */
+export type ChangeClassification = 'structural' | 'representational' | 'convenience';
 
 export interface ContractChange {
   readonly member: string;
@@ -46,7 +54,7 @@ export interface ContractChange {
 /** A change that was considered and REJECTED — recorded so the rejection is auditable. */
 export interface RejectedChange {
   readonly member: string;
-  readonly classification: 'substrate-convenience';
+  readonly classification: 'convenience';
   readonly rationale: string;
 }
 
@@ -102,13 +110,13 @@ export function corpus(): CorpusEntry[] {
         {
           member: 'describeTransitionLaw()',
           churnClass: 'optional-member',
-          classification: 'missing-general-concept',
+          classification: 'structural',
           rationale: 'declareTransitionLaw could be claimed truthfully with no way to obtain the law — a capability that cannot be exercised is incoherent',
         },
         {
           member: 'declareTransitionLaw ⇔ describeTransitionLaw',
           churnClass: 'consistency-rule',
-          classification: 'missing-general-concept',
+          classification: 'structural',
           rationale: 'the capability and the accessor must agree in both directions',
         },
       ],
@@ -125,7 +133,7 @@ export function corpus(): CorpusEntry[] {
         {
           member: 'Transition.lifecycle',
           churnClass: 'optional-member',
-          classification: 'missing-general-concept',
+          classification: 'structural',
           rationale: 'accepting states finish; without a generic terminal signal a kernel must read substrate-specific output to know whether to keep advancing',
         },
       ],
@@ -143,7 +151,7 @@ export function corpus(): CorpusEntry[] {
       rejectedChanges: [
         {
           member: 'TransitionLawDescription.completeness',
-          classification: 'substrate-convenience',
+          classification: 'convenience',
           rationale: 'declareTransitionLaw:false already answers truthfully — this substrate cannot declare THE law; publishing part of it is a feature request, not a missing concept',
         },
       ],
@@ -164,7 +172,15 @@ export interface CorpusLedger {
   readonly executionKindsExercised: readonly DynamicsExecutionKind[];
   /** True only when the MOST RECENTLY adapted substrate cost nothing — never an average. */
   readonly convergingOnLastAdapted: boolean;
+  readonly structuralAccepted: number;
+  readonly representationalAccepted: number;
+  /** Must always be 0. A convenience is a rejection, not a justification. */
   readonly conveniencesAccepted: number;
+  /**
+   * Only rejections that were WRITTEN DOWN. Rejections made while writing an adapter and never
+   * recorded are not counted - the number is a floor, not a total.
+   */
+  readonly conveniencesRejected: number;
 }
 
 export function corpusLedger(): CorpusLedger {
@@ -178,7 +194,10 @@ export function corpusLedger(): CorpusLedger {
     churnBySubstrate: adapted.map((e) => ({ substrate: e.substrate, churn: churnOf(e.changes), ...(e.predictedChurn !== undefined ? { predicted: e.predictedChurn } : {}) })),
     executionKindsExercised: [...new Set(adapted.map((e) => e.executionKind).filter((k): k is DynamicsExecutionKind => k !== undefined))],
     convergingOnLastAdapted: last !== undefined && churnOf(last.changes) === 0,
-    conveniencesAccepted: adapted.reduce((n, e) => n + e.changes.filter((c) => c.classification === 'substrate-convenience').length, 0),
+    structuralAccepted: adapted.reduce((n, e) => n + e.changes.filter((c) => c.classification === 'structural').length, 0),
+    representationalAccepted: adapted.reduce((n, e) => n + e.changes.filter((c) => c.classification === 'representational').length, 0),
+    conveniencesAccepted: adapted.reduce((n, e) => n + e.changes.filter((c) => c.classification === 'convenience').length, 0),
+    conveniencesRejected: adapted.reduce((n, e) => n + e.rejectedChanges.length, 0),
   };
 }
 
