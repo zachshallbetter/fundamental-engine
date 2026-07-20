@@ -3721,6 +3721,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       return () => void set!.delete(cb as (e: never) => void);
     },
     version: FIELD_VERSION,
+    // Published rather than inferred. The values mirror what the runtime actually does: the RNG and
+    // clock are injectable (pin them and runs repeat), while host geometry and body ordering are not
+    // under the runtime's control — which is exactly why the classification is conditional.
+    guarantees: {
+      determinism: 'conditionally-deterministic',
+      controlledInputs: ['injected-rng', 'clock'],
+      uncontrolledInputs: ['host-geometry', 'body-ordering'],
+      requirements: ['inject the rng', 'dt === 1 for cross-run equivalence', 'identical host geometry'],
+      crossPlaneTolerance: 1e-6,
+    },
     scrollV: () => env.scrollV ?? 0,
     setVisible: (on) => {
       canvasVisible = on;

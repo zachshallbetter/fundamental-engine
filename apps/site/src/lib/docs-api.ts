@@ -56,6 +56,7 @@ export interface MethodRow {
   desc: string;
 }
 export const HANDLE: MethodRow[] = [
+  { sig: 'guarantees', desc: 'Read-only reproducibility envelope: determinism classification, which inputs are controlled, which are not, the requirements for repeatability, and the cross-plane numeric tolerance. Read this before building replay, shared state links, or server-authoritative simulation — the answer is conditionally-deterministic, and the conditions are listed rather than implied.' },
   { sig: 'scan()', desc: 'Re-scan the document for [data-body] bodies after a DOM change.' },
   { sig: 'rescan()', desc: 'Alias of scan().' },
   { sig: 'setAccent(hex)', desc: 'Recolor the travelling accent.' },
