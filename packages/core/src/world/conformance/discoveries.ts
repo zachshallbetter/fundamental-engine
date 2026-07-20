@@ -15,6 +15,7 @@
  * nothing. Recording it separately keeps the discovery count honest.
  */
 import type { ContractChange } from './corpus.ts';
+import type { EvidenceProvenance } from './evidence.ts';
 
 export type DiscoveryId = `D-${string}`;
 
@@ -28,6 +29,8 @@ export interface Discovery {
   /** Why no existing substrate could have revealed it. This is what makes it a discovery. */
   readonly invisibleBecause: string;
   readonly accepted: string;
+  /** Where the evidence came from. A discovery must not rest on an architectural argument. */
+  readonly provenance: EvidenceProvenance;
   /** The contract changes this discovery cost. A discovery may cost more than one change. */
   readonly changes: readonly ContractChange[];
   /** Concepts deliberately NOT added at the same time, and why. Guards against over-generalizing. */
@@ -49,6 +52,7 @@ export function discoveries(): Discovery[] {
       invisibleBecause:
         'the only prior substrate (FieldRuntime) is opaque-native and declares the capability false, so the unusable branch was never taken',
       accepted: '2026-07-19',
+      provenance: 'revealed-by-independent-substrate',
       changes: [
         {
           member: 'describeTransitionLaw()',
@@ -76,6 +80,7 @@ export function discoveries(): Discovery[] {
       invisibleBecause:
         'neither prior substrate ever finishes — a field simulates indefinitely and a governor consumes frames indefinitely — so termination was not absent from the contract, it was unobservable',
       accepted: '2026-07-19',
+      provenance: 'revealed-by-independent-substrate',
       changes: [
         {
           member: 'Transition.lifecycle',
