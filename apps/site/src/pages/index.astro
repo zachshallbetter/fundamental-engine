@@ -84,13 +84,13 @@ const sourceLd = {
 ---
 
 <Base
-  title="Fundamental — a readable behavior layer for host objects"
-  description="A readable behavior layer for host objects: elements and data become bodies in a live field, and importance, attention, and relationships come back as readable state."
+  title="Fundamental — a physics engine for interfaces"
+  description="Elements attract, repel and settle like real matter, so a layout shows its relationships instead of listing them. Nothing is animated — you add a data-body attribute and style the live --field-* variables the runtime hands back. Runs on the web, in WebGL, and natively on Apple and Android."
   jsonLd={[softwareLd, sourceLd]}
 >
   <SiteNav current="home" />
   <main id="main" class="manual-shell">
-    <ManualHero kicker="Fundamental · a readable behavior layer for host objects">
+    <ManualHero kicker="Fundamental · a physics engine for interfaces">
       <h1 slot="title">Elements have <span
           class="hero-mass"
           data-hot
@@ -110,12 +110,10 @@ const sourceLd = {
           style="--cat:#ff9d5c;">.</span></h1>
       <p slot="standfirst" class="standfirst"
         data-body="attract swirl pigment" data-shaped data-strength="0.5" data-range="260" data-spin="1.1" data-color="#ffce6b" style="--cat:#ffce6b">
-        Fundamental is a readable behavior layer for host objects. It turns elements, records,
-        views, and relationships into bodies in a shared field — where importance pulls, signal
-        routes, relation binds, and change decays. The DOM is the first host, not the boundary:
-        the same renderer-agnostic core runs on the web, in WebGL, natively on Apple and Android,
-        and headlessly. You author semantic structure; the field returns measurement — live
-        <code>--field-*</code> variables you style with.
+        Elements attract, repel and settle like real matter, so a layout <em>shows</em> its
+        relationships instead of listing them. Nothing on this page is animated — every motion
+        you can see is the field resolving. You add a <code>data-body</code> attribute; the
+        runtime measures and hands back live <code>--field-*</code> variables you style with.
       </p>
       <p slot="thesis" class="thesis"
         data-body="attract swirl pigment" data-strength="0.45" data-range="280" data-spin="1.1" data-color="#f0628e" style="--cat:#f0628e">
@@ -126,13 +124,15 @@ const sourceLd = {
         {/* Resting mass: ungate the default attention-gated vessel (data-when="") and lead with a
             continuous attract so the CTAs pull the field at rest — they read as live, moving call-to-
             actions, not inert until hovered. Engagement still amplifies on hover. */}
-        <Button href="#proof" variant="primary" data-color="#4da3ff" data-body="attract swirl pigment" data-when="" data-strength="0.95" data-range="230" data-spin="1.1">See it work →</Button>
+        <Button href="https://habitat.fundamental-engine.com" variant="primary" data-color="#4da3ff" data-body="attract swirl pigment" data-when="" data-strength="0.95" data-range="230" data-spin="1.1">Enter the garden →</Button>
+        <Button href="#proof" data-color="#2dd4bf" data-body="attract swirl pigment" data-when="" data-strength="0.85" data-range="215" data-spin="1.1">See it work →</Button>
         <Button href="#install" data-color="#a78bfa" data-body="attract swirl pigment" data-when="" data-strength="0.8" data-range="210" data-spin="1.1">Install →</Button>
       </Fragment>
       <div slot="meta" class="meta">
         <span><b>Category</b> &nbsp;add a data-* attribute, get --field-* back</span>
         <span><b>For</b> &nbsp;design engineers · AI-product builders · component-library authors</span>
-        <span><b>Maturity</b> &nbsp;0.x preview — a substrate to build on, no external users yet</span>
+        <span><b>Parity</b> &nbsp;js · swift · kotlin — six forces, identical output, checked in CI</span>
+        <span><b>Maturity</b> &nbsp;0.x preview — shipping in production apps, no third-party adopters yet</span>
       </div>
       <Fragment slot="flow">
         {/* The substrate, made visible — a live reading of THIS page's field (density/bodies/particles
@@ -173,6 +173,49 @@ const sourceLd = {
           ))}
         </div>
         <Button href="/evidence/inbox" variant="primary">Open this example →</Button>
+      </div>
+    </section>
+
+    {/* Shipped work. The inline demos prove the mechanism; these prove it survives a real product.
+        Each entry names the door it went through, because the renderer-agnostic claim is only
+        interesting if the same core is reachable four different ways. */}
+    <section class="lp lp-shipped" id="shipped">
+      <div class="wrap">
+        <span class="concept-no">Shipped</span>
+        <h2>Built on this, running now.</h2>
+        <p class="lp-lede">
+          Four doors into one core. Not ports — the same engine, reached differently.
+        </p>
+        <div class="lp-shipped-grid">
+          <a class="lp-ship" href="https://habitat.fundamental-engine.com"
+            data-body="attract swirl" data-feedback data-strength="0.9" data-range="180" data-spin="1.1"
+            data-color="#2dd4bf" style="--cat:#2dd4bf">
+            <b>Habitat</b>
+            <span>A living garden. Plants, critters and weather respond to each other — nothing is scripted.</span>
+            <code>@fundamental-engine/three</code>
+          </a>
+          <a class="lp-ship" href="https://ascent.guide"
+            data-body="attract swirl" data-feedback data-strength="0.8" data-range="175" data-spin="1.1"
+            data-color="#f0628e" style="--cat:#f0628e">
+            <b>Ascent</b>
+            <span>Adaptive CAPM® prep on iPhone, on the App Store. The field drives readiness and pacing.</span>
+            <code>&lt;field-root&gt; · elements</code>
+          </a>
+          <a class="lp-ship" href="https://zachshallbetter.com"
+            data-body="attract swirl" data-feedback data-strength="0.75" data-range="170" data-spin="1.1"
+            data-color="#ffce6b" style="--cat:#ffce6b">
+            <b>zachshallbetter.com</b>
+            <span>A personal site where the writing itself is the field — typographic, no particle swarm.</span>
+            <code>@fundamental-engine/vanilla</code>
+          </a>
+          <a class="lp-ship" href="/docs/api/parity"
+            data-body="attract swirl" data-feedback data-strength="0.7" data-range="165" data-spin="1.1"
+            data-color="#4da3ff" style="--cat:#4da3ff">
+            <b>Native parity</b>
+            <span>Six forces reproduce identical output across JavaScript, Swift and Kotlin — checked on every commit.</span>
+            <code>js · swift · kotlin</code>
+          </a>
+        </div>
       </div>
     </section>
 
@@ -552,6 +595,15 @@ const sourceLd = {
   .lp-explore-grid a b { display: block; margin-bottom: 0.2rem; }
   .lp-explore-grid a span { display: block; opacity: 0.7; font-size: 0.9rem; line-height: 1.45; }
   @media (max-width: 640px) { .lp-verbs li { grid-template-columns: 1fr; gap: 0.15rem; } }
+
+  /* Shipped work — the same card grammar as lp-explore-grid, with the door named in mono so the
+     "four doors, one core" claim is legible at a glance rather than only in prose. */
+  .lp-shipped-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(16.5rem, 1fr)); gap: 0.75rem; margin-top: 1.5rem; }
+  .lp-ship { display: block; padding: 1.1rem 1.2rem; border: 1px solid color-mix(in oklch, currentColor 12%, transparent); border-radius: 0.85rem; text-decoration: none; transition: border-color 0.15s ease; }
+  .lp-ship:hover { border-color: color-mix(in oklch, var(--cat, currentColor) 45%, transparent); }
+  .lp-ship b { display: block; margin-bottom: 0.3rem; font-size: 1.02rem; }
+  .lp-ship span { display: block; opacity: 0.72; font-size: 0.9rem; line-height: 1.5; }
+  .lp-ship code { display: inline-block; margin-top: 0.7rem; font-size: 0.76rem; letter-spacing: 0.01em; opacity: 0.6; }
 
   /* P4 — the "field reading" motif: a live, calm read-out of this page's own field. */
   .field-readout {
