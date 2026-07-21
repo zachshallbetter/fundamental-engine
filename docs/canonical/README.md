@@ -49,7 +49,7 @@ host, not the boundary. Canvas is one render surface, not the whole system.
 | [`deprecation-plan.md`](deprecation-plan.md) | The migration alias surface: each living alias, its deprecation status, and the proposed removal version (timings pending maintainer sign-off) |
 | [`field-possibilities.md`](field-possibilities.md) | The full possibility space — what new kinds of interfaces become possible when meaning has field behavior (36 sections, from patterns and input agents to temporal fields, matter primitives, and the field as semantic medium) |
 | [`use-cases.md`](use-cases.md) | Concrete use cases across eight domains — the product-level translation of the possibility space into real UI problems and solutions |
-| [`computational-interaction-alignment.md`](computational-interaction-alignment.md) | How Fundamental relates to **Foundations of Computational Interaction (FCI)**, an external research framework: the concept mapping, the shared epistemic doctrines, and the bounded "neither proves the other" claim — plus why FCI vocabulary is deliberately **not** forced into the frozen API |
+| [`computational-interaction-alignment.md`](computational-interaction-alignment.md) | How Fundamental relates to **Foundations of Computational Interaction (FCI)**, an external research framework: the concept mapping, the shared epistemic doctrines, and the bounded "neither proves the other" claim — plus why FCI vocabulary is deliberately **not** forced into the protected API |
 
 Deeper references live beside this directory: `docs/engine-reference/` (the engine spec —
 `forces-system.md` is the big one), `docs/research/` (the paper family, with its caveat canon in

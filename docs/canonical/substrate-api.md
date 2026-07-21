@@ -499,5 +499,5 @@ table. The substrate API is JS-first; native-plane (`swift/`, `android/`) parity
 | [`agent-consumption-model.md`](agent-consumption-model.md) | How an agent reads the field — `query()`/`snapshot()` are its structured surface |
 | [`dimensional-coupling.md`](dimensional-coupling.md) | The doctrine behind projections, body-authority modes, and the accumulator's dimension channels |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | The drawn/diagnostic lane — `query`/`replay` are its render-free sibling |
-| [`api-stability.md`](api-stability.md) | The freeze contract — why this whole surface is experimental |
+| [`api-stability.md`](api-stability.md) | The removal-protection contract — why this whole surface is experimental |
 | [`forces-system.md`](../engine-reference/forces-system.md) | The engine spec — §13 the `FieldHandle`, §22 agent consumers |

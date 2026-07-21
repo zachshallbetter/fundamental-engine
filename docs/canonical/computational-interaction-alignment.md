@@ -31,7 +31,7 @@ relationship so neither overclaims the other.
 | [`causality-and-truth.md`](causality-and-truth.md) | The causality ladder and truth labels — Fundamental's evidence discipline |
 | [`agent-safety-model.md`](agent-safety-model.md) | Agent-readable ≠ agent-writable; projections reveal, never mutate |
 | [`system-contracts.md`](system-contracts.md) | Bodies, forces, passports, truth modes |
-| [`api-stability.md`](api-stability.md) | The freeze contract — why FCI vocabulary is **not** forced into the public surface |
+| [`api-stability.md`](api-stability.md) | The removal-protection contract — why FCI vocabulary is **not** forced into the public surface |
 | [`../research/README.md`](../research/README.md) | Fundamental's own paper family (the FCI-adjacent, self-authored research) |
 
 ## 1. The bounded claim
@@ -56,14 +56,14 @@ identification) executable; those remain research claims that no implementation 
 ## 2. Concept alignment
 
 Each row: an FCI concept, the Fundamental primitive that instantiates a bounded part of it, the file,
-and the current maturity. `frozen` = in the stable public surface (`scripts/api-surface.data.mjs`);
+and the current maturity. `protected` = on the removal-protected public surface (`scripts/api-surface.data.mjs`);
 `experimental` = shipped and callable but explicitly unfrozen; `planned` = designed, not built.
 
 | FCI concept | Fundamental primitive | Where | Maturity |
 |---|---|---|---|
-| Domain commitments | Body contract (`data-body`) + force **passports** | `contracts/passport.ts`; `system-contracts.md` | `data-body` frozen; passports shipped |
+| Domain commitments | Body contract (`data-body`) + force **passports** | `contracts/passport.ts`; `system-contracts.md` | `data-body` protected; passports shipped |
 | System state / operational semantics | Field state + integrator + force pass | `engine/field.ts`, `engine/integrator.ts` | shipped |
-| Projection (governed transform to a representation) | **Projection Registry** + `setRender` / `setOverlay` | `engine/field.ts` (`projectionRegistry`); `substrate-api.md` | registry experimental; render frozen entry, unfrozen shape |
+| Projection (governed transform to a representation) | **Projection Registry** + `setRender` / `setOverlay` | `engine/field.ts` (`projectionRegistry`); `substrate-api.md` | registry experimental; render protected entry, unprotected shape |
 | Projection contract (preserve / transform / omit / introduce) | Governance lint + accessibility-equivalent rules | `engine/governance.ts`; `05-projection-registry-governance.md` | MVP shipped; most rules planned |
 | Representation | Render surfaces (underlay / overlay / typographic) | `visualization-methods-taxonomy.md` | shipped |
 | Interpretation | *Out of scope for the runtime* — requires empirical study | — | not runtime |
@@ -104,7 +104,7 @@ what is built versus predicted.
 **Sync does not mean** importing FCI's vocabulary into Fundamental's public API. Three reasons, all
 already ratified in this repo:
 
-1. **The freeze contract** ([`api-stability.md`](api-stability.md)) keeps the stable surface tiny
+1. **The removal-protection contract** ([`api-stability.md`](api-stability.md)) keeps the stable surface tiny
    (`createField`, patterns, hosts, `data-body`). Renaming or adding `opportunity` / `coupling` /
    `interaction-episode` as public symbols is a semver-relevant, opinionated decision, not a doc fix.
 2. **FCI's own separation** — "neither proves the other" — is violated if Fundamental rebrands itself as

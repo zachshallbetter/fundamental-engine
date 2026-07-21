@@ -129,12 +129,12 @@ before changing a status.
 
 ```txt
 Shipped        callable and code-confirmed
-Shipped-unfrozen / experimental   callable and code-confirmed, but NOT part of the frozen surface — shape may change
+Shipped-unprotected / experimental   callable and code-confirmed, but NOT on the protected surface — shape may change
 Canonical      conceptually authoritative (a concept/term/doctrine), which says nothing about API stability
-Stable         part of the frozen public API (check:api gates it)
+Stable         on the removal-protected public API (check:api gates it)
 ```
 
-"Canonical" never implies "stable"; "shipped" never implies "frozen." The substrate read API
+"Canonical" never implies "stable"; "shipped" never implies "protected." The substrate read API
 (`query`/`snapshot`/`diff`/`replay`, the projection registry, body authority, dynamic recoil,
 integrator modes, accumulator channels) is **shipped and documented, but experimental and unfrozen** —
 repeat that phrasing everywhere it appears.
@@ -150,7 +150,7 @@ When two descriptions disagree, this is the authority order (higher wins):
 
 ```txt
 1. Code + tests            determine shipped behavior
-2. api-stability.md        determines the frozen surface
+2. api-stability.md        determines the protected surface
 3. Canonical docs          determine concepts, terminology, contracts
 4. Generated site docs     mirror canonical docs + code (not a source)
 5. llms.txt / llms-full    generated reference, never a source

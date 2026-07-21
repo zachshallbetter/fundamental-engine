@@ -66,4 +66,4 @@ Each is a one-line summary; the detailed contract, types, and examples are in `s
 
 - [`substrate-api.md`](substrate-api.md) — the shipped substrate read API and every mechanism above, in full.
 - [`agent-consumption-model.md`](agent-consumption-model.md) — how different consumers read one influence differently.
-- [`api-stability.md`](api-stability.md) — the freeze contract; why this surface is EXPERIMENTAL, not frozen.
+- [`api-stability.md`](api-stability.md) — the removal-protection contract; why this surface is EXPERIMENTAL, not protected.

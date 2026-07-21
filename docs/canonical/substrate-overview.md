@@ -69,7 +69,7 @@ The full safety story — the three load-bearing invariants and the mechanisms t
 [agent-safety-model.md](agent-safety-model.md).
 
 See [substrate-api.md](substrate-api.md) (governance lint, policy surface), [system-contracts.md](system-contracts.md)
-(the capability and feedback contracts), and [api-stability.md](api-stability.md) (what is frozen vs
+(the capability and feedback contracts), and [api-stability.md](api-stability.md) (what is protected vs
 experimental across the surface).
 
 ---
