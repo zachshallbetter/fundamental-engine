@@ -245,6 +245,14 @@ export class FieldField implements FieldHandle {
   get version(): string {
     return this.field.version;
   }
+
+  /**
+   * The reproducibility envelope of the wrapped field. Delegated, never restated — this door bundles
+   * a host, it does not change what the engine guarantees about reproducing a run.
+   */
+  get guarantees(): FieldHandle['guarantees'] {
+    return this.field.guarantees;
+  }
   scrollV(): number {
     return this.field.scrollV();
   }

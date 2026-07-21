@@ -367,6 +367,14 @@ export class FieldLayer implements FieldHandle {
   get version(): string {
     return this.field.version;
   }
+
+  /**
+   * The reproducibility envelope of the field this layer wraps. Delegated rather than restated —
+   * the layer changes how the swarm is *drawn*, not what the engine guarantees about reproducing it.
+   */
+  get guarantees(): FieldHandle['guarantees'] {
+    return this.field.guarantees;
+  }
   scrollV(): number {
     return this.field.scrollV();
   }
