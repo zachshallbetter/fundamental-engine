@@ -251,7 +251,7 @@ capabilities that environment can offer; the engine needs nothing else.
 
 ### Host conformance — the third parity/testing category
 
-Alongside **API-surface parity** (the frozen public surface exists on every plane) and **mathematical
+Alongside **API-surface parity** (the protected public surface exists on every plane) and **mathematical
 conformance** (the shared cross-plane golden at `depth: 0`), a host is checked for **host conformance**:
 *does this environment adapter supply the capabilities the field expects, and degrade cleanly where it
 does not?* The canonical checklist lives in

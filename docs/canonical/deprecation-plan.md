@@ -7,7 +7,7 @@
 >
 > Nothing is removed by this document — RC1 / `1.0` **ships every living alias**. This is the record of
 > what is intentionally temporary and where it goes. Related: [`api-stability.md`](api-stability.md)
-> (the freeze contract + the "Deprecation & removal policy" section), [`SUPPORT.md`](../../SUPPORT.md)
+> (the removal-protection contract + the "Deprecation & removal policy" section), [`SUPPORT.md`](../../SUPPORT.md)
 > (the support/versioning policy).
 
 # Migration alias surface — deprecation & removal plan
@@ -35,7 +35,7 @@ forever. They are not migration cruft and get **no** deprecation warning:
 
 - A stable symbol is **deprecated** (kept working; marked in docs + a dev-only `console.warn` where it
   is a runtime call) for at least one release before it may be removed.
-- These aliases have shipped across the whole pre-`1.0` line (frozen-and-additive), which satisfies the
+- These aliases have shipped across the whole pre-`1.0` line (protected-and-additive), which satisfies the
   notice window. The decision (#709): **keep them through RC1, remove at `1.0`.** Because they are
   *passive mirrors* (an extra event, an extra var write, a re-export) rather than primary API, a
   consumer on canonical naming (`field:*`, `--d`/`--field-density`, `--load`, `@fundamental-engine/dom`)
@@ -57,7 +57,7 @@ forever. They are not migration cruft and get **no** deprecation warning:
 | 10 | phase-4 helper aliases — `BodyRecipe` / `RelationshipRecipe` / `AccessibilityRecipe` / `RecipeTier` / `RecipeStatus` / `RecipeProblem` / `RecipeTierGroup` / `RecipeRenderPlan` / `Recipe{Body,Relationship}Registration` / `RecipeFeedbackBinding` / `RecipeReducedMotionPlan` / `RecipeAuthoring` / `RecipeFieldTarget` (types); `RECIPE_TIERS` / `RECIPE_CONTRACTS` (consts); `validateRecipe` / `serializeRecipe` / `recipeById` / `recipeBodyAttributes` / `recipeRenderPlan` / `recipeToMarkup` / `recipeAuthoring` (fns); `bindData({ recipe })` option | the `Pattern`-named equivalents (`BodyPattern`, `PatternTier`, `validatePattern`, `patternById`, …; `bindData({ pattern })`) | `packages/core/src/recipes/*`, `packages/dom/src/{apply-recipe,bind-data}.ts` | No — `@deprecated` JSDoc / `const` re-exports | **`1.0`** — remove |
 
 > **Rows 4–9 (the recipe → Pattern rename, phase 1).** The concept "recipe" is renamed to **Pattern**
-> end-to-end; the frozen public API (`FieldRecipe`/`compileRecipe`/`applyRecipe`) and the documented data
+> end-to-end; the protected public API (`FieldRecipe`/`compileRecipe`/`applyRecipe`) and the documented data
 > consts gain `FieldPattern`/`compilePattern`/`applyPattern`/`FIELD_PATTERNS`/… canonical names, with the
 > old names kept as `@deprecated` aliases (the same no-runtime-warn convention `SceneRecipe`/
 > `ESSENTIAL_RECIPES` already use). Additive — nothing breaks pre-`1.0`.
@@ -108,7 +108,7 @@ ones warn:
 
 ## RC1 / `1.0` shipping decision
 
-RC1 **ships all living aliases** — none are removed for the freeze. The observable one
+RC1 **ships all living aliases** — none are removed. The observable one
 (`@fundamental-engine/platform` package) carries a dev-only deprecation warning; the CSS-var
 alias (`--mass`) and the `<field-field>` tag are doc-only. All are **removed at `1.0`**. This document,
 alongside the "Deprecation & removal policy" section of [`api-stability.md`](api-stability.md), is the

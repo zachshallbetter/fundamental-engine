@@ -60,7 +60,7 @@ canon in [definition-document.md](definition-document.md).
 
 **Don't infer — the surface is small and documented.** Entry points and the which-`createField` map are
 on the [docs overview](https://fundamental-engine.com/docs); every option is in
-[/docs/api/options](https://fundamental-engine.com/docs/api/options); the frozen 0.x surface is
+[/docs/api/options](https://fundamental-engine.com/docs/api/options); the protected 0.x surface is
 `scripts/api-surface.data.mjs` (CI-enforced). If a method or option is not in those, it does not exist —
 do not invent it.
 
