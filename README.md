@@ -271,6 +271,13 @@ fill-rate-bound, not particle-bound; `<field-root>` applies it automatically.
 
 ## What's in the box
 
+> **Not using the DOM?** [`@fundamental-engine/three`](packages/three) binds the same engine to a
+> Three.js scene: `createFieldLayer()` runs it **headless** and renders the swarm as a `THREE.Points`
+> layer in your scene. If your data lives in instanced meshes rather than in elements — a globe, a map,
+> a particle system — start there rather than building the headless-to-WebGL bridge yourself.
+
+
+
 **36 forces**, in three families.
 
 - **Canonical interface forces (9):** `attract`, `repel`, `swirl`, `stream`, `viscosity`, `jet`,

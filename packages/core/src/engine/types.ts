@@ -1549,6 +1549,30 @@ export interface FieldChannelHandle {
 }
 
 /** The handle returned by `createField` — the public field API (§13). */
+/**
+ * What the runtime guarantees about reproducibility — queryable rather than inferred.
+ *
+ * A consumer building replay, shareable coordinate links, or server-authoritative state needs to know
+ * which inputs are controlled and which are not. That information previously existed only inside an
+ * unexported module, so the first external integrator reasonably but wrongly concluded the runtime was
+ * byte-identical across environments and designed features on it. Publishing the envelope is cheaper
+ * than the class of bug that follows from guessing it.
+ *
+ * `conditionally-deterministic` means: identical inputs reproduce identical output ONLY when every
+ * `requirement` is met. It is not a weaker promise than `deterministic` — it is an honest one.
+ */
+export interface FieldGuarantees {
+  readonly determinism: 'deterministic' | 'conditionally-deterministic' | 'nondeterministic';
+  /** Inputs the caller can pin. Control all of these and runs are reproducible. */
+  readonly controlledInputs: readonly string[];
+  /** Inputs the runtime does NOT control. These are why the classification is conditional. */
+  readonly uncontrolledInputs: readonly string[];
+  /** What the caller must do for reproducibility to hold. Unmet requirement ⇒ no guarantee. */
+  readonly requirements: readonly string[];
+  /** Numeric agreement across planes (JS/Swift/Kotlin) — a tolerance, never bit-equality. */
+  readonly crossPlaneTolerance: number;
+}
+
 export interface FieldHandle {
   /** the running engine version (`FIELD_VERSION`) — which build this field is on. */
   readonly version: string;
@@ -1891,4 +1915,10 @@ export interface FieldHandle {
   setBackground(mode: 'opaque' | 'transparent'): void;
   /** stop the loop and release listeners. */
   destroy(): void;
+  /**
+   * What this runtime guarantees about reproducibility. Read it before building replay, shareable
+   * state links, or server-authoritative simulation — the answer is `conditionally-deterministic`,
+   * and the conditions are listed rather than implied.
+   */
+  readonly guarantees: FieldGuarantees;
 }
