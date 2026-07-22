@@ -7,6 +7,18 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+## [0.10.1] — 2026-07-21
+
+**Kotlin port parity: the Compose `FieldView` now renders a multi-hue palette.**
+
+### Fixed
+
+- **`FieldView` (`@fundamental-engine/compose`, Kotlin) collapsed a multi-colour palette to a single hue** (#1090). It took one `accent` and drew every particle as `lerp(COOL, accent, heat)`, where the JS and Swift engines' `FieldOptions` carry a `palette` — so an Android field rendered monochrome where iOS rendered multi-hue. Adds `palette: List<Color>`, colouring each particle by a stable pool index across all four render modes (DOTS, GLOW, LINES, TRAILS). **Backward-compatible**: the parameter defaults to `[accent]`, the previous behaviour, so existing callers are unaffected. Verified against the iOS `10-intro-star` reference, which the Android field now matches.
+
+> **Scope.** This is a **Kotlin-only** change. The JS and Swift engines are byte-identical to 0.10.0 — they already had the palette. The npm and Swift artifacts are republished at 0.10.1 only to keep the cross-plane version in lockstep; there is no JS or Swift behaviour change in this release.
+>
+> **Still open:** the parity matrix does not track colour (#1091), which is why this divergence reached an app before any gate. Closing it would fail a future single-accent-vs-palette mismatch at CI instead.
+
 - **Release tooling: scope the version bump to `./packages/*`, not the `@fundamental-engine/*` name glob.** The glob also matched the private workspace apps (`apps/site`, `apps/starter`, `apps/observatory`), which share the npm scope but version independently — and `exec npm version` ignores the `private` flag, so it silently bumped them to the release version (0.10.0 caught this: observatory jumped `0.0.0 → 0.10.0` before it was reverted by hand). The path filter targets exactly the seven publishable packages, so no private app is bumped and the old "revert the apps afterward" step is gone. `pnpm publish` already skipped private packages, so only the version bump was ever affected. Fixed in `RELEASING.md`, `PUBLISHING.md`, and `release.yml`.
 
 ## [0.10.0] — 2026-07-21
