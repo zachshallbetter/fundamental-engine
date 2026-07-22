@@ -11,9 +11,13 @@ plugins {
 }
 
 // Coordinates for the published Android/JVM artifacts (GitHub Packages). Mirrors the
-// npm scope @fundamental-engine and the Swift package products. Version tracks the
-// repo's release tags.
+// npm scope @fundamental-engine and the Swift package products.
+//
+// The version is DERIVED, never typed: CI passes -PreleaseVersion=<tag without the v> on a
+// release tag, so the published version always equals the git tag and can never silently
+// overwrite a prior release with different code. A local build with no property is a SNAPSHOT,
+// which GitHub Packages will not mistake for a release.
 subprojects {
     group = "com.fundamental"
-    version = "0.9.5"
+    version = (findProperty("releaseVersion") as String?) ?: "0.0.0-SNAPSHOT"
 }

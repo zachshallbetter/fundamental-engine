@@ -13,6 +13,8 @@ name: android
 on:
   push:
     branches: [main]
+    # a release tag publishes the Maven artifacts (see the `publish` job)
+    tags: ['v*']
     paths:
       - 'android/**'
       - '.github/workflows/android.yml'
@@ -82,3 +84,34 @@ jobs:
             sleep 8
             adb logcat -d AndroidRuntime:E '*:S' | tee /tmp/crash.log
             test ! -s /tmp/crash.log || { echo "the sample crashed on the emulator"; exit 1; }
+
+  # Publish the Kotlin artifacts to GitHub Packages on a release tag, so a single `git tag vX.Y.Z`
+  # releases every platform at one version: release.yml publishes npm, SPM resolves the Swift tag,
+  # and this publishes com.fundamental:{fundamental-core,fundamental-compose}:X.Y.Z. The version is
+  # derived from the tag (-PreleaseVersion), never hardcoded, and auth uses the Actions GITHUB_TOKEN
+  # — no personal token, no laptop publish.
+  publish:
+    name: publish maven (release tag)
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: publish core + compose to GitHub Packages
+        working-directory: android
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "publishing com.fundamental:*:$VERSION from tag $GITHUB_REF_NAME"
+          ./gradlew :fundamental-core:publish :fundamental-compose:publish -PreleaseVersion="$VERSION"
