@@ -32,7 +32,7 @@ git tag -a vX.Y.Z -m "Release X.Y.Z" && git push origin vX.Y.Z
 ```
 
 This triggers [`.github/workflows/release.yml`](.github/workflows/release.yml): full gate →
-`pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --provenance`. A failed publish can
+`pnpm --filter "./packages/*" publish --access public --no-git-checks --provenance`. A failed publish can
 be retried without re-tagging: `gh run rerun <run-id> --failed`.
 
 ### Prerequisites (all currently satisfied)
@@ -50,7 +50,7 @@ Only if CI is unavailable. This publishes **without** provenance and needs an OT
 
 ```sh
 pnpm -r build && pnpm test && pnpm check:dist && pnpm check:api   # gate
-pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --otp=<code>
+pnpm --filter "./packages/*" publish --access public --no-git-checks --otp=<code>
 ```
 
 ## Versioning
@@ -58,7 +58,7 @@ pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --
 All seven published packages are versioned together (currently `0.10.0`). Bump them as one:
 
 ```sh
-pnpm --filter "@fundamental-engine/*" exec npm version <patch|minor|major> --no-git-tag-version
+pnpm --filter "./packages/*" exec npm version <patch|minor|major> --no-git-tag-version
 ```
 
 Per the `0.x` rules in [API stability](docs/canonical/api-stability.md), a breaking change to a

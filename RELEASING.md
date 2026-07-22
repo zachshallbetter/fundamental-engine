@@ -44,17 +44,16 @@ accidental breakage, not a freeze; the surface evolves pre-1.0 and additions nev
    [Keep a Changelog](https://keepachangelog.com).
 3. **Bump all seven packages together** (keep them at the same version):
    ```sh
-   pnpm --filter "@fundamental-engine/*" exec npm version <patch|minor|major> --no-git-tag-version
+   pnpm --filter "./packages/*" exec npm version <patch|minor|major> --no-git-tag-version
    ```
-   The filter also matches the **private** workspace apps, which version independently and are
-   never published — revert them after the bump:
-   ```sh
-   git checkout -- apps/site/package.json apps/starter/package.json apps/observatory/package.json
-   ```
-   This list grows whenever a private app is added under `apps/` with an `@fundamental-engine/*`
-   name. `apps/observatory` joined in 0.9.5. Confirm with
-   `pnpm --filter "@fundamental-engine/*" exec node -e "const p=require('./package.json');console.log(p.name,p.private?'private':'PUBLISHED')"`
-   rather than trusting this list.
+
+   > **Scope the bump to `./packages/*`, never `@fundamental-engine/*`.** The name glob also matches the
+   > private apps (`apps/site`, `apps/starter`, `apps/observatory`) — same npm scope, independent versions.
+   > `exec npm version` ignores the `private` flag, so the glob silently bumps them to the release version.
+   > (`pnpm publish` already skips private packages, so only the version bump was ever affected.)
+   The path filter targets exactly the seven publishable packages — no private app is bumped, so
+   there is nothing to revert. Confirm the set with
+   `pnpm --filter "./packages/*" exec node -e "const p=require('./package.json');console.log(p.name,p.private?'private':'PUBLISHED')"`.
 4. **Bump `FIELD_VERSION` on all three planes** — the constant is hand-maintained per plane, and a
    lockstep test on each fails CI if it drifts from `packages/core/package.json`:
    - JS: `packages/core/src/version.ts` (guard: `version.test.ts`)
@@ -107,7 +106,7 @@ the gates above.
   used, log it as an exception in the CHANGELOG entry for that release — "published
   without provenance" is a recorded fact, not a silent degradation.
 - **Never bump one package alone.** Always
-  `pnpm --filter "@fundamental-engine/*" exec npm version <bump> --no-git-tag-version` — the release
+  `pnpm --filter "./packages/*" exec npm version <bump> --no-git-tag-version` — the release
   gate fails the tag if any of the seven is out of step.
 - **Never widen a failing gate to make it pass.** If `check:api` fails, the public
   contract changed: fix the change or cut a deliberate 0.MINOR with a migration note —
