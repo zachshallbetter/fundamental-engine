@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
+    `maven-publish`
 }
 
 dependencies {
@@ -85,4 +86,15 @@ sourceSets.main {
 
 tasks.named<ProcessResources>("processResources") {
     dependsOn(syncRecipes)
+}
+
+// ── Publishing ──────────────────────────────────────────────────────────────
+apply(from = rootProject.file("gradle/github-packages.gradle.kts"))
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+            artifactId = "fundamental-core"
+        }
+    }
 }

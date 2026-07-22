@@ -9,3 +9,15 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.1.0" apply false
     id("org.jetbrains.kotlin.plugin.compose") version "2.1.0" apply false
 }
+
+// Coordinates for the published Android/JVM artifacts (GitHub Packages). Mirrors the
+// npm scope @fundamental-engine and the Swift package products.
+//
+// The version is DERIVED, never typed: CI passes -PreleaseVersion=<tag without the v> on a
+// release tag, so the published version always equals the git tag and can never silently
+// overwrite a prior release with different code. A local build with no property is a SNAPSHOT,
+// which GitHub Packages will not mistake for a release.
+subprojects {
+    group = "com.fundamental"
+    version = (findProperty("releaseVersion") as String?) ?: "0.0.0-SNAPSHOT"
+}
