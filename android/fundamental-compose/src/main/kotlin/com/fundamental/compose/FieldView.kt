@@ -84,6 +84,13 @@ private val COOL = Color(0xFFFFE0C8) // resting (warm-default identity), matches
 fun FieldView(
     modifier: Modifier = Modifier,
     accent: Color = Color(0xFF4DA3FF),
+    /**
+     * Multi-hue palette. Each particle takes a stable colour from this list (by its
+     * index in the pool), so the field renders in several hues at once — matching the
+     * Swift/JS engines, whose FieldOptions carry a `palette`. Defaults to `[accent]`,
+     * i.e. the previous single-hue behaviour, so existing callers are unaffected.
+     */
+    palette: List<Color> = listOf(accent),
     particleCount: Int = 300,
     renderMode: RenderMode = RenderMode.DOTS,
     content: @Composable () -> Unit = {},
@@ -160,15 +167,18 @@ fun FieldView(
             frame // observe the frame tick so the canvas redraws each display frame
             val c = controller ?: return@Canvas
             val particles = c.particles
+            // Stable per-particle hue: the pool is updated in place, so a particle keeps
+            // its array index across frames — no per-frame colour flicker.
+            val hues = palette.ifEmpty { listOf(accent) }
             when (renderMode) {
-                RenderMode.DOTS -> for (p in particles) {
+                RenderMode.DOTS -> particles.forEachIndexed { i, p ->
                     val heat = p.heat.coerceIn(0f, 1f)
-                    drawCircle(lerp(COOL, accent, heat), 1.5f + p.size * 1.5f + heat * 3f, Offset(p.position.x, p.position.y), 0.85f)
+                    drawCircle(lerp(COOL, hues[i % hues.size], heat), 1.5f + p.size * 1.5f + heat * 3f, Offset(p.position.x, p.position.y), 0.85f)
                 }
 
-                RenderMode.GLOW -> for (p in particles) {
+                RenderMode.GLOW -> particles.forEachIndexed { i, p ->
                     val heat = p.heat.coerceIn(0f, 1f)
-                    val c0 = lerp(COOL, accent, heat)
+                    val c0 = lerp(COOL, hues[i % hues.size], heat)
                     val glowR = 5f + p.size * 2f + heat * 16f
                     drawCircle(
                         brush = Brush.radialGradient(
@@ -192,24 +202,24 @@ fun FieldView(
                             drawLine(accent, po, Offset(q.position.x, q.position.y), strokeWidth = 1f, alpha = (1f - d / LINK_RADIUS) * 0.25f)
                         }
                     }
-                    for (p in particles) {
+                    particles.forEachIndexed { i, p ->
                         val heat = p.heat.coerceIn(0f, 1f)
-                        drawCircle(lerp(COOL, accent, heat), 1.5f + heat * 2f, Offset(p.position.x, p.position.y), 0.9f)
+                        drawCircle(lerp(COOL, hues[i % hues.size], heat), 1.5f + heat * 2f, Offset(p.position.x, p.position.y), 0.9f)
                     }
                 }
 
                 RenderMode.TRAILS -> if (trail != null) {
                     // fade the previous frame toward black, then stamp the particles.
                     trail.canvas.drawColor(android.graphics.Color.argb(38, 0, 0, 0), android.graphics.PorterDuff.Mode.SRC_OVER)
-                    for (p in particles) {
+                    particles.forEachIndexed { i, p ->
                         val heat = p.heat.coerceIn(0f, 1f)
-                        trail.paint.color = lerp(COOL, accent, heat).toArgb()
+                        trail.paint.color = lerp(COOL, hues[i % hues.size], heat).toArgb()
                         trail.canvas.drawCircle(p.position.x, p.position.y, 1.5f + p.size * 1.5f + heat * 3f, trail.paint)
                     }
                     drawImage(trail.bitmap.asImageBitmap())
                 } else {
-                    for (p in particles) {
-                        drawCircle(lerp(COOL, accent, p.heat.coerceIn(0f, 1f)), 2f, Offset(p.position.x, p.position.y), 0.85f)
+                    particles.forEachIndexed { i, p ->
+                        drawCircle(lerp(COOL, hues[i % hues.size], p.heat.coerceIn(0f, 1f)), 2f, Offset(p.position.x, p.position.y), 0.85f)
                     }
                 }
             }
