@@ -19,7 +19,7 @@ import com.fundamental.core.math.Vec3
  * lockstep with the JS constant / the release version: `VersionLockstepTests` fails the build if this
  * drifts from `packages/core/package.json` (#923) — update it here on every release bump.
  */
-const val FIELD_VERSION: String = "0.10.0"
+const val FIELD_VERSION: String = "0.10.1"
 
 /**
  * Options for [FieldHandle.snapshot] (JS `FieldSnapshotOptions`). Composes with the runtime privacy
