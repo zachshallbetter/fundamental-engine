@@ -93,6 +93,16 @@ fun FieldView(
     palette: List<Color> = listOf(accent),
     particleCount: Int = 300,
     renderMode: RenderMode = RenderMode.DOTS,
+    /**
+     * Soft glow halo drawn behind each DOTS particle (0 = flat dots, the previous
+     * behaviour; ~0.4 = the Swift/JS `particleGlow` look). Mirrors FieldOptions.
+     */
+    particleGlow: Float = 0f,
+    /**
+     * Draw faint links between nearby particles in DOTS mode — the constellation
+     * lines the Swift/JS engines show. Off by default.
+     */
+    constellation: Boolean = false,
     content: @Composable () -> Unit = {},
 ) {
     var controller by remember { mutableStateOf<FieldController?>(null) }
@@ -171,9 +181,39 @@ fun FieldView(
             // its array index across frames — no per-frame colour flicker.
             val hues = palette.ifEmpty { listOf(accent) }
             when (renderMode) {
-                RenderMode.DOTS -> particles.forEachIndexed { i, p ->
-                    val heat = p.heat.coerceIn(0f, 1f)
-                    drawCircle(lerp(COOL, hues[i % hues.size], heat), 1.5f + p.size * 1.5f + heat * 3f, Offset(p.position.x, p.position.y), 0.85f)
+                RenderMode.DOTS -> {
+                    // Faint constellation links first, so dots draw over them.
+                    if (constellation) {
+                        for (p in particles) {
+                            val po = Offset(p.position.x, p.position.y)
+                            for (q in c.store.neighbors(p, LINK_RADIUS)) {
+                                val dx = p.position.x - q.position.x
+                                val dy = p.position.y - q.position.y
+                                val d = kotlin.math.sqrt(dx * dx + dy * dy)
+                                drawLine(hues[0], po, Offset(q.position.x, q.position.y), strokeWidth = 1f, alpha = (1f - d / LINK_RADIUS) * 0.12f)
+                            }
+                        }
+                    }
+                    particles.forEachIndexed { i, p ->
+                        val heat = p.heat.coerceIn(0f, 1f)
+                        // Saturation floor: resting particles still carry ~⅓ of their hue,
+                        // instead of washing out to COOL — the flat/pale look otherwise.
+                        val col = lerp(COOL, hues[i % hues.size], 0.34f + heat * 0.66f)
+                        val r = 1.7f + p.size * 1.7f + heat * 3f
+                        if (particleGlow > 0f) {
+                            val gr = r * (2f + particleGlow * 4f)
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(col.copy(alpha = particleGlow * (0.35f + heat * 0.45f)), Color.Transparent),
+                                    center = Offset(p.position.x, p.position.y),
+                                    radius = gr,
+                                ),
+                                radius = gr,
+                                center = Offset(p.position.x, p.position.y),
+                            )
+                        }
+                        drawCircle(col, r, Offset(p.position.x, p.position.y), 0.9f)
+                    }
                 }
 
                 RenderMode.GLOW -> particles.forEachIndexed { i, p ->
