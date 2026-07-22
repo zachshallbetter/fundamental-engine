@@ -6,9 +6,11 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    `maven-publish`
 }
 
 android {
+    publishing { singleVariant("release") }
     namespace = "com.fundamental.compose"
     compileSdk = 34
     buildToolsVersion = "34.0.0"
@@ -41,4 +43,17 @@ dependencies {
     // LocalLifecycleOwner (its post-compose-1.7 home) — the lifecycle-driven auto-pause seam (#605 mirror).
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.core:core-ktx:1.13.1")
+}
+
+// ── Publishing ──────────────────────────────────────────────────────────────
+apply(from = rootProject.file("gradle/github-packages.gradle.kts"))
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])   // AGP's release AAR + POM (transitive core dep included)
+                artifactId = "fundamental-compose"
+            }
+        }
+    }
 }

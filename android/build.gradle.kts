@@ -9,3 +9,11 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.1.0" apply false
     id("org.jetbrains.kotlin.plugin.compose") version "2.1.0" apply false
 }
+
+// Coordinates for the published Android/JVM artifacts (GitHub Packages). Mirrors the
+// npm scope @fundamental-engine and the Swift package products. Version tracks the
+// repo's release tags.
+subprojects {
+    group = "com.fundamental"
+    version = "0.9.5"
+}
