@@ -17,7 +17,7 @@ name: Release
 #   conclusion    — asserts every job above SUCCEEDED (skipped ≠ success).
 #
 # Trigger: push a version tag, e.g.
-#   pnpm --filter "@fundamental-engine/*" exec npm version 0.2.4 --no-git-tag-version  # bump the seven together
+#   pnpm --filter "./packages/*" exec npm version 0.2.4 --no-git-tag-version  # bump the seven together
 #   git commit -am "release: 0.2.4" && git tag v0.2.4 && git push --tags
 #
 # Rehearsal: workflow_dispatch with dry_run=true runs the entire path — gate, version
@@ -153,7 +153,7 @@ jobs:
         # longer requires a manual re-run. A genuine failure still exits non-zero after the last attempt.
         run: |
           attempt=1; max=3
-          until pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}; do
+          until pnpm --filter "./packages/*" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}; do
             if [ "$attempt" -ge "$max" ]; then
               echo "::error::publish failed after $max attempts"; exit 1
             fi

@@ -7,6 +7,8 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+- **Release tooling: scope the version bump to `./packages/*`, not the `@fundamental-engine/*` name glob.** The glob also matched the private workspace apps (`apps/site`, `apps/starter`, `apps/observatory`), which share the npm scope but version independently — and `exec npm version` ignores the `private` flag, so it silently bumped them to the release version (0.10.0 caught this: observatory jumped `0.0.0 → 0.10.0` before it was reverted by hand). The path filter targets exactly the seven publishable packages, so no private app is bumped and the old "revert the apps afterward" step is gone. `pnpm publish` already skipped private packages, so only the version bump was ever affected. Fixed in `RELEASING.md`, `PUBLISHING.md`, and `release.yml`.
+
 ## [0.10.0] — 2026-07-21
 
 The reproducibility envelope ships, and cross-plane publishing is complete: **one `git tag v0.10.0`
