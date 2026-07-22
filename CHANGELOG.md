@@ -7,19 +7,39 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
-- **Android artifacts publish from CI on a release tag, at a tag-derived version.** `android.yml` gains a `publish` job (`if: refs/tags/v*`, `packages: write`, Actions `GITHUB_TOKEN` — no personal token) that runs `:fundamental-core:publish :fundamental-compose:publish`. The version is derived from the tag via `-PreleaseVersion` and defaults to a `SNAPSHOT` locally — the hardcoded `version = "0.9.5"` is gone, so a publish can never silently overwrite a release with different code. One `git tag vX.Y.Z` now releases every plane at one version: npm via `release.yml`, Swift via the SPM tag, Kotlin via this. Publication config verified against the local Maven repo before merge.
-- **Positioning made consistent site-wide.** The homepage rewrite changed the hero, title and description, but the footer — which renders on *every* page — still read "a readable behavior layer for host objects", so the homepage contradicted itself on the same screen. The `Base.astro` default title carried it too. Both now say "a physics engine for interfaces". The only surviving instance is the changelog entry above, which quotes the old phrase to explain why it was retired; historical records that cite a former term are left intact.
+## [0.10.0] — 2026-07-21
 
-- **Finished retiring the freeze vocabulary across `docs/canonical/`.** The earlier change corrected the authoritative sources but left the wording in nine other canonical documents, where "the freeze contract" and "the frozen surface" still described a promise the project had stopped making. All now say *protected* / *removal-protection*. Four uses of the word are deliberately untouched because they mean something else entirely — `Object.freeze`'d policy clones, "freeze the sim" for reduced motion, "frozen particles" in the poster render mode, and "frozen design history" for the planning archive. A pattern-matched sweep would have broken all four.
+The reproducibility envelope ships, and cross-plane publishing is complete: **one `git tag v0.10.0`
+now releases npm, Swift (SPM) and Kotlin (Maven/GitHub Packages) in lockstep at a single version.**
 
-- **Homepage leads with the artifact instead of the abstraction.** The hero opened with 227 words before anything moved, and asked a reader to hold six unfamiliar concepts — "a readable behavior layer for host objects" appeared in the kicker, the page title, the meta description *and* the first sentence, all before any evidence. The standfirst is now two sentences that are checkable on the page itself, the strongest of which is **"nothing on this page is animated."** Kicker and title become "a physics engine for interfaces" — a category people already have a slot for.
-- **New `#shipped` section: four doors, one core.** [Habitat](https://habitat.fundamental-engine.com) (WebGL, `@fundamental-engine/three`), [Ascent](https://ascent.guide) (iOS, `<field-root>` + elements, on the App Store), [zachshallbetter.com](https://zachshallbetter.com) (`@fundamental-engine/vanilla`), and the [native parity matrix](https://fundamental-engine.com/docs/api/parity). The renderer-agnostic claim was previously asserted in prose; it is now four links you can open.
-- **Cross-plane parity surfaced in the hero meta** — `js · swift · kotlin`, six forces, identical output, checked in CI. It was one clause in a dense paragraph and the word "parity" appeared once on the entire page, despite being the least common thing the project can claim.
-- Maturity line corrected: it read *"no external users yet"* while shipping in a published iOS app and a live WebGL game. It now reads "shipping in production apps, no third-party adopters yet" — which is both truer and stronger.
+### Breaking (pre-1.0)
+
+- **`FieldHandle` gains a required `guarantees` member.** **Additive for every consumer** — reading
+  `field.guarantees` is a new capability and breaks no calling code. **Breaking only for third-party
+  code that *implements* `FieldHandle` itself**, which must now provide the member. **Migration:**
+  return the runtime's envelope, or delegate to a wrapped field — the in-repo implementers
+  `FieldLayer` (`@fundamental-engine/three`) and `FieldField` (`@fundamental-engine/vanilla`) both
+  delegate, and are the reference pattern. Per the pre-1.0 policy this is the `0.MINOR` position, hence
+  `0.10.0` rather than a patch.
+
+### Added
 
 - **`FieldHandle.guarantees` — the reproducibility envelope is now queryable.** The runtime's determinism classification, its controlled and **uncontrolled** inputs, the requirements for repeatability, and the cross-plane numeric tolerance were previously stated only inside an unexported experimental module. The first external integrator concluded the runtime was byte-identical across environments and designed replay and shared-state features on that — a reasonable inference from unavailable information. It is `conditionally-deterministic`, `host-geometry` and `body-ordering` are **not** controlled, and cross-plane agreement is a tolerance (`1e-6`), never bit-equality. A drift test asserts the published envelope matches the internal contract declaration, because two statements of one fact diverge unless something checks them.
 - **New canonical doc: [`coupling-discipline.md`](docs/canonical/coupling-discipline.md).** The rung discipline — couple at the lowest rung that achieves the effect — arrived at independently by two consumer projects that each hit the same wall. Covers rung selection, sampling cadence, the measured cost (fill-rate-bound, not particle-bound; ~1ms against a 16.7ms budget), and **when not to use the field at all**: high-frequency domain telemetry belongs in your own arrays, not in bodies.
-- **README: the WebGL door is signposted where architecture decisions get made.** `@fundamental-engine/three` was fully documented in the packages table three-quarters of the way down; two independent readers still recommended hand-building the headless-to-`THREE.Points` bridge that ships in it.
+
+### Build & release
+
+- **Android artifacts publish from CI on a release tag, at a tag-derived version.** `android.yml` gains a `publish` job (`if: refs/tags/v*`, `packages: write`, Actions `GITHUB_TOKEN` — no personal token) that runs `:fundamental-core:publish :fundamental-compose:publish`. The version is derived from the tag via `-PreleaseVersion` and defaults to a `SNAPSHOT` locally — the hardcoded `version = "0.9.5"` is gone, so a publish can never silently overwrite a release with different code. One `git tag vX.Y.Z` now releases every plane at one version: npm via `release.yml`, Swift via the SPM tag, Kotlin via this. Publication config verified against the local Maven repo before merge.
+
+### Docs & site
+
+- **Homepage leads with the artifact instead of the abstraction.** The hero opened with 227 words before anything moved, and asked a reader to hold six unfamiliar concepts — "a readable behavior layer for host objects" appeared in the kicker, the page title, the meta description *and* the first sentence, all before any evidence. The standfirst is now two sentences that are checkable on the page itself, the strongest of which is **"nothing on this page is animated."** Kicker and title become "a physics engine for interfaces" — a category people already have a slot for.
+- **New `#shipped` section: four doors, one core.** [Habitat](https://habitat.fundamental-engine.com) (WebGL, `@fundamental-engine/three`), [Ascent](https://ascent.guide) (iOS, `<field-root>` + elements, on the App Store), [zachshallbetter.com](https://zachshallbetter.com) (`@fundamental-engine/vanilla`), and the [native parity matrix](https://fundamental-engine.com/docs/api/parity). The renderer-agnostic claim was previously asserted in prose; it is now four links you can open.
+- **Cross-plane parity surfaced in the hero meta** — `js · swift · kotlin`, six forces, identical output, checked in CI.
+- **Positioning made consistent site-wide.** The footer, which renders on every page, and the `Base.astro` default title still carried the old phrasing after the homepage rewrite; both now say "a physics engine for interfaces".
+- **Finished retiring the freeze vocabulary across `docs/canonical/`.** Nine documents still described "the freeze contract" / "the frozen surface"; all now say *protected* / *removal-protection*. Four uses meaning something else entirely (`Object.freeze` clones, reduced-motion "freeze the sim", the poster "frozen particles", "frozen design history") are deliberately untouched.
+- **README: the WebGL door is signposted where architecture decisions get made.** `@fundamental-engine/three` was documented three-quarters down the packages table; two independent readers still recommended hand-building the headless-to-`THREE.Points` bridge it already ships.
+- Maturity line corrected: it read *"no external users yet"* while shipping in a published iOS app and a live WebGL game.
 
 ## [0.9.5] — 2026-07-20
 
