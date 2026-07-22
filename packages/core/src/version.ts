@@ -4,4 +4,4 @@
  * with `packages/core/package.json` by `version.test.ts` (the build fails if they drift), so the
  * release bump is the single source of truth.
  */
-export const FIELD_VERSION = '0.9.5';
+export const FIELD_VERSION = '0.10.0';

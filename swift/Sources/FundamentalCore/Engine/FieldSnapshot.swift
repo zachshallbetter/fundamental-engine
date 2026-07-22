@@ -21,7 +21,7 @@ import Foundation
 /// mirroring the Kotlin port. Kept in lockstep with the package version (npm `latest`) and the JS
 /// `FIELD_VERSION`: `VersionLockstepTests` fails the suite if this drifts from
 /// `packages/core/package.json` (#923) — update it here on every release bump.
-public let FIELD_VERSION: String = "0.9.5"
+public let FIELD_VERSION: String = "0.10.0"
 
 /// Options for ``FieldHandle/snapshot(_:)`` (JS `FieldSnapshotOptions`). Composes with the runtime privacy
 /// ``FieldPolicy`` and an optional ``SnapshotProfile``, always resolving to the TIGHTEST (most private)
