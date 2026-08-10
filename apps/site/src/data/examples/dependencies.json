@@ -1,7 +1,7 @@
 {
   "source": "npm registry + api.npmjs.org downloads + OSV.dev advisories, over this monorepo’s real package.json files",
   "license": "public registry data",
-  "snapshotAt": "2026-06-10T04:35:47.913Z",
+  "snapshotAt": "2026-08-10T08:05:42.822Z",
   "workspace": [
     {
       "name": "core",
@@ -46,25 +46,47 @@
   ],
   "deps": [
     {
+      "name": "@types/node",
+      "weeklyDownloads": 408154835,
+      "version": "26.2.0",
+      "publishedAt": "2026-08-07T17:52:06.875Z",
+      "description": "TypeScript definitions for node",
+      "advisories": 0,
+      "usedBy": [
+        "core"
+      ]
+    },
+    {
       "name": "typescript",
-      "weeklyDownloads": 205759155,
-      "version": "6.0.3",
-      "publishedAt": "2026-04-16T23:38:27.905Z",
+      "weeklyDownloads": 260311793,
+      "version": "7.0.2",
+      "publishedAt": "2026-07-08T15:55:18.431Z",
       "description": "TypeScript is a language for application scale JavaScript development",
       "advisories": 0,
       "usedBy": [
         "core",
-        "platform",
+        "dom",
         "elements",
         "vanilla",
         "react"
       ]
     },
     {
+      "name": "esbuild",
+      "weeklyDownloads": 255499108,
+      "version": "0.28.2",
+      "publishedAt": "2026-08-08T20:00:55.454Z",
+      "description": "An extremely fast JavaScript and CSS bundler and minifier.",
+      "advisories": 2,
+      "usedBy": [
+        "vanilla"
+      ]
+    },
+    {
       "name": "react",
-      "weeklyDownloads": 134410428,
-      "version": "19.2.7",
-      "publishedAt": "2026-06-01T18:00:48.323Z",
+      "weeklyDownloads": 163083190,
+      "version": "19.2.8",
+      "publishedAt": "2026-07-21T15:41:28.716Z",
       "description": "React is a JavaScript library for building user interfaces.",
       "advisories": 2,
       "usedBy": [
@@ -73,9 +95,9 @@
     },
     {
       "name": "@types/react",
-      "weeklyDownloads": 121081029,
-      "version": "19.2.17",
-      "publishedAt": "2026-06-05T20:10:24.692Z",
+      "weeklyDownloads": 151770208,
+      "version": "19.2.18",
+      "publishedAt": "2026-07-30T21:54:03.456Z",
       "description": "TypeScript definitions for react",
       "advisories": 0,
       "usedBy": [
@@ -83,10 +105,21 @@
       ]
     },
     {
+      "name": "@playwright/test",
+      "weeklyDownloads": 52792524,
+      "version": "1.62.1",
+      "publishedAt": "2026-07-30T16:36:55.324Z",
+      "description": "A high-level API to automate web browsers",
+      "advisories": 0,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
       "name": "katex",
-      "weeklyDownloads": 14021083,
-      "version": "0.17.0",
-      "publishedAt": "2026-05-22T08:06:26.967Z",
+      "weeklyDownloads": 21650959,
+      "version": "0.18.3",
+      "publishedAt": "2026-08-09T13:56:18.126Z",
       "description": "Fast math typesetting for the web.",
       "advisories": 5,
       "usedBy": [
@@ -94,19 +127,52 @@
       ]
     },
     {
-      "name": "mermaid",
-      "weeklyDownloads": 8533164,
-      "version": "11.15.0",
-      "publishedAt": "2026-05-11T11:15:09.824Z",
-      "description": "Markdown-ish syntax for generating flowcharts, mindmaps, sequence diagrams, class diagrams, gantt charts, git graphs and",
-      "advisories": 11,
+      "name": "three",
+      "weeklyDownloads": 14218946,
+      "version": "0.185.1",
+      "publishedAt": "2026-07-01T14:04:30.373Z",
+      "description": "JavaScript 3D library",
+      "advisories": 1,
       "usedBy": [
         "site"
       ]
     },
     {
+      "name": "mermaid",
+      "weeklyDownloads": 13568742,
+      "version": "11.16.1",
+      "publishedAt": "2026-08-04T15:09:06.734Z",
+      "description": "Markdown-ish syntax for generating flowcharts, mindmaps, sequence diagrams, class diagrams, gantt charts, git graphs and",
+      "advisories": 16,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
+      "name": "@types/three",
+      "weeklyDownloads": 8991467,
+      "version": "0.185.4",
+      "publishedAt": "2026-08-04T20:04:52.689Z",
+      "description": "TypeScript definitions for three",
+      "advisories": 0,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
+      "name": "react-test-renderer",
+      "weeklyDownloads": 8407275,
+      "version": "19.2.8",
+      "publishedAt": "2026-07-21T15:42:09.248Z",
+      "description": "React package for snapshot testing.",
+      "advisories": 0,
+      "usedBy": [
+        "react"
+      ]
+    },
+    {
       "name": "remark-math",
-      "weeklyDownloads": 5103647,
+      "weeklyDownloads": 7114366,
       "version": "6.0.0",
       "publishedAt": "2023-09-19T11:38:59.221Z",
       "description": "remark plugin to parse and stringify math",
@@ -117,7 +183,7 @@
     },
     {
       "name": "rehype-katex",
-      "weeklyDownloads": 4876877,
+      "weeklyDownloads": 6495290,
       "version": "7.0.1",
       "publishedAt": "2024-08-19T12:09:21.818Z",
       "description": "rehype plugin to transform inline and block math with KaTeX",
@@ -128,22 +194,44 @@
     },
     {
       "name": "astro",
-      "weeklyDownloads": 3100154,
-      "version": "6.4.5",
-      "publishedAt": "2026-06-09T12:45:58.736Z",
+      "weeklyDownloads": 4444229,
+      "version": "7.2.0",
+      "publishedAt": "2026-08-06T10:48:55.757Z",
       "description": "Astro is a modern site builder with web best practices, performance, and DX front-of-mind.",
-      "advisories": 17,
+      "advisories": 25,
       "usedBy": [
         "site"
       ]
     },
     {
       "name": "@astrojs/sitemap",
-      "weeklyDownloads": 1461261,
+      "weeklyDownloads": 2258380,
       "version": "3.7.3",
       "publishedAt": "2026-05-26T14:23:48.946Z",
       "description": "Generate a sitemap for your Astro site",
       "advisories": 0,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
+      "name": "opentype.js",
+      "weeklyDownloads": 1856273,
+      "version": "2.0.0",
+      "publishedAt": "2026-05-06T16:44:19.718Z",
+      "description": "OpenType font parser",
+      "advisories": 0,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
+      "name": "pagefind",
+      "weeklyDownloads": 1249837,
+      "version": "1.5.2",
+      "publishedAt": "2026-04-12T12:46:44.475Z",
+      "description": "Implement search on any static website.",
+      "advisories": 1,
       "usedBy": [
         "site"
       ]
