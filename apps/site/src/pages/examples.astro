@@ -163,6 +163,47 @@ field.rescan();   // the scanner registers the spans as bodies
 dispose();
 field.rescan();`;
 
+const relationalSrc = `<div class="pub-grid">
+  <!-- Category Attractor Well -->
+  <section class="pub-category" data-body="well" data-strength="1.4" data-range="350" style="--cat-color: #4da3ff;">
+    <header class="cat-head">
+      <span class="cat-glyph">◆</span>
+      <h3>Research Papers</h3>
+    </header>
+    <article id="pub-1" class="pub-card" data-body="attract" data-strength="0.7" data-feedback data-field-relation="cites" data-field-target="#pub-2">
+      <span class="pub-badge">Research</span>
+      <h4>01. Relational Substrate Theory</h4>
+      <p>Semantic structures and field particles in one shared platform runtime.</p>
+    </article>
+  </section>
+
+  <!-- Category Attractor Well -->
+  <section class="pub-category" data-body="well" data-strength="1.2" data-range="300" style="--cat-color: #f59e0b;">
+    <header class="cat-head">
+      <span class="cat-glyph">☍</span>
+      <h3>Technical Specs</h3>
+    </header>
+    <article id="pub-2" class="pub-card" data-body="attract" data-strength="0.6" data-feedback>
+      <span class="pub-badge">Spec</span>
+      <h4>02. Relationship Registry & Signals</h4>
+      <p>Normalizing HTML, ARIA, and custom graph edges into runtime signals.</p>
+    </article>
+  </section>
+</div>
+
+<style>
+  .pub-card {
+    --field-density: 0;
+    --field-proximity: 0;
+    background: rgba(30, 41, 59, 0.85);
+    border: 1px solid color-mix(in srgb, var(--cat-color) calc(25% + var(--field-proximity) * 65%), rgba(255,255,255,0.1));
+    box-shadow: 0 4px 20px rgba(0, 0, 0, calc(0.2 + var(--field-density) * 0.4)),
+                0 0 15px color-mix(in srgb, var(--cat-color) calc(var(--field-proximity) * 70%), transparent);
+    transform: scale(calc(1 + var(--field-proximity) * 0.03));
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  }
+</style>`;
+
 // The demos, grouped by concept — drives the sidebar, the in-content dividers, and scroll-spy.
 const GROUPS = [
   {
@@ -174,6 +215,15 @@ const GROUPS = [
       { id: 'hero-word', label: 'Glowing hero word' },
       { id: 'card-grid', label: 'Reacting card grid' },
       { id: 'conserved-emphasis', label: 'Conserved emphasis' },
+    ],
+  },
+  {
+    id: 'relational',
+    title: 'Relational topology',
+    color: '#f59e0b',
+    glyph: '☍',
+    items: [
+      { id: 'relational-publications', label: 'Relational publications' },
     ],
   },
   {
@@ -317,6 +367,54 @@ const GROUPS = [
       <button type="button" class="emph-toggle" aria-pressed="true">Attention: conserved</button>
     </div>
     <CodeTabs variants={[{ label: 'HTML + CSS + JS', lang: 'html', code: emphSrc }]} />
+  </section>
+
+  <div class="ex-group-head" id="relational">Relational topology</div>
+
+  <section class="docs-sec" id="relational-publications">
+    <h2>Relational publications</h2>
+    <p>
+      Publications are <code>data-body</code> elements organized into category attractor wells
+      (<code>data-body="well"</code>) and linked via citation graph edges (<code>data-field-relation="cites"</code>).
+      The field organizes cards by category and relationship topology, while local CSS custom properties
+      (<code>--field-density</code>, <code>--field-proximity</code>) drive elevation, border glow, and dynamic formatting.
+    </p>
+    <div class="sc-pub-grid">
+      <section class="sc-pub-category" data-body="well" data-strength="1.4" data-range="350">
+        <div class="sc-cat-head" style="--cat-color: #4da3ff;">
+          <span class="sc-cat-glyph">◆</span>
+          <h3>Research Papers</h3>
+        </div>
+        <article id="pub-1" class="sc-pub-card" data-body="attract" data-strength="0.7" data-range="240" data-feedback data-field-relation="cites" data-field-target="#pub-2" style="--cat-color: #4da3ff;">
+          <span class="sc-pub-badge">Research</span>
+          <h4>01. Relational Substrate Theory</h4>
+          <p>Semantic structures and field particles in one shared platform runtime.</p>
+        </article>
+        <article id="pub-3" class="sc-pub-card" data-body="attract" data-strength="0.65" data-range="220" data-feedback data-field-relation="cites" data-field-target="#pub-1" style="--cat-color: #4da3ff;">
+          <span class="sc-pub-badge">Research</span>
+          <h4>03. Field Memory & Attention</h4>
+          <p>Conserved attention budgets across long-form document nodes.</p>
+        </article>
+      </section>
+
+      <section class="sc-pub-category" data-body="well" data-strength="1.2" data-range="300">
+        <div class="sc-cat-head" style="--cat-color: #f59e0b;">
+          <span class="sc-cat-glyph">☍</span>
+          <h3>Technical Specs</h3>
+        </div>
+        <article id="pub-2" class="sc-pub-card" data-body="attract" data-strength="0.6" data-range="220" data-feedback style="--cat-color: #f59e0b;">
+          <span class="sc-pub-badge">Spec</span>
+          <h4>02. Relationship Registry</h4>
+          <p>Normalizing HTML, ARIA, and custom graph edges into runtime signals.</p>
+        </article>
+        <article id="pub-4" class="sc-pub-card" data-body="attract" data-strength="0.6" data-range="220" data-feedback data-field-relation="cites" data-field-target="#pub-2" style="--cat-color: #f59e0b;">
+          <span class="sc-pub-badge">Spec</span>
+          <h4>04. Platform Host Seam</h4>
+          <p>Host adapters binding zero-dep core models to native platforms.</p>
+        </article>
+      </section>
+    </div>
+    <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: relationalSrc }]} />
   </section>
 
   <div class="ex-group-head" id="layout">Layout as physics</div>
@@ -1044,6 +1142,79 @@ const GROUPS = [
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--text-4);
+  }
+  /* Relational Publications demo */
+  .sc-pub-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin: 1.1rem 0 0;
+  }
+  @media (max-width: 640px) {
+    .sc-pub-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .sc-pub-category {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1.2rem;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.015);
+  }
+  .sc-cat-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .sc-cat-head h3 {
+    margin: 0;
+    font-family: var(--display);
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+  .sc-cat-glyph {
+    color: var(--cat-color, var(--accent));
+    font-size: 0.85rem;
+  }
+  .sc-pub-card {
+    --field-density: 0;
+    --field-proximity: 0;
+    padding: 1rem 1.1rem;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--cat-color, var(--accent)) calc(20% + var(--field-density) * 60%), var(--line));
+    background: var(--bg-card, #0b0e16);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, calc(0.2 + var(--field-density) * 0.35)),
+                0 0 12px color-mix(in srgb, var(--cat-color, var(--accent)) calc(var(--field-density) * 50%), transparent);
+    transform: scale(calc(1 + var(--field-density) * 0.025));
+    transition: transform 0.25s var(--ease), border-color 0.25s, box-shadow 0.25s;
+  }
+  .sc-pub-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    color: var(--cat-color, var(--accent));
+    background: color-mix(in srgb, var(--cat-color, var(--accent)) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cat-color, var(--accent)) 30%, transparent);
+    margin-bottom: 0.4rem;
+  }
+  .sc-pub-card h4 {
+    margin: 0 0 0.25rem;
+    font-family: var(--display);
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+  .sc-pub-card p {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--text-3);
   }
   /* Conserved-emphasis demo */
   .sc-emph {

@@ -26,6 +26,7 @@
     "gen:force-catalog": "node scripts/gen-force-catalog.mjs",
     "gen:parity-matrix": "node scripts/gen-parity-matrix.mjs",
     "gen:papers": "node scripts/papers-to-latex.mjs",
+    "gen:llms": "python3 tools/gen-llms.py",
     "dev": "pnpm --filter @fundamental-engine/site dev",
     "build:site": "pnpm --filter @fundamental-engine/site build",
     "docs:dev": "pnpm --filter @fundamental-engine/docs dev",
