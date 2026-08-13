@@ -55,7 +55,7 @@ pnpm --filter "./packages/*" publish --access public --no-git-checks --otp=<code
 
 ## Versioning
 
-All seven published packages are versioned together (currently `0.10.0`). Bump them as one:
+All seven published packages are versioned together (currently `0.10.1`). Bump them as one:
 
 ```sh
 pnpm --filter "./packages/*" exec npm version <patch|minor|major> --no-git-tag-version
