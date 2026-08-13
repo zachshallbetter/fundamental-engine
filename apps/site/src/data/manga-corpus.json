@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "updatedAt": "2026-08-12",
   "works": [
     {
@@ -9,103 +9,14 @@
       "author": "Yoshiyuki Sadamoto / Khara",
       "publisher": "VIZ Media",
       "genre": ["Sci-Fi", "Mecha", "Psychological", "Drama"],
+      "yr": 1994,
       "editions": [
-        {
-          "id": "ed_eva_viz_single",
-          "name": "VIZ Standard Paperback",
-          "volumeCount": 14,
-          "isbns": ["978-1-59116-400-5"],
-          "format": "single-volume"
-        },
-        {
-          "id": "ed_eva_viz_3in1",
-          "name": "VIZ 3-in-1 Omnibus Edition",
-          "volumeCount": 5,
-          "isbns": ["978-1-4215-5079-4"],
-          "format": "omnibus"
-        }
+        { "id": "ed_eva_single", "name": "VIZ Standard Paperback", "volumeCount": 14, "isbns": ["978-1-59116-400-5"], "format": "single-volume" },
+        { "id": "ed_eva_3in1", "name": "VIZ 3-in-1 Omnibus", "volumeCount": 5, "isbns": ["978-1-4215-5079-4"], "format": "omnibus" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.42,
-        "panelDensity": 5.8,
-        "dialogueDensity": 0.68,
-        "inkCoverage": 0.58,
-        "closeUpFrequency": 0.72,
-        "sfxDensity": 0.45,
-        "environmentalScale": 0.65,
-        "characterRecurrence": 0.85,
-        "visualPacing": 0.48,
-        "borderViolation": 0.35,
-        "actionDensity": 0.52,
-        "contrast": 0.65
-      },
+      "overallVector": { "negativeSpace": 0.42, "panelDensity": 5.8, "dialogueDensity": 0.68, "inkCoverage": 0.58, "closeUpFrequency": 0.72, "sfxDensity": 0.45, "environmentalScale": 0.65, "characterRecurrence": 0.85, "visualPacing": 0.48, "borderViolation": 0.35, "actionDensity": 0.52, "contrast": 0.65 },
       "sections": [
-        {
-          "id": "eva_vol_3_rei",
-          "volume": "Vol. 3",
-          "chapterRange": "Stage 15-21",
-          "pageRange": "pp. 1-178",
-          "label": "Shinji & Rei Close-up Sequences",
-          "vector": {
-            "negativeSpace": 0.55,
-            "panelDensity": 4.5,
-            "dialogueDensity": 0.78,
-            "inkCoverage": 0.45,
-            "closeUpFrequency": 0.88,
-            "sfxDensity": 0.20,
-            "environmentalScale": 0.35,
-            "characterRecurrence": 0.92,
-            "visualPacing": 0.30,
-            "borderViolation": 0.15,
-            "actionDensity": 0.18,
-            "contrast": 0.52
-          },
-          "keyCharacters": ["Shinji Ikari", "Rei Ayanami"]
-        },
-        {
-          "id": "eva_vol_4_asuka",
-          "volume": "Vol. 4",
-          "chapterRange": "Stage 22-28",
-          "pageRange": "pp. 1-184",
-          "label": "Asuka Arrival & Synchro Practice",
-          "vector": {
-            "negativeSpace": 0.35,
-            "panelDensity": 6.2,
-            "dialogueDensity": 0.72,
-            "inkCoverage": 0.50,
-            "closeUpFrequency": 0.76,
-            "sfxDensity": 0.52,
-            "environmentalScale": 0.45,
-            "characterRecurrence": 0.88,
-            "visualPacing": 0.60,
-            "borderViolation": 0.28,
-            "actionDensity": 0.48,
-            "contrast": 0.60
-          },
-          "keyCharacters": ["Shinji Ikari", "Asuka Langley Soryu", "Misato Katsuragi"]
-        },
-        {
-          "id": "eva_vol_12_conflict",
-          "volume": "Vol. 12",
-          "chapterRange": "Stage 77-83",
-          "pageRange": "pp. 1-172",
-          "label": "NERV Headquarters Siege & SEELE Climax",
-          "vector": {
-            "negativeSpace": 0.28,
-            "panelDensity": 6.8,
-            "dialogueDensity": 0.55,
-            "inkCoverage": 0.78,
-            "closeUpFrequency": 0.68,
-            "sfxDensity": 0.65,
-            "environmentalScale": 0.82,
-            "characterRecurrence": 0.75,
-            "visualPacing": 0.72,
-            "borderViolation": 0.58,
-            "actionDensity": 0.85,
-            "contrast": 0.82
-          },
-          "keyCharacters": ["Shinji Ikari", "Gendo Ikari", "Misato Katsuragi"]
-        }
+        { "id": "eva_vol_3_rei", "volume": "Vol. 3", "chapterRange": "Stage 15-21", "pageRange": "pp. 1-178", "label": "Shinji & Rei Close-up Sequences", "vector": { "negativeSpace": 0.55, "panelDensity": 4.5, "dialogueDensity": 0.78, "inkCoverage": 0.45, "closeUpFrequency": 0.88, "sfxDensity": 0.20, "environmentalScale": 0.35, "characterRecurrence": 0.92, "visualPacing": 0.30, "borderViolation": 0.15, "actionDensity": 0.18, "contrast": 0.52 }, "keyCharacters": ["Shinji Ikari", "Rei Ayanami"] }
       ]
     },
     {
@@ -114,60 +25,14 @@
       "originalTitle": "ブラム!",
       "author": "Tsutomu Nihei",
       "publisher": "Kodansha",
-      "genre": ["Sci-Fi", "Cyberpunk", "Architectural", "Post-Apocalyptic"],
+      "genre": ["Sci-Fi", "Cyberpunk", "Architectural"],
+      "yr": 1997,
       "editions": [
-        {
-          "id": "ed_blame_master",
-          "name": "Kodansha Master Edition",
-          "volumeCount": 6,
-          "isbns": ["978-1-63236-361-9"],
-          "format": "oversized-hardcover"
-        },
-        {
-          "id": "ed_blame_std",
-          "name": "Tokyopop Standard Edition",
-          "volumeCount": 10,
-          "isbns": ["978-1-59532-834-2"],
-          "format": "single-volume"
-        }
+        { "id": "ed_blame_master", "name": "Kodansha Master Edition", "volumeCount": 6, "isbns": ["978-1-63236-361-9"], "format": "oversized-hardcover" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.82,
-        "panelDensity": 3.2,
-        "dialogueDensity": 0.12,
-        "inkCoverage": 0.62,
-        "closeUpFrequency": 0.25,
-        "sfxDensity": 0.28,
-        "environmentalScale": 0.96,
-        "characterRecurrence": 0.40,
-        "visualPacing": 0.18,
-        "borderViolation": 0.45,
-        "actionDensity": 0.35,
-        "contrast": 0.88
-      },
+      "overallVector": { "negativeSpace": 0.85, "panelDensity": 3.1, "dialogueDensity": 0.08, "inkCoverage": 0.65, "closeUpFrequency": 0.22, "sfxDensity": 0.25, "environmentalScale": 0.98, "characterRecurrence": 0.35, "visualPacing": 0.15, "borderViolation": 0.48, "actionDensity": 0.32, "contrast": 0.90 },
       "sections": [
-        {
-          "id": "blame_log_2_megastructure",
-          "volume": "Vol. 1",
-          "chapterRange": "Log 2-3",
-          "pageRange": "pp. 34-88",
-          "label": "Megastructure Ascent & Infinite Gutters",
-          "vector": {
-            "negativeSpace": 0.94,
-            "panelDensity": 2.2,
-            "dialogueDensity": 0.05,
-            "inkCoverage": 0.55,
-            "closeUpFrequency": 0.12,
-            "sfxDensity": 0.15,
-            "environmentalScale": 0.98,
-            "characterRecurrence": 0.20,
-            "visualPacing": 0.10,
-            "borderViolation": 0.50,
-            "actionDensity": 0.12,
-            "contrast": 0.92
-          },
-          "keyCharacters": ["Killy"]
-        }
+        { "id": "blame_log_2", "volume": "Vol. 1", "chapterRange": "Log 2", "pageRange": "pp. 34-88", "label": "Megastructure Ascent", "vector": { "negativeSpace": 0.94, "panelDensity": 2.2, "dialogueDensity": 0.05, "inkCoverage": 0.55, "closeUpFrequency": 0.12, "sfxDensity": 0.15, "environmentalScale": 0.98, "characterRecurrence": 0.20, "visualPacing": 0.10, "borderViolation": 0.50, "actionDensity": 0.12, "contrast": 0.92 }, "keyCharacters": ["Killy"] }
       ]
     },
     {
@@ -176,61 +41,12 @@
       "originalTitle": "アキラ",
       "author": "Katsuhiro Otomo",
       "publisher": "Kodansha",
-      "genre": ["Sci-Fi", "Cyberpunk", "Action", "Dystopian"],
+      "genre": ["Sci-Fi", "Cyberpunk", "Action"],
+      "yr": 1982,
       "editions": [
-        {
-          "id": "ed_akira_hardcover",
-          "name": "Kodansha 35th Anniversary Boxset (RTL Hand-SFX)",
-          "volumeCount": 6,
-          "isbns": ["978-1-63236-461-6"],
-          "format": "hardcover-boxset"
-        },
-        {
-          "id": "ed_akira_paperback",
-          "name": "Kodansha Standard Paperback",
-          "volumeCount": 6,
-          "isbns": ["978-1-59307-023-6"],
-          "format": "single-volume"
-        }
+        { "id": "ed_akira_box", "name": "Kodansha 35th Anniversary Boxset", "volumeCount": 6, "isbns": ["978-1-63236-461-6"], "format": "hardcover-boxset" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.30,
-        "panelDensity": 6.5,
-        "dialogueDensity": 0.45,
-        "inkCoverage": 0.75,
-        "closeUpFrequency": 0.48,
-        "sfxDensity": 0.85,
-        "environmentalScale": 0.90,
-        "characterRecurrence": 0.70,
-        "visualPacing": 0.82,
-        "borderViolation": 0.65,
-        "actionDensity": 0.88,
-        "contrast": 0.85
-      },
-      "sections": [
-        {
-          "id": "akira_vol_1_highway",
-          "volume": "Vol. 1",
-          "chapterRange": "Ch. 1-4",
-          "pageRange": "pp. 1-120",
-          "label": "Neo-Tokyo Expressway Chase & Crash",
-          "vector": {
-            "negativeSpace": 0.22,
-            "panelDensity": 7.2,
-            "dialogueDensity": 0.38,
-            "inkCoverage": 0.82,
-            "closeUpFrequency": 0.42,
-            "sfxDensity": 0.92,
-            "environmentalScale": 0.92,
-            "characterRecurrence": 0.65,
-            "visualPacing": 0.90,
-            "borderViolation": 0.72,
-            "actionDensity": 0.94,
-            "contrast": 0.90
-          },
-          "keyCharacters": ["Kaneda", "Tetsuo", "Kei"]
-        }
-      ]
+      "overallVector": { "negativeSpace": 0.28, "panelDensity": 6.8, "dialogueDensity": 0.42, "inkCoverage": 0.78, "closeUpFrequency": 0.45, "sfxDensity": 0.88, "environmentalScale": 0.92, "characterRecurrence": 0.72, "visualPacing": 0.85, "borderViolation": 0.68, "actionDensity": 0.90, "contrast": 0.88 }
     },
     {
       "id": "work_berserk",
@@ -238,61 +54,12 @@
       "originalTitle": "ベルセルク",
       "author": "Kentaro Miura",
       "publisher": "Dark Horse Manga",
-      "genre": ["Dark Fantasy", "Action", "Horror", "Tragedy"],
+      "genre": ["Dark Fantasy", "Action", "Horror"],
+      "yr": 1989,
       "editions": [
-        {
-          "id": "ed_berserk_deluxe",
-          "name": "Dark Horse Deluxe Edition",
-          "volumeCount": 14,
-          "isbns": ["978-1-50671-198-0"],
-          "format": "oversized-leatherette"
-        },
-        {
-          "id": "ed_berserk_single",
-          "name": "Dark Horse Standard Paperback",
-          "volumeCount": 41,
-          "isbns": ["978-1-59307-020-5"],
-          "format": "single-volume"
-        }
+        { "id": "ed_berserk_deluxe", "name": "Dark Horse Deluxe Edition", "volumeCount": 14, "isbns": ["978-1-50671-198-0"], "format": "oversized-leatherette" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.18,
-        "panelDensity": 6.2,
-        "dialogueDensity": 0.42,
-        "inkCoverage": 0.92,
-        "closeUpFrequency": 0.65,
-        "sfxDensity": 0.72,
-        "environmentalScale": 0.78,
-        "characterRecurrence": 0.75,
-        "visualPacing": 0.65,
-        "borderViolation": 0.58,
-        "actionDensity": 0.82,
-        "contrast": 0.94
-      },
-      "sections": [
-        {
-          "id": "berserk_vol_13_eclipse",
-          "volume": "Vol. 13",
-          "chapterRange": "Ch. 80-87",
-          "pageRange": "pp. 1-220",
-          "label": "The Eclipse & Demonic Hatching",
-          "vector": {
-            "negativeSpace": 0.10,
-            "panelDensity": 6.9,
-            "dialogueDensity": 0.30,
-            "inkCoverage": 0.98,
-            "closeUpFrequency": 0.75,
-            "sfxDensity": 0.88,
-            "environmentalScale": 0.85,
-            "characterRecurrence": 0.80,
-            "visualPacing": 0.85,
-            "borderViolation": 0.75,
-            "actionDensity": 0.96,
-            "contrast": 0.98
-          },
-          "keyCharacters": ["Guts", "Griffith", "Casca"]
-        }
-      ]
+      "overallVector": { "negativeSpace": 0.15, "panelDensity": 6.5, "dialogueDensity": 0.40, "inkCoverage": 0.95, "closeUpFrequency": 0.68, "sfxDensity": 0.75, "environmentalScale": 0.80, "characterRecurrence": 0.78, "visualPacing": 0.68, "borderViolation": 0.62, "actionDensity": 0.88, "contrast": 0.96 }
     },
     {
       "id": "work_ghost_in_the_shell",
@@ -301,29 +68,11 @@
       "author": "Masamune Shirow",
       "publisher": "Kodansha",
       "genre": ["Sci-Fi", "Cyberpunk", "Philosophical"],
+      "yr": 1989,
       "editions": [
-        {
-          "id": "ed_gits_deluxe",
-          "name": "Kodansha Deluxe Edition",
-          "volumeCount": 1,
-          "isbns": ["978-1-63236-421-0"],
-          "format": "hardcover"
-        }
+        { "id": "ed_gits_deluxe", "name": "Kodansha Deluxe Edition", "volumeCount": 1, "isbns": ["978-1-63236-421-0"], "format": "hardcover" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.25,
-        "panelDensity": 7.5,
-        "dialogueDensity": 0.85,
-        "inkCoverage": 0.70,
-        "closeUpFrequency": 0.55,
-        "sfxDensity": 0.60,
-        "environmentalScale": 0.88,
-        "characterRecurrence": 0.70,
-        "visualPacing": 0.50,
-        "borderViolation": 0.40,
-        "actionDensity": 0.65,
-        "contrast": 0.75
-      }
+      "overallVector": { "negativeSpace": 0.22, "panelDensity": 7.6, "dialogueDensity": 0.88, "inkCoverage": 0.72, "closeUpFrequency": 0.58, "sfxDensity": 0.62, "environmentalScale": 0.88, "characterRecurrence": 0.72, "visualPacing": 0.48, "borderViolation": 0.42, "actionDensity": 0.68, "contrast": 0.78 }
     },
     {
       "id": "work_nausicaa",
@@ -332,29 +81,11 @@
       "author": "Hayao Miyazaki",
       "publisher": "VIZ Media",
       "genre": ["Fantasy", "Post-Apocalyptic", "Eco-Fiction"],
+      "yr": 1982,
       "editions": [
-        {
-          "id": "ed_nausicaa_boxset",
-          "name": "VIZ Deluxe Hardcover Box Set",
-          "volumeCount": 2,
-          "isbns": ["978-1-4215-5064-0"],
-          "format": "hardcover-boxset"
-        }
+        { "id": "ed_nausicaa_box", "name": "VIZ Deluxe Box Set", "volumeCount": 2, "isbns": ["978-1-4215-5064-0"], "format": "hardcover-boxset" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.35,
-        "panelDensity": 7.8,
-        "dialogueDensity": 0.58,
-        "inkCoverage": 0.68,
-        "closeUpFrequency": 0.45,
-        "sfxDensity": 0.50,
-        "environmentalScale": 0.94,
-        "characterRecurrence": 0.60,
-        "visualPacing": 0.45,
-        "borderViolation": 0.35,
-        "actionDensity": 0.55,
-        "contrast": 0.68
-      }
+      "overallVector": { "negativeSpace": 0.38, "panelDensity": 7.5, "dialogueDensity": 0.55, "inkCoverage": 0.65, "closeUpFrequency": 0.42, "sfxDensity": 0.48, "environmentalScale": 0.95, "characterRecurrence": 0.62, "visualPacing": 0.42, "borderViolation": 0.32, "actionDensity": 0.52, "contrast": 0.65 }
     },
     {
       "id": "work_chainsaw_man",
@@ -363,29 +94,11 @@
       "author": "Tatsuki Fujimoto",
       "publisher": "VIZ Media",
       "genre": ["Action", "Dark Fantasy", "Surreal"],
+      "yr": 2018,
       "editions": [
-        {
-          "id": "ed_csm_std",
-          "name": "VIZ Standard Paperback",
-          "volumeCount": 15,
-          "isbns": ["978-1-9747-0993-9"],
-          "format": "single-volume"
-        }
+        { "id": "ed_csm_std", "name": "VIZ Standard Paperback", "volumeCount": 15, "isbns": ["978-1-9747-0993-9"], "format": "single-volume" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.32,
-        "panelDensity": 6.8,
-        "dialogueDensity": 0.52,
-        "inkCoverage": 0.72,
-        "closeUpFrequency": 0.68,
-        "sfxDensity": 0.88,
-        "environmentalScale": 0.55,
-        "characterRecurrence": 0.78,
-        "visualPacing": 0.85,
-        "borderViolation": 0.82,
-        "actionDensity": 0.90,
-        "contrast": 0.82
-      }
+      "overallVector": { "negativeSpace": 0.28, "panelDensity": 7.2, "dialogueDensity": 0.48, "inkCoverage": 0.75, "closeUpFrequency": 0.70, "sfxDensity": 0.92, "environmentalScale": 0.52, "characterRecurrence": 0.80, "visualPacing": 0.88, "borderViolation": 0.85, "actionDensity": 0.92, "contrast": 0.85 }
     },
     {
       "id": "work_dorohedoro",
@@ -393,30 +106,12 @@
       "originalTitle": "ドロヘドロ",
       "author": "Q Hayashida",
       "publisher": "VIZ Media",
-      "genre": ["Dark Fantasy", "Cyberpunk", "Horror Comedy"],
+      "genre": ["Dark Fantasy", "Cyberpunk", "Horror"],
+      "yr": 2000,
       "editions": [
-        {
-          "id": "ed_dorohedoro_std",
-          "name": "VIZ Signature Edition",
-          "volumeCount": 23,
-          "isbns": ["978-1-4215-3363-6"],
-          "format": "single-volume"
-        }
+        { "id": "ed_dorohedoro_std", "name": "VIZ Signature Edition", "volumeCount": 23, "isbns": ["978-1-4215-3363-6"], "format": "single-volume" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.20,
-        "panelDensity": 6.5,
-        "dialogueDensity": 0.55,
-        "inkCoverage": 0.90,
-        "closeUpFrequency": 0.60,
-        "sfxDensity": 0.82,
-        "environmentalScale": 0.68,
-        "characterRecurrence": 0.82,
-        "visualPacing": 0.70,
-        "borderViolation": 0.75,
-        "actionDensity": 0.78,
-        "contrast": 0.92
-      }
+      "overallVector": { "negativeSpace": 0.18, "panelDensity": 6.8, "dialogueDensity": 0.52, "inkCoverage": 0.92, "closeUpFrequency": 0.62, "sfxDensity": 0.85, "environmentalScale": 0.65, "characterRecurrence": 0.84, "visualPacing": 0.72, "borderViolation": 0.78, "actionDensity": 0.80, "contrast": 0.94 }
     },
     {
       "id": "work_goodnight_punpun",
@@ -425,52 +120,13 @@
       "author": "Inio Asano",
       "publisher": "VIZ Media",
       "genre": ["Slice of Life", "Psychological", "Drama"],
+      "yr": 2007,
       "editions": [
-        {
-          "id": "ed_punpun_omnibus",
-          "name": "VIZ Signature 2-in-1 Omnibus",
-          "volumeCount": 7,
-          "isbns": ["978-1-4215-8620-5"],
-          "format": "omnibus"
-        }
+        { "id": "ed_punpun_omnibus", "name": "VIZ Signature 2-in-1", "volumeCount": 7, "isbns": ["978-1-4215-8620-5"], "format": "omnibus" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.72,
-        "panelDensity": 4.8,
-        "dialogueDensity": 0.62,
-        "inkCoverage": 0.48,
-        "closeUpFrequency": 0.85,
-        "sfxDensity": 0.25,
-        "environmentalScale": 0.62,
-        "characterRecurrence": 0.88,
-        "visualPacing": 0.25,
-        "borderViolation": 0.22,
-        "actionDensity": 0.15,
-        "contrast": 0.78
-      },
+      "overallVector": { "negativeSpace": 0.75, "panelDensity": 4.5, "dialogueDensity": 0.65, "inkCoverage": 0.45, "closeUpFrequency": 0.88, "sfxDensity": 0.22, "environmentalScale": 0.65, "characterRecurrence": 0.90, "visualPacing": 0.22, "borderViolation": 0.18, "actionDensity": 0.12, "contrast": 0.80 },
       "sections": [
-        {
-          "id": "punpun_ch_42_quiet",
-          "volume": "Vol. 4",
-          "chapterRange": "Ch. 42-45",
-          "pageRange": "pp. 110-158",
-          "label": "Solitary Apartment Window & Quiet Sky",
-          "vector": {
-            "negativeSpace": 0.88,
-            "panelDensity": 3.5,
-            "dialogueDensity": 0.12,
-            "inkCoverage": 0.38,
-            "closeUpFrequency": 0.78,
-            "sfxDensity": 0.08,
-            "environmentalScale": 0.55,
-            "characterRecurrence": 0.92,
-            "visualPacing": 0.12,
-            "borderViolation": 0.10,
-            "actionDensity": 0.05,
-            "contrast": 0.72
-          },
-          "keyCharacters": ["Punpun Onodera", "Aiko Tanaka"]
-        }
+        { "id": "punpun_ch_42", "volume": "Vol. 4", "chapterRange": "Ch. 42", "pageRange": "pp. 110-158", "label": "Solitary Window & Quiet Sky", "vector": { "negativeSpace": 0.90, "panelDensity": 3.2, "dialogueDensity": 0.10, "inkCoverage": 0.35, "closeUpFrequency": 0.82, "sfxDensity": 0.05, "environmentalScale": 0.58, "characterRecurrence": 0.95, "visualPacing": 0.10, "borderViolation": 0.08, "actionDensity": 0.04, "contrast": 0.75 }, "keyCharacters": ["Punpun Onodera"] }
       ]
     },
     {
@@ -480,29 +136,11 @@
       "author": "Naoki Urasawa",
       "publisher": "VIZ Media",
       "genre": ["Thriller", "Mystery", "Psychological"],
+      "yr": 1994,
       "editions": [
-        {
-          "id": "ed_monster_perfect",
-          "name": "VIZ Perfect Edition (2-in-1)",
-          "volumeCount": 9,
-          "isbns": ["978-1-4215-6906-2"],
-          "format": "omnibus"
-        }
+        { "id": "ed_monster_perfect", "name": "VIZ Perfect Edition", "volumeCount": 9, "isbns": ["978-1-4215-6906-2"], "format": "omnibus" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.38,
-        "panelDensity": 6.2,
-        "dialogueDensity": 0.82,
-        "inkCoverage": 0.45,
-        "closeUpFrequency": 0.82,
-        "sfxDensity": 0.30,
-        "environmentalScale": 0.50,
-        "characterRecurrence": 0.80,
-        "visualPacing": 0.40,
-        "borderViolation": 0.18,
-        "actionDensity": 0.32,
-        "contrast": 0.58
-      }
+      "overallVector": { "negativeSpace": 0.35, "panelDensity": 6.4, "dialogueDensity": 0.85, "inkCoverage": 0.42, "closeUpFrequency": 0.85, "sfxDensity": 0.28, "environmentalScale": 0.52, "characterRecurrence": 0.82, "visualPacing": 0.38, "borderViolation": 0.15, "actionDensity": 0.30, "contrast": 0.55 }
     },
     {
       "id": "work_knights_of_sidonia",
@@ -511,29 +149,11 @@
       "author": "Tsutomu Nihei",
       "publisher": "Vertical / Kodansha",
       "genre": ["Sci-Fi", "Mecha", "Space Opera"],
+      "yr": 2009,
       "editions": [
-        {
-          "id": "ed_sidonia_master",
-          "name": "Kodansha Master Edition (2-in-1)",
-          "volumeCount": 7,
-          "isbns": ["978-1-64651-046-7"],
-          "format": "omnibus"
-        }
+        { "id": "ed_sidonia_master", "name": "Kodansha Master Edition", "volumeCount": 7, "isbns": ["978-1-64651-046-7"], "format": "omnibus" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.80,
-        "panelDensity": 4.2,
-        "dialogueDensity": 0.28,
-        "inkCoverage": 0.52,
-        "closeUpFrequency": 0.38,
-        "sfxDensity": 0.35,
-        "environmentalScale": 0.95,
-        "characterRecurrence": 0.65,
-        "visualPacing": 0.25,
-        "borderViolation": 0.48,
-        "actionDensity": 0.58,
-        "contrast": 0.82
-      }
+      "overallVector": { "negativeSpace": 0.82, "panelDensity": 4.0, "dialogueDensity": 0.25, "inkCoverage": 0.50, "closeUpFrequency": 0.35, "sfxDensity": 0.32, "environmentalScale": 0.96, "characterRecurrence": 0.62, "visualPacing": 0.22, "borderViolation": 0.45, "actionDensity": 0.55, "contrast": 0.85 }
     },
     {
       "id": "work_land_of_the_lustrous",
@@ -542,29 +162,11 @@
       "author": "Haruko Ichikawa",
       "publisher": "Kodansha",
       "genre": ["Fantasy", "Sci-Fi", "Philosophical"],
+      "yr": 2012,
       "editions": [
-        {
-          "id": "ed_lustrous_std",
-          "name": "Kodansha Standard Edition",
-          "volumeCount": 12,
-          "isbns": ["978-1-63236-497-5"],
-          "format": "single-volume"
-        }
+        { "id": "ed_lustrous_std", "name": "Kodansha Standard Edition", "volumeCount": 12, "isbns": ["978-1-63236-497-5"], "format": "single-volume" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.89,
-        "panelDensity": 3.5,
-        "dialogueDensity": 0.35,
-        "inkCoverage": 0.30,
-        "closeUpFrequency": 0.65,
-        "sfxDensity": 0.20,
-        "environmentalScale": 0.82,
-        "characterRecurrence": 0.70,
-        "visualPacing": 0.20,
-        "borderViolation": 0.35,
-        "actionDensity": 0.40,
-        "contrast": 0.65
-      }
+      "overallVector": { "negativeSpace": 0.90, "panelDensity": 3.4, "dialogueDensity": 0.32, "inkCoverage": 0.28, "closeUpFrequency": 0.62, "sfxDensity": 0.18, "environmentalScale": 0.85, "characterRecurrence": 0.68, "visualPacing": 0.18, "borderViolation": 0.32, "actionDensity": 0.38, "contrast": 0.62 }
     },
     {
       "id": "work_girls_last_tour",
@@ -573,29 +175,11 @@
       "author": "Tsukumizu",
       "publisher": "Yen Press",
       "genre": ["Sci-Fi", "Slice of Life", "Post-Apocalyptic"],
+      "yr": 2014,
       "editions": [
-        {
-          "id": "ed_glt_std",
-          "name": "Yen Press Standard Edition",
-          "volumeCount": 6,
-          "isbns": ["978-0-3164-7062-9"],
-          "format": "single-volume"
-        }
+        { "id": "ed_glt_std", "name": "Yen Press Standard Edition", "volumeCount": 6, "isbns": ["978-0-3164-7062-9"], "format": "single-volume" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.85,
-        "panelDensity": 3.8,
-        "dialogueDensity": 0.25,
-        "inkCoverage": 0.35,
-        "closeUpFrequency": 0.58,
-        "sfxDensity": 0.15,
-        "environmentalScale": 0.90,
-        "characterRecurrence": 0.95,
-        "visualPacing": 0.15,
-        "borderViolation": 0.20,
-        "actionDensity": 0.08,
-        "contrast": 0.55
-      }
+      "overallVector": { "negativeSpace": 0.88, "panelDensity": 3.6, "dialogueDensity": 0.22, "inkCoverage": 0.32, "closeUpFrequency": 0.55, "sfxDensity": 0.12, "environmentalScale": 0.92, "characterRecurrence": 0.96, "visualPacing": 0.12, "borderViolation": 0.18, "actionDensity": 0.06, "contrast": 0.52 }
     },
     {
       "id": "work_vagabond",
@@ -604,52 +188,13 @@
       "author": "Takehiko Inoue",
       "publisher": "VIZ Media",
       "genre": ["Historical", "Martial Arts", "Philosophical"],
+      "yr": 1998,
       "editions": [
-        {
-          "id": "ed_vagabond_vizbig",
-          "name": "VIZBIG 3-in-1 Edition",
-          "volumeCount": 12,
-          "isbns": ["978-1-4215-2054-4"],
-          "format": "omnibus"
-        }
+        { "id": "ed_vagabond_vizbig", "name": "VIZBIG 3-in-1 Edition", "volumeCount": 12, "isbns": ["978-1-4215-2054-4"], "format": "omnibus" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.78,
-        "panelDensity": 3.9,
-        "dialogueDensity": 0.22,
-        "inkCoverage": 0.55,
-        "closeUpFrequency": 0.75,
-        "sfxDensity": 0.32,
-        "environmentalScale": 0.92,
-        "characterRecurrence": 0.72,
-        "visualPacing": 0.18,
-        "borderViolation": 0.42,
-        "actionDensity": 0.62,
-        "contrast": 0.85
-      },
+      "overallVector": { "negativeSpace": 0.80, "panelDensity": 3.8, "dialogueDensity": 0.20, "inkCoverage": 0.52, "closeUpFrequency": 0.78, "sfxDensity": 0.30, "environmentalScale": 0.94, "characterRecurrence": 0.75, "visualPacing": 0.15, "borderViolation": 0.40, "actionDensity": 0.60, "contrast": 0.88 },
       "sections": [
-        {
-          "id": "vagabond_ch_89_brush",
-          "volume": "Vol. 10",
-          "chapterRange": "Ch. 89-94",
-          "pageRange": "pp. 12-78",
-          "label": "Musashi Solitary Forest Brush & Water",
-          "vector": {
-            "negativeSpace": 0.84,
-            "panelDensity": 3.1,
-            "dialogueDensity": 0.08,
-            "inkCoverage": 0.48,
-            "closeUpFrequency": 0.82,
-            "sfxDensity": 0.12,
-            "environmentalScale": 0.95,
-            "characterRecurrence": 0.98,
-            "visualPacing": 0.10,
-            "borderViolation": 0.45,
-            "actionDensity": 0.15,
-            "contrast": 0.88
-          },
-          "keyCharacters": ["Miyamoto Musashi"]
-        }
+        { "id": "vagabond_ch_89", "volume": "Vol. 10", "chapterRange": "Ch. 89", "pageRange": "pp. 12-78", "label": "Solitary Forest Brush & Water", "vector": { "negativeSpace": 0.86, "panelDensity": 3.0, "dialogueDensity": 0.06, "inkCoverage": 0.45, "closeUpFrequency": 0.85, "sfxDensity": 0.10, "environmentalScale": 0.96, "characterRecurrence": 0.98, "visualPacing": 0.08, "borderViolation": 0.42, "actionDensity": 0.12, "contrast": 0.90 }, "keyCharacters": ["Miyamoto Musashi"] }
       ]
     },
     {
@@ -659,29 +204,11 @@
       "author": "Inio Asano",
       "publisher": "VIZ Media",
       "genre": ["Slice of Life", "Music", "Drama"],
+      "yr": 2005,
       "editions": [
-        {
-          "id": "ed_solanin_std",
-          "name": "VIZ Signature All-in-One",
-          "volumeCount": 1,
-          "isbns": ["978-1-4215-2321-7"],
-          "format": "omnibus"
-        }
+        { "id": "ed_solanin_std", "name": "VIZ Signature All-in-One", "volumeCount": 1, "isbns": ["978-1-4215-2321-7"], "format": "omnibus" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.68,
-        "panelDensity": 5.2,
-        "dialogueDensity": 0.72,
-        "inkCoverage": 0.42,
-        "closeUpFrequency": 0.78,
-        "sfxDensity": 0.35,
-        "environmentalScale": 0.58,
-        "characterRecurrence": 0.85,
-        "visualPacing": 0.32,
-        "borderViolation": 0.25,
-        "actionDensity": 0.18,
-        "contrast": 0.62
-      }
+      "overallVector": { "negativeSpace": 0.70, "panelDensity": 5.0, "dialogueDensity": 0.75, "inkCoverage": 0.40, "closeUpFrequency": 0.80, "sfxDensity": 0.32, "environmentalScale": 0.55, "characterRecurrence": 0.88, "visualPacing": 0.30, "borderViolation": 0.22, "actionDensity": 0.15, "contrast": 0.60 }
     },
     {
       "id": "work_tekkonkinkreet",
@@ -690,29 +217,11 @@
       "author": "Taiyo Matsumoto",
       "publisher": "VIZ Media",
       "genre": ["Urban", "Action", "Psychological"],
+      "yr": 1993,
       "editions": [
-        {
-          "id": "ed_tekkon_allinone",
-          "name": "VIZ Black & White All-in-One",
-          "volumeCount": 1,
-          "isbns": ["978-1-4215-1867-1"],
-          "format": "omnibus"
-        }
+        { "id": "ed_tekkon_all", "name": "VIZ Black & White All-in-One", "volumeCount": 1, "isbns": ["978-1-4215-1867-1"], "format": "omnibus" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.35,
-        "panelDensity": 6.8,
-        "dialogueDensity": 0.48,
-        "inkCoverage": 0.78,
-        "closeUpFrequency": 0.55,
-        "sfxDensity": 0.75,
-        "environmentalScale": 0.85,
-        "characterRecurrence": 0.90,
-        "visualPacing": 0.75,
-        "borderViolation": 0.85,
-        "actionDensity": 0.78,
-        "contrast": 0.85
-      }
+      "overallVector": { "negativeSpace": 0.32, "panelDensity": 7.0, "dialogueDensity": 0.45, "inkCoverage": 0.80, "closeUpFrequency": 0.52, "sfxDensity": 0.78, "environmentalScale": 0.88, "characterRecurrence": 0.92, "visualPacing": 0.78, "borderViolation": 0.88, "actionDensity": 0.80, "contrast": 0.88 }
     },
     {
       "id": "work_biomega",
@@ -721,29 +230,11 @@
       "author": "Tsutomu Nihei",
       "publisher": "VIZ Media",
       "genre": ["Sci-Fi", "Cyberpunk", "Action"],
+      "yr": 2004,
       "editions": [
-        {
-          "id": "ed_biomega_std",
-          "name": "VIZ Signature Edition",
-          "volumeCount": 6,
-          "isbns": ["978-1-4215-3184-7"],
-          "format": "single-volume"
-        }
+        { "id": "ed_biomega_std", "name": "VIZ Signature Edition", "volumeCount": 6, "isbns": ["978-1-4215-3184-7"], "format": "single-volume" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.75,
-        "panelDensity": 4.5,
-        "dialogueDensity": 0.15,
-        "inkCoverage": 0.72,
-        "closeUpFrequency": 0.32,
-        "sfxDensity": 0.55,
-        "environmentalScale": 0.95,
-        "characterRecurrence": 0.50,
-        "visualPacing": 0.65,
-        "borderViolation": 0.55,
-        "actionDensity": 0.82,
-        "contrast": 0.90
-      }
+      "overallVector": { "negativeSpace": 0.78, "panelDensity": 4.2, "dialogueDensity": 0.12, "inkCoverage": 0.75, "closeUpFrequency": 0.30, "sfxDensity": 0.58, "environmentalScale": 0.96, "characterRecurrence": 0.48, "visualPacing": 0.68, "borderViolation": 0.58, "actionDensity": 0.85, "contrast": 0.92 }
     },
     {
       "id": "work_uzumaki",
@@ -752,29 +243,284 @@
       "author": "Junji Ito",
       "publisher": "VIZ Media",
       "genre": ["Horror", "Surreal", "Mystery"],
+      "yr": 1998,
       "editions": [
-        {
-          "id": "ed_uzumaki_deluxe",
-          "name": "VIZ 3-in-1 Deluxe Hardcover",
-          "volumeCount": 1,
-          "isbns": ["978-1-4215-6132-5"],
-          "format": "hardcover"
-        }
+        { "id": "ed_uzumaki_deluxe", "name": "VIZ 3-in-1 Deluxe Hardcover", "volumeCount": 1, "isbns": ["978-1-4215-6132-5"], "format": "hardcover" }
       ],
-      "overallVector": {
-        "negativeSpace": 0.28,
-        "panelDensity": 5.9,
-        "dialogueDensity": 0.52,
-        "inkCoverage": 0.85,
-        "closeUpFrequency": 0.78,
-        "sfxDensity": 0.62,
-        "environmentalScale": 0.55,
-        "characterRecurrence": 0.82,
-        "visualPacing": 0.55,
-        "borderViolation": 0.48,
-        "actionDensity": 0.45,
-        "contrast": 0.94
-      }
+      "overallVector": { "negativeSpace": 0.25, "panelDensity": 6.2, "dialogueDensity": 0.50, "inkCoverage": 0.88, "closeUpFrequency": 0.82, "sfxDensity": 0.65, "environmentalScale": 0.52, "characterRecurrence": 0.85, "visualPacing": 0.52, "borderViolation": 0.50, "actionDensity": 0.42, "contrast": 0.96 }
+    },
+    {
+      "id": "work_pluto",
+      "title": "Pluto",
+      "originalTitle": "PLUTO",
+      "author": "Naoki Urasawa / Osamu Tezuka",
+      "publisher": "VIZ Media",
+      "genre": ["Sci-Fi", "Mystery", "Mecha"],
+      "yr": 2003,
+      "editions": [
+        { "id": "ed_pluto_std", "name": "VIZ Signature Edition", "volumeCount": 8, "isbns": ["978-1-4215-1918-0"], "format": "single-volume" }
+      ],
+      "overallVector": { "negativeSpace": 0.45, "panelDensity": 5.8, "dialogueDensity": 0.78, "inkCoverage": 0.48, "closeUpFrequency": 0.78, "sfxDensity": 0.35, "environmentalScale": 0.75, "characterRecurrence": 0.85, "visualPacing": 0.35, "borderViolation": 0.18, "actionDensity": 0.40, "contrast": 0.62 }
+    },
+    {
+      "id": "work_20th_century_boys",
+      "title": "20th Century Boys",
+      "originalTitle": "20世紀少年",
+      "author": "Naoki Urasawa",
+      "publisher": "VIZ Media",
+      "genre": ["Mystery", "Thriller", "Sci-Fi"],
+      "yr": 1999,
+      "editions": [
+        { "id": "ed_20th_perfect", "name": "VIZ Perfect Edition", "volumeCount": 11, "isbns": ["978-1-4215-9961-8"], "format": "omnibus" }
+      ],
+      "overallVector": { "negativeSpace": 0.38, "panelDensity": 6.2, "dialogueDensity": 0.82, "inkCoverage": 0.45, "closeUpFrequency": 0.80, "sfxDensity": 0.32, "environmentalScale": 0.58, "characterRecurrence": 0.92, "visualPacing": 0.42, "borderViolation": 0.20, "actionDensity": 0.35, "contrast": 0.58 }
+    },
+    {
+      "id": "work_battle_angel_alita",
+      "title": "Battle Angel Alita",
+      "originalTitle": "銃夢",
+      "author": "Yukito Kishiro",
+      "publisher": "Kodansha",
+      "genre": ["Sci-Fi", "Cyberpunk", "Action"],
+      "yr": 1990,
+      "editions": [
+        { "id": "ed_alita_deluxe", "name": "Kodansha Deluxe Edition", "volumeCount": 5, "isbns": ["978-1-63236-601-6"], "format": "hardcover" }
+      ],
+      "overallVector": { "negativeSpace": 0.28, "panelDensity": 6.8, "dialogueDensity": 0.45, "inkCoverage": 0.82, "closeUpFrequency": 0.65, "sfxDensity": 0.82, "environmentalScale": 0.85, "characterRecurrence": 0.78, "visualPacing": 0.78, "borderViolation": 0.72, "actionDensity": 0.88, "contrast": 0.88 }
+    },
+    {
+      "id": "work_planetes",
+      "title": "Planetes",
+      "originalTitle": "プラネテス",
+      "author": "Makoto Yukimura",
+      "publisher": "Dark Horse Manga",
+      "genre": ["Sci-Fi", "Space Opera", "Drama"],
+      "yr": 1999,
+      "editions": [
+        { "id": "ed_planetes_omnibus", "name": "Dark Horse Omnibus", "volumeCount": 2, "isbns": ["978-1-61655-921-2"], "format": "omnibus" }
+      ],
+      "overallVector": { "negativeSpace": 0.72, "panelDensity": 5.2, "dialogueDensity": 0.62, "inkCoverage": 0.42, "closeUpFrequency": 0.68, "sfxDensity": 0.25, "environmentalScale": 0.94, "characterRecurrence": 0.82, "visualPacing": 0.28, "borderViolation": 0.22, "actionDensity": 0.25, "contrast": 0.68 }
+    },
+    {
+      "id": "work_abara",
+      "title": "Abara",
+      "originalTitle": "アバラ",
+      "author": "Tsutomu Nihei",
+      "publisher": "VIZ Media",
+      "genre": ["Sci-Fi", "Cyberpunk", "Horror"],
+      "yr": 2005,
+      "editions": [
+        { "id": "ed_abara_hc", "name": "VIZ Hardcover Edition", "volumeCount": 1, "isbns": ["978-1-9747-0264-0"], "format": "hardcover" }
+      ],
+      "overallVector": { "negativeSpace": 0.35, "panelDensity": 5.5, "dialogueDensity": 0.08, "inkCoverage": 0.96, "closeUpFrequency": 0.35, "sfxDensity": 0.78, "environmentalScale": 0.88, "characterRecurrence": 0.42, "visualPacing": 0.82, "borderViolation": 0.75, "actionDensity": 0.92, "contrast": 0.98 }
+    },
+    {
+      "id": "work_witch_hat_atelier",
+      "title": "Witch Hat Atelier",
+      "originalTitle": "とんがり帽子のアトリエ",
+      "author": "Kamome Shirahama",
+      "publisher": "Kodansha",
+      "genre": ["Fantasy", "Magic", "Art Nouveau"],
+      "yr": 2016,
+      "editions": [
+        { "id": "ed_witch_hat_std", "name": "Kodansha Standard Edition", "volumeCount": 12, "isbns": ["978-1-63236-770-9"], "format": "single-volume" }
+      ],
+      "overallVector": { "negativeSpace": 0.52, "panelDensity": 5.8, "dialogueDensity": 0.58, "inkCoverage": 0.52, "closeUpFrequency": 0.72, "sfxDensity": 0.42, "environmentalScale": 0.78, "characterRecurrence": 0.85, "visualPacing": 0.42, "borderViolation": 0.65, "actionDensity": 0.48, "contrast": 0.72 }
+    },
+    {
+      "id": "work_vinland_saga",
+      "title": "Vinland Saga",
+      "originalTitle": "ヴィンランド・サガ",
+      "author": "Makoto Yukimura",
+      "publisher": "Kodansha",
+      "genre": ["Historical", "Action", "Drama"],
+      "yr": 2005,
+      "editions": [
+        { "id": "ed_vinland_hc", "name": "Kodansha 2-in-1 Deluxe Hardcover", "volumeCount": 13, "isbns": ["978-1-61262-420-4"], "format": "omnibus" }
+      ],
+      "overallVector": { "negativeSpace": 0.62, "panelDensity": 5.5, "dialogueDensity": 0.52, "inkCoverage": 0.62, "closeUpFrequency": 0.75, "sfxDensity": 0.58, "environmentalScale": 0.92, "characterRecurrence": 0.82, "visualPacing": 0.32, "borderViolation": 0.45, "actionDensity": 0.75, "contrast": 0.78 }
+    },
+    {
+      "id": "work_mob_psycho_100",
+      "title": "Mob Psycho 100",
+      "originalTitle": "モブサイコ100",
+      "author": "ONE",
+      "publisher": "Dark Horse Manga",
+      "genre": ["Action", "Comedy", "Supernatural"],
+      "yr": 2012,
+      "editions": [
+        { "id": "ed_mob_std", "name": "Dark Horse Standard Edition", "volumeCount": 16, "isbns": ["978-1-50670-987-1"], "format": "single-volume" }
+      ],
+      "overallVector": { "negativeSpace": 0.38, "panelDensity": 6.8, "dialogueDensity": 0.58, "inkCoverage": 0.48, "closeUpFrequency": 0.65, "sfxDensity": 0.85, "environmentalScale": 0.45, "characterRecurrence": 0.88, "visualPacing": 0.82, "borderViolation": 0.82, "actionDensity": 0.85, "contrast": 0.65 }
+    },
+    {
+      "id": "work_one_punch_man",
+      "title": "One-Punch Man",
+      "originalTitle": "ワンパンマン",
+      "author": "ONE / Yusuke Murata",
+      "publisher": "VIZ Media",
+      "genre": ["Action", "Superhero", "Comedy"],
+      "yr": 2012,
+      "editions": [
+        { "id": "ed_opm_std", "name": "VIZ Standard Edition", "volumeCount": 28, "isbns": ["978-1-4215-8564-2"], "format": "single-volume" }
+      ],
+      "overallVector": { "negativeSpace": 0.32, "panelDensity": 7.0, "dialogueDensity": 0.42, "inkCoverage": 0.68, "closeUpFrequency": 0.58, "sfxDensity": 0.94, "environmentalScale": 0.85, "characterRecurrence": 0.82, "visualPacing": 0.92, "borderViolation": 0.88, "actionDensity": 0.96, "contrast": 0.82 }
+    },
+    {
+      "id": "work_devilman",
+      "title": "Devilman",
+      "originalTitle": "デビルマン",
+      "author": "Go Nagai",
+      "publisher": "Seven Seas",
+      "genre": ["Horror", "Dark Fantasy", "Classic"],
+      "yr": 1972,
+      "editions": [
+        { "id": "ed_devilman_classic", "name": "Seven Seas Classic Collection", "volumeCount": 2, "isbns": ["978-1-62692-757-5"], "format": "omnibus" }
+      ],
+      "overallVector": { "negativeSpace": 0.20, "panelDensity": 6.0, "dialogueDensity": 0.45, "inkCoverage": 0.90, "closeUpFrequency": 0.72, "sfxDensity": 0.78, "environmentalScale": 0.58, "characterRecurrence": 0.80, "visualPacing": 0.75, "borderViolation": 0.68, "actionDensity": 0.88, "contrast": 0.94 }
+    },
+    {
+      "id": "work_parasyte",
+      "title": "Parasyte",
+      "originalTitle": "寄生獣",
+      "author": "Hitoshi Iwaaki",
+      "publisher": "Kodansha",
+      "genre": ["Sci-Fi", "Horror", "Body Horror"],
+      "yr": 1988,
+      "editions": [
+        { "id": "ed_parasyte_fullcolor", "name": "Kodansha Full-Color Edition", "volumeCount": 8, "isbns": ["978-1-64651-610-0"], "format": "single-volume" }
+      ],
+      "overallVector": { "negativeSpace": 0.32, "panelDensity": 6.2, "dialogueDensity": 0.68, "inkCoverage": 0.65, "closeUpFrequency": 0.78, "sfxDensity": 0.68, "environmentalScale": 0.48, "characterRecurrence": 0.88, "visualPacing": 0.62, "borderViolation": 0.52, "actionDensity": 0.78, "contrast": 0.75 }
+    },
+    {
+      "id": "work_gantz",
+      "title": "Gantz",
+      "originalTitle": "GANTZ",
+      "author": "Hiroya Oku",
+      "publisher": "Dark Horse Manga",
+      "genre": ["Sci-Fi", "Action", "Horror"],
+      "yr": 2000,
+      "editions": [
+        { "id": "ed_gantz_omnibus", "name": "Dark Horse Omnibus Edition", "volumeCount": 12, "isbns": ["978-1-50670-774-7"], "format": "omnibus" }
+      ],
+      "overallVector": { "negativeSpace": 0.25, "panelDensity": 6.8, "dialogueDensity": 0.38, "inkCoverage": 0.82, "closeUpFrequency": 0.68, "sfxDensity": 0.85, "environmentalScale": 0.78, "characterRecurrence": 0.75, "visualPacing": 0.88, "borderViolation": 0.78, "actionDensity": 0.94, "contrast": 0.88 }
+    },
+    {
+      "id": "work_claymore",
+      "title": "Claymore",
+      "originalTitle": "CLAYMORE",
+      "author": "Norihiro Yagi",
+      "publisher": "VIZ Media",
+      "genre": ["Dark Fantasy", "Action", "Supernatural"],
+      "yr": 2001,
+      "editions": [
+        { "id": "ed_claymore_box", "name": "VIZ Complete Box Set", "volumeCount": 27, "isbns": ["978-1-4215-8316-7"], "format": "boxset" }
+      ],
+      "overallVector": { "negativeSpace": 0.28, "panelDensity": 6.4, "dialogueDensity": 0.42, "inkCoverage": 0.78, "closeUpFrequency": 0.72, "sfxDensity": 0.75, "environmentalScale": 0.72, "characterRecurrence": 0.80, "visualPacing": 0.72, "borderViolation": 0.58, "actionDensity": 0.88, "contrast": 0.82 }
+    },
+    {
+      "id": "work_hunter_x_hunter",
+      "title": "Hunter x Hunter",
+      "originalTitle": "HUNTER×HUNTER",
+      "author": "Yoshihiro Togashi",
+      "publisher": "VIZ Media",
+      "genre": ["Action", "Adventure", "Strategic"],
+      "yr": 1998,
+      "editions": [
+        { "id": "ed_hxh_std", "name": "VIZ Standard Edition", "volumeCount": 37, "isbns": ["978-1-59116-753-2"], "format": "single-volume" }
+      ],
+      "overallVector": { "negativeSpace": 0.48, "panelDensity": 6.8, "dialogueDensity": 0.92, "inkCoverage": 0.38, "closeUpFrequency": 0.75, "sfxDensity": 0.38, "environmentalScale": 0.55, "characterRecurrence": 0.85, "visualPacing": 0.38, "borderViolation": 0.25, "actionDensity": 0.55, "contrast": 0.58 }
+    },
+    {
+      "id": "work_death_note",
+      "title": "Death Note",
+      "originalTitle": "デスノート",
+      "author": "Tsugumi Ohba / Takeshi Obata",
+      "publisher": "VIZ Media",
+      "genre": ["Psychological", "Thriller", "Supernatural"],
+      "yr": 2003,
+      "editions": [
+        { "id": "ed_deathnote_allinone", "name": "VIZ All-in-One Edition", "volumeCount": 1, "isbns": ["978-1-4215-9771-3"], "format": "omnibus" }
+      ],
+      "overallVector": { "negativeSpace": 0.30, "panelDensity": 7.2, "dialogueDensity": 0.95, "inkCoverage": 0.65, "closeUpFrequency": 0.88, "sfxDensity": 0.28, "environmentalScale": 0.42, "characterRecurrence": 0.92, "visualPacing": 0.28, "borderViolation": 0.15, "actionDensity": 0.22, "contrast": 0.72 }
+    },
+    {
+      "id": "work_fullmetal_alchemist",
+      "title": "Fullmetal Alchemist",
+      "originalTitle": "鋼の錬金術師",
+      "author": "Hiromu Arakawa",
+      "publisher": "VIZ Media",
+      "genre": ["Fantasy", "Action", "Steampunk"],
+      "yr": 2001,
+      "editions": [
+        { "id": "ed_fma_fullmetal", "name": "VIZ Fullmetal Edition (Hardcover)", "volumeCount": 18, "isbns": ["978-1-4215-9977-9"], "format": "hardcover" }
+      ],
+      "overallVector": { "negativeSpace": 0.35, "panelDensity": 6.5, "dialogueDensity": 0.65, "inkCoverage": 0.55, "closeUpFrequency": 0.72, "sfxDensity": 0.65, "environmentalScale": 0.75, "characterRecurrence": 0.90, "visualPacing": 0.58, "borderViolation": 0.38, "actionDensity": 0.68, "contrast": 0.68 }
+    },
+    {
+      "id": "work_made_in_abyss",
+      "title": "Made in Abyss",
+      "originalTitle": "メイドインアビス",
+      "author": "Akihito Tsukushi",
+      "publisher": "Seven Seas",
+      "genre": ["Fantasy", "Adventure", "Dark Fantasy"],
+      "yr": 2012,
+      "editions": [
+        { "id": "ed_abyss_std", "name": "Seven Seas Standard Edition", "volumeCount": 12, "isbns": ["978-1-62692-773-5"], "format": "single-volume" }
+      ],
+      "overallVector": { "negativeSpace": 0.48, "panelDensity": 5.8, "dialogueDensity": 0.45, "inkCoverage": 0.68, "closeUpFrequency": 0.68, "sfxDensity": 0.52, "environmentalScale": 0.96, "characterRecurrence": 0.82, "visualPacing": 0.32, "borderViolation": 0.55, "actionDensity": 0.55, "contrast": 0.78 }
+    },
+    {
+      "id": "work_march_comes_in_like_a_lion",
+      "title": "March Comes in Like a Lion",
+      "originalTitle": "3月のライオン",
+      "author": "Chica Umino",
+      "publisher": "Denpa",
+      "genre": ["Slice of Life", "Shogi", "Drama"],
+      "yr": 2007,
+      "editions": [
+        { "id": "ed_march_std", "name": "Denpa Standard Edition", "volumeCount": 17, "isbns": ["978-1-63442-972-6"], "format": "single-volume" }
+      ],
+      "overallVector": { "negativeSpace": 0.72, "panelDensity": 4.8, "dialogueDensity": 0.75, "inkCoverage": 0.35, "closeUpFrequency": 0.85, "sfxDensity": 0.28, "environmentalScale": 0.52, "characterRecurrence": 0.90, "visualPacing": 0.22, "borderViolation": 0.28, "actionDensity": 0.10, "contrast": 0.55 }
+    },
+    {
+      "id": "work_yotsuba",
+      "title": "Yotsuba&!",
+      "originalTitle": "よつばと!",
+      "author": "Kiyohiko Azuma",
+      "publisher": "Yen Press",
+      "genre": ["Comedy", "Slice of Life"],
+      "yr": 2003,
+      "editions": [
+        { "id": "ed_yotsuba_std", "name": "Yen Press Standard Edition", "volumeCount": 15, "isbns": ["978-0-3160-7387-5"], "format": "single-volume" }
+      ],
+      "overallVector": { "negativeSpace": 0.82, "panelDensity": 4.2, "dialogueDensity": 0.55, "inkCoverage": 0.25, "closeUpFrequency": 0.72, "sfxDensity": 0.35, "environmentalScale": 0.65, "characterRecurrence": 0.92, "visualPacing": 0.18, "borderViolation": 0.12, "actionDensity": 0.08, "contrast": 0.45 }
+    },
+    {
+      "id": "work_golden_kamuy",
+      "title": "Golden Kamuy",
+      "originalTitle": "ゴールデンカムイ",
+      "author": "Satoru Noda",
+      "publisher": "VIZ Media",
+      "genre": ["Historical", "Action", "Adventure"],
+      "yr": 2014,
+      "editions": [
+        { "id": "ed_golden_std", "name": "VIZ Signature Edition", "volumeCount": 31, "isbns": ["978-1-4215-9273-2"], "format": "single-volume" }
+      ],
+      "overallVector": { "negativeSpace": 0.45, "panelDensity": 6.4, "dialogueDensity": 0.65, "inkCoverage": 0.62, "closeUpFrequency": 0.75, "sfxDensity": 0.72, "environmentalScale": 0.88, "characterRecurrence": 0.88, "visualPacing": 0.55, "borderViolation": 0.48, "actionDensity": 0.78, "contrast": 0.72 }
+    },
+    {
+      "id": "work_demon_slayer",
+      "title": "Demon Slayer: Kimetsu no Yaiba",
+      "originalTitle": "鬼滅の刃",
+      "author": "Koyoharu Gotouge",
+      "publisher": "VIZ Media",
+      "genre": ["Action", "Dark Fantasy", "Historical"],
+      "yr": 2016,
+      "editions": [
+        { "id": "ed_demonslayer_box", "name": "VIZ Complete Box Set", "volumeCount": 23, "isbns": ["978-1-9747-2595-3"], "format": "boxset" }
+      ],
+      "overallVector": { "negativeSpace": 0.32, "panelDensity": 6.8, "dialogueDensity": 0.55, "inkCoverage": 0.75, "closeUpFrequency": 0.78, "sfxDensity": 0.88, "environmentalScale": 0.62, "characterRecurrence": 0.85, "visualPacing": 0.78, "borderViolation": 0.65, "actionDensity": 0.88, "contrast": 0.82 }
     }
   ]
 }
