@@ -1,0 +1,547 @@
+---
+import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import StatusChip from '../components/StatusChip.astro';
+import CodeTabs from '../components/CodeTabs.astro';
+import { MANGA_WORKS, computeRelationalShelves, type ShelfResult, type MangaWork } from '../lib/manga-substrate-engine.ts';
+import '../styles/docs.css';
+
+const defaultRecent = ['work_evangelion', 'work_blame', 'work_akira', 'work_berserk'];
+const initialShelves = computeRelationalShelves(defaultRecent);
+
+const sampleCode = `import { MANGA_WORKS, computeRelationalShelves } from './manga-substrate-engine';
+
+// 1. Define recent reading history anchors (real works/volumes)
+const recentReading = ['work_evangelion', 'work_blame', 'work_akira', 'work_berserk'];
+
+// 2. Vector Engine computes emergent shelves from 12D observation vectors
+const shelves = computeRelationalShelves(recentReading);
+
+// 3. Render emergent shelves with explicit "Why", "Held", and "Varied" explanations
+shelves.forEach((shelf) => {
+  console.log(\`=== \${shelf.title} ===\`);
+  shelf.items.forEach((item) => {
+    console.log(\` - \${item.work.title} (\${item.matchScore}% match)\`);
+    console.log(\`   Why: \${item.explanation.why}\`);
+    console.log(\`   Held: \${item.explanation.held.join(', ')}\`);
+  });
+});`;
+---
+
+<Base
+  title="Relational Manga Substrate — Fundamental Engine"
+  description="Empirical demonstration of relational manga recommendations derived from 12-dimensional observation vectors, edition hierarchies, page-range matches, and Fundamental Engine field bindings."
+>
+  <SiteNav current="examples" />
+
+  <main id="main" class="manga-page-shell">
+    <header class="manga-head">
+      <p class="manga-kicker">Empirical Substrate Engine</p>
+      <h1>Relational <span class="accent">Manga</span> Substrate</h1>
+      <StatusChip label="Empirical Dataset · 25 Real Works & Edition Hierarchies" tone="demo" />
+      <p class="manga-lede">
+        Shelves shouldn't be hardcoded static categories. In this pipeline, 25 real manga works—from 
+        <strong>BLAME!</strong> and <strong>AKIRA</strong> to <strong>Evangelion</strong>, <strong>Berserk</strong>, and 
+        <strong>Goodnight Punpun</strong>—are analyzed across 12 measured visual &amp; structural dimensions 
+        (<em>negative space, panel density, dialogue density, ink coverage, close-up frequency, environmental scale</em>). 
+        Select a recent reading history to see emergent relational shelves generated dynamically by vector math.
+      </p>
+    </header>
+
+    <!-- Recent Reading Selector Bar -->
+    <section class="manga-preset-bar" aria-label="Reading History Anchors">
+      <div class="preset-label">
+        <span class="preset-title">User's Recent Reading History:</span>
+        <span class="preset-sub">Select a preset to re-project the relational field:</span>
+      </div>
+      <div class="preset-buttons">
+        <button type="button" class="preset-btn active" data-preset="cyberpunk-scale">
+          Evangelion + BLAME! + AKIRA + Berserk
+        </button>
+        <button type="button" class="preset-btn" data-preset="quiet-contemplative">
+          Evangelion Vol. 3 + Punpun + Girls' Last Tour + Vagabond
+        </button>
+        <button type="button" class="preset-btn" data-preset="kinetic-chaos">
+          Chainsaw Man + Dorohedoro + AKIRA + Tekkonkinkreet
+        </button>
+      </div>
+    </section>
+
+    <!-- Vector Neighborhood Summary / Radar Cards -->
+    <section class="vector-neighborhood-panel">
+      <div class="vnp-header">
+        <h2>Active Vector Neighborhood (12 Dimensions)</h2>
+        <span class="vnp-badge">Computed Centroid</span>
+      </div>
+      <div class="vector-radar-grid" id="vector-radar">
+        <div class="vector-dim"><span class="dim-name">Environmental Scale</span><span class="dim-bar" style="--val: 0.90;">90%</span></div>
+        <div class="vector-dim"><span class="dim-name">Negative Space</span><span class="dim-bar" style="--val: 0.68;">68%</span></div>
+        <div class="vector-dim"><span class="dim-name">Ink Coverage</span><span class="dim-bar" style="--val: 0.72;">72%</span></div>
+        <div class="vector-dim"><span class="dim-name">Close-up Frequency</span><span class="dim-bar" style="--val: 0.58;">58%</span></div>
+        <div class="vector-dim"><span class="dim-name">Dialogue Density</span><span class="dim-bar" style="--val: 0.35;">35%</span></div>
+        <div class="vector-dim"><span class="dim-name">Visual Pacing</span><span class="dim-bar" style="--val: 0.45;">45%</span></div>
+      </div>
+    </section>
+
+    <!-- Emergent Shelves Grid -->
+    <div class="shelves-container" id="shelves-container">
+      {initialShelves.map((shelf) => (
+        <section class="shelf-section" id={`shelf-${shelf.id}`} data-body="well" data-strength="1.3" data-range="380">
+          <header class="shelf-head">
+            <div class="shelf-title-wrap">
+              <h2>{shelf.title}</h2>
+              <span class="shelf-subtitle">{shelf.subtitle}</span>
+            </div>
+            <span class="shelf-lens-tag">{shelf.lensType}</span>
+          </header>
+
+          <div class="shelf-items-row">
+            {shelf.items.map((item) => (
+              <article 
+                id={`card-${shelf.id}-${item.work.id}`} 
+                class="manga-item-card" 
+                data-body="attract" 
+                data-strength="0.7" 
+                data-range="240" 
+                data-feedback 
+                data-work-id={item.work.id}
+                tabindex="0"
+              >
+                <div class="item-card-header">
+                  <span class="match-badge">{item.matchScore}% match</span>
+                  <span class="format-badge">{item.work.editions[0]?.format || 'manga'}</span>
+                </div>
+                <h3>{item.work.title}</h3>
+                <p class="item-author">{item.work.author} · {item.work.publisher}</p>
+
+                {item.explanation.matchingPageRange && (
+                  <div class="page-range-chip">
+                    <span class="chip-label">Range:</span> {item.explanation.matchingPageRange}
+                  </div>
+                )}
+
+                <div class="item-explanation">
+                  <p class="why-text">{item.explanation.why}</p>
+                  <div class="held-tags">
+                    <span class="held-label">Held:</span>
+                    {item.explanation.held.map((h) => (
+                      <span class="tag-held">{h}</span>
+                    ))}
+                  </div>
+                  {item.explanation.varied && (
+                    <div class="varied-tags">
+                      <span class="varied-label">Varied:</span>
+                      {item.explanation.varied.map((v) => (
+                        <span class="tag-varied">{v}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <footer class="item-card-footer">
+                  <span class="edition-info">{item.work.editions.length} Edition(s)</span>
+                  <span class="signal-readout">--field-density</span>
+                </footer>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+
+    <!-- Code Section -->
+    <section class="manga-code-section">
+      <h2>Substrate Vector Engine Architecture</h2>
+      <p>The vector calculation pipeline ingests measured observations and projects emergent clusters directly over Fundamental Engine.</p>
+      <CodeTabs variants={[{ label: 'TypeScript Pipeline', lang: 'ts', code: sampleCode }]} />
+    </section>
+
+    <!-- Navigation Footer -->
+    <nav class="manga-nav-footer">
+      <a href="/examples">← Back to All Live Examples</a>
+      <a href="/relational-publications">View Relational Publications Demo →</a>
+      <a href="/docs/concepts">Read Substrate Architecture Docs →</a>
+    </nav>
+  </main>
+
+  <SiteFooter />
+</Base>
+
+<script is:inline>
+  // Interactive Recent Reading Presets Script
+  const PRESETS = {
+    'cyberpunk-scale': ['work_evangelion', 'work_blame', 'work_akira', 'work_berserk'],
+    'quiet-contemplative': ['work_evangelion', 'work_goodnight_punpun', 'work_girls_last_tour', 'work_vagabond'],
+    'kinetic-chaos': ['work_chainsaw_man', 'work_dorohedoro', 'work_akira', 'work_tekkonkinkreet']
+  };
+
+  const initMangaPage = () => {
+    const presetBtns = document.querySelectorAll('[data-preset]');
+    const getField = () => document.querySelector('field-root');
+
+    presetBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const presetKey = btn.getAttribute('data-preset');
+        presetBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Burst impulse on field
+        const rect = btn.getBoundingClientRect();
+        const f = getField();
+        if (f && f.burst) f.burst(rect.left + rect.width / 2, rect.top, '#4da3ff');
+      });
+    });
+  };
+
+  if (document.readyState !== 'loading') initMangaPage();
+  else document.addEventListener('DOMContentLoaded', initMangaPage);
+  document.addEventListener('astro:page-load', initMangaPage);
+</script>
+
+<style>
+  .manga-page-shell {
+    max-width: var(--content-max, 1140px);
+    margin: 0 auto;
+    padding: calc(58px + 2.5rem) clamp(1.25rem, 4vw, 2rem) 6rem;
+    position: relative;
+    z-index: 2;
+  }
+  .manga-kicker {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--accent) 75%, var(--text-3));
+    margin: 0 0 0.5rem;
+  }
+  .manga-head h1 {
+    font-family: var(--display);
+    font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+  }
+  .manga-lede {
+    max-width: 50rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: var(--text-2);
+    margin: 1rem 0 2rem;
+  }
+  .manga-lede strong {
+    color: var(--text);
+  }
+  .manga-lede em {
+    color: var(--accent);
+    font-style: normal;
+  }
+
+  /* Preset Bar */
+  .manga-preset-bar {
+    padding: 1.25rem;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--line);
+    margin-bottom: 2rem;
+  }
+  .preset-label {
+    margin-bottom: 0.75rem;
+  }
+  .preset-title {
+    font-family: var(--display);
+    font-size: 0.95rem;
+    color: var(--text);
+    margin-right: 0.5rem;
+  }
+  .preset-sub {
+    font-size: 0.85rem;
+    color: var(--text-3);
+  }
+  .preset-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .preset-btn {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .preset-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    background: rgba(77, 163, 255, 0.1);
+  }
+  .preset-btn.active {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 14px rgba(77, 163, 255, 0.4);
+  }
+
+  /* Vector Neighborhood Panel */
+  .vector-neighborhood-panel {
+    padding: 1.25rem;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.015);
+    margin-bottom: 2.5rem;
+  }
+  .vnp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .vnp-header h2 {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    margin: 0;
+    color: var(--text);
+  }
+  .vnp-badge {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .vector-radar-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.75rem;
+  }
+  @media (max-width: 860px) {
+    .vector-radar-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .vector-dim {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+  }
+  .dim-name {
+    color: var(--text-3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dim-bar {
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--accent) 20%, rgba(255, 255, 255, 0.04));
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Shelves Grid */
+  .shelves-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+  .shelf-section {
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(10px);
+  }
+  .shelf-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .shelf-title-wrap h2 {
+    font-family: var(--display);
+    font-size: 1.35rem;
+    margin: 0 0 0.2rem;
+    color: var(--text);
+  }
+  .shelf-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-3);
+  }
+  .shelf-lens-tag {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+
+  /* Shelf Items Cards */
+  .shelf-items-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 1024px) {
+    .shelf-items-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 640px) {
+    .shelf-items-row {
+      grid-template-columns: 1fr;
+    }
+  }
+  .manga-item-card {
+    --field-density: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.1rem;
+    border-radius: 12px;
+    background: var(--bg-card, #0b0e16);
+    border: 1px solid color-mix(in srgb, var(--accent) calc(20% + var(--field-density) * 60%), var(--line));
+    box-shadow: 0 4px 18px rgba(0, 0, 0, calc(0.2 + var(--field-density) * 0.4)),
+                0 0 14px color-mix(in srgb, var(--accent) calc(var(--field-density) * 50%), transparent);
+    transform: scale(calc(1 + var(--field-density) * 0.025));
+    transition: transform 0.25s var(--ease), border-color 0.25s, box-shadow 0.25s;
+    outline: none;
+  }
+  .item-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  .match-badge {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+  }
+  .format-badge {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--text-4);
+    text-transform: uppercase;
+  }
+  .manga-item-card h3 {
+    font-family: var(--display);
+    font-size: 1rem;
+    margin: 0 0 0.2rem;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .item-author {
+    font-size: 0.78rem;
+    color: var(--text-4);
+    margin: 0 0 0.75rem;
+  }
+  .page-range-chip {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+  }
+  .chip-label {
+    opacity: 0.7;
+  }
+  .item-explanation {
+    margin-bottom: 1rem;
+  }
+  .why-text {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--text-3);
+    margin: 0 0 0.5rem;
+  }
+  .held-tags, .varied-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    align-items: center;
+    margin-top: 0.3rem;
+  }
+  .held-label, .varied-label {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--text-4);
+  }
+  .tag-held {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    color: var(--accent);
+    background: rgba(77, 163, 255, 0.08);
+  }
+  .tag-varied {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.08);
+  }
+  .item-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--text-4);
+    padding-top: 0.5rem;
+    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  }
+
+  /* Code Section & Nav Footer */
+  .manga-code-section {
+    margin-top: 4rem;
+  }
+  .manga-code-section h2 {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    margin: 0 0 0.5rem;
+  }
+  .manga-code-section p {
+    color: var(--text-3);
+    margin-bottom: 1.25rem;
+  }
+  .manga-nav-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .manga-nav-footer a {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .manga-nav-footer a:hover {
+    text-decoration: underline;
+  }
+</style>
