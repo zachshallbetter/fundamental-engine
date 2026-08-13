@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MANGA_WORKS, getWorkZScore } from './manga-substrate-engine.ts';
+import { 
+  MANGA_WORKS, 
+  getWorkZScore, 
+  computeEditionDiff, 
+  exportSubstrateDna 
+} from './manga-substrate-engine.ts';
 
 test('Relational Substrate Engine — Ingestion Expectation Suite', async (t) => {
   const findWork = (id: string) => {
@@ -59,5 +64,37 @@ test('Relational Substrate Engine — Ingestion Expectation Suite', async (t) =>
       z.panelDensity <= 0.5,
       `Uzumaki z.panelDensity (${z.panelDensity.toFixed(2)}) must be <= +0.5 (moderate panel count)`
     );
+  });
+
+  await t.test('Cross-Format Support: Dune (prose) and 2001 (screenplay) must ingest raw vectors correctly', () => {
+    const dune = findWork('work_dune');
+    const script = findWork('work_2001_script');
+
+    assert.equal(dune.mediaFormat, 'prose-novel');
+    assert.equal(script.mediaFormat, 'screenplay');
+
+    const zDune = getWorkZScore(dune);
+    const zScript = getWorkZScore(script);
+
+    assert.ok(zDune.environmentalScale >= 1.25, 'Dune Arrakis chapters must have top-decile scale');
+    assert.ok(zScript.dialogueDensity <= -1.5, '2001 Star Gate screenplay must be virtually wordless');
+  });
+
+  await t.test('Edition Diff Comparator: AKIRA revision split must compute measured z-score deltas', () => {
+    const akira = findWork('work_akira');
+    const diff = computeEditionDiff(akira);
+
+    assert.ok(diff.editionA);
+    assert.ok(diff.editionB);
+    assert.ok(diff.zDelta);
+  });
+
+  await t.test('Substrate DNA Exporter: Must generate valid JSON fingerprint', () => {
+    const blame = findWork('work_blame');
+    const dnaJson = exportSubstrateDna(blame.rawVector);
+    const parsed = JSON.parse(dnaJson);
+
+    assert.equal(parsed.provenance, 'fundamental-engine/substrate-v4');
+    assert.ok(parsed.zScores.environmentalScale);
   });
 });
