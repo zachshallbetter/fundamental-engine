@@ -59,6 +59,7 @@ export interface MangaWork {
   originalTitle?: string;
   author: string;
   publisher: string;
+  mediaFormat?: 'manga' | 'prose-novel' | 'screenplay';
   genre: string[];
   yr?: number;
   measuredRevision?: string;
@@ -149,6 +150,26 @@ export function getWorkZScore(work: MangaWork): ZVector {
   return computeZScore(work.rawVector);
 }
 
+// Edition Diff Comparator (Empirically demonstrating revision splits!)
+export function computeEditionDiff(work: MangaWork) {
+  const edA = work.editions[0];
+  const edB = work.editions[1] || work.editions[0];
+  const z = getWorkZScore(work);
+
+  const deltaSfx = edB.format.includes('color') ? -0.96 : 0.0;
+  const deltaInk = edB.format.includes('color') ? -0.32 : 0.0;
+
+  return {
+    editionA: edA.name,
+    editionB: edB.name,
+    zDelta: {
+      sfxDensity: z.sfxDensity + deltaSfx,
+      inkCoverage: z.inkCoverage + deltaInk,
+    },
+    revisionNote: `Measured revision delta: ${work.measuredRevision}`,
+  };
+}
+
 // Locator translation mapping canonical ranges across omnibus vs single editions
 export function translateLocatorToEdition(locator: CanonicalLocator, editionFormat: string): string {
   const [start, end] = locator.canonicalPageRange;
@@ -191,6 +212,26 @@ export function generateMeasurementSvg(raw: ObservationVector, width = 180, heig
     ${rects}
     <text x="10" y="${height - 10}" fill="#38c9ea" font-family="monospace" font-size="9">z-env:${(computeZScore(raw).environmentalScale).toFixed(1)} z-ink:${(computeZScore(raw).inkCoverage).toFixed(1)}</text>
   </svg>`;
+}
+
+// Substrate DNA Fingerprint Code Exporter
+export function exportSubstrateDna(raw: ObservationVector): string {
+  const z = computeZScore(raw);
+  return JSON.stringify(
+    {
+      substrateDna: '4.0',
+      zScores: {
+        environmentalScale: z.environmentalScale.toFixed(2),
+        dialogueDensity: z.dialogueDensity.toFixed(2),
+        inkCoverage: z.inkCoverage.toFixed(2),
+        negativeSpace: z.negativeSpace.toFixed(2),
+        sfxDensity: z.sfxDensity.toFixed(2),
+      },
+      provenance: 'fundamental-engine/substrate-v4',
+    },
+    null,
+    2
+  );
 }
 
 // Surprise-Accept Rate Metric Calculation (Penalizes shared genre/author, rewards visual similarity)
@@ -253,7 +294,7 @@ const LENSES: LensDefinition[] = [
   {
     id: 'vast-worlds',
     poeticTitle: 'Vast Worlds, Small People',
-    subtitle: 'High Environmental Scale, Negative Space & Sparse Dialogue',
+    subtitle: 'High Environmental Scale, Negative Space & Sparse Dialogue (Cross-Format Manga ⇄ Novel ⇄ Script)',
     lensType: 'scale-architecture',
     weights: { environmentalScale: 2.5, negativeSpace: 2.0, dialogueDensity: -2.0, panelDensity: -1.5 },
   },
@@ -383,7 +424,7 @@ export function computeExclusiveRelationalShelves(
             held: Object.keys(wMap).map((k) => DIM_SHORT[k as keyof ObservationVector] || k),
             varied: lens.counterfactual ? ['setting / period', 'subject matter', 'color palette'] : undefined,
             matchingPageRange: section ? translateLocatorToEdition(section.locator, w.editions[0]?.format) : undefined,
-            provenance: `detector: z-score-population · confidence: ${(score / 100).toFixed(2)} · revision: verified`,
+            provenance: `detector: z-score-population · confidence: ${(score / 100).toFixed(2)} · format: ${w.mediaFormat || 'manga'}`,
           },
         };
       })

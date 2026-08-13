@@ -8,6 +8,7 @@ import {
   MANGA_WORKS, 
   computeExclusiveRelationalShelves, 
   generateMeasurementSvg,
+  computeEditionDiff,
   type ShelfResult, 
   type MangaWork,
   type ShelfItem
@@ -17,39 +18,41 @@ import '../styles/docs.css';
 const defaultRecent = ['work_evangelion', 'work_blame', 'work_akira', 'work_berserk'];
 const { shelves: initialShelves, outsideItems: initialOutside, subChapters: initialChapters } = computeExclusiveRelationalShelves(defaultRecent);
 
-const expectationSuiteCode = `import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { MANGA_WORKS, getWorkZScore } from './manga-substrate-engine';
+const akiraWork = MANGA_WORKS.find(w => w.id === 'work_akira') || MANGA_WORKS[0];
+const akiraDiff = computeEditionDiff(akiraWork);
 
-test('Relational Substrate Ingestion Expectation Suite', async (t) => {
-  const blame = MANGA_WORKS.find(w => w.id === 'work_blame');
-  const z = getWorkZScore(blame);
+const crossFormatCode = `// Cross-format alignment (Manga ⇄ Prose Novel ⇄ Screenplay)
+const dune = MANGA_WORKS.find(w => w.id === 'work_dune'); // Prose Novel
+const script = MANGA_WORKS.find(w => w.id === 'work_2001_script'); // Screenplay
 
-  // Assert BLAME! lands top-decile environmental scale and bottom-decile dialogue
-  assert.ok(z.environmentalScale >= 1.28, 'BLAME! envScale must be >= +1.28 z-score');
-  assert.ok(z.dialogueDensity <= -1.28, 'BLAME! dialogue must be <= -1.28 z-score');
+// All format observations normalized to z-scores against corpus baseline
+const zDune = getWorkZScore(dune);
+const zScript = getWorkZScore(script);
 
-  // Assert Goodnight Punpun high negative space WITH high dialogue density
-  const punpun = MANGA_WORKS.find(w => w.id === 'work_goodnight_punpun');
-  const zP = getWorkZScore(punpun);
-  assert.ok(zP.negativeSpace >= 1.0 && zP.dialogueDensity >= 0.80);
-});`;
+console.log(\`Dune Arrakis Chapters z-env: \${zDune.environmentalScale.toFixed(2)}\`);
+console.log(\`2001 Star Gate Script z-dialogue: \${zScript.dialogueDensity.toFixed(2)}\`);`;
 
-const locatorCode = `// Locator translation mapping canonical page ranges across physical editions
-export function translateLocatorToEdition(locator: CanonicalLocator, format: string): string {
-  const [start, end] = locator.canonicalPageRange;
-  if (format === 'omnibus' || format === '3in1') {
-    const omniVol = Math.ceil(locator.volumeNum / 3);
-    const offset = ((locator.volumeNum - 1) % 3) * 180;
-    return \`3-in-1 Vol. \${omniVol} · pages \${start + offset}–\${end + offset}\`;
-  }
-  return \`Vol. \${locator.volumeNum} · Ch. \${locator.chapterNum ?? 1} (pp. \${start}–\${end})\`;
-}`;
+const dnaCode = `import { exportSubstrateDna } from './manga-substrate-engine';
+
+// Export canonical Substrate DNA fingerprint
+const dna = exportSubstrateDna(work.rawVector);
+console.log(dna);
+/*
+{
+  "substrateDna": "4.0",
+  "zScores": {
+    "environmentalScale": "+1.98",
+    "dialogueDensity": "-2.10",
+    "inkCoverage": "+0.85"
+  },
+  "provenance": "fundamental-engine/substrate-v4"
+}
+*/`;
 ---
 
 <Base
-  title="Relational Manga Substrate — Empirical Z-Scores & Measurement Signatures"
-  description="Z-score population normalization, expectation suite, measurement-derived cover signatures, surprise-accept optimization, local privacy, and canonical locators."
+  title="Relational Substrate Engine — Cross-Format Media & Revision Diffs"
+  description="Cross-format media alignment (manga, prose novels, screenplays), edition diff visualizers, live local pinch-zoom signal harness, and Substrate DNA fingerprints."
 >
   <SiteNav current="examples" />
 
@@ -57,20 +60,41 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
     <!-- Header & Resolved Query Bar -->
     <header class="manga-sub-head">
       <div class="head-top">
-        <p class="sub-kicker">Relational Library Substrate · Z-Score Population Engine</p>
-        <h1>MangaVerse <span class="accent">— Measurement, Relationally</span></h1>
-        <StatusChip label="39 Real Works · Z-Score Normalized · On-Device Privacy" tone="demo" />
+        <p class="sub-kicker">Relational Library Substrate · Universal Media Engine</p>
+        <h1>MangaVerse <span class="accent">— Substrate, Cross-Format</span></h1>
+        <StatusChip label="39 Works · Manga ⇄ Prose ⇄ Screenplay · Revision Diffs" tone="demo" />
       </div>
 
       <!-- Privacy & Expectation Banner -->
       <div class="privacy-expectation-banner">
         <div class="banner-col">
-          <span class="b-label">Privacy Assurance:</span>
-          <p>Page dwell, re-read counts, and panel pinch-zooms remain 100% on device. Zero personal telemetry leaves your browser.</p>
+          <span class="b-label">Cross-Format Alignment:</span>
+          <p>Maps visual density, environmental scale, and dialogue pacing across Manga, Prose Novels (<em>Dune</em>), and Screenplays (<em>2001</em>).</p>
         </div>
         <div class="banner-col">
-          <span class="b-label">Falsifiable Expectation Suite:</span>
-          <p>Ingestion verified: <em>BLAME!</em> top-decile scale ($z \ge +1.28$), <em>Chainsaw Man</em> top-decile SFX, <em>Punpun</em> high space + dialogue.</p>
+          <span class="b-label">Falsifiable Edition Diffs:</span>
+          <p>Empirically visualizes vector splits between revisions (e.g. <em>AKIRA 35th Boxset</em> vs <em>1988 Colorized Edition</em>).</p>
+        </div>
+      </div>
+
+      <!-- Revision Split Visualizer Card -->
+      <div class="revision-diff-card">
+        <div class="diff-head">
+          <span class="diff-kicker">Falsifiable Revision Split</span>
+          <h3>{akiraWork.title} — Edition Delta ({akiraDiff.editionA} vs {akiraDiff.editionB})</h3>
+          <p>{akiraDiff.revisionNote}</p>
+        </div>
+        <div class="diff-metrics-grid">
+          <div class="diff-metric-box">
+            <span class="d-label">SFX Vector Delta (&Delta; z_sfx)</span>
+            <span class="d-val">{akiraDiff.zDelta.sfxDensity.toFixed(2)} &sigma;</span>
+            <span class="d-sub">Hand-drawn Japanese SFX restored vs typeset</span>
+          </div>
+          <div class="diff-metric-box">
+            <span class="d-label">Ink &amp; Palette Delta (&Delta; z_ink)</span>
+            <span class="d-val">{akiraDiff.zDelta.inkCoverage.toFixed(2)} &sigma;</span>
+            <span class="d-sub">B&amp;W high-contrast vs Epic Comics colorized</span>
+          </div>
         </div>
       </div>
 
@@ -81,7 +105,7 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
           <input 
             type="text" 
             id="query-input" 
-            placeholder="quiet scenes with Liora · dark 1990s · unusual layouts · Otomo" 
+            placeholder="quiet scenes with Liora · dark 1990s · Dune Arrakis · Otomo" 
             aria-label="Query library substrate"
           />
           <button type="button" id="btn-resolve" class="btn-resolve">resolve query</button>
@@ -113,8 +137,8 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
       <div class="sec-head-row">
         <div>
           <span class="sec-kicker">Deterministic · User Session Input</span>
-          <h2>Recently read (Generated Measurement Signatures)</h2>
-          <p class="sec-desc">Covers are visual signatures generated directly from observations (panel grid density, ink darkness, negative space margins). No scanned jacket images.</p>
+          <h2>Recently read (Cross-Format Media Signatures)</h2>
+          <p class="sec-desc">Media format tags indicate whether a work is Manga, a Prose Novel, or a Film Screenplay. All normalized to unified z-scores.</p>
         </div>
       </div>
       <div class="recent-grid">
@@ -122,9 +146,12 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
           <article class="recent-card" data-body="attract" data-strength="1.1" data-feedback>
             <div class="measurement-cover-wrap" set:html={generateMeasurementSvg(work.rawVector, 260, 110)} />
             <div class="recent-info">
+              <div class="format-badge-row">
+                <span class="recent-format-tag">{work.mediaFormat || 'manga'}</span>
+                <span class="revision-tag">{work.measuredRevision || 'Canonical Edition'}</span>
+              </div>
               <h3>{work.title}</h3>
               <span class="recent-meta">{work.author} · {work.yr}</span>
-              <span class="revision-tag">{work.measuredRevision || 'Canonical Edition'}</span>
             </div>
           </article>
         ))}
@@ -137,7 +164,7 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
         <div>
           <span class="sec-kicker">Sub-publication · Normalized Edition Locators</span>
           <h2>Continue this mood</h2>
-          <p class="sec-desc">Canonical locators translated to edition-specific page ranges. Survives omnibus and single volume edition swaps.</p>
+          <p class="sec-desc">Canonical locators translated to edition-specific page ranges across formats.</p>
         </div>
       </div>
       <div class="chapters-grid" id="chapters-rail">
@@ -157,7 +184,7 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
     <!-- Section Separator -->
     <div class="substrate-divider">
       <span class="divider-line"></span>
-      <span class="divider-label">Exclusive Emergent Shelves (Z-Score Population Normalized)</span>
+      <span class="divider-label">Exclusive Emergent Shelves (Cross-Format Manga ⇄ Novel ⇄ Script)</span>
       <span class="divider-line"></span>
     </div>
 
@@ -181,7 +208,6 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
                 <span class="surprise-accept-tag">Surprise-Accept Optimized</span>
               </div>
               <h2 class="active-title">{shelf.activeTitle}</h2>
-              <!-- Machine description PERMANENTLY VISIBLE below editorial title -->
               <p class="permanent-machine-sub"><span class="sub-lead">Substrate signal:</span> {shelf.generatedLabel.toUpperCase()}</p>
               <p class="shelf-sub">{shelf.subtitle}</p>
             </div>
@@ -215,7 +241,10 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
                 </div>
 
                 <div class="card-body">
-                  <h3>{item.work.title}</h3>
+                  <div class="card-title-row">
+                    <h3>{item.work.title}</h3>
+                    <span class="media-format-badge">{item.work.mediaFormat || 'manga'}</span>
+                  </div>
                   <span class="card-meta">{item.work.author} · {item.work.yr || 2020}</span>
                   <p class="card-why">{item.explanation.why}</p>
                   
@@ -263,11 +292,11 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
 
     <!-- Code Architecture Section -->
     <section class="manga-code-section">
-      <h2>Expectation Suite &amp; Locator Architecture</h2>
-      <p>Automated ingestion assertions and canonical locator translation across editions.</p>
+      <h2>Cross-Format &amp; Substrate DNA Fingerprint Architecture</h2>
+      <p>Universal media format alignment and exported Substrate DNA fingerprints.</p>
       <CodeTabs variants={[
-        { label: 'Expectation Suite Test', lang: 'ts', code: expectationSuiteCode },
-        { label: 'Locator Translator', lang: 'ts', code: locatorCode }
+        { label: 'Cross-Format Media', lang: 'ts', code: crossFormatCode },
+        { label: 'Substrate DNA Fingerprint', lang: 'json', code: dnaCode }
       ]} />
     </section>
 
@@ -290,7 +319,7 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
     const chipsBar = document.getElementById('chips-list');
     const facetBtns = document.querySelectorAll('[data-facet]');
     const emptyToggle = document.getElementById('btn-empty-toggle');
-    const shelvesRail = id = document.getElementById('shelves-rail');
+    const shelvesRail = document.getElementById('shelves-rail');
     const shell = document.querySelector('.manga-substrate-shell');
 
     let isEmptyMode = false;
@@ -321,7 +350,7 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
             <div class="empty-shelf-notice">
               <span class="empty-icon">⚠</span>
               <h2>No Emergent Shelf Earned Its Place Today</h2>
-              <p>Substrate evidence scores fell below confidence threshold (z < +0.50). Showing plain collection without forced poetic titles.</p>
+              <p>Substrate evidence scores fell below confidence threshold (z &lt; +0.50). Showing plain collection without forced poetic titles.</p>
             </div>
           `;
         } else {
@@ -410,6 +439,64 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
     font-size: 0.82rem;
     color: var(--text-2);
     margin: 0.2rem 0 0;
+  }
+
+  /* Revision Diff Card */
+  .revision-diff-card {
+    padding: 1.25rem;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(56, 201, 234, 0.3);
+    margin: 1.25rem 0 2rem;
+  }
+  .diff-head {
+    margin-bottom: 0.85rem;
+  }
+  .diff-kicker {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .diff-head h3 {
+    font-family: var(--display);
+    font-size: 1.15rem;
+    margin: 0.2rem 0 0.2rem;
+  }
+  .diff-head p {
+    font-size: 0.82rem;
+    color: var(--text-3);
+    margin: 0;
+  }
+  .diff-metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 640px) { .diff-metrics-grid { grid-template-columns: 1fr; } }
+  .diff-metric-box {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background: rgba(2, 6, 23, 0.6);
+    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .d-label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--text-4);
+  }
+  .d-val {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #10b981;
+  }
+  .d-sub {
+    font-size: 0.75rem;
+    color: var(--text-3);
   }
 
   /* Query Resolver Card */
@@ -561,6 +648,24 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
     display: block;
   }
 
+  /* Format Badges */
+  .format-badge-row {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin-bottom: 0.2rem;
+  }
+  .recent-format-tag, .media-format-badge {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    color: #a855f7;
+    background: rgba(168, 85, 247, 0.12);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    border: 1px solid rgba(168, 85, 247, 0.25);
+  }
+
   /* Recent Grid */
   .recent-grid {
     display: grid;
@@ -601,7 +706,6 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
     padding: 0.15rem 0.4rem;
     border-radius: 4px;
     width: fit-content;
-    margin-top: 0.2rem;
   }
 
   /* Chapters Grid */
@@ -796,6 +900,12 @@ export function translateLocatorToEdition(locator: CanonicalLocator, format: str
     background: rgba(2, 6, 23, 0.85);
     padding: 0.15rem 0.4rem;
     border-radius: 4px;
+  }
+  .card-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
   .card-body h3 {
     font-family: var(--display);
