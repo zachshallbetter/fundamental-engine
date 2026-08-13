@@ -1,0 +1,608 @@
+---
+import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import StatusChip from '../components/StatusChip.astro';
+import CodeTabs from '../components/CodeTabs.astro';
+import '../styles/docs.css';
+
+const codeSnippet = `<field-root accent="#4da3ff" render="dots" overlay="links"></field-root>
+
+<!-- Category Attractor Wells -->
+<div class="category-wells-grid">
+  <section class="category-well" data-body="well" data-strength="1.4" data-range="380" style="--cat-accent: #4da3ff;">
+    <h2>Research Papers</h2>
+    <article id="pub-1" class="pub-card" data-body="attract" data-strength="0.75" data-feedback data-field-relation="cites" data-field-target="#pub-2">
+      <span class="pub-tag">Research</span>
+      <h3>01. Relational Substrate Theory</h3>
+      <p>Semantic structures, bodies, and field particles in one shared runtime.</p>
+    </article>
+  </section>
+
+  <section class="category-well" data-body="well" data-strength="1.2" data-range="320" style="--cat-accent: #f59e0b;">
+    <h2>Technical Specs</h2>
+    <article id="pub-2" class="pub-card" data-body="attract" data-strength="0.6" data-feedback>
+      <span class="pub-tag">Spec</span>
+      <h3>02. Relationship Registry & Signals</h3>
+      <p>Normalizing HTML, ARIA, and custom graph edges into runtime signals.</p>
+    </article>
+  </section>
+</div>
+
+<style>
+  .pub-card {
+    --field-density: 0;
+    --field-proximity: 0;
+    background: var(--bg-card, #0b0e16);
+    border: 1px solid color-mix(in srgb, var(--cat-accent) calc(25% + var(--field-proximity) * 65%), var(--line));
+    box-shadow: 0 4px 20px rgba(0, 0, 0, calc(0.2 + var(--field-density) * 0.4)),
+                0 0 16px color-mix(in srgb, var(--cat-accent) calc(var(--field-proximity) * 60%), transparent);
+    transform: scale(calc(1 + var(--field-proximity) * 0.035));
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+</style>`;
+---
+
+<Base
+  title="Relational Publications — Fundamental Engine"
+  description="Standalone interactive demonstration of relational publications, category attractor wells, citation graph edges, and signal-driven CSS formatting using Fundamental Engine."
+>
+  <SiteNav current="examples" />
+
+  <main id="main" class="pub-page-shell">
+    <header class="pub-page-head">
+      <p class="pub-kicker">Relational Substrate Pattern</p>
+      <h1>Relational <span class="accent">Publications</span></h1>
+      <StatusChip label="Interactive Proof · Relational Field Topology" tone="demo" />
+      <p class="pub-lede">
+        Publications are not static items in a hardcoded grid. In Fundamental Engine, each publication is a
+        <strong>Field Body</strong> carrying relevance mass and citation graph edges. Category containers act as
+        <strong>Attractor Wells</strong> that pull matching papers into spatial topology, while live CSS variables
+        (<code>--field-density</code>, <code>--field-proximity</code>, <code>--field-tension</code>) drive glassmorphic elevation, border glow, and visual formatting without JS event overhead.
+      </p>
+    </header>
+
+    <!-- Controls & Category Filters -->
+    <section class="pub-controls-bar" aria-label="Field Controls">
+      <div class="filter-buttons">
+        <button type="button" class="pub-btn active" data-filter="all">All Publications (6)</button>
+        <button type="button" class="pub-btn" data-filter="research">Research (2)</button>
+        <button type="button" class="pub-btn" data-filter="spec">Specs (2)</button>
+        <button type="button" class="pub-btn" data-filter="guide">Guides (2)</button>
+      </div>
+      <div class="action-buttons">
+        <button type="button" class="pub-btn outline" data-action="toggle-threads">Toggle Citation Threads</button>
+        <button type="button" class="pub-btn outline" data-action="burst-field">Impulse Burst</button>
+      </div>
+    </section>
+
+    <!-- Layout Stage: Category Attractor Wells & Publications -->
+    <div class="pub-layout-stage">
+      <!-- Category 1: Research Papers -->
+      <section 
+        id="well-research" 
+        class="pub-well-container" 
+        data-body="well" 
+        data-strength="1.5" 
+        data-range="400"
+        data-category="research"
+        style="--cat-accent: #4da3ff;"
+      >
+        <header class="well-header">
+          <span class="well-glyph">◆</span>
+          <h2>Research Papers</h2>
+          <span class="well-badge">Attractor Well · Strength 1.5</span>
+        </header>
+        <div class="well-cards-list">
+          <article 
+            id="pub-1" 
+            class="relational-pub-card" 
+            data-body="attract" 
+            data-strength="0.8" 
+            data-range="260" 
+            data-feedback 
+            data-field-relation="cites" 
+            data-field-target="#pub-2"
+            data-category="research"
+            style="--cat-accent: #4da3ff;"
+            tabindex="0"
+          >
+            <div class="card-top">
+              <span class="pub-tag">Research</span>
+              <time class="pub-date">2026-07-15</time>
+            </div>
+            <h3>01. Relational Substrate Theory</h3>
+            <p>Semantic structures, bodies, and field particles in one shared, platform-native runtime.</p>
+            <footer class="card-footer">
+              <span class="citation-link">Cites: Spec 02</span>
+              <span class="signal-metric" data-metric="pub-1">d: 0.00</span>
+            </footer>
+          </article>
+
+          <article 
+            id="pub-3" 
+            class="relational-pub-card" 
+            data-body="attract" 
+            data-strength="0.7" 
+            data-range="240" 
+            data-feedback 
+            data-field-relation="cites" 
+            data-field-target="#pub-1"
+            data-category="research"
+            style="--cat-accent: #4da3ff;"
+            tabindex="0"
+          >
+            <div class="card-top">
+              <span class="pub-tag">Research</span>
+              <time class="pub-date">2026-07-28</time>
+            </div>
+            <h3>03. Field Memory & Conserved Attention</h3>
+            <p>Conserved attention budgets across long-form document nodes and semantic fields.</p>
+            <footer class="card-footer">
+              <span class="citation-link">Cites: Paper 01</span>
+              <span class="signal-metric" data-metric="pub-3">d: 0.00</span>
+            </footer>
+          </article>
+        </div>
+      </section>
+
+      <!-- Category 2: Technical Specifications -->
+      <section 
+        id="well-spec" 
+        class="pub-well-container" 
+        data-body="well" 
+        data-strength="1.3" 
+        data-range="350"
+        data-category="spec"
+        style="--cat-accent: #f59e0b;"
+      >
+        <header class="well-header">
+          <span class="well-glyph">☍</span>
+          <h2>Technical Specs</h2>
+          <span class="well-badge">Attractor Well · Strength 1.3</span>
+        </header>
+        <div class="well-cards-list">
+          <article 
+            id="pub-2" 
+            class="relational-pub-card" 
+            data-body="attract" 
+            data-strength="0.65" 
+            data-range="230" 
+            data-feedback 
+            data-category="spec"
+            style="--cat-accent: #f59e0b;"
+            tabindex="0"
+          >
+            <div class="card-top">
+              <span class="pub-tag">Spec</span>
+              <time class="pub-date">2026-08-01</time>
+            </div>
+            <h3>02. Relationship Registry & Signals</h3>
+            <p>Normalizing HTML, ARIA, and custom graph edges into unified, typed runtime signals.</p>
+            <footer class="card-footer">
+              <span class="citation-link">Core Target</span>
+              <span class="signal-metric" data-metric="pub-2">d: 0.00</span>
+            </footer>
+          </article>
+
+          <article 
+            id="pub-5" 
+            class="relational-pub-card" 
+            data-body="attract" 
+            data-strength="0.75" 
+            data-range="250" 
+            data-feedback 
+            data-field-relation="cites" 
+            data-field-target="#pub-1"
+            data-category="spec"
+            style="--cat-accent: #f59e0b;"
+            tabindex="0"
+          >
+            <div class="card-top">
+              <span class="pub-tag">Spec</span>
+              <time class="pub-date">2026-08-11</time>
+            </div>
+            <h3>05. iPub Semantic Substrate Specification</h3>
+            <p>Canonical specification for document structures, normalized geometry, and entity graphs.</p>
+            <footer class="card-footer">
+              <span class="citation-link">Cites: Paper 01</span>
+              <span class="signal-metric" data-metric="pub-5">d: 0.00</span>
+            </footer>
+          </article>
+        </div>
+      </section>
+
+      <!-- Category 3: Architecture Guides -->
+      <section 
+        id="well-guide" 
+        class="pub-well-container" 
+        data-body="well" 
+        data-strength="1.2" 
+        data-range="320"
+        data-category="guide"
+        style="--cat-accent: #2dd4bf;"
+      >
+        <header class="well-header">
+          <span class="well-glyph">▦</span>
+          <h2>Architecture Guides</h2>
+          <span class="well-badge">Attractor Well · Strength 1.2</span>
+        </header>
+        <div class="well-cards-list">
+          <article 
+            id="pub-4" 
+            class="relational-pub-card" 
+            data-body="attract" 
+            data-strength="0.6" 
+            data-range="220" 
+            data-feedback 
+            data-field-relation="cites" 
+            data-field-target="#pub-2"
+            data-category="guide"
+            style="--cat-accent: #2dd4bf;"
+            tabindex="0"
+          >
+            <div class="card-top">
+              <span class="pub-tag">Guide</span>
+              <time class="pub-date">2026-08-05</time>
+            </div>
+            <h3>04. Platform Host Seam Architecture</h3>
+            <p>Host adapters binding zero-dep core models across DOM, Three.js, and native platforms.</p>
+            <footer class="card-footer">
+              <span class="citation-link">Cites: Spec 02</span>
+              <span class="signal-metric" data-metric="pub-4">d: 0.00</span>
+            </footer>
+          </article>
+
+          <article 
+            id="pub-6" 
+            class="relational-pub-card" 
+            data-body="attract" 
+            data-strength="0.6" 
+            data-range="220" 
+            data-feedback 
+            data-field-relation="cites" 
+            data-field-target="#pub-3"
+            data-category="guide"
+            style="--cat-accent: #2dd4bf;"
+            tabindex="0"
+          >
+            <div class="card-top">
+              <span class="pub-tag">Guide</span>
+              <time class="pub-date">2026-08-12</time>
+            </div>
+            <h3>06. Host ⇄ Field Runtime Mechanics</h3>
+            <p>Two-way host integration loops for continuous layout-to-topology transitions.</p>
+            <footer class="card-footer">
+              <span class="citation-link">Cites: Paper 03</span>
+              <span class="signal-metric" data-metric="pub-6">d: 0.00</span>
+            </footer>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <!-- Implementation Code Snippet -->
+    <section class="pub-code-section">
+      <h2>Copy &amp; Implement</h2>
+      <p>This exact relational publication pattern runs directly on top of <code>@fundamental-engine/dom</code> and <code>@fundamental-engine/elements</code>.</p>
+      <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: codeSnippet }]} />
+    </section>
+
+    <!-- Navigation Footer -->
+    <nav class="pub-nav-footer">
+      <a href="/examples">← Back to All Live Examples</a>
+      <a href="/docs/concepts">Explore Field Concepts →</a>
+      <a href="/patterns">Browse Pattern Gallery →</a>
+    </nav>
+  </main>
+
+  <SiteFooter />
+</Base>
+
+<script>
+  // Dynamic filtering & interaction script
+  const initPubPage = () => {
+    const filterBtns = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+    const wells = document.querySelectorAll<HTMLElement>('.pub-well-container');
+    const cards = document.querySelectorAll<HTMLElement>('.relational-pub-card');
+    const metricSpans = document.querySelectorAll<HTMLElement>('[data-metric]');
+    const threadsBtn = document.querySelector<HTMLButtonElement>('[data-action="toggle-threads"]');
+    const burstBtn = document.querySelector<HTMLButtonElement>('[data-action="burst-field"]');
+
+    // Get field handle lazily
+    const getField = () => document.querySelector('field-root') as (Element & { burst?: (x: number, y: number, col?: string) => void; threads?: (t: unknown) => void }) | null;
+
+    // Filter switching
+    filterBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter || 'all';
+        filterBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        wells.forEach((well) => {
+          const cat = well.dataset.category;
+          if (filter === 'all' || filter === cat) {
+            well.style.display = 'flex';
+          } else {
+            well.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Impulses & Threads
+    burstBtn?.addEventListener('click', () => {
+      const rect = burstBtn.getBoundingClientRect();
+      getField()?.burst?.(rect.left + rect.width / 2, rect.top, '#4da3ff');
+    });
+
+    let threadsActive = false;
+    threadsBtn?.addEventListener('click', () => {
+      threadsActive = !threadsActive;
+      threadsBtn.classList.toggle('active', threadsActive);
+      threadsBtn.textContent = threadsActive ? 'Citation Threads: ON' : 'Toggle Citation Threads';
+    });
+
+    // Live signal metric readout loop
+    let rafId = 0;
+    const updateMetrics = () => {
+      cards.forEach((card) => {
+        const id = card.id;
+        const span = document.querySelector(`[data-metric="${id}"]`);
+        if (span) {
+          const density = card.style.getPropertyValue('--field-density') || '0';
+          const dVal = parseFloat(density).toFixed(2);
+          span.textContent = `d: ${dVal}`;
+        }
+      });
+      rafId = requestAnimationFrame(updateMetrics);
+    };
+    rafId = requestAnimationFrame(updateMetrics);
+
+    document.addEventListener('astro:before-swap', () => {
+      cancelAnimationFrame(rafId);
+    }, { once: true });
+  };
+
+  initPubPage();
+  document.addEventListener('astro:page-load', initPubPage);
+</script>
+
+<style>
+  .pub-page-shell {
+    max-width: var(--content-max, 1140px);
+    margin: 0 auto;
+    padding: calc(58px + 2.5rem) clamp(1.25rem, 4vw, 2rem) 6rem;
+    position: relative;
+    z-index: 2;
+  }
+  .pub-kicker {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--accent) 70%, var(--text-3));
+    margin: 0 0 0.5rem;
+  }
+  .pub-page-head h1 {
+    font-family: var(--display);
+    font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+  }
+  .pub-lede {
+    max-width: 48rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-2);
+    margin: 1rem 0 2rem;
+  }
+  .pub-lede code {
+    font-family: var(--mono);
+    font-size: 0.9em;
+    color: var(--accent);
+  }
+
+  /* Controls Bar */
+  .pub-controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--line);
+    margin-bottom: 2rem;
+  }
+  .filter-buttons, .action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .pub-btn {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .pub-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    background: rgba(77, 163, 255, 0.08);
+  }
+  .pub-btn.active {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(77, 163, 255, 0.4);
+  }
+  .pub-btn.outline.active {
+    color: var(--accent);
+    background: rgba(77, 163, 255, 0.15);
+    border-color: var(--accent);
+  }
+
+  /* Layout Stage & Category Wells */
+  .pub-layout-stage {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 3rem;
+  }
+  @media (max-width: 960px) {
+    .pub-layout-stage {
+      grid-template-columns: 1fr;
+    }
+  }
+  .pub-well-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--cat-accent) 25%, var(--line));
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(8px);
+    transition: border-color 0.3s ease;
+  }
+  .well-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--cat-accent) 20%, transparent);
+  }
+  .well-glyph {
+    color: var(--cat-accent);
+    font-size: 1rem;
+  }
+  .well-header h2 {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    margin: 0;
+    flex: 1;
+    color: var(--text);
+  }
+  .well-badge {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    color: var(--cat-accent);
+    opacity: 0.8;
+  }
+  .well-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Relational Cards */
+  .relational-pub-card {
+    --field-density: 0;
+    --field-proximity: 0;
+    padding: 1.15rem;
+    border-radius: 12px;
+    background: var(--bg-card, #0b0e16);
+    border: 1px solid color-mix(in srgb, var(--cat-accent) calc(20% + var(--field-density) * 65%), var(--line));
+    box-shadow: 0 4px 20px rgba(0, 0, 0, calc(0.2 + var(--field-density) * 0.4)),
+                0 0 16px color-mix(in srgb, var(--cat-accent) calc(var(--field-density) * 55%), transparent);
+    transform: scale(calc(1 + var(--field-density) * 0.03));
+    transition: transform 0.25s var(--ease), border-color 0.25s, box-shadow 0.25s;
+    outline: none;
+  }
+  .relational-pub-card:focus-visible {
+    border-color: var(--cat-accent);
+    box-shadow: 0 0 20px var(--cat-accent);
+  }
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  .pub-tag {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    color: var(--cat-accent);
+    background: color-mix(in srgb, var(--cat-accent) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cat-accent) 30%, transparent);
+  }
+  .pub-date {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-4);
+  }
+  .relational-pub-card h3 {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    margin: 0 0 0.4rem;
+    color: var(--text);
+    line-height: 1.35;
+  }
+  .relational-pub-card p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text-3);
+    margin: 0 0 0.85rem;
+  }
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  }
+  .citation-link {
+    color: color-mix(in srgb, var(--cat-accent) 80%, var(--text-3));
+  }
+  .signal-metric {
+    color: var(--text-4);
+  }
+
+  /* Code Section & Nav Footer */
+  .pub-code-section {
+    margin-top: 4rem;
+  }
+  .pub-code-section h2 {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    margin: 0 0 0.5rem;
+  }
+  .pub-code-section p {
+    color: var(--text-3);
+    margin-bottom: 1.25rem;
+  }
+  .pub-nav-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .pub-nav-footer a {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+  .pub-nav-footer a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+</style>
