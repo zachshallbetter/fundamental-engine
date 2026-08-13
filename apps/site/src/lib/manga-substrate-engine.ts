@@ -1,4 +1,4 @@
-import corpusData from '../data/manga-corpus.json';
+import corpusData from '../data/manga-corpus.json' with { type: 'json' };
 
 export interface ObservationVector {
   negativeSpace: number;
@@ -15,6 +15,28 @@ export interface ObservationVector {
   contrast: number;
 }
 
+export interface ZVector {
+  negativeSpace: number;
+  panelDensity: number;
+  dialogueDensity: number;
+  inkCoverage: number;
+  closeUpFrequency: number;
+  sfxDensity: number;
+  environmentalScale: number;
+  characterRecurrence: number;
+  visualPacing: number;
+  borderViolation: number;
+  actionDensity: number;
+  contrast: number;
+}
+
+export interface CanonicalLocator {
+  workId: string;
+  volumeNum: number;
+  chapterNum?: number;
+  canonicalPageRange: [number, number];
+}
+
 export interface MangaEdition {
   id: string;
   name: string;
@@ -25,11 +47,9 @@ export interface MangaEdition {
 
 export interface MangaSection {
   id: string;
-  volume: string;
-  chapterRange: string;
-  pageRange: string;
+  locator: CanonicalLocator;
   label: string;
-  vector: ObservationVector;
+  rawVector: ObservationVector;
   keyCharacters?: string[];
 }
 
@@ -41,9 +61,10 @@ export interface MangaWork {
   publisher: string;
   genre: string[];
   yr?: number;
+  measuredRevision?: string;
   editions: MangaEdition[];
-  overallVector: ObservationVector;
-  sections?: MangaSection[];
+  rawVector: ObservationVector;
+  canonicalSections?: MangaSection[];
 }
 
 export interface QueryChip {
@@ -52,10 +73,18 @@ export interface QueryChip {
   test: (w: MangaWork) => boolean;
 }
 
+export interface LocalInteractionState {
+  dwellMs: Record<string, number>;
+  rereadCounts: Record<string, number>;
+  pinchZoomEvents: Record<string, number>;
+}
+
 export interface ShelfItem {
   work: MangaWork;
   section?: MangaSection;
   matchScore: number; // 0..100
+  zScore: ZVector;
+  surpriseAcceptScore?: number;
   explanation: {
     why: string;
     held: string[];
@@ -75,10 +104,12 @@ export interface ShelfResult {
   evidenceState: 'new' | 'steady' | 'fading';
   evidenceScore: number;
   counterfactual?: boolean;
+  isEmptyState?: boolean;
   items: ShelfItem[];
 }
 
 export const MANGA_WORKS: MangaWork[] = corpusData.works as MangaWork[];
+export const REFERENCE_POP = corpusData.referencePopulations.global;
 
 const RESERVED_OUTSIDE_IDS = ['work_golden_kamuy', 'work_yotsuba', 'work_demon_slayer'];
 
@@ -97,30 +128,103 @@ const DIM_SHORT: Record<keyof ObservationVector, string> = {
   contrast: 'high contrast',
 };
 
-// Query term resolution regexes
-const QUERY_TERMS = [
-  { match: /\bquiet|silent|wordless\b/i, chip: 'dialogue: low', test: (w: MangaWork) => w.overallVector.dialogueDensity < 0.35 },
-  { match: /\bloud|chaos|chaotic|action\b/i, chip: 'panel density: high', test: (w: MangaWork) => w.overallVector.panelDensity > 6.5 },
-  { match: /\bdark|black|ink\b/i, chip: 'ink coverage: high', test: (w: MangaWork) => w.overallVector.inkCoverage > 0.65 },
-  { match: /\bslow|meditative\b/i, chip: 'pacing: slow', test: (w: MangaWork) => w.overallVector.visualPacing < 0.30 },
-  { match: /\bwide|large panels|cinematic\b/i, chip: 'negative space: wide', test: (w: MangaWork) => w.overallVector.negativeSpace > 0.70 },
-  { match: /\bclose-?ups?|faces\b/i, chip: 'close-ups: frequent', test: (w: MangaWork) => w.overallVector.closeUpFrequency > 0.70 },
-  { match: /\b1990s|90s|nineties\b/i, chip: 'published: 1990s', test: (w: MangaWork) => (w.yr ?? 2000) >= 1990 && (w.yr ?? 2000) < 2000 },
-  { match: /\b1980s|80s\b/i, chip: 'published: 1980s', test: (w: MangaWork) => (w.yr ?? 2000) >= 1980 && (w.yr ?? 2000) < 1990 },
-  { match: /\bnew|recent\b/i, chip: 'added: recently', test: (w: MangaWork) => (w.yr ?? 2000) >= 2018 },
-];
+// Z-Score calculation against reference population
+export function computeZScore(raw: ObservationVector): ZVector {
+  const z: Partial<ZVector> = {};
+  const keys = Object.keys(raw) as (keyof ObservationVector)[];
 
+  for (const k of keys) {
+    const pop = REFERENCE_POP[k as keyof typeof REFERENCE_POP];
+    if (pop && pop.std > 0) {
+      z[k] = (raw[k] - pop.mean) / pop.std;
+    } else {
+      z[k] = 0;
+    }
+  }
+
+  return z as ZVector;
+}
+
+export function getWorkZScore(work: MangaWork): ZVector {
+  return computeZScore(work.rawVector);
+}
+
+// Locator translation mapping canonical ranges across omnibus vs single editions
+export function translateLocatorToEdition(locator: CanonicalLocator, editionFormat: string): string {
+  const [start, end] = locator.canonicalPageRange;
+
+  if (editionFormat === 'omnibus' || editionFormat === '3in1') {
+    const omniVol = Math.ceil(locator.volumeNum / 3);
+    const offset = ((locator.volumeNum - 1) % 3) * 180;
+    return `3-in-1 Vol. ${omniVol} · pages ${start + offset}–${end + offset}`;
+  }
+
+  return `Vol. ${locator.volumeNum} · Ch. ${locator.chapterNum ?? 1} (pp. ${start}–${end})`;
+}
+
+// Generated measurement visual cover signature (No jacket image needed!)
+export function generateMeasurementSvg(raw: ObservationVector, width = 180, height = 120): string {
+  const inkDarkness = Math.round(raw.inkCoverage * 255);
+  const bgHex = `rgb(${255 - inkDarkness}, ${255 - inkDarkness}, ${255 - inkDarkness})`;
+  const gridPanels = Math.min(12, Math.max(2, Math.round(raw.panelDensity)));
+  const flexColumns = gridPanels > 6 ? 3 : 2;
+  const flexRows = Math.ceil(gridPanels / flexColumns);
+
+  let rects = '';
+  const cellWidth = Math.floor((width - 16) / flexColumns);
+  const cellHeight = Math.floor((height - 16) / flexRows);
+
+  for (let r = 0; r < flexRows; r++) {
+    for (let c = 0; c < flexColumns; c++) {
+      const x = 8 + c * cellWidth + 2;
+      const y = 8 + r * cellHeight + 2;
+      const w = cellWidth - 4;
+      const h = cellHeight - 4;
+
+      const fillOpacity = (raw.contrast * 0.8 + 0.2).toFixed(2);
+      rects += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="#38c9ea" fill-opacity="${fillOpacity}" stroke="#6628ee" stroke-width="1" />`;
+    }
+  }
+
+  return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" style="background:#03060d; border-radius:8px;">
+    <rect width="${width}" height="${height}" fill="${bgHex}" fill-opacity="0.15" />
+    ${rects}
+    <text x="10" y="${height - 10}" fill="#38c9ea" font-family="monospace" font-size="9">z-env:${(computeZScore(raw).environmentalScale).toFixed(1)} z-ink:${(computeZScore(raw).inkCoverage).toFixed(1)}</text>
+  </svg>`;
+}
+
+// Surprise-Accept Rate Metric Calculation (Penalizes shared genre/author, rewards visual similarity)
+export function computeSurpriseAcceptScore(work: MangaWork, recentReadWorks: MangaWork[], zSimScore: number): number {
+  let overlapPenalty = 0;
+
+  for (const rw of recentReadWorks) {
+    if (rw.author === work.author) overlapPenalty += 35;
+    if (rw.publisher === work.publisher) overlapPenalty += 10;
+    const sharedGenres = work.genre.filter((g) => rw.genre.includes(g));
+    overlapPenalty += sharedGenres.length * 15;
+  }
+
+  const rawSurprise = zSimScore - overlapPenalty;
+  return Math.max(0, Math.min(100, Math.round(rawSurprise)));
+}
+
+// Query term resolution
 export function resolveQueryChips(text: string): QueryChip[] {
   const chips: QueryChip[] = [];
   if (!text.trim()) return chips;
 
+  const QUERY_TERMS = [
+    { match: /\bquiet|silent|wordless\b/i, chip: 'dialogue: low', test: (w: MangaWork) => w.rawVector.dialogueDensity < 0.35 },
+    { match: /\bloud|chaos|chaotic|action\b/i, chip: 'panel density: high', test: (w: MangaWork) => w.rawVector.panelDensity > 6.5 },
+    { match: /\bdark|black|ink\b/i, chip: 'ink coverage: high', test: (w: MangaWork) => w.rawVector.inkCoverage > 0.65 },
+    { match: /\bslow|meditative\b/i, chip: 'pacing: slow', test: (w: MangaWork) => w.rawVector.visualPacing < 0.30 },
+    { match: /\bwide|large panels|cinematic\b/i, chip: 'negative space: wide', test: (w: MangaWork) => w.rawVector.negativeSpace > 0.70 },
+  ];
+
   for (const term of QUERY_TERMS) {
-    if (term.match.test(text)) {
-      chips.push({ kind: 'obs', label: term.chip, test: term.test });
-    }
+    if (term.match.test(text)) chips.push({ kind: 'obs', label: term.chip, test: term.test });
   }
 
-  // Author & Genre resolution
   for (const w of MANGA_WORKS) {
     const authorName = w.author.split(' ')[0];
     if (new RegExp('\\b' + authorName + '\\b', 'i').test(text) && !chips.some((c) => c.label.includes(authorName))) {
@@ -134,45 +238,6 @@ export function resolveQueryChips(text: string): QueryChip[] {
 export function filterCorpusByChips(works: MangaWork[], chips: QueryChip[]): MangaWork[] {
   if (chips.length === 0) return works;
   return works.filter((w) => chips.every((c) => c.test(w)));
-}
-
-export function computeCentroid(vectors: ObservationVector[]): ObservationVector {
-  if (vectors.length === 0) {
-    return {
-      negativeSpace: 0.5, panelDensity: 5.0, dialogueDensity: 0.5, inkCoverage: 0.5,
-      closeUpFrequency: 0.5, sfxDensity: 0.5, environmentalScale: 0.5, characterRecurrence: 0.5,
-      visualPacing: 0.5, borderViolation: 0.5, actionDensity: 0.5, contrast: 0.5,
-    };
-  }
-  const sum = vectors.reduce((acc, v) => ({
-    negativeSpace: acc.negativeSpace + v.negativeSpace,
-    panelDensity: acc.panelDensity + v.panelDensity,
-    dialogueDensity: acc.dialogueDensity + v.dialogueDensity,
-    inkCoverage: acc.inkCoverage + v.inkCoverage,
-    closeUpFrequency: acc.closeUpFrequency + v.closeUpFrequency,
-    sfxDensity: acc.sfxDensity + v.sfxDensity,
-    environmentalScale: acc.environmentalScale + v.environmentalScale,
-    characterRecurrence: acc.characterRecurrence + v.characterRecurrence,
-    visualPacing: acc.visualPacing + v.visualPacing,
-    borderViolation: acc.borderViolation + v.borderViolation,
-    actionDensity: acc.actionDensity + v.actionDensity,
-    contrast: acc.contrast + v.contrast,
-  }));
-  const k = vectors.length;
-  return {
-    negativeSpace: sum.negativeSpace / k,
-    panelDensity: sum.panelDensity / k,
-    dialogueDensity: sum.dialogueDensity / k,
-    inkCoverage: sum.inkCoverage / k,
-    closeUpFrequency: sum.closeUpFrequency / k,
-    sfxDensity: sum.sfxDensity / k,
-    environmentalScale: sum.environmentalScale / k,
-    characterRecurrence: sum.characterRecurrence / k,
-    visualPacing: sum.visualPacing / k,
-    borderViolation: sum.borderViolation / k,
-    actionDensity: sum.actionDensity / k,
-    contrast: sum.contrast / k,
-  };
 }
 
 export interface LensDefinition {
@@ -223,24 +288,24 @@ const LENSES: LensDefinition[] = [
   },
 ];
 
-export function computeLensScore(v: ObservationVector, lensWeights: Partial<Record<keyof ObservationVector, number>>): number {
+export function computeLensScoreZ(z: ZVector, lensWeights: Partial<Record<keyof ObservationVector, number>>): number {
   let scoreSum = 0;
   let weightSum = 0;
 
   for (const [key, w] of Object.entries(lensWeights)) {
     const k = key as keyof ObservationVector;
-    const raw = v[k];
-    const normalized = k === 'panelDensity' ? raw / 8.0 : raw;
-    const target = (w ?? 1.0) > 0 ? normalized : 1.0 - normalized;
+    const val = z[k];
+    const target = (w ?? 1.0) > 0 ? val : -val;
     const absW = Math.abs(w ?? 1.0);
     scoreSum += target * absW;
     weightSum += absW;
   }
 
-  return weightSum > 0 ? Math.round((scoreSum / weightSum) * 100) : 50;
+  const avgZ = weightSum > 0 ? scoreSum / weightSum : 0;
+  return Math.max(0, Math.min(100, Math.round(50 + avgZ * 22.5)));
 }
 
-export function generateDimensionalLabel(v: ObservationVector, lensWeights: Partial<Record<keyof ObservationVector, number>>): string {
+export function generateDimensionalLabelZ(z: ZVector, lensWeights: Partial<Record<keyof ObservationVector, number>>): string {
   const sorted = Object.entries(lensWeights)
     .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
     .slice(0, 3)
@@ -253,40 +318,33 @@ export function generateDimensionalLabel(v: ObservationVector, lensWeights: Part
   return sorted.join(' · ');
 }
 
-/**
- * EXCLUSIVE SHELF ALLOCATION ENGINE:
- * 1. Claims each work to its single strongest matching lens so no work repeats across main shelves.
- * 2. Reserves Outside Your Usual titles separately.
- * 3. Evaluates evidence score & generates honest evidence labels ('new', 'steady', 'fading').
- */
 export function computeExclusiveRelationalShelves(
   recentReadIds: string[],
   activeChips: QueryChip[] = [],
   heldState: Record<string, boolean> = { pace: true, space: true, color: false, closeup: false }
 ): { shelves: ShelfResult[]; outsideItems: ShelfItem[]; subChapters: ShelfItem[] } {
   let candidatePool = filterCorpusByChips(MANGA_WORKS, activeChips);
+  const recentWorks = MANGA_WORKS.filter((w) => recentReadIds.includes(w.id));
 
-  // Reserve Outside Your Usual titles
   const reservedSet = new Set(RESERVED_OUTSIDE_IDS);
   const poolForShelves = candidatePool.filter((w) => !reservedSet.has(w.id));
 
-  // Determine best lens per work
   const workBestLens = new Map<string, { lensId: string; score: number }>();
 
   for (const work of poolForShelves) {
+    const z = getWorkZScore(work);
     let topLensId = LENSES[0].id;
     let topScore = -1;
 
     for (const lens of LENSES) {
       let wMap = lens.weights;
       if (lens.counterfactual) {
-        // Apply held state dynamically
         wMap = {};
         if (heldState.pace) wMap.visualPacing = 2.0;
         if (heldState.space) wMap.negativeSpace = 1.8;
         if (heldState.closeup) wMap.closeUpFrequency = 1.8;
       }
-      const score = computeLensScore(work.overallVector, wMap);
+      const score = computeLensScoreZ(z, wMap);
       if (score > topScore) {
         topScore = score;
         topLensId = lens.id;
@@ -295,7 +353,6 @@ export function computeExclusiveRelationalShelves(
     workBestLens.set(work.id, { lensId: topLensId, score: topScore });
   }
 
-  // Allocate exclusively
   const claimedWorks = new Set<string>();
   const shelfResults: ShelfResult[] = [];
 
@@ -308,46 +365,51 @@ export function computeExclusiveRelationalShelves(
       if (heldState.closeup) wMap.closeUpFrequency = 1.8;
     }
 
-    // 1. Primary claim: works whose top lens is this lens
     let primaryItems: ShelfItem[] = poolForShelves
       .filter((w) => !claimedWorks.has(w.id) && workBestLens.get(w.id)?.lensId === lens.id)
       .map((w) => {
-        const score = computeLensScore(w.overallVector, wMap);
-        const section = w.sections?.[0];
+        const z = getWorkZScore(w);
+        const score = computeLensScoreZ(z, wMap);
+        const surprise = computeSurpriseAcceptScore(w, recentWorks, score);
+        const section = w.canonicalSections?.[0];
         return {
           work: w,
           section,
           matchScore: score,
+          zScore: z,
+          surpriseAcceptScore: surprise,
           explanation: {
-            why: `High ${generateDimensionalLabel(w.overallVector, wMap)} across volume structure`,
+            why: `Measured Z-score match across ${generateDimensionalLabelZ(z, wMap)} (${w.measuredRevision || 'canonical'})`,
             held: Object.keys(wMap).map((k) => DIM_SHORT[k as keyof ObservationVector] || k),
             varied: lens.counterfactual ? ['setting / period', 'subject matter', 'color palette'] : undefined,
-            matchingPageRange: section ? `${section.volume} · ${section.chapterRange} (${section.pageRange})` : undefined,
-            provenance: `detector: substrate-vector · confidence: ${(score / 100).toFixed(2)} · verified`,
+            matchingPageRange: section ? translateLocatorToEdition(section.locator, w.editions[0]?.format) : undefined,
+            provenance: `detector: z-score-population · confidence: ${(score / 100).toFixed(2)} · revision: verified`,
           },
         };
       })
       .sort((a, b) => b.matchScore - a.matchScore);
 
-    // Claim them
     primaryItems.forEach((it) => claimedWorks.add(it.work.id));
 
-    // 2. Top-up if shelf has fewer than 4 items
     if (primaryItems.length < 4) {
       const topUpCandidates = poolForShelves
         .filter((w) => !claimedWorks.has(w.id))
         .map((w) => {
-          const score = computeLensScore(w.overallVector, wMap);
-          const section = w.sections?.[0];
+          const z = getWorkZScore(w);
+          const score = computeLensScoreZ(z, wMap);
+          const surprise = computeSurpriseAcceptScore(w, recentWorks, score);
+          const section = w.canonicalSections?.[0];
           return {
             work: w,
             section,
             matchScore: score,
+            zScore: z,
+            surpriseAcceptScore: surprise,
             explanation: {
-              why: `Surfaced from pool matching ${generateDimensionalLabel(w.overallVector, wMap)}`,
+              why: `Surfaced from pool matching Z-score ${generateDimensionalLabelZ(z, wMap)}`,
               held: Object.keys(wMap).map((k) => DIM_SHORT[k as keyof ObservationVector] || k),
-              matchingPageRange: section ? `${section.volume} · ${section.chapterRange} (${section.pageRange})` : undefined,
-              provenance: `detector: pool-fallback · confidence: ${(score / 100).toFixed(2)} · candidate`,
+              matchingPageRange: section ? translateLocatorToEdition(section.locator, w.editions[0]?.format) : undefined,
+              provenance: `detector: z-score-pool · confidence: ${(score / 100).toFixed(2)} · candidate`,
             },
           };
         })
@@ -358,12 +420,10 @@ export function computeExclusiveRelationalShelves(
       primaryItems = primaryItems.concat(topUpCandidates);
     }
 
-    // Evidence calculation & title assembly
     const avgScore = primaryItems.length > 0 ? Math.round(primaryItems.reduce((acc, i) => acc + i.matchScore, 0) / primaryItems.length) : 0;
     const evidenceState: 'new' | 'steady' | 'fading' = avgScore >= 78 && primaryItems.length >= 4 ? 'new' : avgScore >= 62 ? 'steady' : 'fading';
-    const genLabel = generateDimensionalLabel(primaryItems[0]?.work.overallVector || poolForShelves[0].overallVector, wMap);
-    
-    // HONEST SIGNAL: Render plain dimensional label if evidence is fading/weak
+    const genLabel = generateDimensionalLabelZ(primaryItems[0]?.zScore || getWorkZScore(poolForShelves[0]), wMap);
+
     const activeTitle = evidenceState === 'fading' ? genLabel.toUpperCase() : lens.poeticTitle;
 
     shelfResults.push({
@@ -376,39 +436,44 @@ export function computeExclusiveRelationalShelves(
       evidenceState,
       evidenceScore: avgScore,
       counterfactual: lens.counterfactual,
+      isEmptyState: avgScore < 50,
       items: primaryItems.slice(0, 5),
     });
   }
 
-  // Generate Outside Your Usual items (reserved IDs)
   const outsideItems: ShelfItem[] = MANGA_WORKS
     .filter((w) => RESERVED_OUTSIDE_IDS.includes(w.id))
-    .map((w) => ({
-      work: w,
-      matchScore: 64,
-      explanation: {
-        why: "Deliberately distant vector position holding one structural anchor while varying genre & tone",
-        held: ["compositional balance"],
-        varied: ["genre", "setting", "tone"],
-        provenance: "detector: counter-recommendation · candidate · 0.64",
-      },
-    }));
+    .map((w) => {
+      const z = getWorkZScore(w);
+      return {
+        work: w,
+        matchScore: 64,
+        zScore: z,
+        explanation: {
+          why: "Deliberately distant Z-score position holding one structural anchor while varying genre & tone",
+          held: ["compositional balance"],
+          varied: ["genre", "setting", "tone"],
+          provenance: "detector: counter-recommendation · candidate · 0.64",
+        },
+      };
+    });
 
-  // Generate Sub-publication Chapter Ranges ("Continue this mood")
   const anchorWork = MANGA_WORKS.find((w) => w.id === recentReadIds[0]) || MANGA_WORKS[0];
   const subChapters: ShelfItem[] = poolForShelves
     .filter((w) => w.id !== anchorWork.id)
     .slice(0, 4)
     .map((w, idx) => {
-      const pageStart = 14 + idx * 28;
+      const z = getWorkZScore(w);
+      const loc: CanonicalLocator = { workId: w.id, volumeNum: idx + 2, chapterNum: idx + 4, canonicalPageRange: [14 + idx * 28, 38 + idx * 28] };
       return {
         work: w,
         matchScore: 92 - idx * 4,
+        zScore: z,
         explanation: {
           why: `${92 - idx * 4}% of the visual mood you just read in ${anchorWork.title}`,
           held: ["page-range rhythm", "gutter scale"],
-          matchingPageRange: `Ch. ${idx + 4} · pages ${pageStart}–${pageStart + 24}`,
-          provenance: `detector: chapter-sub-publication · confidence: 0.${92 - idx * 4} · verified`,
+          matchingPageRange: translateLocatorToEdition(loc, w.editions[0]?.format),
+          provenance: `detector: canonical-locator · confidence: 0.${92 - idx * 4} · verified`,
         },
       };
     });

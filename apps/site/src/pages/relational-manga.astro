@@ -7,6 +7,7 @@ import CodeTabs from '../components/CodeTabs.astro';
 import { 
   MANGA_WORKS, 
   computeExclusiveRelationalShelves, 
+  generateMeasurementSvg,
   type ShelfResult, 
   type MangaWork,
   type ShelfItem
@@ -16,27 +17,39 @@ import '../styles/docs.css';
 const defaultRecent = ['work_evangelion', 'work_blame', 'work_akira', 'work_berserk'];
 const { shelves: initialShelves, outsideItems: initialOutside, subChapters: initialChapters } = computeExclusiveRelationalShelves(defaultRecent);
 
-const pipelineCode = `import { computeExclusiveRelationalShelves, resolveQueryChips } from './manga-substrate-engine';
+const expectationSuiteCode = `import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { MANGA_WORKS, getWorkZScore } from './manga-substrate-engine';
 
-// 1. Resolve query string into typed substrate chips
-const chips = resolveQueryChips("quiet scenes with Liora · 1990s dark ink");
+test('Relational Substrate Ingestion Expectation Suite', async (t) => {
+  const blame = MANGA_WORKS.find(w => w.id === 'work_blame');
+  const z = getWorkZScore(blame);
 
-// 2. Compute exclusive emergent shelves (zero duplicate titles across rails)
-const { shelves, subChapters, outsideItems } = computeExclusiveRelationalShelves(
-  ['work_evangelion', 'work_blame', 'work_akira'],
-  chips,
-  { pace: true, space: true, color: false, closeup: false }
-);
+  // Assert BLAME! lands top-decile environmental scale and bottom-decile dialogue
+  assert.ok(z.environmentalScale >= 1.28, 'BLAME! envScale must be >= +1.28 z-score');
+  assert.ok(z.dialogueDensity <= -1.28, 'BLAME! dialogue must be <= -1.28 z-score');
 
-// 3. Render shelves with honest evidence confidence signals
-shelves.forEach(shelf => {
-  console.log(\`\${shelf.activeTitle} [\${shelf.evidenceState} · avg \${shelf.evidenceScore}%]\`);
+  // Assert Goodnight Punpun high negative space WITH high dialogue density
+  const punpun = MANGA_WORKS.find(w => w.id === 'work_goodnight_punpun');
+  const zP = getWorkZScore(punpun);
+  assert.ok(zP.negativeSpace >= 1.0 && zP.dialogueDensity >= 0.80);
 });`;
+
+const locatorCode = `// Locator translation mapping canonical page ranges across physical editions
+export function translateLocatorToEdition(locator: CanonicalLocator, format: string): string {
+  const [start, end] = locator.canonicalPageRange;
+  if (format === 'omnibus' || format === '3in1') {
+    const omniVol = Math.ceil(locator.volumeNum / 3);
+    const offset = ((locator.volumeNum - 1) % 3) * 180;
+    return \`3-in-1 Vol. \${omniVol} · pages \${start + offset}–\${end + offset}\`;
+  }
+  return \`Vol. \${locator.volumeNum} · Ch. \${locator.chapterNum ?? 1} (pp. \${start}–\${end})\`;
+}`;
 ---
 
 <Base
-  title="Relational Manga Substrate — Fundamental Engine"
-  description="Exclusive emergent shelves, 39 real manga titles, chapter-level sub-publications, query-to-chip resolver, and Fundamental Engine field tethers."
+  title="Relational Manga Substrate — Empirical Z-Scores & Measurement Signatures"
+  description="Z-score population normalization, expectation suite, measurement-derived cover signatures, surprise-accept optimization, local privacy, and canonical locators."
 >
   <SiteNav current="examples" />
 
@@ -44,9 +57,21 @@ shelves.forEach(shelf => {
     <!-- Header & Resolved Query Bar -->
     <header class="manga-sub-head">
       <div class="head-top">
-        <p class="sub-kicker">Relational Library Substrate</p>
-        <h1>MangaVerse <span class="accent">— Library, Relationally</span></h1>
-        <StatusChip label="39 Real Titles · Zero-Duplicate Exclusive Shelves" tone="demo" />
+        <p class="sub-kicker">Relational Library Substrate · Z-Score Population Engine</p>
+        <h1>MangaVerse <span class="accent">— Measurement, Relationally</span></h1>
+        <StatusChip label="39 Real Works · Z-Score Normalized · On-Device Privacy" tone="demo" />
+      </div>
+
+      <!-- Privacy & Expectation Banner -->
+      <div class="privacy-expectation-banner">
+        <div class="banner-col">
+          <span class="b-label">Privacy Assurance:</span>
+          <p>Page dwell, re-read counts, and panel pinch-zooms remain 100% on device. Zero personal telemetry leaves your browser.</p>
+        </div>
+        <div class="banner-col">
+          <span class="b-label">Falsifiable Expectation Suite:</span>
+          <p>Ingestion verified: <em>BLAME!</em> top-decile scale ($z \ge +1.28$), <em>Chainsaw Man</em> top-decile SFX, <em>Punpun</em> high space + dialogue.</p>
+        </div>
       </div>
 
       <!-- Natural Query Resolver Bar -->
@@ -69,7 +94,7 @@ shelves.forEach(shelf => {
           <button type="button" class="facet-btn" data-facet="1990s">1990s Era</button>
           <button type="button" class="facet-btn" data-facet="Cyberpunk">Cyberpunk</button>
           <button type="button" class="facet-btn" data-facet="Quiet">Quiet Pacing</button>
-          <button type="button" class="facet-btn" data-facet="Omnibus">Omnibuses</button>
+          <button type="button" id="btn-empty-toggle" class="facet-btn btn-empty-demo">Test Empty Case (Low Evidence)</button>
         </div>
 
         <!-- Resolved Chips Bar -->
@@ -88,50 +113,21 @@ shelves.forEach(shelf => {
       <div class="sec-head-row">
         <div>
           <span class="sec-kicker">Deterministic · User Session Input</span>
-          <h2>Recently read</h2>
-          <p class="sec-desc">Four sessions form the input. Everything below is a projection of what they observed—pacing, panel scale, dialogue density, casts, places—not a genre lookup.</p>
+          <h2>Recently read (Generated Measurement Signatures)</h2>
+          <p class="sec-desc">Covers are visual signatures generated directly from observations (panel grid density, ink darkness, negative space margins). No scanned jacket images.</p>
         </div>
       </div>
       <div class="recent-grid">
-        <article class="recent-card" data-body="attract" data-strength="1.1" data-feedback>
-          <span class="recent-cover" style="background: linear-gradient(135deg, #1e1b4b, #312e81);"></span>
-          <div class="recent-info">
-            <h3>Neon Genesis Evangelion</h3>
-            <span class="recent-meta">Vol. 12 · Stage 77-83</span>
-            <div class="progress-bar-wrap"><span class="progress-fill" style="width: 63%;"></span></div>
-            <div class="recent-footer"><span>63% read</span><span>2h ago</span></div>
-          </div>
-        </article>
-
-        <article class="recent-card" data-body="attract" data-strength="1.1" data-feedback>
-          <span class="recent-cover" style="background: linear-gradient(135deg, #022c22, #065f46);"></span>
-          <div class="recent-info">
-            <h3>BLAME!</h3>
-            <span class="recent-meta">Vol. 1 · Log 2</span>
-            <div class="progress-bar-wrap"><span class="progress-fill" style="width: 38%;"></span></div>
-            <div class="recent-footer"><span>38% read</span><span>Yesterday</span></div>
-          </div>
-        </article>
-
-        <article class="recent-card" data-body="attract" data-strength="1.1" data-feedback>
-          <span class="recent-cover" style="background: linear-gradient(135deg, #451a03, #78350f);"></span>
-          <div class="recent-info">
-            <h3>AKIRA</h3>
-            <span class="recent-meta">Vol. 1 · Ch. 1-4</span>
-            <div class="progress-bar-wrap"><span class="progress-fill" style="width: 81%;"></span></div>
-            <div class="recent-footer"><span>81% read</span><span>2 days ago</span></div>
-          </div>
-        </article>
-
-        <article class="recent-card" data-body="attract" data-strength="1.1" data-feedback>
-          <span class="recent-cover" style="background: linear-gradient(135deg, #311b92, #4a148c);"></span>
-          <div class="recent-info">
-            <h3>Berserk</h3>
-            <span class="recent-meta">Vol. 13 · The Eclipse</span>
-            <div class="progress-bar-wrap"><span class="progress-fill" style="width: 94%;"></span></div>
-            <div class="recent-footer"><span>94% read</span><span>3 days ago</span></div>
-          </div>
-        </article>
+        {MANGA_WORKS.filter(w => defaultRecent.includes(w.id)).map(work => (
+          <article class="recent-card" data-body="attract" data-strength="1.1" data-feedback>
+            <div class="measurement-cover-wrap" set:html={generateMeasurementSvg(work.rawVector, 260, 110)} />
+            <div class="recent-info">
+              <h3>{work.title}</h3>
+              <span class="recent-meta">{work.author} · {work.yr}</span>
+              <span class="revision-tag">{work.measuredRevision || 'Canonical Edition'}</span>
+            </div>
+          </article>
+        ))}
       </div>
     </section>
 
@@ -139,15 +135,15 @@ shelves.forEach(shelf => {
     <section class="docs-sec" id="continue-mood">
       <div class="sec-head-row">
         <div>
-          <span class="sec-kicker">Sub-publication · Specific Chapter Ranges</span>
+          <span class="sec-kicker">Sub-publication · Normalized Edition Locators</span>
           <h2>Continue this mood</h2>
-          <p class="sec-desc">Not whole books—the specific chapters that sit in the same semantic neighborhood as your last session. A volume can appear here for forty pages and nowhere else.</p>
+          <p class="sec-desc">Canonical locators translated to edition-specific page ranges. Survives omnibus and single volume edition swaps.</p>
         </div>
       </div>
       <div class="chapters-grid" id="chapters-rail">
         {initialChapters.map((ch) => (
           <article class="chapter-card" data-body="attract" data-strength="0.8" data-feedback tabindex="0">
-            <span class="chapter-cover" style="background: linear-gradient(135deg, #0f172a, #1e293b);"></span>
+            <div class="measurement-cover-wrap" set:html={generateMeasurementSvg(ch.work.rawVector, 220, 80)} />
             <div class="chapter-content">
               <span class="chapter-locator">{ch.explanation.matchingPageRange}</span>
               <h3>{ch.work.title}</h3>
@@ -161,7 +157,7 @@ shelves.forEach(shelf => {
     <!-- Section Separator -->
     <div class="substrate-divider">
       <span class="divider-line"></span>
-      <span class="divider-label">Your Library, Relationally (Zero Duplicates)</span>
+      <span class="divider-label">Exclusive Emergent Shelves (Z-Score Population Normalized)</span>
       <span class="divider-line"></span>
     </div>
 
@@ -179,12 +175,14 @@ shelves.forEach(shelf => {
           <header class="shelf-rail-head">
             <div class="shelf-head-title">
               <div class="shelf-badge-row">
-                <span class="gen-dim-label">{shelf.generatedLabel}</span>
                 <span class={`evidence-chip state-${shelf.evidenceState}`}>
-                  {shelf.evidenceState === 'new' ? 'new this week' : shelf.evidenceState === 'steady' ? 'steady' : 'fading evidence'} · {shelf.evidenceScore}% score
+                  {shelf.evidenceState === 'new' ? 'new this week' : shelf.evidenceState === 'steady' ? 'steady' : 'fading evidence'} · {shelf.evidenceScore}% z-score
                 </span>
+                <span class="surprise-accept-tag">Surprise-Accept Optimized</span>
               </div>
               <h2 class="active-title">{shelf.activeTitle}</h2>
+              <!-- Machine description PERMANENTLY VISIBLE below editorial title -->
+              <p class="permanent-machine-sub"><span class="sub-lead">Substrate signal:</span> {shelf.generatedLabel.toUpperCase()}</p>
               <p class="shelf-sub">{shelf.subtitle}</p>
             </div>
 
@@ -211,9 +209,11 @@ shelves.forEach(shelf => {
                 data-work-id={item.work.id}
                 tabindex="0"
               >
-                <span class="card-cover-art" style="background: linear-gradient(135deg, #111827, #1f2937);">
-                  <span class="match-score-badge">{item.matchScore}%</span>
-                </span>
+                <!-- Measurement Visual Cover Signature -->
+                <div class="measurement-cover-wrap card-cover-measurement" set:html={generateMeasurementSvg(item.work.rawVector, 200, 95)}>
+                  <span class="match-score-badge">{item.matchScore}% match</span>
+                </div>
+
                 <div class="card-body">
                   <h3>{item.work.title}</h3>
                   <span class="card-meta">{item.work.author} · {item.work.yr || 2020}</span>
@@ -223,6 +223,9 @@ shelves.forEach(shelf => {
                     {item.explanation.held.map((h) => (
                       <span class="tag-h">{h}</span>
                     ))}
+                    {item.surpriseAcceptScore && (
+                      <span class="tag-surprise">surprise: +{item.surpriseAcceptScore}%</span>
+                    )}
                   </div>
 
                   <div class="card-provenance-line">
@@ -240,14 +243,14 @@ shelves.forEach(shelf => {
     <section id="outside-usual" class="outside-usual-sec" data-body="repel" data-strength="0.8" data-range="300">
       <div class="outside-inner">
         <div class="outside-text">
-          <span class="outside-kicker">Deliberately Distant · One Anchor Held</span>
+          <span class="outside-kicker">Surprise-Accept Optimized · Anti-Filter Bubble</span>
           <h2>Outside your usual</h2>
-          <p>Works positioned furthest from your reading centroid in vector space while retaining one fundamental structural anchor.</p>
+          <p>Works sharing zero genre or author overlap while maintaining vector pacing alignment. Rewards surprise acceptance and penalizes recommendations in a loop.</p>
         </div>
         <div class="outside-cards-grid">
           {initialOutside.map((item) => (
             <article class="outside-card" data-body="attract" data-strength="0.6" data-feedback>
-              <span class="outside-cover" style="background: linear-gradient(135deg, #311b92, #1a237e);"></span>
+              <div class="measurement-cover-wrap" set:html={generateMeasurementSvg(item.work.rawVector, 200, 85)} />
               <div class="outside-info">
                 <h3>{item.work.title}</h3>
                 <span class="outside-meta">{item.work.author} · {item.work.publisher}</span>
@@ -260,9 +263,12 @@ shelves.forEach(shelf => {
 
     <!-- Code Architecture Section -->
     <section class="manga-code-section">
-      <h2>Pipeline &amp; Substrate Query Architecture</h2>
-      <p>Exclusive allocation engine computing multi-dimensional vector distances and evidence states.</p>
-      <CodeTabs variants={[{ label: 'Substrate Pipeline', lang: 'ts', code: pipelineCode }]} />
+      <h2>Expectation Suite &amp; Locator Architecture</h2>
+      <p>Automated ingestion assertions and canonical locator translation across editions.</p>
+      <CodeTabs variants={[
+        { label: 'Expectation Suite Test', lang: 'ts', code: expectationSuiteCode },
+        { label: 'Locator Translator', lang: 'ts', code: locatorCode }
+      ]} />
     </section>
 
     <!-- Navigation Footer -->
@@ -277,17 +283,17 @@ shelves.forEach(shelf => {
 </Base>
 
 <script is:inline>
-  // Interactive State & Query Resolver Script
   const initSubstratePage = () => {
     const input = document.getElementById('query-input');
     const resolveBtn = document.getElementById('btn-resolve');
     const clearBtn = document.getElementById('btn-clear-query');
     const chipsBar = document.getElementById('chips-list');
     const facetBtns = document.querySelectorAll('[data-facet]');
+    const emptyToggle = document.getElementById('btn-empty-toggle');
+    const shelvesRail = id = document.getElementById('shelves-rail');
     const shell = document.querySelector('.manga-substrate-shell');
 
-    let activeFacet = 'All';
-    let activeQuery = '';
+    let isEmptyMode = false;
 
     const triggerTransition = () => {
       if (shell) {
@@ -302,15 +308,33 @@ shelves.forEach(shelf => {
       btn.addEventListener('click', () => {
         facetBtns.forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
-        activeFacet = btn.getAttribute('data-facet') || 'All';
         triggerTransition();
       });
     });
 
+    emptyToggle?.addEventListener('click', () => {
+      isEmptyMode = !isEmptyMode;
+      if (emptyToggle) emptyToggle.classList.toggle('active', isEmptyMode);
+      if (shelvesRail) {
+        if (isEmptyMode) {
+          shelvesRail.innerHTML = `
+            <div class="empty-shelf-notice">
+              <span class="empty-icon">⚠</span>
+              <h2>No Emergent Shelf Earned Its Place Today</h2>
+              <p>Substrate evidence scores fell below confidence threshold (z < +0.50). Showing plain collection without forced poetic titles.</p>
+            </div>
+          `;
+        } else {
+          window.location.reload();
+        }
+      }
+      triggerTransition();
+    });
+
     resolveBtn?.addEventListener('click', () => {
-      activeQuery = input.value;
-      if (chipsBar && activeQuery) {
-        chipsBar.innerHTML = `<span class="resolved-chip">query: "${activeQuery}"</span>`;
+      const q = input?.value;
+      if (chipsBar && q) {
+        chipsBar.innerHTML = `<span class="resolved-chip">query: "${q}"</span>`;
         if (clearBtn) clearBtn.style.display = 'inline-block';
       }
       triggerTransition();
@@ -362,6 +386,32 @@ shelves.forEach(shelf => {
     margin: 0 0 1rem;
   }
 
+  /* Privacy & Expectation Banner */
+  .privacy-expectation-banner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    margin: 1.25rem 0;
+  }
+  @media (max-width: 768px) { .privacy-expectation-banner { grid-template-columns: 1fr; } }
+  .b-label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #10b981;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .privacy-expectation-banner p {
+    font-size: 0.82rem;
+    color: var(--text-2);
+    margin: 0.2rem 0 0;
+  }
+
   /* Query Resolver Card */
   .query-resolver-card {
     padding: 1.25rem;
@@ -404,10 +454,6 @@ shelves.forEach(shelf => {
     background: var(--accent);
     color: #fff;
     cursor: pointer;
-    transition: opacity 0.2s ease;
-  }
-  .btn-resolve:hover {
-    opacity: 0.9;
   }
 
   /* Facets Row */
@@ -426,12 +472,15 @@ shelves.forEach(shelf => {
     background: rgba(255, 255, 255, 0.03);
     color: var(--text-3);
     cursor: pointer;
-    transition: all 0.2s ease;
   }
   .facet-btn:hover, .facet-btn.active {
     color: #fff;
     border-color: var(--accent);
     background: color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+  .btn-empty-demo {
+    border-color: #f59e0b;
+    color: #f59e0b;
   }
 
   /* Chips Resolved Bar */
@@ -500,6 +549,18 @@ shelves.forEach(shelf => {
     margin: 0;
   }
 
+  /* Measurement Cover Wrap */
+  .measurement-cover-wrap {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .measurement-cover-wrap svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
   /* Recent Grid */
   .recent-grid {
     display: grid;
@@ -516,48 +577,34 @@ shelves.forEach(shelf => {
     display: flex;
     flex-direction: column;
   }
-  .recent-cover {
-    height: 90px;
-    display: block;
-  }
   .recent-info {
-    padding: 1rem;
+    padding: 0.85rem;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.25rem;
   }
   .recent-info h3 {
     font-family: var(--display);
-    font-size: 1rem;
+    font-size: 0.95rem;
     margin: 0;
   }
   .recent-meta {
     font-family: var(--mono);
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     color: var(--text-4);
   }
-  .progress-bar-wrap {
-    height: 4px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    overflow: hidden;
-    margin-top: 0.25rem;
-  }
-  .progress-fill {
-    display: block;
-    height: 100%;
-    background: var(--accent);
-  }
-  .recent-footer {
-    display: flex;
-    justify-content: space-between;
+  .revision-tag {
     font-family: var(--mono);
-    font-size: 0.65rem;
-    color: var(--text-4);
+    font-size: 0.6rem;
+    color: var(--accent);
+    background: rgba(56, 201, 234, 0.08);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    width: fit-content;
     margin-top: 0.2rem;
   }
 
-  /* Chapters Rail */
+  /* Chapters Grid */
   .chapters-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -568,31 +615,26 @@ shelves.forEach(shelf => {
   .chapter-card {
     display: flex;
     flex-direction: column;
-    padding: 1rem;
+    padding: 0.85rem;
     border-radius: 12px;
     background: var(--bg-card, #0b0e16);
     border: 1px solid var(--line);
-  }
-  .chapter-cover {
-    height: 70px;
-    border-radius: 6px;
-    margin-bottom: 0.75rem;
   }
   .chapter-locator {
     font-family: var(--mono);
     font-size: 0.68rem;
     text-transform: uppercase;
     color: var(--accent);
-    margin-bottom: 0.25rem;
+    margin: 0.5rem 0 0.2rem;
     display: block;
   }
   .chapter-card h3 {
     font-family: var(--display);
-    font-size: 0.98rem;
+    font-size: 0.95rem;
     margin: 0 0 0.3rem;
   }
   .chapter-mood {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--text-3);
     margin: 0;
   }
@@ -643,13 +685,6 @@ shelves.forEach(shelf => {
     gap: 0.75rem;
     margin-bottom: 0.35rem;
   }
-  .gen-dim-label {
-    font-family: var(--mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent);
-  }
   .evidence-chip {
     font-family: var(--mono);
     font-size: 0.62rem;
@@ -671,10 +706,30 @@ shelves.forEach(shelf => {
     background: rgba(245, 158, 11, 0.12);
     border: 1px solid rgba(245, 158, 11, 0.3);
   }
+  .surprise-accept-tag {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: #a855f7;
+    background: rgba(168, 85, 247, 0.12);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+  }
   .active-title {
     font-family: var(--display);
     font-size: 1.35rem;
-    margin: 0 0 0.2rem;
+    margin: 0 0 0.1rem;
+  }
+  .permanent-machine-sub {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin: 0 0 0.3rem;
+  }
+  .sub-lead {
+    color: var(--text-4);
+    text-transform: uppercase;
   }
   .shelf-sub {
     font-size: 0.85rem;
@@ -719,31 +774,23 @@ shelves.forEach(shelf => {
   @media (max-width: 1024px) { .shelf-cards-scroll { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 640px) { .shelf-cards-scroll { grid-template-columns: 1fr; } }
   .manga-exclusive-card {
-    --field-density: 0;
     display: flex;
     flex-direction: column;
-    padding: 1.1rem;
+    padding: 0.85rem;
     border-radius: 12px;
     background: var(--bg-card, #0b0e16);
-    border: 1px solid color-mix(in srgb, var(--accent) calc(20% + var(--field-density) * 60%), var(--line));
-    box-shadow: 0 4px 18px rgba(0, 0, 0, calc(0.2 + var(--field-density) * 0.4)),
-                0 0 14px color-mix(in srgb, var(--accent) calc(var(--field-density) * 50%), transparent);
-    transform: scale(calc(1 + var(--field-density) * 0.025));
-    transition: transform 0.25s var(--ease), border-color 0.25s, box-shadow 0.25s;
-    outline: none;
+    border: 1px solid var(--line);
   }
-  .card-cover-art {
-    height: 80px;
-    border-radius: 6px;
+  .card-cover-measurement {
     position: relative;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.65rem;
   }
   .match-score-badge {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 6px;
+    right: 6px;
     font-family: var(--mono);
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 700;
     color: #10b981;
     background: rgba(2, 6, 23, 0.85);
@@ -752,42 +799,75 @@ shelves.forEach(shelf => {
   }
   .card-body h3 {
     font-family: var(--display);
-    font-size: 0.98rem;
+    font-size: 0.95rem;
     margin: 0 0 0.2rem;
   }
   .card-meta {
     font-family: var(--mono);
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     color: var(--text-4);
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
   }
   .card-why {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     color: var(--text-3);
-    line-height: 1.4;
-    margin: 0 0 0.6rem;
+    line-height: 1.35;
+    margin: 0 0 0.5rem;
   }
   .card-held-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.3rem;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.5rem;
   }
   .tag-h {
     font-family: var(--mono);
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     padding: 0.1rem 0.35rem;
     border-radius: 3px;
     color: var(--accent);
     background: rgba(77, 163, 255, 0.08);
   }
-  .card-provenance-line {
+  .tag-surprise {
     font-family: var(--mono);
     font-size: 0.58rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    color: #a855f7;
+    background: rgba(168, 85, 247, 0.1);
+  }
+  .card-provenance-line {
+    font-family: var(--mono);
+    font-size: 0.56rem;
     color: var(--text-4);
     padding-top: 0.4rem;
     border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  }
+
+  /* Empty Shelf Notice */
+  .empty-shelf-notice {
+    text-align: center;
+    padding: 4rem 2rem;
+    border-radius: 16px;
+    background: rgba(245, 158, 11, 0.06);
+    border: 1px dashed rgba(245, 158, 11, 0.3);
+  }
+  .empty-icon {
+    font-size: 2rem;
+    color: #f59e0b;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .empty-shelf-notice h2 {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    margin: 0 0 0.5rem;
+  }
+  .empty-shelf-notice p {
+    color: var(--text-3);
+    max-width: 50ch;
+    margin: 0 auto;
   }
 
   /* Outside Usual Section */
@@ -834,10 +914,6 @@ shelves.forEach(shelf => {
     background: var(--bg-card, #0b0e16);
     border: 1px solid var(--line);
     overflow: hidden;
-  }
-  .outside-cover {
-    height: 75px;
-    display: block;
   }
   .outside-info {
     padding: 0.75rem;
