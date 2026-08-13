@@ -1,0 +1,886 @@
+---
+import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import StatusChip from '../components/StatusChip.astro';
+import CodeTabs from '../components/CodeTabs.astro';
+import { 
+  MANGA_WORKS, 
+  computeExclusiveRelationalShelves, 
+  type ShelfResult, 
+  type MangaWork,
+  type ShelfItem
+} from '../lib/manga-substrate-engine.ts';
+import '../styles/docs.css';
+
+const defaultRecent = ['work_evangelion', 'work_blame', 'work_akira', 'work_berserk'];
+const { shelves: initialShelves, outsideItems: initialOutside, subChapters: initialChapters } = computeExclusiveRelationalShelves(defaultRecent);
+
+const pipelineCode = `import { computeExclusiveRelationalShelves, resolveQueryChips } from './manga-substrate-engine';
+
+// 1. Resolve query string into typed substrate chips
+const chips = resolveQueryChips("quiet scenes with Liora · 1990s dark ink");
+
+// 2. Compute exclusive emergent shelves (zero duplicate titles across rails)
+const { shelves, subChapters, outsideItems } = computeExclusiveRelationalShelves(
+  ['work_evangelion', 'work_blame', 'work_akira'],
+  chips,
+  { pace: true, space: true, color: false, closeup: false }
+);
+
+// 3. Render shelves with honest evidence confidence signals
+shelves.forEach(shelf => {
+  console.log(\`\${shelf.activeTitle} [\${shelf.evidenceState} · avg \${shelf.evidenceScore}%]\`);
+});`;
+---
+
+<Base
+  title="Relational Manga Substrate — Fundamental Engine"
+  description="Exclusive emergent shelves, 39 real manga titles, chapter-level sub-publications, query-to-chip resolver, and Fundamental Engine field tethers."
+>
+  <SiteNav current="examples" />
+
+  <main id="main" class="manga-substrate-shell" data-phase="in">
+    <!-- Header & Resolved Query Bar -->
+    <header class="manga-sub-head">
+      <div class="head-top">
+        <p class="sub-kicker">Relational Library Substrate</p>
+        <h1>MangaVerse <span class="accent">— Library, Relationally</span></h1>
+        <StatusChip label="39 Real Titles · Zero-Duplicate Exclusive Shelves" tone="demo" />
+      </div>
+
+      <!-- Natural Query Resolver Bar -->
+      <div class="query-resolver-card">
+        <div class="query-input-wrap">
+          <span class="query-icon">/</span>
+          <input 
+            type="text" 
+            id="query-input" 
+            placeholder="quiet scenes with Liora · dark 1990s · unusual layouts · Otomo" 
+            aria-label="Query library substrate"
+          />
+          <button type="button" id="btn-resolve" class="btn-resolve">resolve query</button>
+        </div>
+
+        <!-- Facets Bar -->
+        <div class="facets-row">
+          <button type="button" class="facet-btn active" data-facet="All">All (39)</button>
+          <button type="button" class="facet-btn" data-facet="Series">Series</button>
+          <button type="button" class="facet-btn" data-facet="1990s">1990s Era</button>
+          <button type="button" class="facet-btn" data-facet="Cyberpunk">Cyberpunk</button>
+          <button type="button" class="facet-btn" data-facet="Quiet">Quiet Pacing</button>
+          <button type="button" class="facet-btn" data-facet="Omnibus">Omnibuses</button>
+        </div>
+
+        <!-- Resolved Chips Bar -->
+        <div class="chips-resolved-bar" id="chips-bar">
+          <span class="chips-label">Resolved query:</span>
+          <div class="chips-list" id="chips-list">
+            <span class="empty-chips">Type terms above or click a facet to resolve query chips</span>
+          </div>
+          <button type="button" id="btn-clear-query" class="btn-clear-query" style="display:none;">clear all</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Deterministic Input: Recently Read -->
+    <section class="docs-sec" id="recently-read">
+      <div class="sec-head-row">
+        <div>
+          <span class="sec-kicker">Deterministic · User Session Input</span>
+          <h2>Recently read</h2>
+          <p class="sec-desc">Four sessions form the input. Everything below is a projection of what they observed—pacing, panel scale, dialogue density, casts, places—not a genre lookup.</p>
+        </div>
+      </div>
+      <div class="recent-grid">
+        <article class="recent-card" data-body="attract" data-strength="1.1" data-feedback>
+          <span class="recent-cover" style="background: linear-gradient(135deg, #1e1b4b, #312e81);"></span>
+          <div class="recent-info">
+            <h3>Neon Genesis Evangelion</h3>
+            <span class="recent-meta">Vol. 12 · Stage 77-83</span>
+            <div class="progress-bar-wrap"><span class="progress-fill" style="width: 63%;"></span></div>
+            <div class="recent-footer"><span>63% read</span><span>2h ago</span></div>
+          </div>
+        </article>
+
+        <article class="recent-card" data-body="attract" data-strength="1.1" data-feedback>
+          <span class="recent-cover" style="background: linear-gradient(135deg, #022c22, #065f46);"></span>
+          <div class="recent-info">
+            <h3>BLAME!</h3>
+            <span class="recent-meta">Vol. 1 · Log 2</span>
+            <div class="progress-bar-wrap"><span class="progress-fill" style="width: 38%;"></span></div>
+            <div class="recent-footer"><span>38% read</span><span>Yesterday</span></div>
+          </div>
+        </article>
+
+        <article class="recent-card" data-body="attract" data-strength="1.1" data-feedback>
+          <span class="recent-cover" style="background: linear-gradient(135deg, #451a03, #78350f);"></span>
+          <div class="recent-info">
+            <h3>AKIRA</h3>
+            <span class="recent-meta">Vol. 1 · Ch. 1-4</span>
+            <div class="progress-bar-wrap"><span class="progress-fill" style="width: 81%;"></span></div>
+            <div class="recent-footer"><span>81% read</span><span>2 days ago</span></div>
+          </div>
+        </article>
+
+        <article class="recent-card" data-body="attract" data-strength="1.1" data-feedback>
+          <span class="recent-cover" style="background: linear-gradient(135deg, #311b92, #4a148c);"></span>
+          <div class="recent-info">
+            <h3>Berserk</h3>
+            <span class="recent-meta">Vol. 13 · The Eclipse</span>
+            <div class="progress-bar-wrap"><span class="progress-fill" style="width: 94%;"></span></div>
+            <div class="recent-footer"><span>94% read</span><span>3 days ago</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Sub-Publication Rail: Continue This Mood -->
+    <section class="docs-sec" id="continue-mood">
+      <div class="sec-head-row">
+        <div>
+          <span class="sec-kicker">Sub-publication · Specific Chapter Ranges</span>
+          <h2>Continue this mood</h2>
+          <p class="sec-desc">Not whole books—the specific chapters that sit in the same semantic neighborhood as your last session. A volume can appear here for forty pages and nowhere else.</p>
+        </div>
+      </div>
+      <div class="chapters-grid" id="chapters-rail">
+        {initialChapters.map((ch) => (
+          <article class="chapter-card" data-body="attract" data-strength="0.8" data-feedback tabindex="0">
+            <span class="chapter-cover" style="background: linear-gradient(135deg, #0f172a, #1e293b);"></span>
+            <div class="chapter-content">
+              <span class="chapter-locator">{ch.explanation.matchingPageRange}</span>
+              <h3>{ch.work.title}</h3>
+              <p class="chapter-mood">{ch.explanation.why}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- Section Separator -->
+    <div class="substrate-divider">
+      <span class="divider-line"></span>
+      <span class="divider-label">Your Library, Relationally (Zero Duplicates)</span>
+      <span class="divider-line"></span>
+    </div>
+
+    <!-- Exclusive Emergent Shelves Rails -->
+    <div class="exclusive-shelves-list" id="shelves-rail">
+      {initialShelves.map((shelf) => (
+        <section 
+          id={`shelf-${shelf.id}`} 
+          class="shelf-rail-card" 
+          data-body="well" 
+          data-strength="1.3" 
+          data-range="400"
+          data-evidence={shelf.evidenceState}
+        >
+          <header class="shelf-rail-head">
+            <div class="shelf-head-title">
+              <div class="shelf-badge-row">
+                <span class="gen-dim-label">{shelf.generatedLabel}</span>
+                <span class={`evidence-chip state-${shelf.evidenceState}`}>
+                  {shelf.evidenceState === 'new' ? 'new this week' : shelf.evidenceState === 'steady' ? 'steady' : 'fading evidence'} · {shelf.evidenceScore}% score
+                </span>
+              </div>
+              <h2 class="active-title">{shelf.activeTitle}</h2>
+              <p class="shelf-sub">{shelf.subtitle}</p>
+            </div>
+
+            {shelf.counterfactual && (
+              <div class="counterfactual-controls">
+                <span class="cf-label">Hold:</span>
+                <button type="button" class="cf-btn active" data-hold="pace">slow pacing</button>
+                <button type="button" class="cf-btn active" data-hold="space">wide panels</button>
+                <button type="button" class="cf-btn" data-hold="color">colour</button>
+                <button type="button" class="cf-btn" data-hold="closeup">close-ups</button>
+              </div>
+            )}
+          </header>
+
+          <div class="shelf-cards-scroll">
+            {shelf.items.map((item) => (
+              <article 
+                id={`card-${shelf.id}-${item.work.id}`} 
+                class="manga-exclusive-card" 
+                data-body="attract" 
+                data-strength="0.75" 
+                data-range="240" 
+                data-feedback 
+                data-work-id={item.work.id}
+                tabindex="0"
+              >
+                <span class="card-cover-art" style="background: linear-gradient(135deg, #111827, #1f2937);">
+                  <span class="match-score-badge">{item.matchScore}%</span>
+                </span>
+                <div class="card-body">
+                  <h3>{item.work.title}</h3>
+                  <span class="card-meta">{item.work.author} · {item.work.yr || 2020}</span>
+                  <p class="card-why">{item.explanation.why}</p>
+                  
+                  <div class="card-held-tags">
+                    {item.explanation.held.map((h) => (
+                      <span class="tag-h">{h}</span>
+                    ))}
+                  </div>
+
+                  <div class="card-provenance-line">
+                    <span>{item.explanation.provenance}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+
+    <!-- Outside Your Usual Section -->
+    <section id="outside-usual" class="outside-usual-sec" data-body="repel" data-strength="0.8" data-range="300">
+      <div class="outside-inner">
+        <div class="outside-text">
+          <span class="outside-kicker">Deliberately Distant · One Anchor Held</span>
+          <h2>Outside your usual</h2>
+          <p>Works positioned furthest from your reading centroid in vector space while retaining one fundamental structural anchor.</p>
+        </div>
+        <div class="outside-cards-grid">
+          {initialOutside.map((item) => (
+            <article class="outside-card" data-body="attract" data-strength="0.6" data-feedback>
+              <span class="outside-cover" style="background: linear-gradient(135deg, #311b92, #1a237e);"></span>
+              <div class="outside-info">
+                <h3>{item.work.title}</h3>
+                <span class="outside-meta">{item.work.author} · {item.work.publisher}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Code Architecture Section -->
+    <section class="manga-code-section">
+      <h2>Pipeline &amp; Substrate Query Architecture</h2>
+      <p>Exclusive allocation engine computing multi-dimensional vector distances and evidence states.</p>
+      <CodeTabs variants={[{ label: 'Substrate Pipeline', lang: 'ts', code: pipelineCode }]} />
+    </section>
+
+    <!-- Navigation Footer -->
+    <nav class="manga-nav-footer">
+      <a href="/examples">← Back to All Live Examples</a>
+      <a href="/relational-publications">View Relational Publications Demo →</a>
+      <a href="/docs/concepts">Read Substrate Architecture Docs →</a>
+    </nav>
+  </main>
+
+  <SiteFooter />
+</Base>
+
+<script is:inline>
+  // Interactive State & Query Resolver Script
+  const initSubstratePage = () => {
+    const input = document.getElementById('query-input');
+    const resolveBtn = document.getElementById('btn-resolve');
+    const clearBtn = document.getElementById('btn-clear-query');
+    const chipsBar = document.getElementById('chips-list');
+    const facetBtns = document.querySelectorAll('[data-facet]');
+    const shell = document.querySelector('.manga-substrate-shell');
+
+    let activeFacet = 'All';
+    let activeQuery = '';
+
+    const triggerTransition = () => {
+      if (shell) {
+        shell.setAttribute('data-phase', 'out');
+        setTimeout(() => {
+          shell.setAttribute('data-phase', 'in');
+        }, 180);
+      }
+    };
+
+    facetBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        facetBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFacet = btn.getAttribute('data-facet') || 'All';
+        triggerTransition();
+      });
+    });
+
+    resolveBtn?.addEventListener('click', () => {
+      activeQuery = input.value;
+      if (chipsBar && activeQuery) {
+        chipsBar.innerHTML = `<span class="resolved-chip">query: "${activeQuery}"</span>`;
+        if (clearBtn) clearBtn.style.display = 'inline-block';
+      }
+      triggerTransition();
+    });
+
+    clearBtn?.addEventListener('click', () => {
+      if (input) input.value = '';
+      if (chipsBar) chipsBar.innerHTML = `<span class="empty-chips">Type terms above or click a facet to resolve query chips</span>`;
+      if (clearBtn) clearBtn.style.display = 'none';
+      triggerTransition();
+    });
+  };
+
+  if (document.readyState !== 'loading') initSubstratePage();
+  else document.addEventListener('DOMContentLoaded', initSubstratePage);
+  document.addEventListener('astro:page-load', initSubstratePage);
+</script>
+
+<style>
+  .manga-substrate-shell {
+    max-width: var(--content-max, 1180px);
+    margin: 0 auto;
+    padding: calc(58px + 2.5rem) clamp(1.25rem, 4vw, 2rem) 6rem;
+    position: relative;
+    z-index: 2;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .manga-substrate-shell[data-phase="out"] {
+    opacity: 0.25;
+    transform: scale(0.995);
+  }
+  .manga-substrate-shell[data-phase="in"] {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .sub-kicker {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--accent) 75%, var(--text-3));
+    margin: 0 0 0.5rem;
+  }
+  .manga-sub-head h1 {
+    font-family: var(--display);
+    font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+  }
+
+  /* Query Resolver Card */
+  .query-resolver-card {
+    padding: 1.25rem;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--line);
+    margin: 1.5rem 0 2.5rem;
+  }
+  .query-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    background: rgba(2, 6, 23, 0.8);
+    border: 1px solid var(--line);
+    margin-bottom: 1rem;
+  }
+  .query-icon {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--text-4);
+  }
+  .query-input-wrap input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 0.9rem;
+  }
+  .btn-resolve {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+  .btn-resolve:hover {
+    opacity: 0.9;
+  }
+
+  /* Facets Row */
+  .facets-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .facet-btn {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .facet-btn:hover, .facet-btn.active {
+    color: #fff;
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  /* Chips Resolved Bar */
+  .chips-resolved-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--line);
+  }
+  .chips-label {
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.65rem;
+  }
+  .chips-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    flex: 1;
+  }
+  .empty-chips {
+    color: var(--text-4);
+    font-style: italic;
+  }
+  .resolved-chip {
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    color: var(--accent);
+  }
+  .btn-clear-query {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--text-3);
+    cursor: pointer;
+  }
+
+  /* Section Styles */
+  .sec-head-row {
+    margin-bottom: 1.25rem;
+  }
+  .sec-kicker {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-4);
+  }
+  .sec-head-row h2 {
+    font-family: var(--display);
+    font-size: 1.4rem;
+    margin: 0.2rem 0 0.4rem;
+  }
+  .sec-desc {
+    font-size: 0.88rem;
+    color: var(--text-3);
+    margin: 0;
+  }
+
+  /* Recent Grid */
+  .recent-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+  @media (max-width: 860px) { .recent-grid { grid-template-columns: repeat(2, 1fr); } }
+  .recent-card {
+    border-radius: 12px;
+    background: var(--bg-card, #0b0e16);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .recent-cover {
+    height: 90px;
+    display: block;
+  }
+  .recent-info {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .recent-info h3 {
+    font-family: var(--display);
+    font-size: 1rem;
+    margin: 0;
+  }
+  .recent-meta {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-4);
+  }
+  .progress-bar-wrap {
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    margin-top: 0.25rem;
+  }
+  .progress-fill {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+  }
+  .recent-footer {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-4);
+    margin-top: 0.2rem;
+  }
+
+  /* Chapters Rail */
+  .chapters-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+  @media (max-width: 860px) { .chapters-grid { grid-template-columns: repeat(2, 1fr); } }
+  .chapter-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    border-radius: 12px;
+    background: var(--bg-card, #0b0e16);
+    border: 1px solid var(--line);
+  }
+  .chapter-cover {
+    height: 70px;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+  .chapter-locator {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+    display: block;
+  }
+  .chapter-card h3 {
+    font-family: var(--display);
+    font-size: 0.98rem;
+    margin: 0 0 0.3rem;
+  }
+  .chapter-mood {
+    font-size: 0.8rem;
+    color: var(--text-3);
+    margin: 0;
+  }
+
+  /* Substrate Divider */
+  .substrate-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 3.5rem 0 2.5rem;
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .divider-label {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  /* Exclusive Shelves */
+  .exclusive-shelves-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+  .shelf-rail-card {
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+  }
+  .shelf-rail-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+  }
+  .shelf-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.35rem;
+  }
+  .gen-dim-label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .evidence-chip {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+  }
+  .evidence-chip.state-new {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  .evidence-chip.state-steady {
+    color: #38c9ea;
+    background: rgba(56, 201, 234, 0.12);
+    border: 1px solid rgba(56, 201, 234, 0.3);
+  }
+  .evidence-chip.state-fading {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+  .active-title {
+    font-family: var(--display);
+    font-size: 1.35rem;
+    margin: 0 0 0.2rem;
+  }
+  .shelf-sub {
+    font-size: 0.85rem;
+    color: var(--text-3);
+    margin: 0;
+  }
+
+  /* Counterfactual Controls */
+  .counterfactual-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .cf-label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--text-4);
+    text-transform: uppercase;
+  }
+  .cf-btn {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--text-3);
+    cursor: pointer;
+  }
+  .cf-btn.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+
+  /* Shelf Cards Scroll Row */
+  .shelf-cards-scroll {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 1024px) { .shelf-cards-scroll { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .shelf-cards-scroll { grid-template-columns: 1fr; } }
+  .manga-exclusive-card {
+    --field-density: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 1.1rem;
+    border-radius: 12px;
+    background: var(--bg-card, #0b0e16);
+    border: 1px solid color-mix(in srgb, var(--accent) calc(20% + var(--field-density) * 60%), var(--line));
+    box-shadow: 0 4px 18px rgba(0, 0, 0, calc(0.2 + var(--field-density) * 0.4)),
+                0 0 14px color-mix(in srgb, var(--accent) calc(var(--field-density) * 50%), transparent);
+    transform: scale(calc(1 + var(--field-density) * 0.025));
+    transition: transform 0.25s var(--ease), border-color 0.25s, box-shadow 0.25s;
+    outline: none;
+  }
+  .card-cover-art {
+    height: 80px;
+    border-radius: 6px;
+    position: relative;
+    margin-bottom: 0.75rem;
+  }
+  .match-score-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #10b981;
+    background: rgba(2, 6, 23, 0.85);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+  }
+  .card-body h3 {
+    font-family: var(--display);
+    font-size: 0.98rem;
+    margin: 0 0 0.2rem;
+  }
+  .card-meta {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-4);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .card-why {
+    font-size: 0.78rem;
+    color: var(--text-3);
+    line-height: 1.4;
+    margin: 0 0 0.6rem;
+  }
+  .card-held-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-bottom: 0.6rem;
+  }
+  .tag-h {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    color: var(--accent);
+    background: rgba(77, 163, 255, 0.08);
+  }
+  .card-provenance-line {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    color: var(--text-4);
+    padding-top: 0.4rem;
+    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  }
+
+  /* Outside Usual Section */
+  .outside-usual-sec {
+    padding: 2rem;
+    border-radius: 16px;
+    background: rgba(30, 27, 75, 0.25);
+    border: 1px solid rgba(129, 140, 248, 0.3);
+    margin-bottom: 3rem;
+  }
+  .outside-inner {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+  @media (max-width: 860px) { .outside-inner { flex-direction: column; } }
+  .outside-text {
+    max-width: 42ch;
+  }
+  .outside-kicker {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    color: #a5b4fc;
+  }
+  .outside-text h2 {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    margin: 0.3rem 0 0.5rem;
+  }
+  .outside-text p {
+    font-size: 0.88rem;
+    color: var(--text-3);
+    margin: 0;
+  }
+  .outside-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    flex: 1;
+  }
+  .outside-card {
+    border-radius: 10px;
+    background: var(--bg-card, #0b0e16);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .outside-cover {
+    height: 75px;
+    display: block;
+  }
+  .outside-info {
+    padding: 0.75rem;
+  }
+  .outside-info h3 {
+    font-family: var(--display);
+    font-size: 0.9rem;
+    margin: 0 0 0.2rem;
+  }
+  .outside-meta {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-4);
+  }
+
+  /* Code Section & Nav Footer */
+  .manga-code-section {
+    margin-top: 4rem;
+  }
+  .manga-code-section h2 {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    margin: 0 0 0.5rem;
+  }
+  .manga-code-section p {
+    color: var(--text-3);
+    margin-bottom: 1.25rem;
+  }
+  .manga-nav-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .manga-nav-footer a {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .manga-nav-footer a:hover {
+    text-decoration: underline;
+  }
+</style>
