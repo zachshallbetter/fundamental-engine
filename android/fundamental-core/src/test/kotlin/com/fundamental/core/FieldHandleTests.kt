@@ -238,6 +238,26 @@ class FieldHandleTests {
         assertTrue(got!!.body === h.body, "the payload carries the added body")
     }
 
+    @Test
+    fun onCapturedAndReleasedFireOnTheSinksAccretionEdgesWithTheJsCounts() {
+        // #1020: the consumer bus uses the JS vocabulary — CAPTURED on the rising edge of accreting
+        // (count = what is held), RELEASED on the falling edge (count = the rising-edge peak).
+        val f = createField(300f, 300f, particleCount = 5, seed = 1)
+        val got = mutableListOf<Pair<FieldEvent, Float>>()
+        f.on(FieldEvent.CAPTURED) { got += it.event to it.count }
+        f.on(FieldEvent.RELEASED) { got += it.event to it.count }
+        val h = f.addBody(BodySpec(tokens = listOf("sink"), rect = { Box(center = Vec3(150f, 150f, 0f)) }))
+        h.body.absorbR = 0f // never captures on its own — the edges below are driven by hand
+        h.body.accreted = 2f
+        f.tick()
+        assertEquals(listOf(FieldEvent.CAPTURED to 2f), got, "rising edge → CAPTURED with the held count")
+        h.drain()
+        f.tick()
+        assertEquals(listOf(FieldEvent.CAPTURED to 2f, FieldEvent.RELEASED to 2f), got, "falling edge → RELEASED with the peak")
+        f.tick()
+        assertEquals(2, got.size, "steady state — no re-fire")
+    }
+
     // ── #820 registerOverlay — named renderer registry the host drives ──────────────────
     @Test
     fun registerOverlayIsHeldInTheRegistryAndRemovable() {

@@ -57,14 +57,25 @@ data class ThreadLink(val a: Any, val b: Any, val color: String? = null)
 
 // ── Event bus types ────────────────────────────────────────────────────────────────────────────────
 
-/** Field lifecycle events for the subscription bus. Mirrors Swift `FieldEvent`. */
-enum class FieldEvent { TICK, BODY_ADD, BODY_REMOVE, PARTICLE_CAPTURE, SUPERNOVA }
+/**
+ * Field lifecycle events for the subscription bus. [CAPTURED] / [RELEASED] mirror the JS `field.on()`
+ * keys exactly (#1020): a `sink` body captured matter (the rising edge of accreting) / released what it
+ * held (the falling edge, or a supernova). [TICK] / [BODY_ADD] / [BODY_REMOVE] are host-plane lifecycle
+ * events with no JS counterpart. Mirrors Swift `FieldEvent`.
+ */
+enum class FieldEvent { TICK, BODY_ADD, BODY_REMOVE, CAPTURED, RELEASED }
 
 /** Payload delivered to `on` subscribers. Mirrors Swift `FieldEventPayload`. */
 data class FieldEventPayload(
     val event: FieldEvent,
     val body: Body? = null,
     val particle: Particle? = null,
+    /**
+     * [FieldEvent.CAPTURED]: the matter held at the rising edge; [FieldEvent.RELEASED]: what was held
+     * at the rising edge (the falling edge) or the number of particles ejected (a supernova). Mirrors
+     * the JS `count`.
+     */
+    val count: Float = 0f,
 )
 
 /** Live subscription returned by [FieldHandle.on]. Call [cancel] to unsubscribe. */
@@ -748,7 +759,47 @@ class FieldHandle(val controller: FieldController) {
         controller.onAfterTick = {
             projections.applyBoundProjections()
             tickAgents()
+            updateCaptureEvents() // capture / release edges for sink bodies (JS `updateCaptureEvents`, §22.5)
             fireEvent(FieldEvent.TICK, FieldEventPayload(FieldEvent.TICK))
+        }
+        // `RELEASED` fires at the supernova itself (JS: the supernova callback), so a same-frame
+        // fill+release never drops it; the count is the matter ejected.
+        controller.onSupernova = { body, ejected ->
+            if (sinkArmed.remove(body) != null) {
+                fireEvent(FieldEvent.RELEASED, FieldEventPayload(FieldEvent.RELEASED, body = body, count = ejected.toFloat()))
+            }
+        }
+    }
+
+    /**
+     * Capture-edge state per `sink` body (JS `dataset.fxCap` + `sinkPeak`): present while armed, holding
+     * the matter count at the rising edge — the [FieldEvent.RELEASED] count on the falling edge. Keyed
+     * by identity (a [Body] is mutable), pruned when a body leaves the field.
+     */
+    private val sinkArmed = java.util.IdentityHashMap<Body, Float>()
+
+    /**
+     * The [FieldEvent.CAPTURED] / [FieldEvent.RELEASED] bus events — the JS `updateCaptureEvents` mirror.
+     * CAPTURED fires on the rising edge of accreting (count = what is held now, remembered as the peak);
+     * RELEASED fires on the falling edge (count = that peak).
+     */
+    private fun updateCaptureEvents() {
+        val present = controller.bodies
+        if (sinkArmed.isNotEmpty()) sinkArmed.keys.retainAll(present.toSet())
+        for (b in present) {
+            if (!b.isVisible || "sink" !in b.tokens) continue
+            val edge = com.fundamental.core.engine.captureEdge(prevArmed = sinkArmed.containsKey(b), accreting = b.accreted > 0f)
+            when (edge.fire) {
+                com.fundamental.core.engine.CaptureEvent.CAPTURED -> {
+                    sinkArmed[b] = b.accreted
+                    fireEvent(FieldEvent.CAPTURED, FieldEventPayload(FieldEvent.CAPTURED, body = b, count = b.accreted))
+                }
+                com.fundamental.core.engine.CaptureEvent.RELEASED -> {
+                    val peak = sinkArmed.remove(b) ?: 0f
+                    fireEvent(FieldEvent.RELEASED, FieldEventPayload(FieldEvent.RELEASED, body = b, count = peak))
+                }
+                null -> Unit
+            }
         }
     }
 
