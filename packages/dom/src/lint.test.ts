@@ -17,6 +17,8 @@ import {
   lintStateRegistration,
   lintOverlayLinks,
   lintFeedbackVars,
+  lintFeedbackEngineOwned,
+  ENGINE_OWNED_FEEDBACK_VARS,
   lintSinkFeedback,
   lintFeedbackVarReads,
   lintFeedbackWritesUnread,
@@ -224,6 +226,45 @@ test('lintFeedbackVars errors on bindings that are not CSS custom properties', (
   assert.equal(w[0]!.code, 'feedback-non-css-var');
   assert.equal(w[0]!.severity, 'error');
   assert.match(w[0]!.message, /aria-pressed/);
+});
+
+// ── feedback-var-engine-owned: two writers, one var (the --field-density / --d alias collision) ──
+test('lintFeedbackEngineOwned flags a binding that routes a state key onto an engine-written var', () => {
+  const f = new FeedbackRegistry();
+  const el = fakeEl();
+  // the exact collision that shipped: a pattern's `density` metric bound to --field-density
+  f.bind(el, { density: '--field-density' });
+  const w = lintFeedbackEngineOwned(f);
+  assert.equal(w.length, 1);
+  assert.equal(w[0]!.code, 'feedback-var-engine-owned');
+  assert.equal(w[0]!.severity, 'warning');
+  assert.equal(w[0]!.element, el);
+  assert.match(w[0]!.message, /--field-density/);
+  assert.match(w[0]!.message, /two writers/);
+});
+
+test('lintFeedbackEngineOwned covers every engine-owned var, and only those', () => {
+  const f = new FeedbackRegistry();
+  const el = fakeEl();
+  for (const name of ENGINE_OWNED_FEEDBACK_VARS) f.bind(el, { [`k${name}`]: name });
+  f.bind(el, { attention: '--field-attention', memory: '--field-memory' }); // an author's own lanes
+  const codes = lintFeedbackEngineOwned(f);
+  assert.equal(codes.length, ENGINE_OWNED_FEEDBACK_VARS.size, 'one warning per engine-owned var');
+  assert.ok(codes.every((w) => !/--field-attention|--field-memory/.test(w.message)), 'author lanes are not flagged');
+  assert.deepEqual(
+    [...ENGINE_OWNED_FEEDBACK_VARS].sort(),
+    ['--coherence', '--d', '--entropy', '--field-density', '--field-heatmap-density', '--lit', '--load', '--mass', '--temperature'],
+  );
+});
+
+test('the rule runs under lintPlatform', () => {
+  const el = fakeEl();
+  const platform = createFieldPlatform(el);
+  platform.measure.register(el);
+  platform.state.set(el, 'density', 0.4);
+  platform.feedback.bind(el, { density: '--d' });
+  const codes = lintPlatform(platform, { root: { querySelectorAll: () => [] } as unknown as ParentNode }).map((w) => w.code);
+  assert.ok(codes.includes('feedback-var-engine-owned'));
 });
 
 test('lintSchedulerViolations surfaces off-phase reads', () => {

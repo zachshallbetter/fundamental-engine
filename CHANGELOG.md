@@ -10,6 +10,9 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 ### Fixed
 
 - **The parity matrix now tracks colour** (#1091). `data/parity-matrix.json` gains a `palette` dimension with three symbols — `palette-option` (the engine accepts a multi-hue palette), `palette-host` (the declarative host applies it: `<field-root palette>` / SwiftUI `FieldView` / Compose `FieldView(palette:)`), and `palette-view-host` (the imperative host applies it: vanilla `FieldField.setPalette` / Swift `FundamentalVanilla.FieldField.setPalette` / Android `FieldFieldView`). The Compose single-accent collapse (#1090) reached an app because no gate looked at colour; a port that supports one accent where another supports a palette array is now a `check:docs` parity delta. The regenerated matrix records the one live gap honestly: the Android **View** host (`FieldFieldView`) still renders a single accent.
+### Added
+
+- **`feedback-var-engine-owned` platform lint** (`@fundamental-engine/dom`). A feedback binding that routes a state key onto a var the engine already writes for every `data-feedback` body (`--d`, `--field-density`, `--field-heatmap-density`, `--load`, `--mass`, `--lit`, `--entropy`, `--coherence`, `--temperature`) is two writers on one var: the bound state value shadows the engine's live reading. This is the `--field-density`-reads-0-while-`--d`-is-live collision that made the documented density guidance produce no glow; `applyPattern` already refuses to bind the engine-owned `density` metric, and this rule catches every other route to the same collision. `lintFeedbackEngineOwned` + the `ENGINE_OWNED_FEEDBACK_VARS` set are exported and the rule runs under `lintPlatform()`. Documented in `docs/canonical/feedback-channels.md` §7.
 
 ## [0.10.1] — 2026-07-21
 
