@@ -29,7 +29,7 @@
  * its turn comes — same class of caveat the fixed-timestep note below already carries.
  */
 
-import type { Body, ConditionRegistry, Env, FieldImpulseAccumulator, Force, ForceRegistry, Particle } from './types.ts';
+import type { RestingMotion, Vec2, Body, ConditionRegistry, Env, FieldImpulseAccumulator, Force, ForceRegistry, Particle } from './types.ts';
 import type { FieldStore } from './field-store.ts';
 import { accretionTarget } from './formations.ts';
 import { waveYat, waveSlope, waveDistance, type Wave } from './currents.ts';
@@ -52,6 +52,8 @@ export interface StepInput {
   waveStyle?: 'linear' | 'circular';
   waveCenter?: { x: number; y: number } | null;
   separation?: number;
+  /** the resting-motion floor (declared, default OFF) — see `RestingMotion`. */
+  restingMotion?: RestingMotion;
 }
 
 function passes(conds: ConditionRegistry, b: Body, p: Particle, env: Env): boolean {
@@ -220,6 +222,21 @@ function resetDensity(bodies: readonly Body[]): void {
   }
 }
 
+/** One eddy cell of the resting `flow` field spans ≈ 400px. */
+export const RESTING_FLOW_K = (2 * Math.PI) / 400;
+
+/**
+ * The resting-motion floor's `flow` field at (x, y): the curl of the stream function
+ * ψ = sin(kx + φ)·sin(ky − φ), i.e. v = (∂ψ/∂y, −∂ψ/∂x) with k folded into the caller's gain — so it is
+ * divergence-free BY CONSTRUCTION (∂vx/∂x + ∂vy/∂y ≡ 0): it circulates matter without ever compressing
+ * it, and the slow phase drift keeps the eddies from settling. Unit-amplitude; pure.
+ */
+export function restingFlow(x: number, y: number, phase: number): Vec2 {
+  const ax = x * RESTING_FLOW_K + phase;
+  const ay = y * RESTING_FLOW_K - phase;
+  return { x: Math.sin(ax) * Math.cos(ay), y: -Math.cos(ax) * Math.sin(ay) };
+}
+
 export function step(input: StepInput): void {
   const { store, bodies, env, forces, conditions, waves, separation } = input;
   const dt = env.dt;
@@ -256,6 +273,19 @@ export function step(input: StepInput): void {
   let dead: Particle[] | null = null; // mortal (spawned) matter that expired this tick
   // the accretion target for `conv` — the first visible sink body (§7).
   const conv = form.conv > 0.02 ? accretionTarget(bodies) : null;
+
+  // the resting-motion floor (DECLARED, default OFF; the "resting liveliness" primitive). A drawn field
+  // with signals-first defaults settles into its wells and freezes when idle; this is the honest,
+  // global alternative to painting waves: a small per-particle impulse the field MEASURES as
+  // --temperature, with nothing drawn. `thermal` is the `thermal` force's Langevin kick, field-wide and
+  // seeded through env.rng (Box–Muller, variance ∝ dt); `flow` is the divergence-free curl above with a
+  // slow phase drift. Both scale with dt, so reduced motion (dt = 0 — the early return above)
+  // contributes exactly nothing, and `strength: 0` is the off path.
+  const resting = input.restingMotion;
+  const restStrength = resting ? Math.max(0, resting.strength ?? 1) : 0;
+  const restSigma = 0.06 * restStrength * Math.sqrt(dt);
+  const restFlowGain = 0.02 * restStrength * dt;
+  const restPhase = env.t * 0.15;
 
   // the optional z lane (z-axis.md): D = 0 — the default — is the flat field, where
   // every z term below is exactly 0 and the 2D behavior is preserved bit-for-bit.
@@ -614,6 +644,24 @@ export function step(input: StepInput): void {
           Math.PI;
         p.vx += Math.cos(cn) * 0.013 * form.wander;
         p.vy += Math.sin(cn) * 0.013 * form.wander;
+      }
+      // the resting-motion floor (see the header above the loop) — swarm matter only, after damping.
+      if (restStrength > 0) {
+        if (resting!.mode === 'thermal') {
+          const u1 = (env.rng ?? Math.random)() || 1e-9; // avoid log(0)
+          const mag = restSigma * Math.sqrt(-2 * Math.log(u1));
+          const ang = 2 * Math.PI * (env.rng ?? Math.random)();
+          p.vx += mag * Math.cos(ang);
+          p.vy += mag * Math.sin(ang);
+          if (D > 0) {
+            const u2 = (env.rng ?? Math.random)() || 1e-9;
+            p.vz! += restSigma * Math.sqrt(-2 * Math.log(u2)) * Math.cos(2 * Math.PI * (env.rng ?? Math.random)());
+          }
+        } else {
+          const f = restingFlow(p.x, p.y, restPhase);
+          p.vx += f.x * restFlowGain;
+          p.vy += f.y * restFlowGain;
+        }
       }
     }
 

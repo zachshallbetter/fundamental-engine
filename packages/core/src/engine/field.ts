@@ -447,6 +447,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // full above start·H, gone by (start+span)·H. Defaults reproduce start=0.3, span=0.85.
     heatmapFadeStart: opts.heatmapFade && Number.isFinite(opts.heatmapFade.start) ? opts.heatmapFade.start : 0.3,
     heatmapFadeSpan: opts.heatmapFade && Number.isFinite(opts.heatmapFade.span) && opts.heatmapFade.span > 0 ? opts.heatmapFade.span : 0.85,
+    // the resting-motion floor (declared, default OFF): validated to the two modes; strength ≥ 0 (default 1).
+    restingMotion:
+      opts.restingMotion && (opts.restingMotion.mode === 'thermal' || opts.restingMotion.mode === 'flow')
+        ? {
+            mode: opts.restingMotion.mode,
+            strength:
+              opts.restingMotion.strength != null && opts.restingMotion.strength >= 0 ? opts.restingMotion.strength : 1,
+          }
+        : undefined,
     // the integration scheme (substrate doc 04 §Step 3, #659); 'legacy' (default) is the shipped engine.
     integrator: (opts.integrator === 'fixed' || opts.integrator === 'velocity-verlet'
       ? opts.integrator
@@ -2949,7 +2958,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
 
     updateWarpTargets(); // refresh warp relocate targets from paired bodies (§22.3) before the step
-    step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves, waveStyle: cfg.waveStyle, waveCenter: resolvedWaveCenter, separation: cfg.separation });
+    step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves, waveStyle: cfg.waveStyle, waveCenter: resolvedWaveCenter, separation: cfg.separation, restingMotion: cfg.restingMotion });
     // hover-focus (field.focusAt): hold the focused particle still and light it up — the dwell
     // affordance ("it stops and does something") before a click opens its record.
     if (focusP) {

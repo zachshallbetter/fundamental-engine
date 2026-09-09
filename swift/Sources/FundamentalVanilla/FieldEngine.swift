@@ -531,7 +531,7 @@ final class FieldEngine: FieldHandle {
                        forces: registry.forces, conditions: registry.conditions,
                        waves: waves.isEmpty ? nil : waves,
                        waveStyle: options.waveStyle, waveCenter: resolvedCenter,
-                       separation: options.separation))
+                       separation: options.separation, restingMotion: options.restingMotion))
 
         // capture / release edges for sink bodies (JS `updateCaptureEvents`, §22.5).
         updateCaptureEvents()

@@ -257,6 +257,19 @@ class NoopGrid : ScalarGrid {
  */
 enum class IntegratorMode { LEGACY, FIXED, VELOCITY_VERLET }
 
+/** The resting-motion floor's mode — mirrors JS `RestingMotionMode`. */
+enum class RestingMotionMode { THERMAL, FLOW }
+
+/**
+ * The resting-motion floor (DECLARED, default OFF) — mirrors JS `FieldOptions.restingMotion`. Signals-first
+ * defaults leave a DRAWN field settling into its wells and freezing when idle; this is the global
+ * alternative to painting waves: a small per-particle impulse the field MEASURES as temperature, with
+ * nothing drawn. [RestingMotionMode.THERMAL] is the `thermal` force's Langevin kick applied field-wide
+ * (Box–Muller through [Env.rng], so a seeded run reproduces); [RestingMotionMode.FLOW] a divergence-free
+ * curl with a slow phase drift. Both scale with dt, so reduced motion (dt = 0) contributes nothing.
+ */
+data class RestingMotion(val mode: RestingMotionMode, val strength: Float = 1f)
+
 /**
  * The shared per-frame environment handed to every force. A class because the integrator updates
  * `vector`/`dist` per body–particle pair in the hot loop (as the JS engine mutates `env.dx/dy/dist`).

@@ -4,6 +4,7 @@ import com.fundamental.core.math.nearestOnBox
 import com.fundamental.core.math.Vec3
 import com.fundamental.core.math.netField
 import com.fundamental.core.math.screenFactor
+import kotlin.math.ln
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -58,7 +59,23 @@ class StepInput(
     val waveStyle: WaveStyle = WaveStyle.LINEAR,
     val waveCenter: Vec3? = null,
     val separation: Float = 0f,
+    /** The resting-motion floor (declared, default OFF) — mirrors the JS `StepInput.restingMotion`. */
+    val restingMotion: RestingMotion? = null,
 )
+
+/** One eddy cell of the resting `FLOW` field spans ≈ 400px — mirrors the JS `RESTING_FLOW_K`. */
+val RESTING_FLOW_K: Float = (2f * PI_F) / 400f
+
+/**
+ * The resting-motion floor's FLOW field at (x, y): the curl of the stream function
+ * ψ = sin(kx + φ)·sin(ky − φ), i.e. v = (∂ψ/∂y, −∂ψ/∂x) with k folded into the caller's gain — divergence-
+ * free BY CONSTRUCTION, so it circulates matter without compressing it. Unit-amplitude; pure. Mirrors JS.
+ */
+fun restingFlow(x: Float, y: Float, phase: Float): Vec3 {
+    val ax = x * RESTING_FLOW_K + phase
+    val ay = y * RESTING_FLOW_K - phase
+    return Vec3(sin(ax) * cos(ay), -cos(ax) * sin(ay), 0f)
+}
 
 private fun gatePasses(conds: ConditionRegistry, b: Body, p: Particle, env: Env): Boolean {
     if (b.`when`.isEmpty()) return true
@@ -383,6 +400,29 @@ fun step(input: StepInput) {
                 p.velocity.y + sin(cn) * 0.013f * form.wander,
                 p.velocity.z,
             )
+        }
+
+        // the resting-motion floor (DECLARED, default OFF) — the JS integrator mirror: THERMAL is a seeded
+        // Langevin kick (Box–Muller, variance ∝ dt), FLOW a divergence-free curl (restingFlow) with a slow
+        // phase drift; both scale with dt, so reduced motion (dt = 0) contributes nothing. Same constants.
+        val resting = input.restingMotion
+        if (resting != null && resting.strength > 0f) {
+            if (resting.mode == RestingMotionMode.THERMAL) {
+                val sigma = 0.06f * resting.strength * sqrt(dt)
+                val r1 = env.rng(); val u1 = if (r1 == 0f) 1e-9f else r1
+                val mag = sigma * sqrt(-2f * ln(u1))
+                val ang = 2f * PI_F * env.rng()
+                var vz = p.velocity.z
+                if (d3 > 0f) {
+                    val r2 = env.rng(); val u2 = if (r2 == 0f) 1e-9f else r2
+                    vz += sigma * sqrt(-2f * ln(u2)) * cos(2f * PI_F * env.rng())
+                }
+                p.velocity = Vec3(p.velocity.x + mag * cos(ang), p.velocity.y + mag * sin(ang), vz)
+            } else {
+                val gain = 0.02f * resting.strength * dt
+                val f = restingFlow(p.position.x, p.position.y, env.t * 0.15f)
+                p.velocity = Vec3(p.velocity.x + f.x * gain, p.velocity.y + f.y * gain, p.velocity.z)
+            }
         }
 
         p.heat *= heatDecay

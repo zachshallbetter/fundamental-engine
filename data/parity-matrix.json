@@ -707,6 +707,7 @@
         "reaction",
         "redshiftObserver",
         "render",
+        "restingMotion",
         "rng",
         "separation",
         "theme",
@@ -716,8 +717,8 @@
         "waves"
       ],
       "counts": {
-        "js": 39,
-        "swift": 26,
+        "js": 40,
+        "swift": 27,
         "kotlin": 0
       },
       "planes": {
@@ -754,6 +755,7 @@
           "reaction",
           "redshiftObserver",
           "render",
+          "restingMotion",
           "rng",
           "separation",
           "theme",
@@ -784,6 +786,7 @@
           "policy",
           "qualityTier",
           "render",
+          "restingMotion",
           "rng",
           "separation",
           "waveCenter",
@@ -1011,6 +1014,12 @@
         },
         {
           "symbol": "render",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "restingMotion",
           "js": true,
           "swift": true,
           "kotlin": false

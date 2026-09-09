@@ -1,5 +1,6 @@
 package com.fundamental.core.runtime
 
+import com.fundamental.core.engine.RestingMotion
 import com.fundamental.core.engine.AtomPayload
 import com.fundamental.core.engine.AttnInput
 import com.fundamental.core.engine.Body
@@ -87,7 +88,15 @@ class FieldController(
      * the ambient preset's wander when [setFormation]`("ambient")` runs.
      */
     private val ambientWander: Float = 1.0f,
+    /**
+     * The resting-motion floor (DECLARED, default OFF; the JS `FieldOptions.restingMotion`): honest idle
+     * motion for a drawn field with nothing painted. See [RestingMotion].
+     */
+    restingMotion: RestingMotion? = null,
 ) {
+    /** The resting-motion floor in effect (null = off). Mutable so a host can flip it live. */
+    var restingMotion: RestingMotion? = restingMotion
+
     val store = FieldStore()
     val forces: ForceRegistry = Registry.standardForces()
 
@@ -552,7 +561,7 @@ class FieldController(
         // charge induction (§2.4): charge bodies polarize nearby matter, so charge/magnetism act.
         induceCharges(_bodies, store.particles)
 
-        step(StepInput(store, _bodies, env, forces, conditions, waves = if (wavesEnabled) _waves else null, separation = separation))
+        step(StepInput(store, _bodies, env, forces, conditions, waves = if (wavesEnabled) _waves else null, separation = separation, restingMotion = restingMotion))
 
         // the bound↔free reservoir (§2.4): heal calm matter onto the lines, tear it loose near bodies.
         if (wavesEnabled && _waves.isNotEmpty()) {
