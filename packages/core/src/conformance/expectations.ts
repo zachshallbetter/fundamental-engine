@@ -30,6 +30,7 @@ export function movesToward(): Expectation {
   return {
     label: 'pulled toward the body',
     kind: 'invariant',
+    why: 'The very first kick the force gives the particle must point at the body. This is the defining direction of an attractor — if it ever pointed away, the force would be a repeller in disguise.',
     check(r) {
       const { ux, uy } = toBodyUnit(r);
       const { dvx, dvy } = r.applyDelta[0]!;
@@ -44,6 +45,7 @@ export function movesAway(): Expectation {
   return {
     label: 'pushed away from the body',
     kind: 'invariant',
+    why: 'The very first kick the force gives the particle must point away from the body. That outward push is what makes a repeller a repeller — the sign of the force, before any friction or drift blurs it.',
     check(r) {
       const { ux, uy } = toBodyUnit(r);
       const { dvx, dvy } = r.applyDelta[0]!;
@@ -60,6 +62,7 @@ export function endsFartherOut(minGain = 1.05): Expectation {
   return {
     label: 'rides the wavefront outward',
     kind: 'invariant',
+    why: 'Over the whole run the particle has to end up farther from the body than it started, carried out by the expanding wave. A wave needs frames to form, so this reads the path, not a single kick.',
     check(r) {
       const b = r.body;
       const first = r.trajectory[0]![0]!;
@@ -76,6 +79,7 @@ export function exactDelta(dvx: number, dvy: number, tol = 2e-3): Expectation {
   return {
     label: `Δv = (${f3(dvx)}, ${f3(dvy)})`,
     kind: 'exact',
+    why: `The first-frame kick must match the spec formula to within ±${tol} in both x and y — this pins the math itself, not just the direction. It is pinned to the default attributes, so it goes default-only once you tune.`,
     check(r) {
       const a = r.applyDelta[0]!;
       const pass = Math.abs(a.dvx - dvx) < tol && Math.abs(a.dvy - dvy) < tol;
@@ -89,6 +93,7 @@ export function speedPreserved(tol = 0.02): Expectation {
   return {
     label: 'speed preserved (no work done)',
     kind: 'invariant',
+    why: 'A pure rotation only changes where the particle is heading, never how fast it goes. If the speed drifted, the force would be doing work on the particle instead of just steering it.',
     check(r) {
       const p = r.scenario.particles[0]!;
       const vx = p.vx ?? 0;
@@ -107,6 +112,7 @@ export function speedReduced(): Expectation {
   return {
     label: 'speed bled off',
     kind: 'invariant',
+    why: 'Drag should slow the particle down and nothing else: it leaves with less speed than it arrived with. That loss of speed is the whole job of a viscous field.',
     check(r) {
       const p = r.scenario.particles[0]!;
       const before = Math.hypot(p.vx ?? 0, p.vy ?? 0) || 1;
@@ -122,6 +128,7 @@ export function perpendicularToVelocity(tol = 1e-3): Expectation {
   return {
     label: 'force ⟂ velocity (no work)',
     kind: 'invariant',
+    why: 'The kick has to be at a right angle to the direction of travel, so it bends the path without changing the speed — the signature of a magnetic-style force that does no work.',
     check(r) {
       const p = r.scenario.particles[0]!;
       const a = r.applyDelta[0]!;
@@ -137,6 +144,7 @@ export function momentumConserved(tol = 1e-6): Expectation {
   return {
     label: 'momentum conserved across the pair',
     kind: 'invariant',
+    why: 'Add up every particle\'s kick and the total must be zero: whatever one particle gains the other loses. That is conservation of momentum, and it separates a real interaction from a hidden push.',
     check(r) {
       let sx = 0;
       let sy = 0;
@@ -160,6 +168,7 @@ export function separates(i = 0, j = 1): Expectation {
   return {
     label: 'the two particles separate',
     kind: 'invariant',
+    why: 'By the end of the run the two particles must be farther apart than when they started, showing the interaction pushes them away from each other rather than letting them drift together or sit still.',
     check(r) {
       const start = distAt(r, 0, i, j);
       const end = distAt(r, r.trajectory.length - 1, i, j);
@@ -178,6 +187,7 @@ export function approachesBody(): Expectation {
   return {
     label: 'ends closer to the body',
     kind: 'invariant',
+    why: 'Watching the whole run, not just the first kick, the particle must finish nearer the body than it began. This confirms the pull actually moves matter over time, friction included.',
     check(r) {
       const start = distToBody(r, 0);
       const end = distToBody(r, r.trajectory.length - 1);
@@ -191,6 +201,7 @@ export function recedesFromBody(): Expectation {
   return {
     label: 'ends farther from the body',
     kind: 'invariant',
+    why: 'Watching the whole run, not just the first kick, the particle must finish farther from the body than it began. This confirms the push actually moves matter over time, friction included.',
     check(r) {
       const start = distToBody(r, 0);
       const end = distToBody(r, r.trajectory.length - 1);
@@ -204,6 +215,7 @@ export function heats(): Expectation {
   return {
     label: 'particle gains heat',
     kind: 'invariant',
+    why: 'By the end of the run the particle should carry some heat — the force is supposed to agitate matter, and heat is how the engine records that agitation.',
     check(r) {
       const end = r.trajectory[r.trajectory.length - 1]![0]!;
       return ok(end.heat > 1e-4, `heat = ${f3(end.heat)}`, '> 0');
@@ -255,6 +267,7 @@ export function noEffectBeyondRange(): Expectation {
   return {
     label: 'no effect beyond range',
     kind: 'invariant',
+    why: 'A particle placed at twice the body\'s range must feel nothing at all. Every force is meant to fall silent past its range ring, so bodies stay local and do not leak across the whole field.',
     check(r) {
       const force = allForces()[r.scenario.force]!;
       const range = r.body.range || 300;
@@ -274,6 +287,7 @@ export function followsGradient(gx: number, gy: number): Expectation {
   return {
     label: 'deposits + follows the grid gradient',
     kind: 'invariant',
+    why: 'A field-buffer force must both leave a mark on the shared grid and steer matter up the grid\'s slope. Both halves are needed: the mark is the memory, the steering is the response to it.',
     check(r) {
       const force = allForces()[r.scenario.force]!;
       const deposits: number[][] = [];
@@ -310,6 +324,7 @@ export function gatesOutsideCone(insideAngle: number, outsideAngle: number): Exp
   return {
     label: 'gates outside the cone, acts inside',
     kind: 'invariant',
+    why: 'A modifier like a spotlight has to block its sibling forces for matter outside its cone and let them act on matter inside it. That on/off split is what makes it a gate rather than a dimmer.',
     check(r) {
       const force = allForces()[r.scenario.force]!;
       if (!force.modify) return ok(false, 'no modify()', 'a modifier force');
@@ -330,6 +345,7 @@ export function unaffectedWhenNeutral(): Expectation {
   return {
     label: 'neutral matter is unaffected',
     kind: 'invariant',
+    why: 'A particle carrying no charge must feel nothing from a charged body. Only charged matter should respond, otherwise the force would be plain attraction wearing a charge label.',
     check(r) {
       const force = allForces()[r.scenario.force]!;
       const p = cloneParticle(r.scenario.particles[0]!);
@@ -350,6 +366,7 @@ export function adoptsTint(): Expectation {
   return {
     label: 'adopts and carries the tint',
     kind: 'invariant',
+    why: 'When the particle overlaps a pigment body it should take on the body\'s colour and keep it. Colour here is a conserved stain that matter carries away, not a paint effect applied by the renderer.',
     check(r) {
       const force = allForces()[r.scenario.force]!;
       const p = cloneParticle(r.scenario.particles[0]!);
@@ -366,6 +383,7 @@ export function modulatesStrength(): Expectation {
   return {
     label: 'strength oscillates as 1 + sin(ωt)',
     kind: 'invariant',
+    why: 'Sampled over time, the resonator should scale its sibling\'s strength smoothly between about 0 and 2. That clean swing around 1 is what turns a steady force into a pulse.',
     check(r) {
       const force = allForces()[r.scenario.force]!;
       if (!force.modify) return ok(false, 'no modify()', 'a modifier force');

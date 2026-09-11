@@ -73,7 +73,7 @@ the exact same code the tests run.
 Scenario     a known particle (or particles) fired into a force with known attributes
 runScenario  builds its own FieldStore + Body + Env, runs the real step() N frames,
              returns the trajectory + each particle's frame-0 force delta
-Expectation  { label, kind: 'invariant'|'exact', check(result) → {pass, measured, expected} }
+Expectation  { label, kind: 'invariant'|'exact', why, check(result) → {pass, measured, expected} }
 EXPERIMENTS  one ForceConformance { scenario, expectations[] } per registered force
 ```
 
@@ -127,7 +127,10 @@ position checks read the trajectory).
 ### Expectation vocabulary
 
 Reusable builders in `conformance/expectations.ts`. Each returns `{pass, measured,
-expected}` so the Lab can show the numbers.
+expected}` so the Lab can show the numbers. Each builder (and every inline check in the
+catalog) also carries `why` — the plain-words explanation of what the check proves and why
+it matters, which the Lab shows when you expand a check; `expectations-why.test.ts` fails
+if any check ships without one.
 
 | Builder | Asserts |
 |---|---|

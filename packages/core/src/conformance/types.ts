@@ -104,6 +104,12 @@ export interface ExpectationResult {
 export interface Expectation {
   label: string;
   kind: 'invariant' | 'exact';
+  /**
+   * Plain-words explanation of what the check proves and why it matters — shown by the
+   * Lab's per-check "why" expansion. Optional so an external constructor stays valid;
+   * every expectation in the shipped catalog carries one (`expectations-why.test.ts`).
+   */
+  why?: string;
   check(result: ScenarioResult): ExpectationResult;
 }
 
