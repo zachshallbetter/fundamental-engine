@@ -31,6 +31,7 @@ export type LintCode =
   | 'feedback-reads-unwritten'
   | 'feedback-never-written'
   | 'feedback-lane-inert'
+  | 'feedback-var-engine-owned'
   | 'compositing-fill-trap'
   | 'motion-without-reduced-motion';
 
@@ -278,6 +279,51 @@ export function lintFeedbackVars(feedback: FeedbackRegistry): PlatformLintWarnin
   return out;
 }
 
+/**
+ * The CSS vars the engine writes itself, every frame, onto every `data-feedback` body (the feedback
+ * sink in core / `makeFeedbackSink` in the platform runtime): the density pair, the heatmap density,
+ * the sink load (+ its legacy `--mass` alias), the measured thermodynamics, and the neighbour-
+ * spillover `lit` channel. Each has exactly ONE writer by contract (feedback-channels.md §7); a
+ * binding that routes a state key onto one of them is a second writer.
+ */
+export const ENGINE_OWNED_FEEDBACK_VARS: ReadonlySet<string> = new Set([
+  '--d',
+  '--field-density',
+  '--field-heatmap-density',
+  '--load',
+  '--mass',
+  '--lit',
+  '--entropy',
+  '--coherence',
+  '--temperature',
+]);
+
+/**
+ * Two writers, one var. A feedback binding that maps a state key onto an ENGINE-OWNED var
+ * (`--d` / `--field-density` / `--load` / `--mass` / `--lit`) shadows the engine's live reading with
+ * whatever the state holds — typically the host-supplied metric, which reads 0 unless the author
+ * set `data-field-density`. This exact collision shipped: a pattern with a `density` metric bound it
+ * to `--field-density`, so `var(--field-density)` read 0 while the "alias" `var(--d)` held the real
+ * value, and following the documented guidance produced no glow. `applyPattern` now refuses to bind
+ * the engine-owned `density` metric; this rule catches every other route to the same collision.
+ * Pure over the registry.
+ */
+export function lintFeedbackEngineOwned(feedback: FeedbackRegistry): PlatformLintWarning[] {
+  const out: PlatformLintWarning[] = [];
+  for (const { element, vars } of feedback.boundVars()) {
+    for (const name of vars) {
+      if (!ENGINE_OWNED_FEEDBACK_VARS.has(name)) continue;
+      out.push({
+        code: 'feedback-var-engine-owned',
+        severity: 'warning',
+        element,
+        message: `feedback binding writes ${name}, which the engine already writes for every data-feedback body — two writers, one var: the bound state value shadows the engine's live reading. Bind a --field-<metric> of your own instead`,
+      });
+    }
+  }
+  return out;
+}
+
 /** Off-phase reads recorded by the scheduler (e.g. a measurement during the write phase). */
 export function lintSchedulerViolations(scheduler: FrameScheduler): PlatformLintWarning[] {
   return scheduler.violations().map((v) => ({
@@ -516,6 +562,7 @@ export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): Pl
     ...lintStateRegistration(platform.state, platform.measure),
     ...lintOverlayLinks(platform.overlays, platform.relationships),
     ...lintFeedbackVars(platform.feedback),
+    ...lintFeedbackEngineOwned(platform.feedback),
     ...lintInertFeedback(platform.feedback),
     ...lintFeedbackNeverWritten(platform.feedback),
     ...lintVisuals(platform.visuals),

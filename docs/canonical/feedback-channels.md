@@ -227,6 +227,15 @@ a pattern can no longer clobber the live density value with a host attribute def
 
 ---
 
+**Two writers, one var — linted.** The engine-written vars (`--d` / `--field-density` /
+`--field-heatmap-density` / `--load` / `--mass` / `--lit` / `--entropy` / `--coherence` /
+`--temperature`) have exactly one writer. A feedback *binding* that routes any state key onto one of
+them (`platform.feedback.bind(el, { density: '--field-density' })`) is a second writer, and the
+bound state value shadows the engine's live reading — the `--field-density`-reads-0-while-`--d`-is-live
+collision, from a route `ENGINE_OWNED_METRICS` does not cover. The `feedback-var-engine-owned`
+platform lint (`lintFeedbackEngineOwned`, run by `lintPlatform()`) flags every such binding; the fix
+is to bind a `--field-<metric>` lane of your own. The set is exported as `ENGINE_OWNED_FEEDBACK_VARS`.
+
 ## 8. Related documents
 
 - `docs/canonical/invisible-fields.md` — the invisible-fields pattern: the two-field architecture,
