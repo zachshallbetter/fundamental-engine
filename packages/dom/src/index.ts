@@ -40,6 +40,7 @@ export * from './thread-overlay.ts';
 export * from './perf.ts';
 export { attachOffthreadRender, type OffthreadBridgeResult } from './worker/offthread-bridge.ts';
 export * from './x-ray.ts';
+export * from './overlay-surface.ts';
 
 /** Start the core engine on a canvas with the default browser host — `createField` + `browserHost()`. */
 export function createBrowserField(canvas: HTMLCanvasElement, opts: Omit<FieldOptions, 'host'> = {}): FieldHandle {

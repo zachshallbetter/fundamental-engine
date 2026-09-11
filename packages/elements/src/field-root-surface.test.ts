@@ -111,6 +111,7 @@ test('ensureOverlayCanvas creates + appends exactly one light-DOM canvas on firs
     return {
       setAttribute: (k: string, v: string) => void (attrs[k] = v),
       style: {} as Record<string, string>,
+      remove: () => {},
       _attrs: attrs,
     };
   };
@@ -120,11 +121,17 @@ test('ensureOverlayCanvas creates + appends exactly one light-DOM canvas on firs
     body: { appendChild: (el: unknown) => void appended.push(el) },
   };
   try {
-    const self: { overlayCanvas?: HTMLCanvasElement } = {};
+    const self = { overlayCanvas: undefined as HTMLCanvasElement | undefined, getAttribute: () => null };
     const first = ensureOverlayCanvas.call(self as unknown as FieldField);
     assert.ok(first, 'a canvas is created');
     assert.equal(appended.length, 1, 'appended to the light DOM exactly once');
     assert.equal((first as unknown as { _attrs: Record<string, string> })._attrs['data-field-overlay'], '', 'marked data-field-overlay');
+    assert.equal((first as unknown as { _attrs: Record<string, string> })._attrs['aria-hidden'], 'true', 'aria-hidden');
+    assert.equal(
+      (first as unknown as { style: Record<string, string> }).style.cssText,
+      'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;mix-blend-mode:screen',
+      'with no overlay-blend / overlay-z attributes the surface is byte-identical to the pre-#721 literal',
+    );
     // a second call must reuse — no new create/append.
     const second = ensureOverlayCanvas.call(self as unknown as FieldField);
     assert.equal(second, first, 'reused on the second call');
@@ -144,6 +151,125 @@ test('ensureOverlayCanvas is a no-op (null) with no document — SSR-safe (#676)
   } finally {
     (globalThis as { document?: unknown }).document = prevDoc;
   }
+});
+
+// ── #721: overlay surface ergonomics — overlay-blend / overlay-z ───────────────
+
+/** a fake document whose canvases record attrs + style; returns the appended list. */
+function withFakeDocument<T>(run: () => T): { result: T; appended: Array<{ _attrs: Record<string, string>; style: Record<string, string> }> } {
+  const appended: Array<{ _attrs: Record<string, string>; style: Record<string, string> }> = [];
+  const prevDoc = (globalThis as { document?: unknown }).document;
+  (globalThis as { document?: unknown }).document = {
+    createElement: () => {
+      const attrs: Record<string, string> = {};
+      return { setAttribute: (k: string, v: string) => void (attrs[k] = v), style: {}, remove: () => {}, _attrs: attrs };
+    },
+    body: { appendChild: (el: unknown) => void appended.push(el as (typeof appended)[number]) },
+  };
+  try {
+    return { result: run(), appended };
+  } finally {
+    (globalThis as { document?: unknown }).document = prevDoc;
+  }
+}
+
+test('overlay-blend / overlay-z attributes land in the created overlay surface (#721)', () => {
+  const attrs = new Map<string, string>([
+    ['overlay-blend', 'multiply'],
+    ['overlay-z', '20'],
+  ]);
+  const { appended } = withFakeDocument(() => {
+    // the prototype's getters (overlayBlend / overlayZ) must resolve, so the stub inherits from it.
+    const self = Object.assign(Object.create(FieldField.prototype) as object, {
+      overlayCanvas: undefined,
+      getAttribute: (k: string) => attrs.get(k) ?? null,
+    });
+    return ensureOverlayCanvas.call(self as unknown as FieldField);
+  });
+  assert.equal(appended.length, 1);
+  assert.equal(
+    appended[0]!.style.cssText,
+    'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:20;mix-blend-mode:multiply',
+  );
+  assert.equal(appended[0]!._attrs['data-field-overlay'], '', 'still marked');
+});
+
+test('overlay-blend / overlay-z apply live to the existing surface — no rebuild (#721)', () => {
+  const { stub, attrs, calls } = makeStub();
+  const style: Record<string, string> = {};
+  (stub as unknown as { overlayCanvas: unknown }).overlayCanvas = { style };
+  // the rebuild path would call field.destroy() + this.start(); make both loud if reached.
+  (stub.field as unknown as { destroy: () => void }).destroy = () => calls.push('destroy');
+  (stub as unknown as { start: () => void }).start = () => calls.push('start');
+  attrs.set('overlay-blend', 'multiply');
+  stub.attributeChangedCallback('overlay-blend', 'screen', 'multiply');
+  assert.equal(style.mixBlendMode, 'multiply', 'blend applied in place');
+  attrs.set('overlay-z', '12');
+  stub.attributeChangedCallback('overlay-z', '5', '12');
+  assert.equal(style.zIndex, '12', 'z-index applied in place');
+  attrs.set('overlay-z', 'auto');
+  stub.attributeChangedCallback('overlay-z', '12', 'auto');
+  assert.equal(style.zIndex, '5', 'non-numeric falls back to 5');
+  assert.deepEqual(calls, [], 'no destroy / start — not a rebuild');
+});
+
+test('overlay-blend / overlay-z with no surface yet is a silent no-op — the next ensureOverlayCanvas reads them (#721)', () => {
+  const { stub, attrs, calls } = makeStub();
+  (stub.field as unknown as { destroy: () => void }).destroy = () => calls.push('destroy');
+  (stub as unknown as { start: () => void }).start = () => calls.push('start');
+  attrs.set('overlay-blend', 'multiply');
+  stub.attributeChangedCallback('overlay-blend', null, 'multiply');
+  stub.attributeChangedCallback('overlay-z', null, '9');
+  assert.deepEqual(calls, [], 'nothing to apply to, nothing rebuilt');
+});
+
+test('setOverlayBlend / setOverlayZ apply + reflect (#721, #541 symmetry)', () => {
+  const { stub, attrs } = makeStub();
+  const style: Record<string, string> = {};
+  (stub as unknown as { overlayCanvas: unknown }).overlayCanvas = { style };
+  stub.setOverlayBlend('lighten');
+  assert.equal(style.mixBlendMode, 'lighten');
+  assert.equal(attrs.get('overlay-blend'), 'lighten');
+  stub.setOverlayZ(30);
+  assert.equal(style.zIndex, '30');
+  assert.equal(attrs.get('overlay-z'), '30');
+});
+
+const overlayBlendGet = Object.getOwnPropertyDescriptor(FieldField.prototype, 'overlayBlend')!.get!;
+const overlayZGet = Object.getOwnPropertyDescriptor(FieldField.prototype, 'overlayZ')!.get!;
+const overlayBlendFor = (attr: string | null): string => overlayBlendGet.call({ getAttribute: () => attr });
+const overlayZFor = (attr: string | null): number => overlayZGet.call({ getAttribute: () => attr });
+
+test('overlayBlend / overlayZ getters default to the pre-#721 surface (screen / 5)', () => {
+  assert.equal(overlayBlendFor(null), 'screen', 'absent ⇒ screen');
+  assert.equal(overlayBlendFor(''), 'screen', 'empty ⇒ screen');
+  assert.equal(overlayBlendFor('  '), 'screen', 'whitespace ⇒ screen');
+  assert.equal(overlayBlendFor(' multiply '), 'multiply', 'trimmed value passes through');
+  assert.equal(overlayZFor(null), 5, 'absent ⇒ 5');
+  assert.equal(overlayZFor(''), 5, 'empty ⇒ 5');
+  assert.equal(overlayZFor('auto'), 5, 'non-numeric ⇒ 5');
+  assert.equal(overlayZFor('12'), 12);
+  assert.equal(overlayZFor('0'), 0, 'zero is a legitimate stacking level');
+  assert.equal(overlayZFor('-1'), -1, 'negative is legitimate too');
+});
+
+test('overlay-blend / overlay-z are observed attributes (#721)', () => {
+  assert.ok(FieldField.observedAttributes.includes('overlay-blend'));
+  assert.ok(FieldField.observedAttributes.includes('overlay-z'));
+});
+
+test('disconnectedCallback destroys the overlay surface it owns (#721)', () => {
+  let destroyed = 0;
+  const self = {
+    overlaySurface: { destroy: () => void destroyed++ },
+    overlayCanvas: {},
+    field: undefined,
+    fieldActiveMarked: false,
+  };
+  FieldField.prototype.disconnectedCallback.call(self as unknown as FieldField);
+  assert.equal(destroyed, 1, 'surface.destroy() called once');
+  assert.equal(self.overlaySurface, undefined);
+  assert.equal(self.overlayCanvas, undefined);
 });
 
 // ── #542: full handle access ──────────────────────────────────────────────────

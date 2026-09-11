@@ -481,6 +481,15 @@
             },
             {
               "kind": "field",
+              "name": "overlaySurface",
+              "type": {
+                "text": "OverlaySurface | undefined"
+              },
+              "privacy": "private",
+              "description": "the `createOverlaySurface` handle that owns `overlayCanvas` (placement + removal), #721."
+            },
+            {
+              "kind": "field",
               "name": "visibilityObserver",
               "type": {
                 "text": "IntersectionObserver | undefined"
@@ -657,6 +666,24 @@
                 "text": "number | undefined"
               },
               "description": "`grid-intensity` — `grid` overlay stroke opacity ∈ [0,1]; undefined (engine default 0.16, the faint\ndiagnostic) if absent/invalid. Raise it (≈0.5) to make the warped lattice a visual centerpiece.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "overlayBlend",
+              "type": {
+                "text": "string"
+              },
+              "description": "`overlay-blend` — CSS `mix-blend-mode` of the overlay surface; `'screen'` (today's surface) when\nabsent/empty. Host placement, not an engine option (#721).",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "overlayZ",
+              "type": {
+                "text": "number"
+              },
+              "description": "`overlay-z` — CSS `z-index` of the overlay surface; `5` (today's surface) when absent/non-numeric.",
               "readonly": true
             },
             {
@@ -1072,6 +1099,42 @@
                 }
               ],
               "description": "render field readings on the overlay surface (Field Surfaces — in front of content); one mode or an additive stack."
+            },
+            {
+              "kind": "method",
+              "name": "setOverlayBlend",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "set the overlay surface's CSS `mix-blend-mode` live (host placement, #721) and reflect to `overlay-blend`."
+            },
+            {
+              "kind": "method",
+              "name": "setOverlayZ",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "z",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "set the overlay surface's CSS `z-index` live (host placement, #721) and reflect to `overlay-z`."
             },
             {
               "kind": "method",
@@ -1746,6 +1809,12 @@
             },
             {
               "name": "formation"
+            },
+            {
+              "name": "overlay-blend"
+            },
+            {
+              "name": "overlay-z"
             }
           ],
           "superclass": {
@@ -1961,6 +2030,20 @@
                 "name": "FieldField",
                 "module": "src/index.ts"
               }
+            },
+            {
+              "name": "overlay-blend",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "overlay-z",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
             }
           ],
           "members": [
@@ -2027,6 +2110,19 @@
               },
               "privacy": "private",
               "description": "Field Surfaces: the optional front overlay surface (light-DOM, above content).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "overlaySurface",
+              "type": {
+                "text": "OverlaySurface | undefined"
+              },
+              "privacy": "private",
+              "description": "the `createOverlaySurface` handle that owns `overlayCanvas` (placement + removal), #721.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2286,6 +2382,32 @@
                 "text": "number | undefined"
               },
               "description": "`grid-intensity` — `grid` overlay stroke opacity ∈ [0,1]; undefined (engine default 0.16, the faint\ndiagnostic) if absent/invalid. Raise it (≈0.5) to make the warped lattice a visual centerpiece.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "overlayBlend",
+              "type": {
+                "text": "string"
+              },
+              "description": "`overlay-blend` — CSS `mix-blend-mode` of the overlay surface; `'screen'` (today's surface) when\nabsent/empty. Host placement, not an engine option (#721).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "overlayZ",
+              "type": {
+                "text": "number"
+              },
+              "description": "`overlay-z` — CSS `z-index` of the overlay surface; `5` (today's surface) when absent/non-numeric.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -2821,6 +2943,50 @@
                 }
               ],
               "description": "render field readings on the overlay surface (Field Surfaces — in front of content); one mode or an additive stack.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setOverlayBlend",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "set the overlay surface's CSS `mix-blend-mode` live (host placement, #721) and reflect to `overlay-blend`.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setOverlayZ",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "z",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "set the overlay surface's CSS `z-index` live (host placement, #721) and reflect to `overlay-z`.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

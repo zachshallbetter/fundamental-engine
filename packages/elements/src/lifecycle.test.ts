@@ -18,7 +18,9 @@ function makeMountedStub() {
     calls,
     visibilityObserver: { disconnect: () => calls.push('observer.disconnect') },
     field: { destroy: () => calls.push('field.destroy') },
+    // the overlay canvas is owned through its createOverlaySurface handle (#721): teardown goes via destroy().
     overlayCanvas: { remove: () => calls.push('overlay.remove') },
+    overlaySurface: { destroy: () => calls.push('overlay.destroy') },
     platformRuntime: { destroy: () => calls.push('runtime.destroy') },
   };
 }
@@ -31,7 +33,7 @@ test('disconnectedCallback tears down every owned resource (the unmount contract
   assert.deepEqual(stub.calls, [
     'observer.disconnect',
     'field.destroy',
-    'overlay.remove',
+    'overlay.destroy',
     'runtime.destroy',
   ]);
 });
@@ -43,6 +45,7 @@ test('disconnectedCallback clears every handle to undefined (so re-connect rebui
   assert.equal(stub.visibilityObserver, undefined);
   assert.equal(stub.field, undefined);
   assert.equal(stub.overlayCanvas, undefined);
+  assert.equal(stub.overlaySurface, undefined);
   assert.equal(stub.platformRuntime, undefined);
 });
 
@@ -52,6 +55,7 @@ test('disconnectedCallback on an already-bare element is a no-op (idempotent unm
     visibilityObserver: undefined,
     field: undefined,
     overlayCanvas: undefined,
+    overlaySurface: undefined,
     platformRuntime: undefined,
   };
   assert.doesNotThrow(() => FieldField.prototype.disconnectedCallback.call(bare as unknown as FieldField));

@@ -1,5 +1,5 @@
 import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RestingMotion, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
-import { createBrowserField, type FieldPlatform } from '@fundamental-engine/dom';
+import { createBrowserField, createOverlaySurface, type FieldPlatform, type OverlaySurface } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
 import {
@@ -49,6 +49,8 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {string} resting-motion - The resting-motion floor (declared, default OFF): `thermal` (a field-wide seeded Langevin kick) or `flow` (a divergence-free curl), optionally followed by a strength multiplier (`"flow 0.5"`, default `1`) — honest idle motion for a drawn field with nothing painted, measured as `--temperature`, and nothing under reduced motion. Absent = off. Construction-time — changing it rebuilds.
  * @attr {number} grid-warp - Distortion multiplier for the `grid` overlay's lattice (default `1`, the calibrated amount). `2`–`3` exaggerates the deformation; `0` flattens it. Only affects the `grid` overlay mode.
  * @attr {number} grid-intensity - Stroke opacity ∈ [0,1] for the `grid` overlay lines (default `0.16`, the faint diagnostic). Raise it (≈`0.5`) to make the warped lattice a visual centerpiece. Only affects the `grid` overlay mode.
+ * @attr {string} overlay-blend - CSS `mix-blend-mode` of the overlay surface (default `screen`) — host placement of the front canvas, not an engine option (#721). Applied live to the existing surface (no rebuild) or on its first creation.
+ * @attr {number} overlay-z - CSS `z-index` of the overlay surface (default `5`) — host placement of the front canvas, not an engine option (#721). Applied live (no rebuild); a non-numeric value falls back to `5`.
  */
 
 /** A no-op scalar grid returned by `grid()` before the element's field has started. */
@@ -144,6 +146,8 @@ export class FieldField extends HTMLElementBase {
     'resting-motion',
     'background',
     'formation',
+    'overlay-blend',
+    'overlay-z',
   ];
 
   private readonly canvas: HTMLCanvasElement;
@@ -153,6 +157,8 @@ export class FieldField extends HTMLElementBase {
   private reflecting = false;
   /** Field Surfaces: the optional front overlay surface (light-DOM, above content). */
   private overlayCanvas?: HTMLCanvasElement;
+  /** the `createOverlaySurface` handle that owns `overlayCanvas` (placement + removal), #721. */
+  private overlaySurface?: OverlaySurface;
   /** element-level visibility: pages can hide the field (display:none) — skip draw work then. */
   private visibilityObserver?: IntersectionObserver;
   private fieldVisible = true;
@@ -308,6 +314,18 @@ export class FieldField extends HTMLElementBase {
   get gridIntensity(): number | undefined {
     const v = Number(this.getAttribute('grid-intensity'));
     return Number.isFinite(v) && v >= 0 ? v : undefined;
+  }
+  /** `overlay-blend` — CSS `mix-blend-mode` of the overlay surface; `'screen'` (today's surface) when
+   *  absent/empty. Host placement, not an engine option (#721). */
+  get overlayBlend(): string {
+    const v = this.getAttribute('overlay-blend')?.trim();
+    return v ? v : 'screen';
+  }
+  /** `overlay-z` — CSS `z-index` of the overlay surface; `5` (today's surface) when absent/non-numeric. */
+  get overlayZ(): number {
+    const raw = this.getAttribute('overlay-z');
+    const v = raw === null || raw.trim() === '' ? NaN : Number(raw);
+    return Number.isFinite(v) ? v : 5;
   }
   /** `separation` — particle-to-particle separation force strength ∈ [0,1]; undefined if absent/invalid. */
   get separation(): number | undefined {
@@ -498,6 +516,16 @@ export class FieldField extends HTMLElementBase {
     const serial = mode === 'off' ? null : typeof mode === 'string' ? mode : mode.join(' ') || null;
     this.reflect('overlay', serial);
   }
+  /** set the overlay surface's CSS `mix-blend-mode` live (host placement, #721) and reflect to `overlay-blend`. */
+  setOverlayBlend(mode: string): void {
+    if (this.overlayCanvas) this.overlayCanvas.style.mixBlendMode = mode;
+    this.reflect('overlay-blend', mode);
+  }
+  /** set the overlay surface's CSS `z-index` live (host placement, #721) and reflect to `overlay-z`. */
+  setOverlayZ(z: number): void {
+    if (this.overlayCanvas) this.overlayCanvas.style.zIndex = String(z);
+    this.reflect('overlay-z', String(z));
+  }
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void {
     this.field?.threads(list);
@@ -656,7 +684,8 @@ export class FieldField extends HTMLElementBase {
       this.fieldActiveMarked = false;
     }
     // Field Surfaces: remove the light-DOM overlay surface this element owns.
-    this.overlayCanvas?.remove();
+    this.overlaySurface?.destroy();
+    this.overlaySurface = undefined;
     this.overlayCanvas = undefined;
     this.platformRuntime?.destroy();
     this.platformRuntime = undefined;
@@ -707,6 +736,14 @@ export class FieldField extends HTMLElementBase {
       case 'formation':
         if (this.formation) this.field.setFormation(this.formation);
         break;
+      // overlay-blend / overlay-z are host placement of the front canvas (#721): apply to the existing
+      // surface in place — never a rebuild. If no surface exists yet, ensureOverlayCanvas reads them.
+      case 'overlay-blend':
+        if (this.overlayCanvas) this.overlayCanvas.style.mixBlendMode = this.overlayBlend;
+        break;
+      case 'overlay-z':
+        if (this.overlayCanvas) this.overlayCanvas.style.zIndex = String(this.overlayZ);
+        break;
       default: // density / waves / mass are construction-time → rebuild
         this.field.destroy();
         this.start();
@@ -723,16 +760,14 @@ export class FieldField extends HTMLElementBase {
   private ensureOverlayCanvas(): HTMLCanvasElement | null {
     if (this.overlayCanvas) return this.overlayCanvas;
     if (typeof document === 'undefined') return null;
-    const oc = document.createElement('canvas');
-    oc.setAttribute('aria-hidden', 'true');
-    // marked so a consumer can target the overlay surface (e.g. a scroll-driven opacity fade) without
-    // reaching into the shadow internals — it's the only canvas Fundamental adds to the light DOM.
-    oc.setAttribute('data-field-overlay', '');
-    oc.style.cssText =
-      'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;mix-blend-mode:screen';
-    document.body.appendChild(oc);
-    this.overlayCanvas = oc;
-    return oc;
+    // placement lives in @fundamental-engine/dom (#721): fixed, click-through, aria-hidden, marked
+    // `data-field-overlay` (so a consumer can target it without reaching into the shadow internals —
+    // it's the only canvas Fundamental adds to the light DOM), with the host's blend / z-index attrs.
+    // Core sizes the backing store (the helper's autoSize stays off).
+    const surface = createOverlaySurface(document, { blend: this.overlayBlend, zIndex: this.overlayZ });
+    this.overlaySurface = surface;
+    this.overlayCanvas = surface.canvas;
+    return surface.canvas;
   }
 
   /** (re)create the engine on the canvas, reading the current attributes. */
