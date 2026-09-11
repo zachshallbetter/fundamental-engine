@@ -204,7 +204,10 @@ about them. Each paper that touches the physics restates the relevant ones rathe
    energy; we choose non-conservation for **plausibility**, cf. Dinev/Liu/Kavan, ACM TOG 2018); (b) that
    force-directed layout is *cubic* `O(n³)` (modern Barnes–Hut / multilevel schemes are
    near-linearithmic); (c) the *"unbounded-repulsion flaw"* framing (it describes a specific competing
-   force model, not Fundamental's bounded `(1 − d/r)ⁿ` designed forces).
+   force model, not Fundamental's bounded `(1 − d/r)ⁿ` designed forces). **Guarded:**
+   `apps/site/src/lib/refuted-claims.test.ts` walks the docs, the READMEs, and the site source and
+   fails CI if any of the three framings reappears outside this entry and
+   [stability-and-convergence.md](../canonical/stability-and-convergence.md).
 
 ## Internal review
 
