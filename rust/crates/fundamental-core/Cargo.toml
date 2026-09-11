@@ -1,12 +1,28 @@
 [package]
 name = "fundamental-core"
-version = "0.0.0"
-description = "The Fundamental relational field engine — Rust core. DOM-free, renderer-agnostic, f64."
+version.workspace = true
+description = "The Fundamental relational field engine — Rust core. A reciprocal physics field where bodies bend the field and its density bends them back. DOM-free, renderer-agnostic, f64, deterministic, zero dependencies."
+readme = "README.md"
+keywords = ["physics", "field", "forces", "simulation", "deterministic"]
+categories = ["simulation", "science", "algorithms"]
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/fundamental-core"
 authors.workspace = true
-publish = false
+
+# crates.io publishing is a maintainer-only act (RELEASING.md § "The Rust plane (crates.io)").
+# `publish = true` only makes `cargo publish --dry-run` runnable — the real publish rides the
+# dispatch-only `crates-io.yml` workflow with `dry_run=false`, never a laptop.
+publish = true
+
+# The cross-plane golden conformance test reads the SHARED fixture
+# (swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json) by an include_str! path that
+# climbs out of the crate — it only exists inside the monorepo checkout. It is excluded from the
+# published tarball so `cargo test` on the crates.io source compiles; CI still runs it from the repo.
+# Follow-up: teach scripts/gen-conformance-golden.mjs to also emit a crate-local copy, then ship it.
+exclude = ["tests/golden_conformance.rs"]
 
 # The core imports ZERO runtime dependencies — same contract as the JS core
 # (packages/core, enforced by dom-boundary.test.ts) and the native ports.
