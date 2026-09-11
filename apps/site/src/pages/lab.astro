@@ -192,6 +192,13 @@ const FILTER_COLOR: Record<string, string> = {
             <span class="frame-readout" id="frameReadout">frame 0 / 60</span>
           </div>
 
+          <!-- curated scenarios per force (lib/lab-scenarios.ts) — one click sets up a known setup;
+               the chips render client-side; the row hides for forces with no curated tags -->
+          <div class="lab-tags" id="tags" role="group" aria-label="Scenario" hidden>
+            <span class="tags-label">scenario</span>
+            <span class="tags-chips" id="tagChips"></span>
+          </div>
+
           <div class="lab-info">
             <div class="info-col">
               <div class="info-title sweep-head">
@@ -262,6 +269,7 @@ const FILTER_COLOR: Record<string, string> = {
 
   <script>
     import { EXPERIMENTS, runScenario, allForces, forceAt, MANUAL_FORCES } from '@fundamental-engine/core';
+    import { tagsFor, findTag, isDefaultTag, applyScenarioTag, type ScenarioTag } from '../lib/lab-scenarios.ts';
 
     type Any = Record<string, any>;
     const forces = allForces();
@@ -333,6 +341,9 @@ const FILTER_COLOR: Record<string, string> = {
 
       let cur = 'attract';
       let overrides: Any = {};
+      // the active scenario tag (lib/lab-scenarios.ts) — a curated patch on the catalog scenario,
+      // applied BEFORE the knob overrides. null = the catalog scenario itself.
+      let activeTag: ScenarioTag | null = null;
       let result: any = null;
       let checks: any[] = [];
       let frame = 0;
@@ -357,7 +368,11 @@ const FILTER_COLOR: Record<string, string> = {
       const calibrated = () => !!byForce[cur]; // every catalogued force has a conformance experiment
       const isPair = (id: string) => ['collide', 'cohesion', 'pressure', 'link', 'hunt', 'align'].includes(id);
 
-      function scenarioBase() { return byForce[cur].scenario; }
+      // the scenario the knobs tune on top of: the catalog scenario, or the active tag's patch of it
+      // (so the knob defaults, the Tune ticks, the note and the sweep all read the tagged setup)
+      function scenarioBase() { return applyScenarioTag(byForce[cur].scenario, activeTag); }
+      // the checks for the current run: a tag may carry its own list (replacing the catalog's)
+      const expectationsOf = (): Any[] => activeTag?.expectations ?? byForce[cur].expectations;
       // the default value of a tunable key, read from the force's scenario
       function defOf(key: string): number {
         const s = scenarioBase(), b = s.body, p0 = s.particles[0];
@@ -491,8 +506,11 @@ const FILTER_COLOR: Record<string, string> = {
         }
         result = runScenario(s, forces);
         ghostForce = cur;
-        const tuned = ['strength', 'range', 'spin', 'angle', 'box', 'absorbR', 'vx', 'vy'].some((k) => overrides[k] != null);
-        checks = byForce[cur].expectations.map((e: Any) => {
+        // a non-default tag moves the setup exactly like a knob does — the catalog's exact Δv
+        // pins the catalog geometry, so it is "default-only" for both (tag-owned lists are used as-is)
+        const tuned = (activeTag != null && !isDefaultTag(activeTag))
+          || ['strength', 'range', 'spin', 'angle', 'box', 'absorbR', 'vx', 'vy'].some((k) => overrides[k] != null);
+        checks = expectationsOf().map((e: Any) => {
           const r = e.check(result);
           return {
             label: e.label, kind: e.kind, pass: r.pass, measured: r.measured, expected: r.expected,
@@ -806,7 +824,7 @@ const FILTER_COLOR: Record<string, string> = {
           const res = runScenario(buildScenario({ ...overrides, [m.key]: v, count: 1 }), forces);
           let y = 0;
           if (metric === 'delta') { const d = res.applyDelta?.[0]; y = d ? Math.hypot(d.dvx, d.dvy) : 0; }
-          else if (metric === 'passes') { y = byForce[cur].expectations.filter((e: Any) => { try { return e.check(res).pass; } catch { return false; } }).length; }
+          else if (metric === 'passes') { y = expectationsOf().filter((e: Any) => { try { return e.check(res).pass; } catch { return false; } }).length; }
           else { const last = res.trajectory[res.trajectory.length - 1][0]; y = last ? Math.hypot(last.x - res.body.cx, last.y - res.body.cy) : 0; }
           pts.push([v, y]);
         }
@@ -987,10 +1005,37 @@ const FILTER_COLOR: Record<string, string> = {
         }, 33);
       }
 
+      // ── scenario tags ──
+      // The chips for the current force (hidden when it has none). The default chip — the
+      // catalog scenario — reads `on` when no tag is active.
+      function renderTags() {
+        const row = $('tags'), chips = $('tagChips');
+        if (!row || !chips) return;
+        const tags = tagsFor(cur);
+        row.hidden = tags.length === 0;
+        chips.innerHTML = tags.map((t) => {
+          const on = activeTag ? activeTag.id === t.id : isDefaultTag(t);
+          return `<button type="button" class="tag${on ? ' on' : ''}" data-tag="${t.id}" title="${esc(t.desc)}" aria-pressed="${on}">${esc(t.label)}</button>`;
+        }).join('');
+        lab!.dataset.tag = activeTag?.id ?? '';
+        chips.querySelectorAll('button[data-tag]').forEach((b) =>
+          b.addEventListener('click', () => setTag((b as HTMLElement).dataset.tag!), { signal: _ac.signal }));
+      }
+      // Set the scenario by tag id (a default tag or an unknown id ⇒ the catalog scenario). The
+      // knob overrides are kept — the tag is the scenario, the knobs are the tune on top — and
+      // the ghost keeps the previous tag's track dashed for a same-force comparison.
+      function setTag(id: string | null) {
+        const t = findTag(cur, id);
+        activeTag = t && !isDefaultTag(t) ? t : null;
+        renderTags();
+        stopPlay();
+        evaluate();
+      }
+
       // ── select a force ──
       function selectForce(force: string, keepOverrides = false) {
         cur = force;
-        if (!keepOverrides) overrides = {};
+        if (!keepOverrides) { overrides = {}; activeTag = null; }
         document.querySelectorAll('.force-tile').forEach((t) => t.classList.toggle('on', (t as HTMLElement).dataset.force === force));
         lab!.style.setProperty('--fc', color());
         updateAbout();
@@ -1008,6 +1053,7 @@ const FILTER_COLOR: Record<string, string> = {
           $('expectPanel')!.hidden = true; $('tunePanel')!.hidden = true;
           return;
         }
+        renderTags();
         setPreset('default');
         showTab(tab);
         evaluate();
@@ -1037,13 +1083,14 @@ const FILTER_COLOR: Record<string, string> = {
         const parts = [cur];
         for (const k of ['strength', 'range', 'spin', 'angle', 'box', 'absorbR', 'vx', 'vy', 'count', 'seed']) if (overrides[k] != null) parts.push(`${k}=${overrides[k]}`);
         if (overrides.placement != null) parts.push(`placement=${overrides.placement}`);
+        if (activeTag) parts.push(`tag=${activeTag.id}`);
         return parts.join(';');
       }
       function buildRecord() {
         const active = checks.filter((c: Any) => c.active);
         return {
           tool: 'Fundamental · the Lab', force: cur, symbol: META[cur].symbol,
-          scenario: { label: scenarioBase().label, family: META[cur].family, frames: result.trajectory.length - 1 },
+          scenario: { label: scenarioBase().label, tag: activeTag?.id ?? null, family: META[cur].family, frames: result.trajectory.length - 1 },
           inputs: { overrides: { ...overrides } },
           outputs: {
             verdict: active.every((c: Any) => c.passFrame >= 0) ? 'confirmed' : 'unresolved',
@@ -1102,7 +1149,7 @@ const FILTER_COLOR: Record<string, string> = {
         $('sweepMetric')?.addEventListener('change', () => runSweep(), { signal: _ac.signal });
         $('export')?.addEventListener('click', exportJSON, { signal: _ac.signal });
         $('report')?.addEventListener('click', copyReport, { signal: _ac.signal });
-        $('resetParams')?.addEventListener('click', () => { overrides = {}; setPreset('default'); evaluate(); }, { signal: _ac.signal });
+        $('resetParams')?.addEventListener('click', () => { overrides = {}; activeTag = null; renderTags(); setPreset('default'); evaluate(); }, { signal: _ac.signal });
         $('share')?.addEventListener('click', () => { location.hash = buildHash(); navigator.clipboard?.writeText(location.href); flash('Link copied'); }, { signal: _ac.signal });
         const presetSel = $('preset') as HTMLSelectElement | null;
         if (presetSel) { presetSel.innerHTML = PRESETS.map((p) => `<option value="${p.id}">${p.label}</option>`).join(''); presetSel.addEventListener('change', () => applyPreset(presetSel.value), { signal: _ac.signal }); }
@@ -1137,7 +1184,15 @@ const FILTER_COLOR: Record<string, string> = {
         if (hash) {
           const [force, ...kv] = hash.split(';');
           if (byForce[force]) {
-            for (const pair of kv) { const [k, v] = pair.split('='); if (v != null) overrides[k] = k === 'placement' ? v : parseFloat(v); }
+            let tagId: string | null = null;
+            for (const pair of kv) {
+              const [k, v] = pair.split('=');
+              if (v == null) continue;
+              if (k === 'tag') tagId = v; // a string key — kept out of the numeric override map
+              else overrides[k] = k === 'placement' ? v : parseFloat(v);
+            }
+            const t = findTag(force, tagId); // unknown id → the catalog scenario
+            activeTag = t && !isDefaultTag(t) ? t : null;
             selectForce(force, true);
             return;
           }
