@@ -126,6 +126,17 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
 
     <!-- client-side navigation: no full reload, so the field below runs continuously -->
     <ClientRouter />
+
+    <!-- Cloudflare Web Analytics. AZ deny traffic is flagged at Vercel Firewall
+         (rule: Block Arizona / Queen Creek 85142) before this beacon can run. -->
+    {import.meta.env.PROD && (
+      <script
+        is:inline
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon='{"token": "213f3815b2ea46599d150c3938b32799"}'
+      ></script>
+    )}
   </head>
   <body>
     <!-- skip navigation: the first focusable element on every page. Visually hidden
