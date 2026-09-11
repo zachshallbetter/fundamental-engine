@@ -686,8 +686,10 @@ export type OverlayInput = OverlayMode | readonly OverlayMode[];
  * one-line note says otherwise. Carried on {@link FieldPolicy.budgets}.
  *
  * WIRED today: `motion` (folds into the effective motion allowance alongside reduced-motion + perf
- * pressure) and `privacy` (gates body `data` in snapshots). The rest are DECLARED-not-yet-enforced —
- * accepted and carried on the policy for host/tooling introspection, wired as their consumers land.
+ * pressure), `privacy` (gates body `data` in snapshots) and `agentRead` (gates the agent read surface:
+ * closed at 0, a deterministic sample rate in between, full at ≥1). The rest are DECLARED-not-yet-
+ * enforced — accepted and carried on the policy for host/tooling introspection, wired as their
+ * consumers land.
  */
 export interface FieldBudgets {
   /** WIRED. `0..1` cap on how much motion the field may express; `0` behaves as reduced-motion (frozen). */
@@ -704,7 +706,16 @@ export interface FieldBudgets {
   privacy?: number;
   /** DECLARED. `0..1` accessibility floor — the minimum non-motion legibility the field must preserve. */
   accessibility?: number;
-  /** DECLARED. `0..1` cap on how much field state agent readers (query/snapshot/agent-json) may consume. */
+  /** WIRED. `0..1` cap on how much field state agent readers ({@link FieldHandle.forAgent} views) may
+   *  consume per reading. `0` closes the agent surface (ids + shape only); `0 < b < 1` is a deterministic
+   *  per-read SAMPLE RATE — each `query()`/`snapshot()` through a view carries `floor(b·n)` of its `n`
+   *  bodies and `floor(b·m)` of its `m` relationships (influences / `focusState` entries filtered to the
+   *  sampled bodies), selected by a hash seeded through the injected {@link FieldOptions.rng} (one draw
+   *  per view, taken lazily on the first sampled read — replay holds) and keyed on the frame (stable
+   *  within a frame, re-rolled across frames); `≥ 1` or unset is the full reading. Field-level metrics
+   *  (incl. the true `bodies` count) and particles are shape, not sampled. Read live on every reading;
+   *  a `NaN` or negative value closes. It is a consumption cap, not a confidentiality boundary — over
+   *  many frames the union of samples can cover the population; use caps/redactions/`privacy` for that. */
   agentRead?: number;
 }
 
@@ -1271,7 +1282,9 @@ export interface AgentViewOptions {
  * when `read:replay` is granted). It has NO mutation methods — no `applyForce`, no `addBody`, no
  * `setPolicy` — enforced by the facade's very shape: *agent-readable is not agent-writable*. Every
  * reading is tightened to the granted capabilities, then any `redactions` paths are stripped, and the
- * result can never widen past what the field's {@link FieldPolicy} already permits.
+ * result can never widen past what the field's {@link FieldPolicy} already permits. A fractional
+ * {@link FieldBudgets.agentRead} further tightens every reading to a deterministic sample of its bodies
+ * and relationships (see that budget's note); `0` closes the view to ids + shape.
  */
 export interface AgentFieldView {
   /** the granted capabilities (a frozen copy). */

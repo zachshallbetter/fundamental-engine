@@ -91,6 +91,7 @@ import { accumulateAt } from '../diagnostics/probes.ts';
 import { diffFieldSnapshots, replayFieldSnapshots } from './field-snapshot.ts';
 import { lintProjections } from './governance.ts';
 import { applyLens } from './query-lens.ts';
+import { agentReadFraction, sampleFraction, AGENT_VIEW_SEED_SPACE } from './agent-sampling.ts';
 
 // Shared draw/integrate scratch — reused across the per-particle and per-cell hot loops so an
 // active flow focus and the particle draw don't allocate a `{x,y}` / `[r,g,b]` each iteration.
@@ -3177,16 +3178,41 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const redactions = (viewOpts.redactions ?? []).slice();
       const has = (c: AgentCapability): boolean => caps.has(c);
 
-      // If a future `budgets.agentRead` budget is 0, the agent surface is closed entirely: the most
-      // restricted view (empty caps → ids + shape only). SEAM: only the 0 boundary is wired today; the
-      // fractional 0<b<1 gradient (partial agent read) is DECLARED-not-yet-enforced (see FieldBudgets).
-      const agentReadOpen = (): boolean => {
-        const b = policy.budgets?.agentRead;
-        return b == null || b > 0;
+      // `budgets.agentRead` gates the surface itself, read LIVE on every reading (#915):
+      //   0 (or ≤ 0 / NaN)  → CLOSED: the most-restricted view (ids + shape only);
+      //   0 < b < 1         → SAMPLED: a deterministic sample rate — each reading carries floor(b·n)
+      //                       bodies + floor(b·m) relationships, seeded through the injected rng (replay
+      //                       holds), stable per (view, frame) — see agent-sampling.ts;
+      //   ≥ 1 or unset      → FULL: the capability-scoped reading, untouched.
+      const agentReadLevel = (): 'closed' | 'sampled' | 'full' => {
+        const f = agentReadFraction(policy);
+        return f <= 0 ? 'closed' : f >= 1 ? 'full' : 'sampled';
+      };
+      // ONE 32-bit draw from the engine rng, taken lazily on the first reading that actually runs under
+      // a fractional budget — so a view that never samples consumes no rng values (byte-identical runs
+      // for every caller without a fractional budget) and a seeded run replays the same subset.
+      let viewSeed: number | null = null;
+      const seedFor = (): number => (viewSeed ??= Math.floor(rng() * AGENT_VIEW_SEED_SPACE) >>> 0);
+      const bodyKey = (b: { id: string }): string => b.id;
+      const relKey = (r: FieldRelationshipReading): string => `${r.from}->${r.to}:${r.type}`;
+      /** Tighten a reading to the sample rate: floor(b·n) bodies, floor(b·m) relationships, influences
+       *  only from sampled sources. Field-level metrics (incl. the true `bodies` count) are shape — the
+       *  base grant — and stay untouched; particles are not identity data and are not sampled. */
+      const sampleReading = <R extends { frame: number; bodies: { id: string }[]; relationships: FieldRelationshipReading[]; influences?: FieldInfluenceReading[] }>(r: R): R => {
+        const f = agentReadFraction(policy);
+        if (f >= 1) return r;
+        const seed = seedFor();
+        r.bodies = sampleFraction(r.bodies, bodyKey, f, seed, r.frame);
+        r.relationships = sampleFraction(r.relationships, relKey, f, seed, r.frame);
+        if (r.influences) {
+          const ids = new Set(r.bodies.map(bodyKey));
+          r.influences = r.influences.filter((i) => ids.has(i.source));
+        }
+        return r;
       };
 
       const scopeQuery = (q: FieldQuery = {}): FieldQueryResult => {
-        if (!agentReadOpen()) {
+        if (agentReadLevel() === 'closed') {
           // closed budget → most-restricted reading: shape only, no metrics/relationships/influences.
           const empty = handle.query({ ...q, include: ['bodies'] });
           empty.metrics = {};
@@ -3203,7 +3229,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         if (has('read:influences')) grantable.add('influences');
         const requested = q.include ? new Set(q.include) : null;
         const include = [...grantable].filter((i) => !requested || requested.has(i));
-        const res = handle.query({ ...q, include });
+        // Sample rate first (a fractional budget tightens the population), then the cap strip + redactions.
+        const res = sampleReading(handle.query({ ...q, include }));
         // Belt-and-braces: strip any dimension the caps don't grant even if query populated it.
         if (!has('read:metrics')) res.metrics = {};
         if (!has('read:relationships')) res.relationships = [];
@@ -3213,7 +3240,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       };
 
       const scopeSnapshot = (snapOpts: FieldSnapshotOptions = {}): FieldSnapshot => {
-        if (!agentReadOpen()) {
+        if (agentReadLevel() === 'closed') {
           const snap = handle.snapshot({ profile: 'public' });
           return applyRedactions(snap as unknown as Record<string, unknown>, redactions) as unknown as FieldSnapshot;
         }
@@ -3224,7 +3251,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         if (!has('read:body-data')) scoped.includeData = false;
         if (!has('read:relationships')) scoped.includeRelationships = false;
         if (!has('read:influences')) scoped.includeInfluences = false;
-        const snap = handle.snapshot(scoped);
+        const snap = sampleReading(handle.snapshot(scoped));
         if (!has('read:projections')) snap.projections = [];
         return applyRedactions(snap as unknown as Record<string, unknown>, redactions) as unknown as FieldSnapshot;
       };
@@ -3246,7 +3273,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (has('read:focus')) {
         view.focusState = (focusOpts) => {
           const s = handle.focusState(focusOpts);
-          return agentReadOpen() ? s : { frame: s.frame, time: s.time, entries: [] };
+          const level = agentReadLevel();
+          if (level === 'closed') return { frame: s.frame, time: s.time, entries: [] };
+          if (level === 'full') return s;
+          // sampled: no attribution for a body this frame's reading withholds — the digest is filtered
+          // to the same body subset query()/snapshot() carry at this frame (same seed, frame, keys).
+          const sampled = sampleReading(handle.query({ include: ['bodies'] }));
+          const ids = new Set(sampled.bodies.map(bodyKey));
+          return { frame: s.frame, time: s.time, entries: s.entries.filter((e) => ids.has(e.target)) };
         };
       }
       return Object.freeze(view);
