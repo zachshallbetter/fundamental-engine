@@ -1,6 +1,6 @@
 # TASK: Fundamental Release-Gate Program (0.x → RC → 1.0)
 
-**Status:** Active — RC engineering phase; open gates: RC-6 (contract coverage), RC-7 (perf budgets — blocked, hardware fact sheet needed), ST-5 (support published on live site).
+**Status:** Active — RC engineering phase; open gates: RC-6 (contract coverage), ST-5 (support published on live site).
 **Predecessor / Position:** Consumes `Fundamental-homepage-reorg-spec.md` (the install/docs coherence requirement) and `Fundamental-launch-brief.md` (the cohort, which *is* the RC validation phase). Sits as release governance over the project — every feature/fix task flows up into these gates.
 **Scope:** The gates that must pass to cut `1.0.0-rc.1`, and to promote `rc` → `1.0.0`, each stated as an evidence-bearing predicate. / **Excluded:** The implementation work behind any gate (the React fix, the CI wiring, the study) — those are separate tasks; this spec defines *what proves them done*, not how to do them.
 **Authority class:** Release governance. The **1.0 API freeze** and the **1.0 support commitment** are irreversible promises — treat both as critical-path; a wrong call propagates into every dependent.
@@ -13,7 +13,7 @@
 1. **The 1.0 surface decision.** Whether the current frozen surface *is* 1.0, or whether named primitives (forces/metrics/options) are still intended before stable. This is a system-of-record decision; an RC cannot be cut against an undeclared surface. If undeclared, **halt** — declare it, then proceed.
 2. **The 1.0 support commitment.** What maintenance/deprecation policy a solo maintainer can actually keep. A 1.0 is a support promise; cutting it without a scoped, publishable policy makes the version a claim you can't honor. If undecided, **halt**.
 3. **Repo-documented release tooling.** The CI test matrix, the coverage tooling, and the provenance/OIDC publish path as currently documented and correct. Do not assume a CI or publish behavior the repo doesn't document. If a required pipeline can't be identified, **halt for the gates that depend on it**.
-4. **Source of performance budgets.** Budgets derive from the measured artifact (`Fundamental-perf-fact-sheet.md`) / the live console — never invented. If a budget can't be sourced, that gate is `open`, not guessed.
+4. **Source of performance budgets.** Budgets derive from the measured artifact (`fundamental-perf-fact-sheet.md`, generated into `perf-budgets.json`) / the live console — never invented. If a budget can't be sourced, that gate is `open`, not guessed.
 
 **Partial-halt rule.** If an input is unavailable and a gate depends on it, mark that gate `blocked` and continue evaluating the rest. Do not cut a tag while any gate for that tag is `blocked` or `open`.
 
@@ -51,7 +51,7 @@ Ordered cheapest-and-most-blocking first within each gate.
 | RC-4 | **Provenance + CI publish wired** | `npm publish --provenance` runs from CI via OIDC on a dry-run tag | the published provenance attestation on a test publish |
 | RC-5 | **Support matrix declared and CI-tested** | The supported browsers, DPR, reduced-motion, and SSR/hydration behaviors are stated and exercised in CI | the matrix doc + green CI run |
 | RC-6 | **Contract-level coverage** | Every documented attribute, metric, and option has a test; conformance tests and determinism fingerprints green across the matrix | coverage report + green conformance/fingerprint runs |
-| RC-7 | **Performance budgets as gates** | Frame-time, long-task, and heap budgets (sourced from the fact sheet) are CI gates that fail the build on regression | the budget config + a passing run |
+| RC-7 | **Performance budgets as gates** | Frame-time, long-task, and heap budgets (sourced from the fact sheet) are CI gates that fail the build on regression | the budget config + a passing run — **met 2026-09-11:** `docs/planning/perf-budgets.json` generated from the measured `fundamental-perf-fact-sheet.md` (titan-gpu: GTX TITAN X, Chrome 149; compute: i7-5930K + M1 Pro); gate `.github/workflows/perf-hardware.yml` on the self-hosted `titan-gpu` runner, checker `scripts/perf/check-budgets.mjs` |
 | RC-8 | **Accessibility verified, not just architectural** | Reduced-motion/semantic-truth lints pass on every shipped example, plus ≥1 real assistive-tech pass logged | lint run + the AT-pass note — **met 2026-09-11:** Orca pass logged in `support-matrix.md` §AT-pass log, record `rc8-at-pass-2026-09-11.md` |
 | RC-9 | **Docs complete for the 1.0 surface** | Every public API documented; a 0.x→1.0 migration note exists; the semver policy is stated | the docs diff |
 | RC-10 | **Install/docs coherence shipped** | The homepage-reorg spec's install gates are green (vanilla default, no bare `Fundamental`, homepage matches `/docs`) | reference: `Fundamental-homepage-reorg-spec.md` §7 |
@@ -76,7 +76,7 @@ Order is the dependency graph.
 
 **Phase A — Decisions (blocking).** Resolve §0.1 (the 1.0 surface) and §0.2 (support policy). Every gate inherits these; nothing proceeds until they're signed.
 
-**Phase B — RC engineering gates.** Drive RC-2 through RC-10 to `met`, parallelized across gates. RC-6 (contract coverage), RC-7 (perf budgets — blocked on the hardware fact sheet), and RC-8 (real AT pass) are the gates still open; start there. (RC-3 and RC-4 closed 2026-06-22.)
+**Phase B — RC engineering gates.** Drive RC-2 through RC-10 to `met`, parallelized across gates. RC-6 (contract coverage) and RC-8 (real AT pass) are the gates still open; start there. RC-7 met 2026-09-11 (hardware fact sheet measured on the titan-gpu runner; budgets generated and gated). (RC-3 and RC-4 closed 2026-06-22.)
 
 **Phase C — Cut `1.0.0-rc.1`.** Only when §3.1 is fully green. Tag from that commit; capture evidence.
 
@@ -110,7 +110,7 @@ Discipline: evidence is appended to the gate ledger, not held in a context windo
 ## 7. Done criteria (evidence required)
 
 - [x] **§0 decisions signed:** the 1.0 surface and the support policy are declared (#316/#317 closed 2026-06-22). *Evidence:* the two decision records (`planning/1.0-surface.md`, `SUPPORT.md`).
-- [ ] **RC gate fully `met`:** every RC-* record carries its named evidence. *Evidence:* the §3.1 ledger, complete. *State:* RC-1–RC-5, RC-9, RC-10 met; **open:** RC-6 (contract coverage), RC-8 (real AT pass); **blocked:** RC-7 (perf budgets — hardware fact sheet needed).
+- [ ] **RC gate fully `met`:** every RC-* record carries its named evidence. *Evidence:* the §3.1 ledger, complete. *State:* RC-1–RC-5, RC-9, RC-10 met; **open:** RC-6 (contract coverage), RC-8 (real AT pass); RC-7 met 2026-09-11.
 - [ ] **`1.0.0-rc.1` cut** from the green-gate commit. *Evidence:* the tag + attached gate snapshot.
 - [ ] **Validation run:** ≥ N external builds on the RC with a friction→fix log. *Evidence:* `Fundamental-launch-brief.md` cohort output.
 - [ ] **STABLE gate fully `met`,** including the quiet-window condition and "all RC gates still green." *Evidence:* the §3.2 ledger, complete.

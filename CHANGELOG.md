@@ -17,6 +17,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Fixed
 
+- **`pnpm --filter @fundamental-engine/core bench` runs again.** The bench still imported `../src/core/*` after the `core/` → `engine/` folder rename (#1029), so it had failed to import since July; the imports now point at `src/engine/`. It also gained a JIT warm-up field before the density sweep (the first measured field otherwise pays V8's compile cost and the density-1 row reads 4–6× high), and `BENCH_JSON=<path>` writes the raw numbers as JSON — the compute half of the RC-7 performance fact sheet and the input of `scripts/perf/check-budgets.mjs`. Measurement-only: no runtime code changes.
 - **The parity matrix now tracks colour** (#1091). `data/parity-matrix.json` gains a `palette` dimension with three symbols — `palette-option` (the engine accepts a multi-hue palette), `palette-host` (the declarative host applies it: `<field-root palette>` / SwiftUI `FieldView` / Compose `FieldView(palette:)`), and `palette-view-host` (the imperative host applies it: vanilla `FieldField.setPalette` / Swift `FundamentalVanilla.FieldField.setPalette` / Android `FieldFieldView`). The Compose single-accent collapse (#1090) reached an app because no gate looked at colour; a port that supports one accent where another supports a palette array is now a `check:docs` parity delta. The regenerated matrix records the one live gap honestly: the Android **View** host (`FieldFieldView`) still renders a single accent.
 ### Added
 

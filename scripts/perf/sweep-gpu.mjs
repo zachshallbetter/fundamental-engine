@@ -42,10 +42,21 @@ result.gpu = await page.evaluate(() => {
   return d ? gl.getParameter(d.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
 });
 try {
-  const info = await cdp.send('SystemInfo.getInfo');
+  const bcdp = await browser.newBrowserCDPSession();
+  const info = await bcdp.send('SystemInfo.getInfo');
   result.gpuFeatures = info.gpu?.featureStatus ?? null;
+  result.gpuDevices = (info.gpu?.devices ?? []).map((d) => d.deviceString || d.vendorString || `${d.vendorId}:${d.deviceId}`);
+  await bcdp.detach();
 } catch (e) {
   result.gpuFeatures = `unavailable: ${e.message}`;
+}
+// A software rasterizer (SwiftShader, llvmpipe) would silently invalidate every fill-rate number below:
+// refuse to measure unless explicitly allowed (ALLOW_SOFTWARE=1), and record the verdict either way.
+result.hardware = /NVIDIA|GeForce|Radeon|AMD|Intel|Apple|Adreno|Mali/i.test(result.gpu) && !/SwiftShader|llvmpipe|softpipe|Software/i.test(result.gpu);
+if (!result.hardware && !process.env.ALLOW_SOFTWARE) {
+  console.error(`sweep-gpu: WebGL renderer is "${result.gpu}" — not a hardware GPU; refusing to measure (set ALLOW_SOFTWARE=1 to override)`);
+  await page.close();
+  process.exit(3);
 }
 
 await page.goto(`${SITE}/perf-bench`, { waitUntil: 'load' });

@@ -32,6 +32,15 @@ const rng = lcg();
 // ── 1. Full-frame cost vs particle count ───────────────────────────────────────────────────────────
 function frameScaling(): string {
   const rows: string[][] = [];
+  // JIT warm-up: the first field measured otherwise pays V8's compile + inline-cache cost (0.66 ms vs
+  // 0.18 ms for the next density on the same machine) and the density-1 row becomes a JIT number.
+  {
+    const { host, tick } = tickHost(1440, 900, 1);
+    const warm = createField(undefined as never, { host, render: 'none', density: 2 });
+    for (let i = 0; i < 4; i++) { const x = rng() * 1440, y = rng() * 900; warm.addBody({ tokens: ['attract'], strength: 1.5, range: 360, rect: () => ({ left: x, top: y, width: 48, height: 48 }) }); }
+    for (let i = 0; i < 120; i++) tick();
+    warm.destroy?.();
+  }
   for (const density of [1, 2, 3, 4]) {
     const { host, tick } = tickHost(1440, 900, 1);
     const field = createField(undefined as never, { host, render: 'none', density });

@@ -1,0 +1,399 @@
+{
+  "generated": "scripts/perf/write-fact-sheet.mjs",
+  "sourcedFrom": "docs/planning/fundamental-perf-fact-sheet.md",
+  "measuredAt": "2026-09-11",
+  "rule": "see the header of scripts/perf/write-fact-sheet.mjs",
+  "compute": {
+    "machines": [
+      "Intel(R) Core(TM) i7-5930K CPU @ 3.50GHz · Node v22.23.2 · linux/x64",
+      "Apple M1 Pro · Node v25.4.0 · darwin/arm64"
+    ],
+    "frameMs": [
+      {
+        "density": 1,
+        "measuredMedianMs": 0.618,
+        "maxMedianMs": 0.927
+      },
+      {
+        "density": 2,
+        "measuredMedianMs": 0.148,
+        "maxMedianMs": 0.222
+      },
+      {
+        "density": 3,
+        "measuredMedianMs": 0.222,
+        "maxMedianMs": 0.332
+      },
+      {
+        "density": 4,
+        "measuredMedianMs": 0.314,
+        "maxMedianMs": 0.471
+      }
+    ],
+    "accumulatorOverheadMaxPct": 28.05,
+    "queryGlobalMaxMs": 0.022,
+    "snapshotMaxMs": 0.022
+  },
+  "gpu": {
+    "titan-dpr1": {
+      "machine": "ANGLE (NVIDIA Corporation, NVIDIA GeForce GTX TITAN X/PCIe/SSE2, OpenGL ES 3.2) · dpr 1 · 1600x813 · Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36",
+      "sweep": [
+        {
+          "render": "dots",
+          "dprCap": 1,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "dots",
+          "dprCap": 1,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "dots",
+          "dprCap": 1,
+          "density": 64,
+          "measuredFpsMed": 30,
+          "minFpsMed": 24
+        },
+        {
+          "render": "dots",
+          "dprCap": 2,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "dots",
+          "dprCap": 2,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "dots",
+          "dprCap": 2,
+          "density": 64,
+          "measuredFpsMed": 30,
+          "minFpsMed": 24
+        },
+        {
+          "render": "trails",
+          "dprCap": 1,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "trails",
+          "dprCap": 1,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "trails",
+          "dprCap": 1,
+          "density": 64,
+          "measuredFpsMed": 30,
+          "minFpsMed": 24
+        },
+        {
+          "render": "trails",
+          "dprCap": 2,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "trails",
+          "dprCap": 2,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "trails",
+          "dprCap": 2,
+          "density": 64,
+          "measuredFpsMed": 30,
+          "minFpsMed": 24
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 1,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 1,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 1,
+          "density": 64,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 2,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 2,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 2,
+          "density": 64,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        }
+      ],
+      "compositing": [
+        {
+          "overlay": "off",
+          "dprCap": 1,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "overlay": "off",
+          "dprCap": 2,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "overlay": "grid",
+          "dprCap": 1,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "overlay": "grid",
+          "dprCap": 2,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        }
+      ],
+      "pages": {
+        "/": {
+          "maxMsMed": 21.71,
+          "maxMsP95": 21.84,
+          "maxLongTasks": 6,
+          "maxTbtMs": 70.25,
+          "maxHeapMB": 29.44
+        },
+        "/eli5": {
+          "maxMsMed": 21.71,
+          "maxMsP95": 21.84,
+          "maxLongTasks": 6,
+          "maxTbtMs": 75.35,
+          "maxHeapMB": 19.99
+        },
+        "/docs/patterns": {
+          "maxMsMed": 21.71,
+          "maxMsP95": 43.42,
+          "maxLongTasks": 2,
+          "maxTbtMs": 50,
+          "maxHeapMB": 35.86
+        }
+      }
+    },
+    "titan-dpr2": {
+      "machine": "ANGLE (NVIDIA Corporation, NVIDIA GeForce GTX TITAN X/PCIe/SSE2, OpenGL ES 3.2) · dpr 2 · 1600x813 · Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36",
+      "sweep": [
+        {
+          "render": "dots",
+          "dprCap": 1,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "dots",
+          "dprCap": 1,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "dots",
+          "dprCap": 1,
+          "density": 64,
+          "measuredFpsMed": 30,
+          "minFpsMed": 24
+        },
+        {
+          "render": "dots",
+          "dprCap": 2,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "dots",
+          "dprCap": 2,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "dots",
+          "dprCap": 2,
+          "density": 64,
+          "measuredFpsMed": 30,
+          "minFpsMed": 24
+        },
+        {
+          "render": "trails",
+          "dprCap": 1,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "trails",
+          "dprCap": 1,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "trails",
+          "dprCap": 1,
+          "density": 64,
+          "measuredFpsMed": 30,
+          "minFpsMed": 24
+        },
+        {
+          "render": "trails",
+          "dprCap": 2,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "trails",
+          "dprCap": 2,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "trails",
+          "dprCap": 2,
+          "density": 64,
+          "measuredFpsMed": 30,
+          "minFpsMed": 24
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 1,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 1,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 1,
+          "density": 64,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 2,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 2,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 2,
+          "density": 64,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        }
+      ],
+      "compositing": [
+        {
+          "overlay": "off",
+          "dprCap": 1,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "overlay": "off",
+          "dprCap": 2,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "overlay": "grid",
+          "dprCap": 1,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        },
+        {
+          "overlay": "grid",
+          "dprCap": 2,
+          "measuredFpsMed": 60,
+          "minFpsMed": 48
+        }
+      ],
+      "pages": {
+        "/": {
+          "maxMsMed": 21.71,
+          "maxMsP95": 21.84,
+          "maxLongTasks": 9,
+          "maxTbtMs": 80.9,
+          "maxHeapMB": 35.35
+        },
+        "/eli5": {
+          "maxMsMed": 21.71,
+          "maxMsP95": 21.84,
+          "maxLongTasks": 7,
+          "maxTbtMs": 119,
+          "maxHeapMB": 31.87
+        },
+        "/docs/patterns": {
+          "maxMsMed": 21.71,
+          "maxMsP95": 43.29,
+          "maxLongTasks": 2,
+          "maxTbtMs": 50,
+          "maxHeapMB": 23.75
+        }
+      }
+    }
+  }
+}
