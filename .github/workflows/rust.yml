@@ -1,0 +1,52 @@
+name: Rust
+
+# The experimental fourth plane (rust/): build + test the fundamental-core crate on every change
+# under rust/ or the shared conformance golden it is held to. Not a required check on main, and
+# never a publish — crates.io is a separate, maintainer-only decision (#1047).
+
+on:
+  push:
+    branches: [main]
+    paths: ['rust/**', 'swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json', '.github/workflows/rust.yml']
+  pull_request:
+    branches: [main]
+    paths: ['rust/**', 'swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json', '.github/workflows/rust.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "rust-${{ github.event.pull_request.number || github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: cargo build + test (fundamental-core)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      - name: Build
+        run: cargo build --locked --workspace
+      - name: Test (incl. the shared cross-plane golden)
+        run: cargo test --locked --workspace
+      - name: Example runs
+        run: cargo run --locked --example ranking -p fundamental-core
+
+  conclusion:
+    name: conclusion-rust
+    needs: [test]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          jq -C <<< '${{ toJson(needs) }}'
+          jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
