@@ -178,6 +178,9 @@ final class FieldEngine: FieldHandle {
     // MARK: - Event bus (on / fire)
 
     private var listeners: [FieldEvent: [(id: UUID, fn: (FieldEventPayload) -> Void)]] = [:]
+    /// Capture-edge state per `sink` body (JS `dataset.fxCap` + `sinkPeak`): present while armed,
+    /// holding the matter count at the rising edge — the `released` count on the falling edge.
+    private var sinkArmed: [ObjectIdentifier: Float] = [:]
 
     private func fire(_ payload: FieldEventPayload) {
         listeners[payload.event]?.forEach { $0.fn(payload) }
@@ -277,7 +280,8 @@ final class FieldEngine: FieldHandle {
             guard let self else { return }
             // release exactly what was captured — radial, from the core (§6.9). Held matter
             // is conserved: released particles stay in the pool.
-            let released = Set(releaseCaptured(self.store.particles, from: b, rng: self.rng).map(ObjectIdentifier.init))
+            let ejected = releaseCaptured(self.store.particles, from: b, rng: self.rng)
+            let released = Set(ejected.map(ObjectIdentifier.init))
             // the blast shoves nearby *free* matter outward (but not what it just released).
             for q in self.store.particles where !released.contains(ObjectIdentifier(q)) {
                 let d3 = q.position - b.center
@@ -287,6 +291,11 @@ final class FieldEngine: FieldHandle {
                     q.velocity += (d3 / d) * f
                     q.heat = max(q.heat, 0.8)
                 }
+            }
+            // `.released` fires here, at the supernova itself (JS: the supernova callback), so a
+            // same-frame fill+release never drops it; the count is the matter ejected.
+            if self.sinkArmed.removeValue(forKey: ObjectIdentifier(b)) != nil {
+                self.fire(FieldEventPayload(event: .released, body: b, count: Float(ejected.count)))
             }
             // the blast also tears nearby bound matter off the Currents (§6.9, §2.4).
             let vol = self.host.volume
@@ -524,6 +533,9 @@ final class FieldEngine: FieldHandle {
                        waveStyle: options.waveStyle, waveCenter: resolvedCenter,
                        separation: options.separation))
 
+        // capture / release edges for sink bodies (JS `updateCaptureEvents`, §22.5).
+        updateCaptureEvents()
+
         // fire tick event + evaluate agent consumers after the force step.
         fire(FieldEventPayload(event: .tick))
         tickAgents()
@@ -738,6 +750,7 @@ final class FieldEngine: FieldHandle {
                 self.programmaticBodies.removeAll { $0 === body }
                 self.bodies.removeAll { $0 === body }
                 self.bodyData.removeValue(forKey: ObjectIdentifier(body)) // release the carried data slot
+                self.sinkArmed.removeValue(forKey: ObjectIdentifier(body)) // and its capture-edge state
                 // drop any edges whose endpoint was this body
                 self.edges.removeAll { $0.from === body || $0.to === body }
                 self.fire(FieldEventPayload(event: .bodyRemove, body: body))
@@ -931,6 +944,27 @@ final class FieldEngine: FieldHandle {
 
     func sample(x: Float, y: Float) -> Vec3 {
         forceAt(bodies: bodies, forces: registry.forces, env: env, at: Vec3(x, y, 0))
+    }
+
+    /// The `captured` / `released` bus events for `sink` bodies — the JS `updateCaptureEvents` mirror.
+    /// `captured` fires on the rising edge of accreting (count = what is held now, remembered as the
+    /// peak); `released` fires on the falling edge (count = that peak). A supernova fires `released`
+    /// directly from the release callback with the ejected count, and disarms the edge.
+    private func updateCaptureEvents() {
+        for b in bodies where b.isVisible && b.tokens.contains("sink") {
+            let key = ObjectIdentifier(b)
+            let edge = captureEdge(prevArmed: sinkArmed[key] != nil, accreting: b.accreted > 0)
+            switch edge.fire {
+            case .captured?:
+                sinkArmed[key] = b.accreted
+                fire(FieldEventPayload(event: .captured, body: b, count: b.accreted))
+            case .released?:
+                let peak = sinkArmed.removeValue(forKey: key) ?? 0
+                fire(FieldEventPayload(event: .released, body: b, count: peak))
+            case nil:
+                break
+            }
+        }
     }
 
     @discardableResult

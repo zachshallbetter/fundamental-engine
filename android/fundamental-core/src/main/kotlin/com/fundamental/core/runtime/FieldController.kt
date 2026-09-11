@@ -138,6 +138,9 @@ class FieldController(
     /** Called once per tick, after the force step and all feedback — used by [FieldHandle] for events + agents. */
     var onAfterTick: (() -> Unit)? = null
 
+    /** Fired at a sink's supernova with the number of particles ejected — the handle's RELEASED seam. */
+    var onSupernova: ((body: Body, ejected: Int) -> Unit)? = null
+
     // ── runtime FIELD POLICY (JS #892) ────────────────────────────────────────────────────────────
     /**
      * What THIS host/session/user/app PERMITS (runtime), distinct from governance (static lint). Replace
@@ -320,8 +323,9 @@ class FieldController(
         env.grid = { name -> grids.getOrPut(name) { ScalarGridImpl(w, h, modeForName(name)) } }
         env.spark = { at, power, color -> sparks.emit(at, power, color) }
         env.supernova = { b ->
-            releaseCaptured(store.particles, b, rng = { rng.nextFloat() }) // eject held matter, conserved
+            val ejected = releaseCaptured(store.particles, b, rng = { rng.nextFloat() }) // eject held matter, conserved
             sparks.emit(b.center, 3f, CANONICAL_FORCE_COLORS["sink"]) // the supernova flash (§23)
+            onSupernova?.invoke(b, ejected.size)
         }
         seedPool(particleCount)
     }

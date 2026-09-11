@@ -17,6 +17,9 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 ### Added
 
 - **`feedback-var-engine-owned` platform lint** (`@fundamental-engine/dom`). A feedback binding that routes a state key onto a var the engine already writes for every `data-feedback` body (`--d`, `--field-density`, `--field-heatmap-density`, `--load`, `--mass`, `--lit`, `--entropy`, `--coherence`, `--temperature`) is two writers on one var: the bound state value shadows the engine's live reading. This is the `--field-density`-reads-0-while-`--d`-is-live collision that made the documented density guidance produce no glow; `applyPattern` already refuses to bind the engine-owned `density` metric, and this rule catches every other route to the same collision. `lintFeedbackEngineOwned` + the `ENGINE_OWNED_FEEDBACK_VARS` set are exported and the rule runs under `lintPlatform()`. Documented in `docs/canonical/feedback-channels.md` §7.
+### Changed
+
+- **Ports: the consumer event bus speaks the JS vocabulary** (#1020). The Swift `FieldEvent` cases `particleCapture` / `supernova` and the Kotlin `PARTICLE_CAPTURE` / `SUPERNOVA` entries — which were declared but never fired — are replaced by `captured` / `released` (`CAPTURED` / `RELEASED`), the keys `field.on()` uses on the web. Both ports now fire them from the same edges as the JS `updateCaptureEvents`: `captured` on the rising edge of a `sink` body's accretion (count = the matter held), `released` on the falling edge (count = the rising-edge peak) and directly from a supernova (count = the particles ejected), so a same-frame fill+release is never dropped. `FieldEventPayload` gains `count` (default `0`). **Breaking for a port consumer** that subscribed to the old cases — rename the case; the conformance golden is unaffected (no force math changed). `tick` / `bodyAdd` / `bodyRemove` are unchanged host-plane lifecycle events with no JS counterpart.
 
 ## [0.10.1] — 2026-07-21
 

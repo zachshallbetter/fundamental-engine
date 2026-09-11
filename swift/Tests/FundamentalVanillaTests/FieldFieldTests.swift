@@ -285,6 +285,33 @@ struct FieldFieldTests {
         field.destroy()
     }
 
+    @Test("on(.captured) / on(.released) fire on a sink's accretion edges with the JS counts (#1020)")
+    func onCapturedReleasedSeam() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        var got: [(FieldEvent, Float)] = []
+        _ = field.on(.captured) { got.append(($0.event, $0.count)) }
+        _ = field.on(.released) { got.append(($0.event, $0.count)) }
+        let h = field.addBody(BodySpec(tokens: ["sink"]) {
+            Box(center: Vec3(187, 406, 0), halfExtents: Vec3(8, 8, 0))
+        })
+        let body = h.bodyRef() as! Body
+        body.absorbR = 0 // never captures on its own — the edges below are driven by hand
+        body.accreted = 2
+        host.fire(at: 0) // rising edge → captured, count = what is held
+        #expect(got.count == 1)
+        #expect(got[0].0 == .captured)
+        #expect(got[0].1 == 2)
+        _ = h.drain() // the falling edge → released, count = the rising-edge peak
+        host.fire(at: 1.0 / 60)
+        #expect(got.count == 2)
+        #expect(got[1].0 == .released)
+        #expect(got[1].1 == 2)
+        host.fire(at: 2.0 / 60) // steady state — no re-fire
+        #expect(got.count == 2)
+        field.destroy()
+    }
+
     @Test("on(.bodyAdd) delivers the added body payload")
     func onBodyAddSeam() {
         let field = FieldField(host: HeadlessFieldHost())

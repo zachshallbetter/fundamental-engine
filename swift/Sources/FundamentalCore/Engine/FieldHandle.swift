@@ -322,13 +322,16 @@ public struct FieldChannelHandle {
 
 // MARK: - Event bus types
 
-/// Field lifecycle events — the typed event bus vocabulary. Mirrors JS `FieldEvent`.
+/// Field lifecycle events — the typed event bus vocabulary. `captured` / `released` mirror the JS
+/// `field.on()` keys exactly (#1020): a `sink` body captured matter (the rising edge of accreting)
+/// / released what it held (the falling edge, or a supernova). `tick` / `bodyAdd` / `bodyRemove` are
+/// host-plane lifecycle events with no JS counterpart.
 public enum FieldEvent: Hashable {
     case tick
     case bodyAdd
     case bodyRemove
-    case particleCapture
-    case supernova
+    case captured
+    case released
 }
 
 /// The payload delivered to an `on` subscriber.
@@ -336,8 +339,11 @@ public struct FieldEventPayload {
     public let event: FieldEvent
     public let body: Body?
     public let particle: Particle?
-    public init(event: FieldEvent, body: Body? = nil, particle: Particle? = nil) {
-        self.event = event; self.body = body; self.particle = particle
+    /// `captured`: the matter held at the rising edge; `released`: what was held at the rising edge
+    /// (the falling edge) or the number of particles ejected (a supernova). Mirrors the JS `count`.
+    public let count: Float
+    public init(event: FieldEvent, body: Body? = nil, particle: Particle? = nil, count: Float = 0) {
+        self.event = event; self.body = body; self.particle = particle; self.count = count
     }
 }
 

@@ -82,7 +82,7 @@ const ORDERED_METHODS: Array<{ method: string; note?: string }> = [
   { method: 'sampleScalar' },
   { method: 'sampleGradient' },
   { method: 'grid',                 note: 'named ScalarGrid — lazy get/create, same grid as env.grid in the force system' },
-  { method: 'on',                   note: 'UUID-keyed subscriber bus; FieldEvent enum (tick/bodyAdd/bodyRemove/particleCapture/supernova); returns Subscription' },
+  { method: 'on',                   note: 'UUID-keyed subscriber bus; FieldEvent enum (tick/bodyAdd/bodyRemove + captured/released, the JS bus keys; #1020); returns Subscription' },
   { method: 'readParticles' },
   { method: 'readParticleIds',      note: 'Particle.id (stable, auto-incremented by FieldStore.add); fills an Int buffer' },
   { method: 'readParticleChannels', note: 'samples named ScalarGrids at each particle position; stride = names.count/size' },
