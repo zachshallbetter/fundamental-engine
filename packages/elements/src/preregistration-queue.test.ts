@@ -138,3 +138,19 @@ test('the queue resumes buffering after the last field tears down', () => {
   fire(REGISTER_BODY, body);
   assert.equal(queue.pendingRegistrationCount(), 1, 'a (re)connect during a field-less window is captured');
 });
+
+test('replay carries the scope / field keys of the buffered detail through unchanged (§17–§19)', () => {
+  const body = new FakeElement();
+  const target = new FakeElement();
+  const detail = { element: body, scope: 'nearest', field: target, attrs: { body: 'attract' } };
+  body.dispatchEvent(new CustomEvent(REGISTER_BODY, { bubbles: true, composed: true, detail }));
+  assert.equal(queue.pendingRegistrationCount(), 1);
+  const replayed: unknown[] = [];
+  fakeDocument!.addEventListener(REGISTER_BODY, (e) => replayed.push((e as CustomEvent).detail));
+  queue.markFieldActive();
+  queue.flushPreRegistrationQueue();
+  assert.equal(replayed.length, 1);
+  assert.equal(replayed[0], detail, 'the very same detail object — scope/field/attrs intact');
+  assert.equal((replayed[0] as typeof detail).scope, 'nearest');
+  assert.equal((replayed[0] as typeof detail).field, target);
+});

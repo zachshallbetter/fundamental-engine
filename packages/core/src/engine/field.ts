@@ -937,10 +937,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const scanned = scanBodies(host.root);
     // merge event-registered shadow-DOM hosts (deduped — a light-DOM host that also fires
     // a registration event is counted once). Registration is the canonical discovery path;
-    // light-DOM scanning is the compatibility fallback (shadow-dom.md §16).
+    // light-DOM scanning is the compatibility fallback (shadow-dom.md §16). The scan root is
+    // passed so a host registered with `scope: 'nearest'` / a `field` target (§17–§19) is built
+    // only by the field that owns it; a detail without those keys is built as before.
     if (shadow.size > 0) {
       const seen = new Set(scanned.map((b) => b.el));
-      bodies = scanned.concat(shadow.bodies(bodyFromElement).filter((b) => !seen.has(b.el)));
+      bodies = scanned.concat(shadow.bodies(bodyFromElement, host.root).filter((b) => !seen.has(b.el)));
     } else {
       bodies = scanned;
     }

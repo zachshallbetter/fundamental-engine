@@ -11,8 +11,11 @@
 > `FieldController` helper (§31.1) removes the event boilerplate. Engine pieces:
 > `engine/shadow.ts` (`FieldController`, `ShadowRegistry`), `engine/scanner.ts` (`bodyFromElement`,
 > rect-provider measurement), and the event wiring in `engine/field.ts`; covered by
-> `core/shadow.test.ts`. Most production-hardening additions in §31 (portals, scopes, the
-> registration handshake, SSR queue, throttled field events) remain **proposed**;
+> `core/shadow.test.ts`. **Scoped participation and portals (§17–§19) ship** as the opt-in `scope` /
+> `field` keys on `RegisterBodyDetail` (#681; `core/shadow.scope.test.ts`), and the **SSR
+> pre-registration queue** (§31.10, #683). Of the remaining §31 hardening, the registration handshake
+> (§31.7) and the §31.17 event-policy attribute remain **proposed** (per-frame coalescing of field
+> events shipped separately, #684);
 > **local-cell budgets shipped** on `<field-cell>` (§31.19, #685 — `max-particles` + `fps`).
 
 > **Phase D note (platform runtime).** Shadow-DOM host registration is now handled by
@@ -235,7 +238,10 @@ interface RegisterBodyDetail {
 element: HTMLElement;
 getRect?: () => DOMRect;
 attrs?: Record<string, string>;
-writeTarget?: HTMLElement; };
+writeTarget?: HTMLElement;
+scope?: "nearest" | "global"; // §18 — default "global"
+field?: "root" | string | Element; // §19 — a portal target; beats scope
+}
 ```
 
 ### element
@@ -266,6 +272,18 @@ Default:
 ```txt
 element
 ```
+
+### scope
+
+Optional participation scope (§18). Omitted (or `"global"`) keeps the original behaviour: **every**
+field that hears the composed event adopts the host. `"nearest"` applies nearest-enclosing-field
+ownership (#980) to the event path, resolved across shadow boundaries.
+
+### field
+
+Optional explicit field target — a portal (§19). `"root"` is the page field; a selector string or an
+`Element` names a contained field by its scan root (its `bounds:` / `containerHost` element). When
+set, `field` beats `scope`.
 
 ## 8. Supported Body Attributes
 
@@ -549,61 +567,69 @@ updateGeometry(body, rect);
 
 ## 17. Field Discovery
 
-A body should register with the nearest appropriate field.
+> **Shipped (#681)** as the `scope` / `field` keys of `RegisterBodyDetail` (§7), applied by
+> `ShadowRegistry.bodies(build, root)` in the engine and by `registerShadowBody(sink, detail, root)`
+> in the platform runtime's measurement lane. Opt-in: a registration that carries neither key is
+> adopted by every field that hears it, exactly as before. Covered by `core/shadow.scope.test.ts`.
 
-Resolution order:
+A body registers with the field that owns it. When several fields are live on one page — the page
+`<field-root>` scanning the document plus one or more **contained fields** (`bounds:` /
+`containerHost`, each of which marks its bounds element with the engine-set `data-field-boundary`,
+#980) — every one of them hears a composed registration event, so without a rule they would all
+adopt the host: two engines simulate it and two write `--d` on it each frame (the #980 flicker, on
+the event path).
+
+Resolution order, per registration:
 
 ```txt
-1. explicit data-field target 2. nearest local field-cell 3. root field-root 4. no-op until a field is available
+1. explicit `field` target (§19) — the named field only, or no field if none matches
+2. `scope: "nearest"` — the field whose scan root is the host's nearest enclosing
+   `data-field-boundary` (a contained field), else the page field when none encloses it
+3. otherwise (`scope` omitted / "global") — every field that hears the event, the default
 ```
 
-Example:
+Rung 1 with no matching field is a no-op (the host stays registered and inert until such a field
+exists); rung 2 resolves the nearest boundary **across shadow roots** — `closest()` inside the
+host's own tree, then a hop from each shadow root to its host — so a body nested in another
+component's shadow tree still finds the light-DOM boundary around it.
 
-```html
-<forces-body data-field="hero-field" data-body="attract"></forces-body>
-```
+> The earlier draft's "nearest local `<field-cell>`" rung is gone: `<field-cell>` is a single-force
+> poster engine with no body registry (§31.19, #685/#993), so "local" means a **contained field**.
 
 Field target type:
 
 ```ts
-type FieldTarget = "nearest" | "root" | string;
-```
-
-Default:
-
-```txt
-nearest
+type FieldTarget = "root" | string | Element;
 ```
 
 ## 18. Field Scopes
 
-A body may declare a field scope.
+A body may declare a participation scope on its registration detail.
 
-```html
-<forces-body data-scope="global"></forces-body> <forces-body data-scope="local"></forces-body>
+```ts
+new FieldController(this, { scope: "nearest" }).connect();
 ```
 
 ### global
 
-Register with the root field.
-
-### local
-
-Register with the nearest local cell.
+The default. Every field that hears the composed event adopts the host — the pre-scope behaviour,
+unchanged. Also the right choice for a body that should join the page field and a contained field
+at once (rare; expect two `--d` writers).
 
 ### nearest
 
-Register with the nearest available field.
+Only the nearest enclosing field adopts the host: the contained field whose bounds element is the
+host's nearest `data-field-boundary`, or the page field when no boundary encloses it. This is the
+same ownership rule the light-DOM scanner already applies (#980) — it was simply never applied to
+event-registered hosts until now, which is why the default remains `"global"` (flipping it is a
+separate decision; see the changelog entry for #681).
 
-Recommended default:
-
-```txt
-nearest
-```
+The draft's `"local"` value is subsumed by `"nearest"` (there is no field-cell body registry to be
+local to).
 
 ## 19. Field Portals
 
-Field portals allow a body to participate in a field outside its nearest DOM ancestry.
+Field portals let a body participate in a field outside its nearest DOM ancestry.
 
 Use cases:
 
@@ -613,15 +639,24 @@ Use cases:
 - local demos intentionally joining the global canvas,
 - app shells with multiple field roots.
 
-Example:
-
-```html
-<forces-body
-data-field="#global-field"
-data-body="attract" ></forces-body>
+```ts
+// a card body that joins the PAGE field, bypassing the contained field it sits in
+new FieldController(this, { field: "root" }).connect();
+// a page-level overlay that joins the contained field whose bounds element is #hero
+new FieldController(this, { field: "#hero" }).connect();
+// or by reference
+new FieldController(this, { field: heroEl }).connect();
 ```
 
-The engine resolves the target field and registers the body there.
+`"root"` matches the page field — the one whose scan root is the document (`browserHost`) or its
+`documentElement` (the platform runtime). A selector or `Element` matches a contained field by its
+**scan root** (the `bounds:` element), not by a `<field-root>` element. `field` beats `scope`.
+
+> **Attributes are not read by the engine.** `data-scope` / `data-field` are *component-side*
+> vocabulary: a custom element may observe them and forward their values as `scope` / `field` on its
+> registration detail (§9), but the engine never reads them from a host or a light-DOM body — the
+> site already uses `data-field="off"` as a styling hook, so reading it as a portal target would
+> collide. The detail keys are the contract.
 
 ## 20. Styling and Parts
 
@@ -890,8 +925,14 @@ component can register multiple virtual bodies virtual body IDs are stable unreg
 
 ### Field Portals
 
+Satisfied by `core/shadow.scope.test.ts` (#681), over a fake composed tree:
+
 ```txt
-data-field targets a specific field data-scope global bypasses local cell data-scope local uses nearest cell nearest fallback works
+field targets a specific field (selector / Element / "root")
+field: "root" bypasses the contained field the host sits in
+scope: "nearest" uses the nearest enclosing contained field, across shadow roots
+nearest fallback: no enclosing boundary → the page field
+default (no scope / field) is adopted by every field — pinned, byte-identical to the light-DOM scan
 ```
 
 ## 30. Summary
@@ -922,17 +963,11 @@ The core model above is covered. These additions harden it for production — po
 nested fields, design-system usage, and debugging. Except where marked **shipped**, they are
 **proposed (not implemented)**.
 
-> **Proposed (not implemented) — `scope` / `field` on the registration detail.** The shipped
-> `RegisterBodyDetail` carries only `element`, `getRect`, `attrs`, and `writeTarget` (§7). Field
-> selection and scope are future additions:
->
-> ```ts
-> // PROPOSED — not in the shipped type.
-> scope?: "global" | "local"; // default "global"
-> field?: "nearest" | "root" | string; // default "nearest"
-> ```
->
-> See §17–§19 for the broader (also proposed) field-discovery, scope, and portal model.
+> **Shipped (#681) — `scope` / `field` on the registration detail.** `RegisterBodyDetail` carries
+> `scope?: "nearest" | "global"` (default `"global"`, the original behaviour) and
+> `field?: "root" | string | Element` (a portal target, beats `scope`) — see §7 and the shipped
+> field-discovery, scope, and portal model in §17–§19. The draft's `"local"` scope and `"nearest"`
+> field value collapsed into `scope: "nearest"`; there is no field-cell body registry to be local to.
 
 ### 1. A FieldController helper for custom elements
 
