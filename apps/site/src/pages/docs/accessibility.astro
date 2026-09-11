@@ -58,6 +58,14 @@ const ariaBinding = `<!-- the canvas/overlay is decorative; the <h2> carries the
       That covers the engine's own motion. If <em>you</em> drive animation from a feedback variable,
       gate it the same way — the value is still there under reduced motion, so nothing is lost:
     </p>
+    <p>
+      Scope, stated plainly: WCAG 2.2 SC 2.3.3 (<em>Animation from Interactions</em>) is Level
+      <strong>AAA</strong>, and the <code>prefers-reduced-motion</code> technique is the good-practice
+      tier above the AA baseline. Honouring it is necessary, not sufficient. The stronger claim —
+      "reduced motion removes motion, not meaning" — only holds surface by surface, wherever a field-encoded
+      ranking, weight, or relationship also has a static channel (authored weight, inline order, a printed
+      value). The site verifies that per surface in its end-to-end suite rather than asserting it.
+    </p>
     <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: reducedMotion }]} />
   </section>
 

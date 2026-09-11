@@ -95,6 +95,14 @@ load (`TIER_DPR = [∞, 1.5, 1.25, 1]`). *Pinned by:* `core/dpr-cap.test.ts`, th
 - **Patterns / examples** — `applyRecipe` renders the static, meaning-preserving fallback instead of
   driving the field; emission alpha flattens, travel drops, focus is kept. *Pinned by:*
   `contracts/a11y.test.ts` ("meaning survives without motion").
+- **Scope of the claim.** WCAG 2.2 SC 2.3.3 (*Animation from Interactions*) is **Level AAA**, and the
+  `prefers-reduced-motion` technique (C39) is the good-practice tier above the AA baseline — honouring it
+  is necessary, not sufficient. The stronger claim, "reduced motion removes motion, not meaning", is only
+  true **per surface**: it holds where meaning encoded in field state also has a static channel (authored
+  weight, inline order, printed values). That is verified surface by surface rather than asserted.
+  *Pinned by:* `apps/site/e2e/reduced-motion.spec.ts` (the homepage proof and evidence wedge, the host
+  list, and the evidence family's inbox / library / memory pages, each asserting its static equivalent
+  with the integrator frozen) and `apps/site/e2e/nav.spec.ts` (the wayfinding nav stays plain).
 
 ## SSR / hydration
 
