@@ -7,6 +7,10 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`rust/` — the experimental Rust plane (milestone 1).** A fourth plane of the fleet lands in the monorepo: `rust/crates/fundamental-core`, an f64, seeded, zero-dependency headless port of the engine for server / data / CMS hosts, where a body is a data record rather than a widget. 28 of the 36 forces (the canonical nine, natural, extended, the spatial-hash neighbour forces and the resonate/spotlight modifier pass), the step loop, FieldStore, the legacy Euler integrator, and an rng that matches the JS mulberry32 stream bit for bit; held to the shared cross-plane golden at f64 tolerance (`tests/golden_conformance.rs`). A `rust.yml` workflow builds and tests the crate on changes under `rust/`. **Experimental and unpublished**: no crates.io release (#1047), not on the parity page; the remaining forces and the platform crate are #1037–#1046 under epic #1036. No npm package changes.
+
 ### Fixed
 
 - **The parity matrix now tracks colour** (#1091). `data/parity-matrix.json` gains a `palette` dimension with three symbols — `palette-option` (the engine accepts a multi-hue palette), `palette-host` (the declarative host applies it: `<field-root palette>` / SwiftUI `FieldView` / Compose `FieldView(palette:)`), and `palette-view-host` (the imperative host applies it: vanilla `FieldField.setPalette` / Swift `FundamentalVanilla.FieldField.setPalette` / Android `FieldFieldView`). The Compose single-accent collapse (#1090) reached an app because no gate looked at colour; a port that supports one accent where another supports a palette array is now a `check:docs` parity delta. The regenerated matrix records the one live gap honestly: the Android **View** host (`FieldFieldView`) still renders a single accent.

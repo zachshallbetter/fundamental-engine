@@ -206,6 +206,11 @@ trail the newest JS-side additions.
   Jetpack Compose host + the lab). See the
   [Kotlin guide](https://fundamental-engine.com/docs/guides/kotlin).
 
+- **Rust (headless, experimental)** — a fourth plane in [`rust/`](rust/README.md): an f64, seeded,
+  zero-dependency `fundamental-core` crate for servers, data pipelines and CMS runtimes, where a body is
+  a data record rather than a widget. 28 of the 36 forces today, held to the same cross-plane golden;
+  **not published** to crates.io (#1047) and not on the parity page yet. Tracked by epic #1036.
+
 The JS core remains the source of truth; engine/physics fixes land on every plane.
 
 ## Headless runtime
