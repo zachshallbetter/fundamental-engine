@@ -1,0 +1,1077 @@
+Screen reader on.
+Google Chrome frame.
+SKIP TO CONTENT link.
+Loading.  Please wait.
+Finished loading Fundamental — explained like you're 5.
+Page has 6 landmarks, 32 headings, 33 unvisited links.
+SKIP TO CONTENT
+link
+Fundamental — home
+link
+v0.10.1
+link
+DOCS
+link
+TOUR
+link
+USE CASES
+link
+PATTERNS
+link
+EVIDENCE
+link
+WRITINGS
+link
+LAB
+link
+Toggle field-flow arrows
+toggle button
+not pressed
+Toggle density heatmap
+toggle button
+not pressed
+Toggle field grid
+toggle button
+not pressed
+leaving navigation.
+leaving banner.
+banner
+FUNDAMENTAL · EXPLAINED LIKE YOU'RE 5
+Web elements have mass.
+heading level 1
+Not literally — but it sure starts to feel that way.
+Fundamental sprinkles invisible magnets onto a webpage: a word can say “come here!”
+and the little floating dots all swim toward it.
+Pile enough of them on the word and the word
+notices
+— it grows heavier, bolder, brighter.
+That’s the whole trick, and it goes both ways.
+Things bend the invisible field; the field bends them back.
+Start there, give it a few simple rules, and it begins to behave like something alive.
+OPEN THE LAB →
+link
+READ THE DOCS →
+link
+SEE THE GROWN-UP VERSION →
+link
+Early days — a
+0.x preview
+, a thing to build on rather than a finished product, and nobody’s shipping it to real users yet.
+This page just shows you the idea.
+Make the dots follow you
+toggle button
+not pressed
+banner
+move your cursor — the whole field leans toward it
+ITHE SUBSTRATE
+link
+IIFOUR FEELINGS
+link
+IIIBOTH WAYS
+link
+IVIT FEELS ALIVE
+link
+VPATTERNS
+link
+VITHE HONEST TRUTH
+link
+leaving navigation.
+I
+The substrate
+heading level 2
+What the field is made of — before any magnet shows up.
+01 — One space
+The page and the field are the same place.
+heading level 2
+Fundamental measures every element’s box and drops it into the field, so the invisible part and the visible part describe the
+same coordinates
+.
+They aren’t two layers stacked up — they’re one.
+And it re-measures as you scroll and resize, so the invisible forces stay
+glued
+to the boxes you can see.
+Move the page, move the field — for free.
+measure: the word’s box → a place in the field
+02 — Weight & calm
+The dots have weight, and they slow down.
+heading level 2
+Each dot is a tiny ball with a bit of
+mass
+, and every moment a little
+friction
+bleeds its speed away.
+So the field doesn’t fly apart — it eases into slow, calm swarms.
+That gentle brake is on purpose.
+It’s why a Fundamental page feels calm, not like a screensaver having a meltdown.
+
+speed next = speed now ·
+a little less (every frame)
+03 — Always alive
+Even when you do nothing, it drifts.
+heading level 2
+Underneath everything are slow waves, and dots near a wave get nudged along its slope — drifting like leaves carried down a lazy river.
+No cursor, no clicks, no input at all.
+It’s the reason a Fundamental page feels alive the instant it loads, before you’ve touched a thing.
+II
+Four forces, four feelings
+heading level 2
+The universe runs on four big forces.
+Fundamental borrows all four — not the physics, the
+feelings
+.
+04 — The translation
+Every page already has these four. Fundamental gives them behavior.
+heading level 2
+Pick one, and watch the same page resolve through a different field.
+List with 4 items
+Gravity importance what matters bends the field
+toggle button
+pressed
+Electromagnetic polarity meaning pushes, pulls, and routes signal
+toggle button
+not pressed
+Strong belonging what belongs together binds
+toggle button
+not pressed
+Weak release what changes loosens and transforms
+toggle button
+not pressed
+leaving list.
+Gravity translates priority into convergence.
+They are not four effects — they are four ways a semantic surface can behave.
+05 — Body interaction model
+A body isn’t only a force. It can be a vessel.
+heading level 2
+Forces push and pull.
+But a body can also
+take matter in
+— it
+captures
+the dots near it,
+holds
+them as it fills, and
+releases
+them all at once when it’s full.
+Capture, hold, release: nothing conjured, nothing deleted.
+Matter just changes hands.
+The shipped case is a
+sink
+.
+data dash absorb
+sets how close it grabs from;
+data dash max
+sets how much it can hold; the engine writes the fill back as
+ dash  dash load
+, so the body can show how full it is.
+Drag it through the swarm and watch the meter climb — then pop.
+capture → hold →
+release (at data-max)
+A VESSEL — DRAG IT; IT FILLS, THEN POPS
+sink attract — drag, or use arrow keys to move
+push button
+STIR THE FIELD
+push button
+it captures nearby dots, holds them, and releases on supernova
+06 — Real, tuned, or pretend
+And it always tells you which is which.
+heading level 2
+Real physics
+heading level 3
+The genuine laws —
+gravity
+,
+charge
+,
+magnetism
+, heat, waves, bouncing.
+Tuned to feel nice
+heading level 3
+The everyday
+attract
+,
+repel
+,
+swirl
+— softened so a page stays calm and readable.
+Pure pretend
+heading level 3
+Real pieces stacked into make-believe —
+blackhole
+,
+galaxy
+,
+tornado
+.
+The one rule it never breaks:
+attract
+is
+not
+gravity.
+One is the universe’s law; the other just borrows its costume — and the docs say so out loud.
+III
+It goes both ways
+heading level 2
+The dots were never the point.
+The field reaches back and changes the things on the page.
+07 — Material type
+A word gains weight — literally.
+heading level 2
+This is the “mass” from the title, made real.
+The word pulls the dots in, they pool beneath it, and that pile drives its
+whole look at once
+—
+weight, size, spacing, glow, color
+.
+One number does all of it.
+Type as a
+material
+, not a style.
+Hit the button — scatter the pile, watch the letters thin out and pale, then fatten back up as the field re-gathers under its own pull.
+↯ DISTURB THE TYPE
+push button
+ONE NUMBER → EVERY TYPE AXIS
+mass
+weight, size, spacing, glow and color are one density
+08 — Threads
+Related things tie themselves together.
+heading level 2
+Touch one thing in a group and the field draws living threads to its siblings.
+A list stops being a list and shows itself as a
+connected set
+— the relationships were always there; now you can see them.
+Hover any word to light up its set.
+A CONNECTED SET
+claimproofsourcefootnote
+threads connect what belongs together
+09 — Shared attention
+The page can’t shout about two things at once.
+heading level 2
+There’s
+one
+bucket of focus for the whole page.
+Engage one word and it pulls force off every other — so as it grows heavier, the rest
+give theirs up
+.
+Emphasis isn’t painted on; it’s
+shared
+, and it always adds up to the same total.
+Hover one word — watch the others surrender their glow to it.
+ONE BUDGET, REDISTRIBUTED
+herenowread
+engage one — the others give up their glow
+THE BIG IDEA
+The dots show you the field is there. Everything else is what the field is for.
+heading level 2
+It’s not “a webpage with floating dots.”
+It’s a webpage where meaning has weight — where being important, related, trusted, or already-read are things you can
+see and feel
+, not just words someone typed.
+IV
+And then it starts to feel alive
+heading level 2
+Give the same simple field a few more rules and behaviour shows up that nobody coded.
+This is the part that feels like magic.
+10 — Emergence
+Three rules, and it flocks.
+heading level 2
+Give every dot three tiny rules —
+face the same way as your neighbours, stay close, don’t bump
+— and they swarm like a flock of starlings.
+Nobody wrote “flock.”
+It just happens.
+Leave a fading trail behind them and they’ll even find the shortest path home, the way
+ants
+do.
+Intelligence you didn’t write — it
+emerges
+from a few pieces playing together.
+PLAY WITH SWARMS IN THE LAB →
+link
+11 — Formations
+The whole field can change its mind.
+heading level 2
+A single magnet tugs the dots near it.
+A
+formation
+is a mood for the
+entire
+field at once — calm drifting, or pulled into wells, or marched into lanes, or scattered apart.
+Tap a button and the whole background re-thinks itself.
+Calm — gentle drifting, the resting state.
+CALM
+push button
+WELLS
+push button
+LANES
+push button
+SCATTER
+push button
+GATHER
+push button
+12 — Memory
+It remembers where you go.
+heading level 2
+Footsteps leave a warm trail that slowly fades.
+So the spots people keep visiting light up
+on their own
+, and the worn paths start to pull.
+The page grows a
+memory of attention
+— not just a log of clicks.
+A long article that quietly knows “you are here, you’ve read this.”
+SEE IT ON A REAL ARTICLE →
+link
+13 — Explainable
+It can tell you why.
+heading level 2
+Click anything and ask
+why
+.
+It shows its work: “I moved 60% because of
+this
+pull, 24% because of that swirl.
+I’m glowing because of these three neighbours.”
+Most clever interfaces are a mystery box.
+This one hands you the
+receipts
+.
+Nothing on the page moves without a reason you can read.
+OPEN THE INSPECTOR →
+link
+14 — Prediction
+It thinks one step ahead.
+heading level 2
+It can quietly run the
+next
+few moments — without touching the live page — and draw a
+ghost trail
+of where the dots are about to go.
+The present and the predicted future, side by side, so you can watch it think.
+A field that can show you the future it expects.
+SEE PREDICTION IN DIAGNOSTICS →
+link
+15 — Trust
+It tells you what to trust.
+heading level 2
+Point it at an AI’s answer: a claim with real sources sits
+solid and calm
+; a made-up one
+wobbles and drifts
+; two facts that argue push apart.
+You feel which parts to trust before you finish reading — and it
+never invents
+confidence it doesn’t have.
+It shows you the evidence; it doesn’t pretend to know the truth.
+SEE THE EVIDENCE STUDY →
+link
+V
+Patterns, one pond
+heading level 2
+You don’t wire raw magnets.
+You write little cards — and everything you add swims in the same water.
+16 — Patterns
+A pattern is a card.
+heading level 2
+Magnets, a look, and a meaning, on one card — like a pattern for cookies.
+Idea words describe;
+magnet names
+do the work.
+You can be poetic in the idea box, but the magnet box has to name a
+real
+magnet, and a checker bounces any card that fibs.
+There are already 64.
+A new idea is usually just a new card — no new physics.
+Evidence Fieldfor showing whether you can trust an answer
+MAGNETS
+charge
+
+link
+
+repel
+
+memory
+WIRE
+each claim → its sources
+DRAW
+dots · threads · a soft glow
+MOTION OFF
+a plain list with ✓ and ✗
+17 — One pond
+Drop two in and they share the same water.
+heading level 2
+There’s only
+one pond
+.
+Every magnet tugs the
+same
+dots, so the pulls just add up — like two kids pulling one wagon.
+A page isn’t a list of separate effects; it’s a
+soup
+, where everything ripples through everything else.
+Drag both — watch them fight over the same dots.
+TWO MAGNETS, ONE POND — DRAG BOTH
+attract — drag, or use arrow keys to move
+push button
+repel — drag, or use arrow keys to move
+push button
+the dots get torn between them
+17 — Or just something beautiful
+Type
+heading level 2
+blackhole
+heading level 2
+and watch a universe form.
+heading level 2
+The same little pieces swirl into whole tiny universes — try
+blackhole
+,
+galaxy
+,
+tornado
+,
+fountain
+.
+A preset is just a bundle of magnets given a name.
+Drag it around and let it pull the field into shape.
+BLACKHOLE — DRAG ME
+blackhole — drag, or use arrow keys to move
+push button
+a whole little universe from a few magnets
+VI
+The honest truth
+heading level 2
+Being honest is the whole point — so here’s the part most “magic” websites skip.
+18 — Why this, not anything else
+Often you wouldn’t use it — and that’s the honest answer.
+heading level 2
+For a plain landing page or a login, normal web tools are perfect and this would be overkill.
+What Fundamental does that
+nothing else
+does is treat “this is important,” “these relate,” “you already read this,” and “this answer is shaky” as
+real forces in one shared field
+— instead of things you hand-paint, differently, in a dozen places.
+So it earns its place when your stuff already has hidden
+relationships
+: long articles, AI answers and evidence, dashboards, maps of how things connect.
+That’s where “meaning you can feel” beats a flat page.
+19 — The fine print
+What it can’t (yet) do — said plainly.
+heading level 2
+List with 4 items
+•
+“Heavier swings wider” is mostly pretend
+by default — real weight is opt-in.
+•
+Energy isn’t saved
+, on purpose — there’s a gentle brake so the page stays calm instead of bouncing forever.
+•
+It costs something
+— lots of dots is real work for the browser, so there are budgets and caps.
+•
+Nobody’s tested it on real people yet.
+The research papers
+design
+the experiments and make predictions — but the “does this actually help you read or trust better?” part is still a promise, not a proof. And the papers say so.
+leaving list.
+Want the grown-up version?
+The
+field guide
+link
+and the
+research papers
+link
+pick up right where this leaves off.
+Now go bend it yourself.
+heading level 2
+A story, a dashboard, a game — they’re all the same field underneath.
+Give it a few rules and see what it does.
+OPEN THE LAB →
+link
+READ THE DOCS →
+link
+SEE THE GROWN-UP VERSION →
+link
+information
+FundamentalA PHYSICS ENGINE FOR INTERFACES · V0.10.1 · CREATED BY
+ZACH SHALLBETTER
+link
+DOCS
+link
+LAB
+link
+CONTACT
+link
+leaving navigation.
+leaving information.
+Open data console
+collapsed
+push button
+Gravity translates priority into convergence.
+SEE IT ON A REAL ARTICLE → link.
+left control ' {'established
+SKIP TO CONTENT link.
+SKIP TO CONTENT
+link
+Fundamental — home
+link
+v0.10.1
+link
+DOCS
+link
+TOUR
+link
+USE CASES
+link
+PATTERNS
+link
+EVIDENCE
+link
+WRITINGS
+link
+LAB
+link
+Toggle field-flow arrows
+toggle button
+not pressed
+Toggle density heatmap
+toggle button
+not pressed
+Toggle field grid
+toggle button
+not pressed
+leaving navigation.
+leaving banner.
+banner
+FUNDAMENTAL · EXPLAINED LIKE YOU'RE 5
+Web elements have mass.
+heading level 1
+Not literally — but it sure starts to feel that way.
+Fundamental sprinkles invisible magnets onto a webpage: a word can say “come here!”
+and the little floating dots all swim toward it.
+Pile enough of them on the word and the word
+notices
+— it grows heavier, bolder, brighter.
+That’s the whole trick, and it goes both ways.
+Things bend the invisible field; the field bends them back.
+Start there, give it a few simple rules, and it begins to behave like something alive.
+OPEN THE LAB →
+link
+READ THE DOCS →
+link
+SEE THE GROWN-UP VERSION →
+link
+Early days — a
+0.x preview
+, a thing to build on rather than a finished product, and nobody’s shipping it to real users yet.
+This page just shows you the idea.
+Make the dots follow you
+toggle button
+not pressed
+banner
+move your cursor — the whole field leans toward it
+ITHE SUBSTRATE
+link
+IIFOUR FEELINGS
+link
+IIIBOTH WAYS
+link
+IVIT FEELS ALIVE
+link
+VPATTERNS
+link
+VITHE HONEST TRUTH
+link
+leaving navigation.
+I
+The substrate
+heading level 2
+What the field is made of — before any magnet shows up.
+01 — One space
+The page and the field are the same place.
+heading level 2
+Fundamental measures every element’s box and drops it into the field, so the invisible part and the visible part describe the
+same coordinates
+.
+They aren’t two layers stacked up — they’re one.
+And it re-measures as you scroll and resize, so the invisible forces stay
+glued
+to the boxes you can see.
+Move the page, move the field — for free.
+measure: the word’s box → a place in the field
+02 — Weight & calm
+The dots have weight, and they slow down.
+heading level 2
+Each dot is a tiny ball with a bit of
+mass
+, and every moment a little
+friction
+bleeds its speed away.
+So the field doesn’t fly apart — it eases into slow, calm swarms.
+That gentle brake is on purpose.
+It’s why a Fundamental page feels calm, not like a screensaver having a meltdown.
+
+speed next = speed now ·
+a little less (every frame)
+03 — Always alive
+Even when you do nothing, it drifts.
+heading level 2
+Underneath everything are slow waves, and dots near a wave get nudged along its slope — drifting like leaves carried down a lazy river.
+No cursor, no clicks, no input at all.
+It’s the reason a Fundamental page feels alive the instant it loads, before you’ve touched a thing.
+II
+Four forces, four feelings
+heading level 2
+The universe runs on four big forces.
+Fundamental borrows all four — not the physics, the
+feelings
+.
+04 — The translation
+Every page already has these four. Fundamental gives them behavior.
+heading level 2
+Pick one, and watch the same page resolve through a different field.
+List with 4 items
+Gravity importance what matters bends the field
+toggle button
+pressed
+Electromagnetic polarity meaning pushes, pulls, and routes signal
+toggle button
+not pressed
+Strong belonging what belongs together binds
+toggle button
+not pressed
+Weak release what changes loosens and transforms
+toggle button
+not pressed
+leaving list.
+Gravity translates priority into convergence.
+They are not four effects — they are four ways a semantic surface can behave.
+05 — Body interaction model
+A body isn’t only a force. It can be a vessel.
+heading level 2
+Forces push and pull.
+But a body can also
+take matter in
+— it
+captures
+the dots near it,
+holds
+them as it fills, and
+releases
+them all at once when it’s full.
+Capture, hold, release: nothing conjured, nothing deleted.
+Matter just changes hands.
+The shipped case is a
+sink
+.
+data dash absorb
+sets how close it grabs from;
+data dash max
+sets how much it can hold; the engine writes the fill back as
+ dash  dash load
+, so the body can show how full it is.
+Drag it through the swarm and watch the meter climb — then pop.
+capture → hold →
+release (at data-max)
+A VESSEL — DRAG IT; IT FILLS, THEN POPS
+sink attract — drag, or use arrow keys to move
+push button
+STIR THE FIELD
+push button
+it captures nearby dots, holds them, and releases on supernova
+06 — Real, tuned, or pretend
+And it always tells you which is which.
+heading level 2
+Real physics
+heading level 3
+The genuine laws —
+gravity
+,
+charge
+,
+magnetism
+, heat, waves, bouncing.
+Tuned to feel nice
+heading level 3
+The everyday
+attract
+,
+repel
+,
+swirl
+— softened so a page stays calm and readable.
+Pure pretend
+heading level 3
+Real pieces stacked into make-believe —
+blackhole
+,
+galaxy
+,
+tornado
+.
+The one rule it never breaks:
+attract
+is
+not
+gravity.
+One is the universe’s law; the other just borrows its costume — and the docs say so out loud.
+III
+It goes both ways
+heading level 2
+The dots were never the point.
+The field reaches back and changes the things on the page.
+07 — Material type
+A word gains weight — literally.
+heading level 2
+This is the “mass” from the title, made real.
+The word pulls the dots in, they pool beneath it, and that pile drives its
+whole look at once
+—
+weight, size, spacing, glow, color
+.
+One number does all of it.
+Type as a
+material
+, not a style.
+Hit the button — scatter the pile, watch the letters thin out and pale, then fatten back up as the field re-gathers under its own pull.
+↯ DISTURB THE TYPE
+push button
+ONE NUMBER → EVERY TYPE AXIS
+mass
+weight, size, spacing, glow and color are one density
+08 — Threads
+Related things tie themselves together.
+heading level 2
+Touch one thing in a group and the field draws living threads to its siblings.
+A list stops being a list and shows itself as a
+connected set
+— the relationships were always there; now you can see them.
+Hover any word to light up its set.
+A CONNECTED SET
+claimproofsourcefootnote
+threads connect what belongs together
+09 — Shared attention
+The page can’t shout about two things at once.
+heading level 2
+There’s
+one
+bucket of focus for the whole page.
+Engage one word and it pulls force off every other — so as it grows heavier, the rest
+give theirs up
+.
+Emphasis isn’t painted on; it’s
+shared
+, and it always adds up to the same total.
+Hover one word — watch the others surrender their glow to it.
+ONE BUDGET, REDISTRIBUTED
+herenowread
+engage one — the others give up their glow
+THE BIG IDEA
+The dots show you the field is there. Everything else is what the field is for.
+heading level 2
+It’s not “a webpage with floating dots.”
+It’s a webpage where meaning has weight — where being important, related, trusted, or already-read are things you can
+see and feel
+, not just words someone typed.
+IV
+And then it starts to feel alive
+heading level 2
+Give the same simple field a few more rules and behaviour shows up that nobody coded.
+This is the part that feels like magic.
+10 — Emergence
+Three rules, and it flocks.
+heading level 2
+Give every dot three tiny rules —
+face the same way as your neighbours, stay close, don’t bump
+— and they swarm like a flock of starlings.
+Nobody wrote “flock.”
+It just happens.
+Leave a fading trail behind them and they’ll even find the shortest path home, the way
+ants
+do.
+Intelligence you didn’t write — it
+emerges
+from a few pieces playing together.
+PLAY WITH SWARMS IN THE LAB →
+link
+11 — Formations
+The whole field can change its mind.
+heading level 2
+A single magnet tugs the dots near it.
+A
+formation
+is a mood for the
+entire
+field at once — calm drifting, or pulled into wells, or marched into lanes, or scattered apart.
+Tap a button and the whole background re-thinks itself.
+Calm — gentle drifting, the resting state.
+CALM
+push button
+WELLS
+push button
+LANES
+push button
+SCATTER
+push button
+GATHER
+push button
+12 — Memory
+It remembers where you go.
+heading level 2
+Footsteps leave a warm trail that slowly fades.
+So the spots people keep visiting light up
+on their own
+, and the worn paths start to pull.
+The page grows a
+memory of attention
+— not just a log of clicks.
+A long article that quietly knows “you are here, you’ve read this.”
+SEE IT ON A REAL ARTICLE →
+link
+13 — Explainable
+It can tell you why.
+heading level 2
+Click anything and ask
+why
+.
+It shows its work: “I moved 60% because of
+this
+pull, 24% because of that swirl.
+I’m glowing because of these three neighbours.”
+Most clever interfaces are a mystery box.
+This one hands you the
+receipts
+.
+Nothing on the page moves without a reason you can read.
+OPEN THE INSPECTOR →
+link
+14 — Prediction
+It thinks one step ahead.
+heading level 2
+It can quietly run the
+next
+few moments — without touching the live page — and draw a
+ghost trail
+of where the dots are about to go.
+The present and the predicted future, side by side, so you can watch it think.
+A field that can show you the future it expects.
+SEE PREDICTION IN DIAGNOSTICS →
+link
+15 — Trust
+It tells you what to trust.
+heading level 2
+Point it at an AI’s answer: a claim with real sources sits
+solid and calm
+; a made-up one
+wobbles and drifts
+; two facts that argue push apart.
+You feel which parts to trust before you finish reading — and it
+never invents
+confidence it doesn’t have.
+It shows you the evidence; it doesn’t pretend to know the truth.
+SEE THE EVIDENCE STUDY →
+link
+V
+Patterns, one pond
+heading level 2
+You don’t wire raw magnets.
+You write little cards — and everything you add swims in the same water.
+16 — Patterns
+A pattern is a card.
+heading level 2
+Magnets, a look, and a meaning, on one card — like a pattern for cookies.
+Idea words describe;
+magnet names
+do the work.
+You can be poetic in the idea box, but the magnet box has to name a
+real
+magnet, and a checker bounces any card that fibs.
+There are already 64.
+A new idea is usually just a new card — no new physics.
+Evidence Fieldfor showing whether you can trust an answer
+MAGNETS
+charge
+
+link
+
+repel
+
+memory
+WIRE
+each claim → its sources
+DRAW
+dots · threads · a soft glow
+MOTION OFF
+a plain list with ✓ and ✗
+17 — One pond
+Drop two in and they share the same water.
+heading level 2
+There’s only
+one pond
+.
+Every magnet tugs the
+same
+dots, so the pulls just add up — like two kids pulling one wagon.
+A page isn’t a list of separate effects; it’s a
+soup
+, where everything ripples through everything else.
+Drag both — watch them fight over the same dots.
+TWO MAGNETS, ONE POND — DRAG BOTH
+attract — drag, or use arrow keys to move
+push button
+repel — drag, or use arrow keys to move
+push button
+the dots get torn between them
+17 — Or just something beautiful
+Type
+heading level 2
+blackhole
+heading level 2
+and watch a universe form.
+heading level 2
+The same little pieces swirl into whole tiny universes — try
+blackhole
+,
+galaxy
+,
+tornado
+,
+fountain
+.
+A preset is just a bundle of magnets given a name.
+Drag it around and let it pull the field into shape.
+BLACKHOLE — DRAG ME
+blackhole — drag, or use arrow keys to move
+push button
+a whole little universe from a few magnets
+VI
+The honest truth
+heading level 2
+Being honest is the whole point — so here’s the part most “magic” websites skip.
+18 — Why this, not anything else
+Often you wouldn’t use it — and that’s the honest answer.
+heading level 2
+For a plain landing page or a login, normal web tools are perfect and this would be overkill.
+What Fundamental does that
+nothing else
+does is treat “this is important,” “these relate,” “you already read this,” and “this answer is shaky” as
+real forces in one shared field
+— instead of things you hand-paint, differently, in a dozen places.
+So it earns its place when your stuff already has hidden
+relationships
+: long articles, AI answers and evidence, dashboards, maps of how things connect.
+That’s where “meaning you can feel” beats a flat page.
+19 — The fine print
+What it can’t (yet) do — said plainly.
+heading level 2
+List with 4 items
+•
+“Heavier swings wider” is mostly pretend
+by default — real weight is opt-in.
+•
+Energy isn’t saved
+, on purpose — there’s a gentle brake so the page stays calm instead of bouncing forever.
+•
+It costs something
+— lots of dots is real work for the browser, so there are budgets and caps.
+•
+Nobody’s tested it on real people yet.
+The research papers
+design
+the experiments and make predictions — but the “does this actually help you read or trust better?” part is still a promise, not a proof. And the papers say so.
+leaving list.
+Want the grown-up version?
+The
+field guide
+link
+and the
+research papers
+link
+pick up right where this leaves off.
+Now go bend it yourself.
+heading level 2
+A story, a dashboard, a game — they’re all the same field underneath.
+Give it a few rules and see what it does.
+OPEN THE LAB →
+link
+READ THE DOCS →
+link
+SEE THE GROWN-UP VERSION →
+link
+information
+FundamentalA PHYSICS ENGINE FOR INTERFACES · V0.10.1 · CREATED BY
+ZACH SHALLBETTER
+link
+DOCS
+link
+LAB
+link
+CONTACT
+link
+leaving navigation.
+leaving information.
+Open data console
+collapsed
+push button
+tab ' {'established
+Fundamental — home link.
+tab ' {'established
+v0.10.1 link.
+What's new — v0.10.1.
+tab ' {'established
+DOCS link.
+tab ' {'established
+TOUR link.
+tab ' {'established
+USE CASES link.
+tab ' {'established
+PATTERNS link.
+tab ' {'established
+EVIDENCE link.
+tab ' {'established
+WRITINGS link.
+tab ' {'established
+LAB link.
+tab ' {'established
+Toggle field-flow arrows toggle button not pressed.
+Show field flow.
+tab ' {'established
+Toggle density heatmap toggle button not pressed.
+Show density heatmap.
+tab ' {'established
+Toggle field grid toggle button not pressed.
+Show field grid.
+tab ' {'established
+OPEN THE LAB → link.
+tab ' {'established
+READ THE DOCS → link.
+tab ' {'established
+SEE THE GROWN-UP VERSION → link.
+tab ' {'established
+Make the dots follow you toggle button not pressed.
+tab ' {'established
+ITHE SUBSTRATE link.
+tab ' {'established
+IIFOUR FEELINGS link.
+tab ' {'established
+IIIBOTH WAYS link.
+tab ' {'established
+IVIT FEELS ALIVE link.
+tab ' {'established
+VPATTERNS link.
+tab ' {'established
+VITHE HONEST TRUTH link.
+tab ' {'established
+leaving navigation.
+List with 4 items.
+Gravity importance what matters bends the field toggle button pressed.
+tab ' {'established
+Electromagnetic polarity meaning pushes, pulls, and routes signal toggle button not pressed.
+tab ' {'established
+Strong belonging what belongs together binds toggle button not pressed.
+leaving list.
+Gravity translates priority into convergence.
+They are not four effects — they are four ways a semantic surface can behave.
+05 — Body interaction model.
+alert Can't update Chrome.
+Chrome couldn't update to the latest version, so you're missing out on new features and security fixes.
+Reinstall Chrome push button.

@@ -1,0 +1,917 @@
+APP Google Chrome
+  application | Google Chrome | focusable,showing,visible
+    frame | Fundamental — a physics engine for interfaces - Google Chrome | showing,visible
+      panel |  | showing,visible
+        panel |  | showing,visible
+          push button | Minimize | focusable,showing,visible
+          push button | Maximize | focusable,showing,visible
+          push button | Restore | 
+          push button | Close | focusable,showing,visible
+          static | Untitled - Google Chrome | 
+          panel |  | showing,visible
+            panel |  | 
+            panel |  | showing,visible
+              tool bar |  | showing,visible
+                push button | Back | showing,visible
+                push button | Forward | showing,visible
+                push button | Reload | focusable,showing,visible
+                push button | Home | 
+                push button | Open tab in split view | 
+                panel |  | showing,visible
+                  push button |  | 
+                  push button | View site information | focusable,showing,visible
+                    notification |  | 
+                  entry | Address and search bar | focusable,showing,visible
+                  static |  | 
+                  static |  | 
+                  push button |  | 
+                    notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  push button |  | 
+                    notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  panel |  | showing,visible
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button | Bookmark this tab | focusable,showing,visible
+                      notification |  | 
+                  panel |  | showing,visible
+                  push button | Clear input | 
+                  static |  | 
+                panel |  | 
+                  push button | Extensions | 
+                  push button | Close side panel | 
+                panel |  | 
+                panel |  | 
+                  panel |  | 
+                push button | Energy Saver is on | 
+                push button | Performance issue alert | 
+                push button | Control your music, videos, and more | 
+                push button | You | focusable,showing,visible
+                push button | Hidden toolbar buttons | 
+                push button | Finish update | focusable,showing,visible
+                push button | Close website | 
+              tool bar | Bookmarks | 
+                push button | Apps | 
+                push button | Managed bookmarks | 
+                tool bar | Saved Tab Groups | 
+                  push button | Tab groups | 
+                separator | Separator | 
+                push button | Menu containing hidden bookmarks | 
+                push button | All Bookmarks | 
+                separator | Separator | 
+              panel |  | showing,visible
+            panel |  | showing,visible
+              panel |  | showing,visible
+                panel |  | 
+                panel |  | showing,visible
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                  document web | Fundamental — a physics engine for interfaces | focusable,showing,visible
+                    link | SKIP TO CONTENT | focusable,visible
+                      static | SKIP TO CONTENT | visible
+                    landmark |  | showing,visible
+                      link | Fundamental — home | focusable,showing,visible
+                        static | Fundamental | showing,visible
+                      link | v0.10.1 | focusable,showing,visible
+                        static | v0.10.1 | showing,visible
+                      landmark | Primary | showing,visible
+                        link | DOCS | focusable,showing,visible
+                          static | DOCS | showing,visible
+                        link | TOUR | focusable,showing,visible
+                          static | TOUR | showing,visible
+                        link | USE CASES | focusable,showing,visible
+                          static | USE CASES | showing,visible
+                        link | PATTERNS | focusable,showing,visible
+                          static | PATTERNS | showing,visible
+                        link | EVIDENCE | focusable,showing,visible
+                          static | EVIDENCE | showing,visible
+                        link | WRITINGS | focusable,showing,visible
+                          static | WRITINGS | showing,visible
+                        link | LAB | focusable,showing,visible
+                          static | LAB | showing,visible
+                        toggle button | Toggle field-flow arrows | focusable,showing,visible
+                        toggle button | Toggle density heatmap | focusable,showing,visible
+                        toggle button | Toggle field grid | focusable,showing,visible
+                        toggle button | Toggle field lines | focusable,showing,visible
+                    landmark |  | showing,visible
+                      header |  | visible
+                        paragraph |  | visible
+                          static | FUNDAMENTAL · A PHYSICS ENGINE FOR INTERFACES | visible
+                        heading | Elements have mass . | visible
+                          static | Elements have | visible
+                          static | mass | visible
+                          section |  | visible
+                            static | . | visible
+                        paragraph |  | visible
+                          static | Elements attract, repel and settle like real matter, so a layout | visible
+                          static |  | visible
+                            static | shows | visible
+                          static | its relationships instead of listing them. Nothing on this page is animated — every motion | visible
+                          static |  | visible
+                            static | data-body | visible
+                          static | attribute; the runtime measures and hands back live | visible
+                          static |  | visible
+                            static | --field-* | visible
+                          static | variables you style with. | visible
+                        paragraph |  | visible
+                          static |  | visible
+                            static | You can label everything urgent. You cannot make everything heavy. | visible
+                          static | Priority becomes a force, not a flag — emphasize one thing, and the rest yield. | visible
+                        link | ENTER THE GARDEN → | focusable,visible
+                          static | ENTER THE GARDEN → | visible
+                        link | SEE IT WORK → | focusable,visible
+                          static | SEE IT WORK → | visible
+                        link | INSTALL → | focusable,visible
+                          static | INSTALL → | visible
+                        static | CATEGORY | visible
+                        static | ADD A DATA-* ATTRIBUTE, GET --FIELD-* BACK | visible
+                        static | FOR | visible
+                        static | DESIGN ENGINEERS · AI-PRODUCT BUILDERS · COMPONENT-LIBRARY AUTHORS | visible
+                        static | PARITY | visible
+                        static | JS · SWIFT · KOTLIN — SIX FORCES, IDENTICAL OUTPUT, CHECKED IN CI | visible
+                        static | MATURITY | visible
+                        static | 0.X PREVIEW — SHIPPING IN PRODUCTION APPS, NO THIRD-PARTY ADOPTERS YET | visible
+                        section | Live reading of this page's field | visible
+                          section |  | visible
+                            static | density | visible
+                          section |  | visible
+                            static | 0.32 | visible
+                          section |  | visible
+                            static | bodies | visible
+                          section |  | visible
+                            static | 10 | visible
+                          section |  | visible
+                            static | particles | visible
+                          section |  | visible
+                            static | 468 | visible
+                          section |  | visible
+                            static | query | visible
+                          section |  | visible
+                            static | readable | visible
+                          section |  | visible
+                            static | projection | visible
+                          section |  | visible
+                            static | css · json | visible
+                          section |  | visible
+                            static | policy | visible
+                          section |  | visible
+                            static | limited | visible
+                      section |  | showing,visible
+                        section |  | visible
+                          static | A real interface | visible
+                        heading | A real interface you’d actually build. | visible
+                          static | A real interface you’d actually build. | visible
+                        paragraph |  | visible
+                          static | An inbox of real unanswered questions, ranked by urgency — recency, votes, and views becom | visible
+                        link | OPEN THIS EXAMPLE → | focusable,showing,visible
+                          static | OPEN THIS EXAMPLE → | showing,visible
+                      section |  | showing,visible
+                        section |  | showing,visible
+                          static | Shipped | showing,visible
+                        heading | Built on this, running now. | showing,visible
+                          static | Built on this, running now. | showing,visible
+                        paragraph |  | showing,visible
+                          static | Four doors into one core. Not ports — the same engine, reached differently. | showing,visible
+                        link | Habitat A living garden. Plants, critters and weather respond to each other — nothing is s | focusable,focused,showing,visible
+                          section |  | showing,visible
+                            static | Habitat | showing,visible
+                          static | A living garden. Plants, critters and weather respond to each other — nothing is scripted. | showing,visible
+                          static |  | showing,visible
+                            static | @fundamental-engine/three | showing,visible
+                        link | Ascent Adaptive CAPM® prep on iPhone, on the App Store. The field drives readiness and pac | focusable,showing,visible
+                          section |  | showing,visible
+                            static | Ascent | showing,visible
+                          static | Adaptive CAPM® prep on iPhone, on the App Store. The field drives readiness and pacing. | showing,visible
+                          static |  | showing,visible
+                            static | <field-root> · elements | showing,visible
+                        link | zachshallbetter.com A personal site where the writing itself is the field — typographic, n | focusable,showing,visible
+                          section |  | showing,visible
+                            static | zachshallbetter.com | showing,visible
+                          static | A personal site where the writing itself is the field — typographic, no particle swarm. | showing,visible
+                          static |  | showing,visible
+                            static | @fundamental-engine/vanilla | showing,visible
+                        link | Native parity Six forces reproduce identical output across JavaScript, Swift and Kotlin —  | focusable,showing,visible
+                          section |  | showing,visible
+                            static | Native parity | showing,visible
+                          static | Six forces reproduce identical output across JavaScript, Swift and Kotlin — checked on eve | showing,visible
+                          static |  | showing,visible
+                            static | js · swift · kotlin | showing,visible
+                      section |  | visible
+                        section |  | visible
+                          static | Try it | visible
+                        heading | Change a data-* and watch the field answer. | visible
+                          static | Change a | visible
+                          static |  | visible
+                            static | data-* | visible
+                          static | and watch the field answer. | visible
+                        paragraph |  | visible
+                          static | Every control rewrites one attribute on the real element to the right — the same | visible
+                          static |  | visible
+                            static | data-* | visible
+                          static | you'd author. The engine re-reads it and the field responds. That's the whole surface: att | visible
+                        label |  | visible
+                          static | FORCE | visible
+                          combo box | FORCE | focusable,visible
+                            menu |  | 
+                              menu item | attract | focusable,visible
+                              menu item | repel | focusable
+                              menu item | swirl | focusable
+                              menu item | gravity | focusable
+                              menu item | stream | focusable
+                              menu item | sink | focusable
+                              menu item | viscosity | focusable
+                              menu item | cohesion | focusable
+                              menu item | tether | focusable
+                        label |  | visible
+                          static | STRENGTH | visible
+                          static | 0.9 | visible
+                          slider | STRENGTH 0.9 | focusable,visible
+                        label |  | visible
+                          static | SPIN | visible
+                          static | 1.1 | visible
+                          slider | SPIN 1.1 | focusable,visible
+                        label |  | visible
+                          static | RANGE | visible
+                          static | 180 | visible
+                          slider | RANGE 180 | focusable,visible
+                        section |  | visible
+                          static | data-body="attract" data-strength="0.9" data-range="180" data-spin="1.1" | visible
+                      section |  | visible
+                        section |  | visible
+                          static | The wedge | visible
+                        heading | Make model output you can read at a glance. | visible
+                          static | Make model output you can read at a glance. | visible
+                        paragraph |  | visible
+                          static | A model hands you answers; it rarely shows how sure it is. Make each claim a body in the f | visible
+                          static |  | visible
+                            static | looks | visible
+                          static | shaky and its sources are one hop away, before anyone acts on it. The interface projects t | visible
+                          static |  | visible
+                            static | field.query() | visible
+                          static | . The same deterministic math drives the Evidence and Search studies. | visible
+                        link | SEE AI EVIDENCE → | focusable,visible
+                          static | SEE AI EVIDENCE → | visible
+                        link | HOW IT WORKS → | focusable,visible
+                          static | HOW IT WORKS → | visible
+                      section |  | visible
+                        section |  | visible
+                          static | How it works | visible
+                        heading | Declare, influence, read, reveal, govern. | visible
+                          static | Declare, influence, read, reveal, govern. | visible
+                        paragraph |  | visible
+                          static | Five verbs are the whole loop. You declare host objects into the field; forces influence t | visible
+                        list |  | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | Declare | visible
+                            static | Host objects become bodies — a | visible
+                            static |  | visible
+                              static | data-body | visible
+                            static | attribute, | visible
+                            static |  | visible
+                              static | addBody() | visible
+                            static | , or a declared edge. | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | Influence | visible
+                            static | Forces act through declared channels, accumulated centrally — deterministic and replayable | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | Read | visible
+                            static |  | visible
+                              static | query() | visible
+                            static | and | visible
+                            static |  | visible
+                              static | snapshot() | visible
+                            static | expose the field as plain, serializable state. | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | Reveal | visible
+                            static | Projections express that state through CSS variables, DOM attributes, JSON, native views,  | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | Govern | visible
+                            static | Policies, budgets, redactions, lane lints, and reduced-motion rules constrain what runs an | visible
+                        paragraph |  | visible
+                          static | Want the exact API? | visible
+                          link | Read the docs | focusable,visible
+                            static | Read the docs | visible
+                          static | . Want the live engine? | visible
+                          link | Open the manual | focusable,visible
+                            static | Open the manual | visible
+                          static | . Want the substrate proof? | visible
+                          link | One field, two readings → | focusable,visible
+                            static | One field, two readings → | visible
+                      section |  | visible
+                        section |  | visible
+                          static | Why it’s different | visible
+                        heading | Most interfaces store meaning, then fake its effects. | visible
+                          static | Most interfaces | visible
+                          static |  | visible
+                            static | store | visible
+                          static | meaning, then | visible
+                          static |  | visible
+                            static | fake | visible
+                          static | its effects. | visible
+                        paragraph |  | visible
+                          static | You can’t style everything as urgent — the attention budget is conserved. Express “these a | visible
+                          link | See conserved attention → | focusable,visible
+                            static | See conserved attention → | visible
+                        panel |  | visible
+                          static |  | visible
+                            static | data-* | visible
+                          static | YOU AUTHOR | visible
+                          static | → | visible
+                          static |  | visible
+                            static | measure | visible
+                          static | RUNTIME | visible
+                          static | → | visible
+                          static |  | visible
+                            static | --field-* | visible
+                          static | RUNTIME WRITES BACK | visible
+                          static | → | visible
+                          static |  | visible
+                            static | you style | visible
+                          static | CSS | visible
+                          caption |  | visible
+                            static | You author meaning; the field returns measurement. | visible
+                        heading | Stop building the systems that exist because the DOM is blind. | visible
+                          static | Stop building the systems that exist because the DOM is blind. | visible
+                        paragraph |  | visible
+                          static | The DOM can’t see what matters, what’s related, or what’s gone stale — so teams build that | visible
+                        list |  | visible
+                          list item |  | visible
+                            static | Priority you don’t store or sort. | visible
+                            static | Importance is a live field reading ( | visible
+                            static |  | visible
+                              static | --d | visible
+                            static | , with | visible
+                            static |  | visible
+                              static | --field-density | visible
+                            static | as the field-namespaced alias), not state you keep in a store and re-sort on every change. | visible
+                            link | See it work → | focusable,visible
+                              static | See it work → | visible
+                          list item |  | visible
+                            static | “Everything is P1,” solved by a law. | visible
+                            static | Attention is one conserved budget — emphasize one thing and the rest necessarily yield. Th | visible
+                            link | See it work → | focusable,visible
+                              static | See it work → | visible
+                          list item |  | visible
+                            static | Relationships you can read. | visible
+                            static | Declared associations become field-visible structure — a Field Pattern decides when associ | visible
+                            link | See it work → | focusable,visible
+                              static | See it work → | visible
+                          list item |  | visible
+                            static | Staleness without timers. | visible
+                            static | Recency and decay are a force in the runtime, continuous, not a cron job or a computed col | visible
+                            link | See it work → | focusable,visible
+                              static | See it work → | visible
+                          list item |  | visible
+                            static | One model, always current. | visible
+                            static | The field re-resolves every frame, so a priority shift doesn’t fire a sort-and-re-render p | visible
+                            link | See it work → | focusable,visible
+                              static | See it work → | visible
+                        paragraph |  | visible
+                          static | Fundamental doesn’t hand you a better abstraction over these jobs. It makes the question e | visible
+                      section |  | visible
+                        section |  | visible
+                          static | Install | visible
+                        heading | Add it to the stack you already have. | visible
+                          static | Add it to the stack you already have. | visible
+                        paragraph |  | visible
+                          static | One package per framework — pick the one for your stack and you’re done. Each bundles the  | visible
+                          static |  | visible
+                            static | core | visible
+                          static | + the DOM binding) for you; there’s nothing to wire together. | visible
+                        section |  | visible
+                          static | START HERE | visible
+                          static |  | visible
+                            section |  | visible
+                              static | $ | visible
+                            static | npm i @fundamental-engine/vanilla | visible
+                            section |  | visible
+                              static | COPY | visible
+                          static | Plain TS / JS | visible
+                          static | , no framework — the typed | visible
+                          static |  | visible
+                            static | FieldField | visible
+                          static | class; one call mounts a field. This card is itself a live field body: it accretes the swa | visible
+                          link | Guide → | focusable,visible
+                            static | Guide → | visible
+                        section |  | visible
+                          static |  | visible
+                            section |  | visible
+                              static | $ | visible
+                            static | npm i @fundamental-engine/react | visible
+                            section |  | visible
+                              static | COPY | visible
+                          static | React | visible
+                          static | — the | visible
+                          static |  | visible
+                            static | <FieldField> | visible
+                          static | component + | visible
+                          static |  | visible
+                            static | useFieldField | visible
+                          static | hook. | visible
+                          link | Guide → | focusable,visible
+                            static | Guide → | visible
+                        section |  | visible
+                          static |  | focusable,visible
+                            section |  | visible
+                              static | $ | visible
+                            static | npm i @fundamental-engine/elements | visible
+                            section |  | visible
+                              static | COPY | visible
+                          static | Any framework or plain HTML | visible
+                          static | — the | visible
+                          static |  | visible
+                            static | <field-root> | visible
+                          static | web component. | visible
+                          link | Guide → | focusable,visible
+                            static | Guide → | visible
+                        section |  | visible
+                          static |  | visible
+                            section |  | visible
+                              static | $ | visible
+                            static | npm i @fundamental-engine/three | visible
+                            section |  | visible
+                              static | COPY | visible
+                          static | Three.js / WebGL | visible
+                          static | — the swarm as a | visible
+                          static |  | visible
+                            static | THREE.Points | visible
+                          static | layer. | visible
+                          link | Guide → | focusable,visible
+                            static | Guide → | visible
+                        paragraph |  | visible
+                          static | Own the canvas / building your own renderer? | visible
+                          static |  | visible
+                            static | @fundamental-engine/core | visible
+                          static | is the renderer-agnostic engine — you supply a host ( | visible
+                          link | Core guide | focusable,visible
+                            static | Core guide | visible
+                          static | ). You don’t install | visible
+                          static |  | visible
+                            static | @fundamental-engine/dom | visible
+                          static | directly — the packages above already bundle it for you. | visible
+                        paragraph |  | visible
+                          static | No build step? Import from a CDN (playground / prototyping only): | visible
+                          static |  | visible
+                            static | import { createField } from 'https://esm.sh/@fundamental-engine/vanilla' | visible
+                        paragraph |  | visible
+                          static | The full package map and an install-to-reacting-headline walkthrough live in the | visible
+                          link | docs | focusable,visible
+                            static | docs | visible
+                          static | . | visible
+                      section |  | visible
+                        section |  | visible
+                          static | Hosts | visible
+                        heading | One engine, many hosts. | visible
+                          static | One engine, many hosts. | visible
+                        paragraph |  | visible
+                          static | The core computes the field against plain data and imports zero DOM. A thin host binds it  | visible
+                        list |  | visible
+                          list item |  | visible
+                            static | • | visible
+                            static | Web | visible
+                            static | — | visible
+                            static |  | visible
+                              static | @fundamental-engine/dom | visible
+                            static | binds the engine to the page: every | visible
+                            static |  | visible
+                              static | [data-body] | visible
+                            static | element a body, feedback returned as | visible
+                            static |  | visible
+                              static | --field-* | visible
+                            static | variables. The primary surface — and what this page runs on. | visible
+                          list item |  | visible
+                            static | • | visible
+                            static | Native | visible
+                            static | — a Swift port runs the same field on Apple platforms (Metal / SwiftUI), and a Kotlin port | visible
+                            static |  | visible
+                              static | View | visible
+                            static | / | visible
+                            static |  | visible
+                              static | Canvas | visible
+                            static | host) — both free of the browser’s compositing ceiling. The | visible
+                            link | Field Lab | focusable,visible
+                              static | Field Lab | visible
+                            static | is the showcase: a native app to explore every force live. | visible
+                          list item |  | visible
+                            static | • | visible
+                            static | Your renderer | visible
+                            static | — | visible
+                            static |  | visible
+                              static | @fundamental-engine/three | visible
+                            static | drives a | visible
+                            static |  | visible
+                              static | THREE.Points | visible
+                            static | swarm in your own WebGL scene; the read primitives ( | visible
+                            static |  | visible
+                              static | sample | visible
+                            static | , | visible
+                            static |  | visible
+                              static | readParticles | visible
+                            static | , | visible
+                            static |  | visible
+                              static | addField | visible
+                            static | ) bind the engine to anything that draws. | visible
+                          list item |  | visible
+                            static | • | visible
+                            static | Headless | visible
+                            static | — no DOM, no canvas: records become bodies and relationships become edges, and a tool read | visible
+                            static |  | visible
+                              static | query() | visible
+                            static | and | visible
+                            static |  | visible
+                              static | snapshot() | visible
+                            static | . The smallest conformant host — for servers, tests, and agents. | visible
+                        paragraph |  | visible
+                          static | How the hosts relate — and what’s at parity across them — in | visible
+                          link | Implementations | focusable,visible
+                            static | Implementations | visible
+                          static | . | visible
+                      section |  | visible
+                        section |  | visible
+                          static | Trust | visible
+                        heading | Built to be inspected. | visible
+                          static | Built to be inspected. | visible
+                        list |  | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | Zero runtime dependencies. | visible
+                            static | The core engine ships with none. | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | Signals-first by default. | visible
+                            static | A field renders nothing unless you ask for it — the invisible field is the baseline. | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | Accessible by construction. | visible
+                            static | Semantic HTML stays the source of meaning; reduced motion removes motion, not meaning — en | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | Measured, not guessed. | visible
+                            static | Sub-millisecond | visible
+                            static |  | visible
+                              static | compute | visible
+                            static | per frame at real-page scale; fill-rate is the real budget and is | visible
+                            link | measured on real hardware | focusable,visible
+                              static | measured on real hardware | visible
+                            static | . | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | Stable 0.x surface, cross-plane conformance. | visible
+                            static | Code-verified docs, a frozen public API, and shared-physics conformance across web, Apple, | visible
+                      section |  | visible
+                        section |  | visible
+                          static | The full engine, live | visible
+                        heading | 36 forces. 64 patterns. 8 presets. One 0.x API. | visible
+                          static | 36 forces. 64 patterns. 8 presets. One 0.x API. | visible
+                        paragraph |  | visible
+                          static | Everything above is built from one contract: | visible
+                          static |  | visible
+                            static | data-* | visible
+                          static | in, | visible
+                          static |  | visible
+                            static | --field-* | visible
+                          static | out. The complete force-by-force manual — every force, preset, and system behaviour, each  | visible
+                        link | OPEN THE EXECUTABLE MANUAL → | focusable,visible
+                          static | OPEN THE EXECUTABLE MANUAL → | visible
+                        link | OPEN THE LAB → | focusable,visible
+                          static | OPEN THE LAB → | visible
+                        paragraph |  | visible
+                          static | Or jump straight to a surface: | visible
+                          link | the API | focusable,visible
+                            static | the API | visible
+                          static | · | visible
+                          link | patterns | focusable,visible
+                            static | patterns | visible
+                          static | · | visible
+                          link | the force catalog | focusable,visible
+                            static | the force catalog | visible
+                          static | . | visible
+                        panel | Seven forces, rendered live | visible
+                          section |  | visible
+                          caption |  | visible
+                            section |  | visible
+                              static | ATTRACT | visible
+                            static | pulls matter in | visible
+                          push button | Previous force | focusable,visible
+                          section | Choose a force | visible
+                            push button | attract | focusable,visible
+                            push button | repel | focusable,visible
+                            push button | swirl | focusable,visible
+                            push button | gravity | focusable,visible
+                            push button | stream | focusable,visible
+                            push button | buoyancy | focusable,visible
+                            push button | tether | focusable,visible
+                          push button | Next force | focusable,visible
+                          link | SEE ALL 36 FORCES → | focusable,visible
+                            static | SEE ALL 36 FORCES → | visible
+                      section |  | visible
+                        section |  | visible
+                          static | invisible fields — live, over real data | visible
+                        heading | Everything above shows the field. These twelve never do. | visible
+                          static | Everything above shows the field. These twelve never do. | visible
+                        paragraph |  | visible
+                          static | Twelve ordinary page types — an inbox, a market, a backlog, a front page — run as fields o | visible
+                          static |  | visible
+                            static | real data | visible
+                          static | : no particle swarm, the measurements come back as type, ink, and anchor. Each ships its d | visible
+                        link | EVIDENCE citations are mass — trust you can feel in the type | focusable,visible
+                          static | EVIDENCE | visible
+                          static | citations are mass — trust you can feel in the type | visible
+                        link | INBOX urgency is mass; attention is one finite budget; old asks decay toward quiet | focusable,visible
+                          static | INBOX | visible
+                          static | urgency is mass; attention is one finite budget; old asks decay toward quiet | visible
+                        link | MARKET market cap is mass; the day's move polarizes; correlated assets thread | focusable,visible
+                          static | MARKET | visible
+                          static | market cap is mass; the day's move polarizes; correlated assets thread | visible
+                        link | BACKLOG priority is mass; references bind; the cycle is a sink with capacity | focusable,visible
+                          static | BACKLOG | visible
+                          static | priority is mass; references bind; the cycle is a sink with capacity | visible
+                        link | CALENDAR the next launch pulls hardest; imminence ramps the weight in real time | focusable,visible
+                          static | CALENDAR | visible
+                          static | the next launch pulls hardest; imminence ramps the weight in real time | visible
+                        link | THREADS votes are mass; controversy is charge; reply chains bind and heat | focusable,visible
+                          static | THREADS | visible
+                          static | votes are mass; controversy is charge; reply chains bind and heat | visible
+                        link | DEPENDENCIES downloads are mass; staleness decays; one advisory charges the graph | focusable,visible
+                          static | DEPENDENCIES | visible
+                          static | downloads are mass; staleness decays; one advisory charges the graph | visible
+                        link | FLEET services carry traffic; incidents accrete their updates; impact is heat | focusable,visible
+                          static | FLEET | visible
+                          static | services carry traffic; incidents accrete their updates; impact is heat | visible
+                        link | CATALOG review consensus is mass — the evidence trust math, retargeted at a shelf | focusable,visible
+                          static | CATALOG | visible
+                          static | review consensus is mass — the evidence trust math, retargeted at a shelf | visible
+                        link | LIBRARY listens are mass; the queue accretes and releases | focusable,visible
+                          static | LIBRARY | visible
+                          static | listens are mass; the queue accretes and releases | visible
+                        link | MEMORY the forgetting curve is decay; frequency anchors; review re-binds | focusable,visible
+                          static | MEMORY | visible
+                          static | the forgetting curve is decay; frequency anchors; review re-binds | visible
+                        link | NEWSROOM pageviews are mass; the cycle's rise and fall polarizes | focusable,visible
+                          static | NEWSROOM | visible
+                          static | pageviews are mass; the cycle's rise and fall polarizes | visible
+                        paragraph |  | visible
+                          link | See the family → | focusable,visible
+                            static | See the family → | visible
+                      section |  | visible
+                        section |  | visible
+                          static | Explore | visible
+                        heading | Go deeper. | visible
+                          static | Go deeper. | visible
+                        link | AI Evidence Claims & sources as a readable field. | focusable,visible
+                          section |  | visible
+                            static | AI Evidence | visible
+                          static | Claims & sources as a readable field. | visible
+                        link | Substrate Demo One field, two readings — UI and agent-json. | focusable,visible
+                          section |  | visible
+                            static | Substrate Demo | visible
+                          static | One field, two readings — UI and agent-json. | visible
+                        link | Invisible Fields Twelve real-data examples, no particle drawn. | focusable,visible
+                          section |  | visible
+                            static | Invisible Fields | visible
+                          static | Twelve real-data examples, no particle drawn. | visible
+                        link | The executable manual Every force, live, end to end. | focusable,visible
+                          section |  | visible
+                            static | The executable manual | visible
+                          static | Every force, live, end to end. | visible
+                        link | The Lab Inspect the engine live. | focusable,visible
+                          section |  | visible
+                            static | The Lab | visible
+                          static | Inspect the engine live. | visible
+                        link | The API query, snapshot, projections. | focusable,visible
+                          section |  | visible
+                            static | The API | visible
+                          static | query, snapshot, projections. | visible
+                        link | Patterns 64 composed behaviours. | focusable,visible
+                          section |  | visible
+                            static | Patterns | visible
+                          static | 64 composed behaviours. | visible
+                        link | The docs Start here — guides + reference. | focusable,visible
+                          section |  | visible
+                            static | The docs | visible
+                          static | Start here — guides + reference. | visible
+                    landmark |  | visible
+                      static | Fundamental | visible
+                      static | A PHYSICS ENGINE FOR INTERFACES · V0.10.1 · CREATED BY | visible
+                      link | ZACH SHALLBETTER | focusable,visible
+                        static | ZACH SHALLBETTER | visible
+                      landmark | Footer | visible
+                        link | DOCS | focusable,visible
+                          static | DOCS | visible
+                        link | LAB | focusable,visible
+                          static | LAB | visible
+                        link | CONTACT | focusable,visible
+                          static | CONTACT | visible
+                    push button | Open data console | focusable,showing,visible
+                  panel |  | 
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                  panel |  | 
+                  panel |  | 
+                  panel |  | 
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                    static | 127.0.0.1:4399 | 
+                    push button | Close this view | 
+                  panel |  | 
+                  panel |  | 
+                separator |  | 
+                  slider | Split View Resize Handle (draggable) | 
+                panel |  | 
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                  panel |  | 
+                  panel |  | 
+                  panel |  | 
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                    static |  | 
+                    push button | Close this view | 
+                  panel |  | 
+                  panel |  | 
+                panel |  | 
+                  panel |  | 
+                    static | Create split view | 
+                panel |  | 
+                panel |  | 
+                panel |  | 
+                panel |  | 
+              panel |  | 
+              panel |  | 
+            panel | Infobar Container | showing,visible
+              alert | Infobar | showing,visible
+                panel |  | showing,visible
+                panel |  | showing,visible
+                panel |  | showing,visible
+                  static | You are using an unsupported command-line flag: --no-sandbox. Stability and security will  | showing,visible
+                panel |  | showing,visible
+                panel |  | showing,visible
+                  push button | Close | focusable,showing,visible
+              panel |  | showing,visible
+            panel |  | 
+              panel |  | 
+              panel |  | 
+              panel |  | 
+              panel |  | 
+              panel |  | 
+            panel |  | 
+              panel |  | 
+              slider | Side Panel Resize Handle (draggable) | 
+            page tab list |  | showing,visible
+              panel |  | showing,visible
+                push button | Tab search | focusable,showing,visible
+              panel |  | showing,visible
+                panel |  | showing,visible
+                  page tab | Fundamental — a physics engine for interfaces | focusable,showing,visible
+                    push button | Mute tab | 
+                    push button | Close | focusable,showing,visible
+                  panel |  | 
+                panel |  | showing,visible
+              push button | New Tab | focusable,showing,visible
+              panel |  | showing,visible
+            page tab list |  | 
+              panel |  | 
+                push button | Collapse tabs | 
+                panel |  | 
+                  push button | Tab groups | 
+                  push button | Tab search | 
+              panel |  | 
+              panel |  | 
+                push button | New tab | 
+              panel |  | 
+              slider | Vertical Tab Strip Resize Handle (Draggable) | 
+              panel |  | 
+            panel |  | 
+            panel |  | 
+            panel |  | showing,visible
+            panel |  | 
+        panel |  | 
+      frame |  | showing,visible
+        panel |  | showing,visible
+          static | https://habitat.fundamental-engine.com | showing,visible
+      alert | Can't update Chrome | showing,visible
+        panel |  | showing,visible
+          panel |  | showing,visible
+            panel |  | showing,visible
+              heading | Can't update Chrome | showing,visible
+              static |  | 
+            push button | Close | focusable,focused,showing,visible
+            panel |  | showing,visible
+              panel |  | showing,visible
+                static | Chrome couldn't update to the latest version, so you're missing out on new features and se | showing,visible
+              panel |  | showing,visible
+                panel |  | showing,visible
+                panel |  | showing,visible
+                push button | Reinstall Chrome | focusable,showing,visible
+    frame |  | showing,visible
+      panel |  | showing,visible
+        panel |  | showing,visible
+          panel |  | 
+          panel |  | showing,visible
+            document web |  | focused,showing,visible
+    frame |  | showing,visible
+      panel |  | showing,visible
+        panel |  | showing,visible
+          panel |  | showing,visible
+          panel |  | showing,visible
+            document web |  | focused,showing,visible
+    frame |  | showing,visible
+      panel |  | showing,visible
+        static | https://habitat.fundamental-engine.com | showing,visible
+    alert | Can't update Chrome | showing,visible
+      panel |  | showing,visible
+        panel |  | showing,visible
+          panel |  | showing,visible
+            heading | Can't update Chrome | showing,visible
+            static |  | 
+          push button | Close | focusable,focused,showing,visible
+          panel |  | showing,visible
+            panel |  | showing,visible
+              static | Chrome couldn't update to the latest version, so you're missing out on new features and se | showing,visible
+            panel |  | showing,visible
+              panel |  | showing,visible
+              panel |  | showing,visible
+              push button | Reinstall Chrome | focusable,showing,visible

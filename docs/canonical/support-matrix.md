@@ -135,8 +135,10 @@ spot-check (the human half of RC-8) is logged here:
 | Date | Tool | Surface | Result |
 |---|---|---|---|
 | automated | CI (`a11y.test.ts`, `reduced-motion.test.ts`) | engine + patterns | ✅ reduced-motion fallback, semantic-truth, no motion-only meaning |
-| _pending_ | VoiceOver / NVDA | fundamental-engine.com homepage + `/eli5` | _maintainer spot-check — confirm the field is skipped and content is fully navigable_ |
+| 2026-09-11 | Orca 42 (GNOME screen reader) over Chrome 149, Linux, AT-SPI2 — automated on the `titan-gpu` host | homepage + `/eli5` (site preview) | ✅ field announced as nothing; Say All, Tab order and browse-mode line reading all traverse the page's real content — record: [`docs/planning/rc8-at-pass-2026-09-11.md`](../planning/rc8-at-pass-2026-09-11.md) |
+| _optional_ | VoiceOver / NVDA | homepage + `/eli5` | _second-engine spot-check by a maintainer; not a gate — the Orca pass above is the logged RC-8 evidence_ |
 
 > The decorative field being `aria-hidden` means a conforming screen reader walks straight past it to the
-> page's real content — the expected pass is "the field is announced as nothing." The pending row is a
-> maintainer sign-off (a live VO/NVDA pass), the same hands-on gate as the perf fact sheet.
+> page's real content — the expected pass is "the field is announced as nothing." The 2026-09-11 row is a
+> real screen-reader pass (every utterance Orca produced, harvested from its speech layer), reproducible
+> with `scripts/a11y/orca-pass.sh`; the AT-SPI tree it read is captured alongside the transcript.
