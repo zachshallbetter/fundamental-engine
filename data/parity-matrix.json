@@ -1656,6 +1656,56 @@
           "kotlin": true
         }
       ]
+    },
+    {
+      "id": "palette",
+      "label": "Palette / colour (option · declarative host · imperative host)",
+      "union": [
+        "palette-host",
+        "palette-option",
+        "palette-view-host"
+      ],
+      "counts": {
+        "js": 3,
+        "swift": 3,
+        "kotlin": 2
+      },
+      "planes": {
+        "js": [
+          "palette-host",
+          "palette-option",
+          "palette-view-host"
+        ],
+        "swift": [
+          "palette-host",
+          "palette-option",
+          "palette-view-host"
+        ],
+        "kotlin": [
+          "palette-host",
+          "palette-option"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "palette-host",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "palette-option",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "palette-view-host",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        }
+      ]
     }
   ]
 }

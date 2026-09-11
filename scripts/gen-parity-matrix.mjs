@@ -18,6 +18,9 @@
  *   - Kotlin  : the `class FieldHandle` block + the `enum class RenderMode`/`OverlayMode` +
  *               the force catalogs (android/fundamental-core/src/main/**).
  * Shared      : the conformance golden's force list (the ports are proven equal on it at depth:0).
+ * Palette     : the multi-hue palette capability at the option / declarative-host / imperative-host
+ *               layers (#1091) — colour was the one dimension the matrix never tracked, which is how
+ *               the Compose single-accent collapse (#1090) reached an app before any gate.
  *
  * A capability that is an IDIOM difference (DOM scan vs `.fieldBody()` vs `Modifier.fieldBody`) is an
  * equivalent, not a gap; a capability genuinely absent (a method missing from a port's handle) is a
@@ -204,6 +207,52 @@ function kotlinEnumCases(src, enumName) {
 const kotlinRenderModes = () => kotlinEnumCases(ktHandleSrc, 'RenderMode');
 const kotlinOverlayModes = () => kotlinEnumCases(ktHandleSrc, 'OverlayMode');
 
+// ── palette / colour (#1091) ────────────────────────────────────────────────────────────────────
+// #1090 shipped a Compose host that collapsed a multi-hue palette to one accent, and nothing here
+// caught it: the matrix tracked handle methods, options, forces and modes — never COLOUR. This
+// dimension tracks the palette capability at each layer where a hue can be lost:
+//   palette-option     the engine accepts a multi-hue palette (`FieldOptions.palette` on JS/Swift;
+//                      the `setPalette` setter idiom on Kotlin, which has no options struct)
+//   palette-host       the plane's declarative host applies it (`<field-root palette>` / SwiftUI
+//                      `FieldView` / Compose `FieldView(palette:)`)
+//   palette-view-host  the plane's imperative host applies it (vanilla `FieldField.setPalette` /
+//                      Swift `FundamentalVanilla.FieldField.setPalette` / Android `FieldFieldView`)
+// A port that supports one accent where another supports a palette array now shows as a parity
+// delta instead of passing silently.
+
+const jsElementsSrc = readIf('packages/elements/src/index.ts');
+const jsVanillaSrc = readIf('packages/vanilla/src/field.ts');
+const swiftUiViewSrc = readIf('swift/Sources/FundamentalSwiftUI/FieldView.swift');
+const swiftVanillaSrc = readIf('swift/Sources/FundamentalVanilla/FieldField.swift');
+const ktComposeViewSrc = readIf('android/fundamental-compose/src/main/kotlin/com/fundamental/compose/FieldView.kt');
+const ktAndroidViewSrc = readIf('android/fundamental-android/src/main/kotlin/com/fundamental/android/FieldFieldView.kt');
+
+function jsPalette() {
+  const set = new Set();
+  if (jsOptions().has('palette')) set.add('palette-option');
+  if (/attr:\s*'palette'/.test(jsElementsSrc)) set.add('palette-host');
+  if (/\bsetPalette\s*\(/.test(jsVanillaSrc)) set.add('palette-view-host');
+  return set;
+}
+
+function swiftPalette() {
+  const set = new Set();
+  if (swiftOptions().has('palette')) set.add('palette-option');
+  if (/\bsetPalette\s*\(/.test(swiftUiViewSrc)) set.add('palette-host');
+  if (/\bsetPalette\s*\(/.test(swiftVanillaSrc)) set.add('palette-view-host');
+  return set;
+}
+
+function kotlinPalette() {
+  const set = new Set();
+  if (/\bfun\s+setPalette\s*\(/.test(ktHandleSrc)) set.add('palette-option');
+  // the Compose host takes a multi-hue list (`palette: List<Color>`, #1095); a single `accent` alone
+  // is the #1090 collapse and does NOT count.
+  if (/\bpalette\s*:\s*List<Color>/.test(ktComposeViewSrc)) set.add('palette-host');
+  if (/\bpalette\s*:\s*List<|\bsetPalette\s*\(/.test(ktAndroidViewSrc)) set.add('palette-view-host');
+  return set;
+}
+
 // ── shared conformance golden ─────────────────────────────────────────────────────────────────────
 
 function goldenForces() {
@@ -247,6 +296,9 @@ export async function buildParityMatrix() {
     dimension('force-tokens', 'Force tokens', jsForceTokens(), swiftForceTokens(), kotlinForceTokens()),
     dimension('render-modes', 'Render modes', kebabSet(jsRenderModes()), kebabSet(swiftRenderModes()), kebabSet(kotlinRenderModes())),
     dimension('overlay-modes', 'Overlay readings', kebabSet(jsOverlayModes()), kebabSet(swiftOverlayModes()), kebabSet(kotlinOverlayModes())),
+    // colour is a capability too (#1091): the multi-hue palette at the option, declarative-host, and
+    // imperative-host layers — the layer #1090 fell through.
+    dimension('palette', 'Palette / colour (option · declarative host · imperative host)', jsPalette(), swiftPalette(), kotlinPalette()),
   ];
 
   const golden = goldenForces();
