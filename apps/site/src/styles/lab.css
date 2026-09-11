@@ -28,7 +28,8 @@ body:has(.lab) { align-items: flex-start; }
   position: relative; border: 1px solid var(--line-2); border-radius: var(--r-lg); overflow: hidden;
   background: radial-gradient(120% 100% at 50% 40%, rgba(13, 17, 26, 0.4), rgba(4, 5, 10, 0.85)); aspect-ratio: 16 / 11;
 }
-.lab-chamber canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.lab-chamber canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; } /* pointer-capture drags on touch (#696) */
+.lab-chamber canvas.dragging { cursor: grabbing; }
 .stage-label { position: absolute; top: 10px; left: 12px; z-index: 4; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-4); pointer-events: none; }
 .chamber-force { position: absolute; top: 10px; right: 12px; z-index: 4; font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fc); display: flex; align-items: center; gap: 0.4rem; }
 .chamber-force .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--fc); box-shadow: 0 0 8px var(--fc); }
@@ -42,6 +43,7 @@ body:has(.lab) { align-items: flex-start; }
 
 /* live measurement HUD (positions the shared .ds-readout) */
 .chamber-hud { position: absolute; bottom: 12px; left: 12px; z-index: 5; pointer-events: none; min-width: 124px; }
+.chamber-hud .hud-row.live b { color: var(--fc); } /* the re-aim readout while a handle is dragged (#696) */
 
 /* help button + legend popover */
 .chamber-help {

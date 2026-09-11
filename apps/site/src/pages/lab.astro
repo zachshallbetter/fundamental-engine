@@ -143,6 +143,7 @@ const FILTER_COLOR: Record<string, string> = {
               <li><span class="legend-key pass"></span>A passed expectation marker on the timeline.</li>
               <li><span class="legend-key head"></span>The particle head + its velocity vector.</li>
               <li><span class="legend-line dim"></span>Drag the timeline to scrub frame by frame.</li>
+              <li><span class="legend-key head"></span>Drag the start point, its velocity arrow, or the body to re-aim the experiment.</li>
             </ul>
             <p class="info-title" style="margin-top:0.9rem">Keyboard</p>
             <ul class="key-list">
@@ -262,6 +263,7 @@ const FILTER_COLOR: Record<string, string> = {
 
   <script>
     import { EXPERIMENTS, runScenario, allForces, forceAt, MANUAL_FORCES } from '@fundamental-engine/core';
+    import { V_ARROW_PX, HANDLE_R, velocityTip, labHandles, hitLabHandle, applyLabDrag, type LabHandleKind, type LabDragOrigin } from '../lib/lab-drag.ts';
 
     type Any = Record<string, any>;
     const forces = allForces();
@@ -303,6 +305,7 @@ const FILTER_COLOR: Record<string, string> = {
         case 'box': return [['tight', Math.round(d * 0.6)], ['default', d], ['wide', Math.min(sp.max, Math.round(d * 1.6))]];
         case 'absorbR': return [['small', Math.round(d * 0.6)], ['default', d], ['large', Math.min(sp.max, Math.round(d * 1.6))]];
         case 'vx': case 'vy': return [['0', 0], ['slow', 2], ['fast', 6]];
+        case 'x': case 'y': case 'bx': case 'by': return [['default', d]];
         case 'count': return [['1', 1], ['8', 8], ['24', 24]];
         default: return [];
       }
@@ -370,6 +373,12 @@ const FILTER_COLOR: Record<string, string> = {
           case 'absorbR': return b.absorbR ?? 64;
           case 'vx': return p0?.vx ?? 0;
           case 'vy': return p0?.vy ?? 0;
+          // direct manipulation (#696): the tracked particle's start and the body centre, in
+          // the scenario's input frame (the runner centres the run; drags apply deltas)
+          case 'x': return p0?.x ?? 0;
+          case 'y': return p0?.y ?? 0;
+          case 'bx': return b.cx ?? 0;
+          case 'by': return b.cy ?? 0;
           case 'count': return s.particles.length || 1;
           default: return 0;
         }
@@ -387,6 +396,12 @@ const FILTER_COLOR: Record<string, string> = {
         if (ov.absorbR != null) B.absorbR = ov.absorbR;
         if (ov.vx != null && s.particles[0]) s.particles[0].vx = ov.vx;
         if (ov.vy != null && s.particles[0]) s.particles[0].vy = ov.vy;
+        // the dragged start / body (before placeExtras, so fan/ring/scatter extras follow the
+        // moved test particle exactly as they follow its vx/vy)
+        if (ov.x != null && s.particles[0]) s.particles[0].x = ov.x;
+        if (ov.y != null && s.particles[0]) s.particles[0].y = ov.y;
+        if (ov.bx != null) B.cx = ov.bx;
+        if (ov.by != null) B.cy = ov.by;
         if (ov.frames != null) s.frames = ov.frames;
         // Scenario.seed — the runner's determinism seam: runScenario swaps Math.random for a
         // seeded PRNG during the run, so RNG forces (thermal, jet, spawn scatter) replay
@@ -482,16 +497,20 @@ const FILTER_COLOR: Record<string, string> = {
         return -1;
       }
 
-      function compute(resetFrame: boolean) {
+      // `live` (#696): a re-run mid-drag — the viewport stays frozen so the world under the
+      // pointer does not slide, the ghost stays as captured at pointerdown, the Tune panel and
+      // the 45-run sweep are left alone (the inputs are synced in place), and the playhead is
+      // clamped rather than reset so the trail re-shapes under the current frame.
+      function compute(resetFrame: boolean, live = false) {
         const s = buildScenario();
         // ghost: capture the prior setting's trajectory on a fresh run (not on a free-run extend)
-        if (resetFrame) {
+        if (resetFrame && !live) {
           if (result && ghostOn && ghostForce === cur) ghostTraj = result.trajectory;
           else if (ghostForce !== cur) ghostTraj = null;
         }
         result = runScenario(s, forces);
         ghostForce = cur;
-        const tuned = ['strength', 'range', 'spin', 'angle', 'box', 'absorbR', 'vx', 'vy'].some((k) => overrides[k] != null);
+        const tuned = ['strength', 'range', 'spin', 'angle', 'box', 'absorbR', 'vx', 'vy', 'x', 'y', 'bx', 'by'].some((k) => overrides[k] != null);
         checks = byForce[cur].expectations.map((e: Any) => {
           const r = e.check(result);
           return {
@@ -501,12 +520,35 @@ const FILTER_COLOR: Record<string, string> = {
           };
         });
         if (resetFrame) frame = 0;
+        else frame = Math.min(frame, result.trajectory.length - 1); // a re-aim may shorten the run
         buildTimeline();
-        computeView();
-        if (resetFrame) { renderParams(); populateSweep(); runSweep(); }
+        if (!live) computeView();
+        if (resetFrame && !live) { renderParams(); populateSweep(); runSweep(); }
+        if (live) syncParamInputs(DRAG_KEYS);
         draw();
       }
       const evaluate = () => compute(true);
+
+      // ── direct manipulation (#696): drag the start / velocity arrow / body on the chamber ──
+      const DRAG_KEYS = ['x', 'y', 'vx', 'vy', 'bx', 'by'];
+      let drag: { kind: LabHandleKind; pointerId: number; from: { sx: number; sy: number }; origin: LabDragOrigin } | null = null;
+      let hover: LabHandleKind | null = null;
+      let dragRaf = 0;
+      const currentHandles = () =>
+        result ? labHandles(view, result.trajectory[0]?.[0] ?? null, isPair(cur) ? null : result.body) : [];
+      // write the dragged overrides into the existing Tune inputs without re-rendering the panel
+      function syncParamInputs(keys: string[]) {
+        const root = $('params'); if (!root) return;
+        for (const key of keys) {
+          const v = valOf(key);
+          root.querySelectorAll(`input[data-param="${key}"]`).forEach((el) => {
+            const inp = el as HTMLInputElement;
+            inp.value = inp.type === 'number' ? String(round(v, parseFloat(inp.step) || 1)) : String(v);
+          });
+          root.querySelectorAll(`.band[data-band-key="${key}"]`).forEach((el) =>
+            el.classList.toggle('on', round(v) === parseFloat((el as HTMLElement).dataset.bandVal!)));
+        }
+      }
 
       function computeView() {
         const b = result.body;
@@ -662,7 +704,7 @@ const FILTER_COLOR: Record<string, string> = {
             // velocity vector
             if (i === 0 && !p.cap && (Math.abs(p.vx) > 0.05 || Math.abs(p.vy) > 0.05)) {
               ctx.strokeStyle = hexA('#ffffff', 0.55); ctx.lineWidth = 1;
-              ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + p.vx * 6, sy + p.vy * 6); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + p.vx * V_ARROW_PX, sy + p.vy * V_ARROW_PX); ctx.stroke();
             }
             // head
             const r = p.cap ? 3 : i === 0 ? 4.5 : 2.6;
@@ -676,7 +718,34 @@ const FILTER_COLOR: Record<string, string> = {
             const k = 60, [ex, ey] = w2s(p0.x, p0.y), [ex2, ey2] = w2s(p0.x + d.dvx * k, p0.y + d.dvy * k);
             arrow(ex, ey, ex2, ey2, 'rgba(255,206,107,0.9)', 4);
           }
+          // launch glyph (#696): the frame-0 start ring + initial-velocity arrow with its tip
+          // handle, drawn every frame so the drag targets stay where the run began. At frame 0
+          // it coincides with the head + vector above, so the resting look is unchanged.
+          {
+            const [sx0, sy0] = w2s(p0.x, p0.y);
+            const [tx, ty] = velocityTip(sx0, sy0, p0.vx, p0.vy);
+            const onStart = drag?.kind === 'start' || (!drag && hover === 'start');
+            const onTip = drag?.kind === 'velocity' || (!drag && hover === 'velocity');
+            const atRest = Math.hypot(p0.vx, p0.vy) * V_ARROW_PX < 1;
+            ctx.save();
+            ctx.strokeStyle = hexA('#ffffff', onStart ? 0.75 : 0.35); ctx.lineWidth = onStart ? 1.5 : 1;
+            ctx.beginPath(); ctx.arc(sx0, sy0, HANDLE_R.start - 3, 0, 7); ctx.stroke();
+            if (atRest) ctx.setLineDash([2, 3]);
+            ctx.strokeStyle = hexA('#ffffff', onTip ? 0.8 : atRest ? 0.25 : 0.45); ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(sx0, sy0); ctx.lineTo(tx, ty); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = hexA('#ffffff', onTip ? 0.95 : 0.55);
+            ctx.beginPath(); ctx.arc(tx, ty, onTip ? 3.6 : 3, 0, 7); ctx.fill();
+            ctx.restore();
+          }
         }
+        // body handle ring while hovered / dragged
+        if (!pair && (drag?.kind === 'body' || (!drag && hover === 'body'))) {
+          ctx.strokeStyle = hexA('#ffffff', drag ? 0.75 : 0.4); ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(bx, by, HANDLE_R.body, 0, 7); ctx.stroke();
+        }
+        // the e2e readiness / targeting hook — canvas-local screen px of the drag handles
+        W.__labHandles = currentHandles();
 
         updateHud();
         updateTimeline();
@@ -693,7 +762,17 @@ const FILTER_COLOR: Record<string, string> = {
         const dist = Math.hypot(p.x - b.cx, p.y - b.cy);
         const speed = p.speed ?? Math.hypot(p.vx, p.vy);
         const fmag = prev && !p.cap ? Math.hypot((p.vx / 0.95) - prev.vx, (p.vy / 0.95) - prev.vy) : 0;
-        let html = `<div class="hud-row"><span class="k">dist</span><b>${dist.toFixed(0)}</b><span class="u">px</span></div>`;
+        let html = '';
+        if (drag) {
+          // live re-aim readout (#696): the input-frame start, launch velocity and the
+          // frame-0 |Δv| the force applies at the new geometry
+          const d0 = result.applyDelta?.[0];
+          const dv0 = d0 ? Math.hypot(d0.dvx, d0.dvy) : 0;
+          html += `<div class="hud-row live"><span class="k">${drag.kind === 'body' ? 'body' : 'start'}</span><b>${valOf(drag.kind === 'body' ? 'bx' : 'x').toFixed(0)}, ${valOf(drag.kind === 'body' ? 'by' : 'y').toFixed(0)}</b><span class="u">px</span></div>`;
+          html += `<div class="hud-row live"><span class="k">v₀</span><b>${valOf('vx').toFixed(1)}, ${valOf('vy').toFixed(1)}</b><span class="u">px/f</span></div>`;
+          html += `<div class="hud-row live"><span class="k">Δv₀</span><b>${dv0.toFixed(3)}</b><span class="u">|Δv|</span></div>`;
+        }
+        html += `<div class="hud-row"><span class="k">dist</span><b>${dist.toFixed(0)}</b><span class="u">px</span></div>`;
         html += `<div class="hud-row"><span class="k">speed</span><b>${speed.toFixed(2)}</b><span class="u">px/f</span></div>`;
         html += `<div class="hud-row"><span class="k">force</span><b>${fmag.toFixed(3)}</b><span class="u">|Δv|</span></div>`;
         if ((p.heat ?? 0) > 0.01) html += `<div class="hud-row"><span class="k">heat</span><b>${p.heat.toFixed(2)}</b></div>`;
@@ -847,10 +926,24 @@ const FILTER_COLOR: Record<string, string> = {
         }
         if (b.hw != null) specs.push(ATTR.box(b));
         if (b.absorbR != null) specs.push(ATTR.absorbR(b));
+        // slider span for the position rows: the body's range (×1.2) when it has one, else 300 —
+        // wide enough to drag a start clear across the field structure
+        const span = Math.max(200, Math.round((b.range > 0 && b.range < 1200 ? b.range : 300) * 1.2));
         if (p0) {
-          specs.push({ key: 'vx', label: 'initial v', sym: 'ₓ', val: p0.vx ?? 0, def: p0.vx ?? 0, min: -8, max: 8, step: 0.5 });
-          specs.push({ key: 'vy', label: 'initial v', sym: 'ᵧ', val: p0.vy ?? 0, def: p0.vy ?? 0, min: -8, max: 8, step: 0.5 });
-          if (!isPair(cur)) specs.push({ key: 'count', label: 'particles', val: s.particles.length, def: s.particles.length, min: 1, max: 40, step: 1 });
+          // vx/vy step 0.1 (was 0.5): a dragged velocity arrow writes 0.1 px/f multiples (#696)
+          specs.push({ key: 'vx', label: 'initial v', sym: 'ₓ', val: p0.vx ?? 0, def: p0.vx ?? 0, min: -8, max: 8, step: 0.1 });
+          specs.push({ key: 'vy', label: 'initial v', sym: 'ᵧ', val: p0.vy ?? 0, def: p0.vy ?? 0, min: -8, max: 8, step: 0.1 });
+          // the tracked particle's start point — bound both ways to the chamber drag
+          const x0 = p0.x ?? 0, y0 = p0.y ?? 0;
+          specs.push({ key: 'x', label: 'start', sym: 'x', unit: 'px', val: x0, def: x0, min: x0 - span, max: x0 + span, step: 1 });
+          specs.push({ key: 'y', label: 'start', sym: 'y', unit: 'px', val: y0, def: y0, min: y0 - span, max: y0 + span, step: 1 });
+        }
+        if (!isPair(cur)) {
+          // the body centre — bound both ways to the chamber drag (pair forces draw no body)
+          const cx0 = b.cx ?? 0, cy0 = b.cy ?? 0;
+          specs.push({ key: 'bx', label: 'body', sym: 'x', unit: 'px', val: cx0, def: cx0, min: cx0 - span, max: cx0 + span, step: 1 });
+          specs.push({ key: 'by', label: 'body', sym: 'y', unit: 'px', val: cy0, def: cy0, min: cy0 - span, max: cy0 + span, step: 1 });
+          if (p0) specs.push({ key: 'count', label: 'particles', val: s.particles.length, def: s.particles.length, min: 1, max: 40, step: 1 });
         }
         return specs;
       }
@@ -1035,7 +1128,7 @@ const FILTER_COLOR: Record<string, string> = {
       // ── export ──
       function buildHash() {
         const parts = [cur];
-        for (const k of ['strength', 'range', 'spin', 'angle', 'box', 'absorbR', 'vx', 'vy', 'count', 'seed']) if (overrides[k] != null) parts.push(`${k}=${overrides[k]}`);
+        for (const k of ['strength', 'range', 'spin', 'angle', 'box', 'absorbR', 'vx', 'vy', 'x', 'y', 'bx', 'by', 'count', 'seed']) if (overrides[k] != null) parts.push(`${k}=${overrides[k]}`);
         if (overrides.placement != null) parts.push(`placement=${overrides.placement}`);
         return parts.join(';');
       }
@@ -1120,6 +1213,55 @@ const FILTER_COLOR: Record<string, string> = {
           tl.addEventListener('pointermove', (e: Any) => { if (dragging) scrubTo(e.clientX); }, { signal: _ac.signal });
           tl.addEventListener('pointerup', () => { dragging = false; }, { signal: _ac.signal });
         }
+
+        // chamber drag (#696) — the same pointer-capture pattern as the timeline scrub. A
+        // pointerdown on a handle grabs it; moves apply the screen delta to the values captured
+        // at grab (rAF-coalesced live re-runs); release does the full pass (panel, sweep, refit).
+        // Away from a handle the chamber stays inert, as before.
+        const canvasXY = (e: PointerEvent) => { const r = canvas!.getBoundingClientRect(); return { sx: e.clientX - r.left, sy: e.clientY - r.top }; };
+        const endDrag = () => {
+          if (!drag) return;
+          drag = null;
+          if (dragRaf) { cancelAnimationFrame(dragRaf); dragRaf = 0; }
+          canvas!.classList.remove('dragging'); delete canvas!.dataset.drag;
+          // full pass without re-capturing the ghost (it holds the pre-drag track) or resetting
+          // the playhead: the view refits to the new track, the panel + sweep re-render
+          compute(false); renderParams(); populateSweep(); runSweep();
+        };
+        canvas!.addEventListener('pointerdown', (e: PointerEvent) => {
+          if (!calibrated() || !result || e.button !== 0) return;
+          const { sx, sy } = canvasXY(e);
+          const h = hitLabHandle(currentHandles(), sx, sy);
+          if (!h) return;
+          e.preventDefault();
+          stopPlay();
+          delete overrides.frames; // a re-aim drops any free-run extension (no 1800-frame live runs)
+          if (ghostOn && ghostForce === cur) ghostTraj = result.trajectory; // the pre-drag track
+          drag = { kind: h.kind, pointerId: e.pointerId, from: { sx, sy }, origin: { x: valOf('x'), y: valOf('y'), vx: valOf('vx'), vy: valOf('vy'), bx: valOf('bx'), by: valOf('by') } };
+          try { canvas!.setPointerCapture(e.pointerId); } catch {}
+          canvas!.classList.add('dragging'); canvas!.dataset.drag = h.kind;
+          setPreset('custom');
+          draw();
+        }, { signal: _ac.signal });
+        canvas!.addEventListener('pointermove', (e: PointerEvent) => {
+          if (!calibrated() || !result) return;
+          const to = canvasXY(e);
+          if (!drag) {
+            const h = hitLabHandle(currentHandles(), to.sx, to.sy);
+            const kind = h ? h.kind : null;
+            canvas!.style.cursor = h ? 'grab' : '';
+            if (kind !== hover) { hover = kind; draw(); }
+            return;
+          }
+          if (e.pointerId !== drag.pointerId) return;
+          Object.assign(overrides, applyLabDrag(drag.kind, view, drag.from, to, drag.origin));
+          if (!dragRaf) dragRaf = requestAnimationFrame(() => { dragRaf = 0; if (drag) compute(false, true); });
+        }, { signal: _ac.signal });
+        canvas!.addEventListener('pointerup', endDrag, { signal: _ac.signal });
+        canvas!.addEventListener('pointercancel', endDrag, { signal: _ac.signal });
+        canvas!.addEventListener('lostpointercapture', endDrag, { signal: _ac.signal });
+        canvas!.addEventListener('pointerleave', () => { if (!drag && hover) { hover = null; canvas!.style.cursor = ''; draw(); } }, { signal: _ac.signal });
+        _ac.signal.addEventListener('abort', () => { drag = null; if (dragRaf) cancelAnimationFrame(dragRaf); dragRaf = 0; });
 
         window.addEventListener('keydown', (e: Any) => {
           if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || !calibrated()) return;
