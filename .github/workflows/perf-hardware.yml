@@ -1,0 +1,120 @@
+name: Perf (hardware)
+
+# RC-7 — the performance-budget gate on REAL GPU hardware (docs/planning/fundamental-release-gate-spec.md
+# §3.1 RC-7; budgets sourced from docs/planning/fundamental-perf-fact-sheet.md, never invented).
+#
+# Runs on the self-hosted `titan-gpu` runner (titan-node: Ubuntu 22.04, NVIDIA GTX TITAN X, Chrome with
+# ANGLE-over-Vulkan GPU rasterization in headless=new). Three measurements, one checker:
+#   1. the Node compute bench (packages/core/bench, BENCH_JSON=1)            → compute budgets
+#   2. /perf-bench fill-rate sweep at DPR 1 and DPR 2 via CDP (sweep-gpu.mjs) → fill-rate budgets
+#   3. real pages (/, /eli5, /docs/patterns): frame deltas, LoAF, heap       → page budgets
+# A regression beyond a budget fails the job. Adding this workflow was a deliberate gate change
+# (RELEASING.md "Changing these gates is a policy change"); it is NOT yet a required check on main.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packages/core/**'
+      - 'packages/dom/**'
+      - 'packages/elements/**'
+      - 'apps/site/src/pages/perf-bench.astro'
+      - 'apps/site/src/pages/index.astro'
+      - 'apps/site/src/layouts/Base.astro'
+      - 'scripts/perf/**'
+      - 'docs/planning/perf-budgets.json'
+      - '.github/workflows/perf-hardware.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'packages/core/**'
+      - 'packages/dom/**'
+      - 'packages/elements/**'
+      - 'scripts/perf/**'
+      - 'docs/planning/perf-budgets.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: perf-hardware # one GPU, one measurement at a time — never two sweeps sharing the card
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22
+  SITE_PORT: 4399
+  CDP_PORT: 9333
+
+jobs:
+  measure:
+    name: budgets on titan-gpu
+    runs-on: [self-hosted, linux, titan-gpu]
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages + site
+        run: pnpm --filter "./packages/*" build && pnpm --filter @fundamental-engine/site build
+
+      - name: Serve the built site
+        run: |
+          (cd apps/site && nohup pnpm preview --host 127.0.0.1 --port $SITE_PORT > "$RUNNER_TEMP/preview.log" 2>&1 &)
+          for i in $(seq 1 30); do curl -sf -o /dev/null "http://127.0.0.1:$SITE_PORT/perf-bench" && break; sleep 1; done
+          curl -sf -o /dev/null "http://127.0.0.1:$SITE_PORT/perf-bench"
+
+      - name: Compute bench (Node, algorithmic)
+        run: |
+          mkdir -p perf
+          (cd packages/core && BENCH_JSON="$GITHUB_WORKSPACE/perf/compute.json" node bench/field-bench.ts)
+          test -s perf/compute.json
+
+      - name: GPU sweep · DPR 1
+        run: |
+          bash scripts/perf/chrome-gpu.sh start 1
+          node scripts/perf/sweep-gpu.mjs --cdp "http://127.0.0.1:$CDP_PORT" --site "http://127.0.0.1:$SITE_PORT" --label titan-dpr1 --out perf/titan-dpr1.json
+          bash scripts/perf/chrome-gpu.sh stop
+
+      - name: GPU sweep · DPR 2
+        run: |
+          bash scripts/perf/chrome-gpu.sh start 2
+          node scripts/perf/sweep-gpu.mjs --cdp "http://127.0.0.1:$CDP_PORT" --site "http://127.0.0.1:$SITE_PORT" --label titan-dpr2 --out perf/titan-dpr2.json
+          bash scripts/perf/chrome-gpu.sh stop
+
+      - name: Check budgets
+        run: node scripts/perf/check-budgets.mjs --compute perf/compute.json --gpu perf/titan-dpr1.json --gpu perf/titan-dpr2.json
+
+      - name: Upload measurements
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: perf-measurements-${{ github.run_id }}
+          path: perf/*.json
+          retention-days: 30
+
+      - name: Stop servers
+        if: always()
+        run: |
+          bash scripts/perf/chrome-gpu.sh stop || true
+          pkill -f "astro preview" || true
+
+  conclusion:
+    name: conclusion-perf
+    needs: [measure]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          jq -C <<< '${{ toJson(needs) }}'
+          jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
