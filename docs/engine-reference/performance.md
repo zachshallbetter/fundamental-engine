@@ -12,6 +12,12 @@ the particle math — it is canvas compositing at DPR 2, or a full-viewport `mix
 compositor re-blends every frame (even when transparent). The 120→30fps regression that motivated this
 note was *not* particle count — density 1 and density 3 measured the same fps; halving DPR doubled it.
 
+Performance has a third half that this note does not measure: **stability**. Force systems carry a
+documented canon of failure modes (jitter, oscillation, local minima, tuning brittleness), and the
+per-mechanism account of which of those the field damps by construction and which it still owns for
+`dynamic`-authority bodies is [`docs/canonical/stability-and-convergence.md`](../canonical/stability-and-convergence.md).
+Read it before tuning a body that the engine actually drives.
+
 So this suite deliberately splits the two concerns:
 
 - **Algorithmic cost** — `step()`, `query()`, `snapshot()`, the accumulator. Pure Node, deterministic,

@@ -264,6 +264,13 @@ const DEMOS = [
       so the motion reads at a glance. To fire a particle into the <em>canonical</em> force math
       and check it against its law, open <a href="/lab">the Lab</a>.
     </div>
+    <p>
+      Force systems also carry a known canon of failure modes — jitter, oscillation, local minima,
+      tuning brittleness. Which of those the field damps by construction (seeded RNG, per-step
+      friction, anchored bodies so the DOM owns placement) and which it still owns for bodies the
+      engine actually drives is stated per mechanism in
+      <a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/stability-and-convergence.md">stability-and-convergence.md</a>.
+    </p>
   </section>
 
   <section class="docs-sec">
