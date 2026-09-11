@@ -1,0 +1,141 @@
+# Maven Central (Sonatype Central Portal) for the Kotlin artifacts — DISPATCH-ONLY, DRY RUN BY DEFAULT.
+#
+# This workflow never runs on push, tag, or PR. It exists so the maintainer can rehearse (and, once the
+# Central account exists, perform) the Maven Central release of
+#   com.fundamental:fundamental-core   (pure Kotlin/JVM jar)
+#   com.fundamental:fundamental-compose (Android AAR)
+# without touching the existing GitHub Packages publish in android.yml, which stays the live path.
+#
+# What a run does, in order:
+#   1. checks out the given release tag and derives the version from it (-PreleaseVersion, as android.yml does)
+#   2. ./gradlew :fundamental-core:publishToMavenLocal :fundamental-compose:publishToMavenLocal   — verifies the
+#      publications resolve (sources + javadoc jars, full POM) on the runner's local repo. No network.
+#   3. ./gradlew centralBundle — stages both modules into android/build/central-staging, GPG-signs them with the
+#      in-memory SIGNING_KEY (if the secret exists; unsigned otherwise, and step 4 refuses to upload), and zips
+#      the Portal bundle. Prints the exact file manifest that WOULD be uploaded, and attaches the zip to the run.
+#   4. ONLY when dispatched with dry_run=false: ./gradlew centralUpload — the single task that talks to
+#      central.sonatype.com. With publishing_type=USER_MANAGED (the default) the deployment still waits for a
+#      human to press "Publish" in the Portal; AUTOMATIC publishes as soon as validation passes.
+#
+# Secrets the maintainer must create (repository secrets; none are checked in — see PUBLISHING.md):
+#   SIGNING_KEY             ASCII-armored GPG private key (gpg --armor --export-secret-keys <id>)
+#   SIGNING_PASSWORD        its passphrase (may be empty)
+#   SIGNING_KEY_ID          optional; the 8/16-hex key id, only needed for a key with several subkeys
+#   MAVEN_CENTRAL_USERNAME  a Central Portal *user token* username (Portal → View Account → Generate User Token)
+#   MAVEN_CENTRAL_PASSWORD  the matching user-token password
+#
+# Policy note (RELEASING.md): adding a workflow is a policy change. This one is intentionally inert — no trigger
+# but workflow_dispatch, no upload unless the dispatcher flips dry_run off — so merging it changes no release path.
+
+name: maven-central
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to stage (must already exist, e.g. v0.10.1)'
+        required: true
+      dry_run:
+        description: 'Stage + sign + bundle and print the manifest only. Uncheck to actually upload to the Central Portal.'
+        type: boolean
+        default: true
+      publishing_type:
+        description: 'Central Portal publishing type when dry_run is off'
+        type: choice
+        options: [USER_MANAGED, AUTOMATIC]
+        default: USER_MANAGED
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maven-central-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    name: ${{ inputs.dry_run && 'dry run — stage + sign + bundle (no upload)' || 'UPLOAD to Central Portal' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: derive the version from the tag (must match the JS core — the cross-plane lockstep)
+        id: version
+        run: |
+          TAG="${{ inputs.tag }}"
+          case "$TAG" in v*) ;; *) echo "tag must look like vX.Y.Z (got '$TAG')"; exit 1;; esac
+          VERSION="${TAG#v}"
+          CORE="$(node -p "require('./packages/core/package.json').version")"
+          if [ "$VERSION" != "$CORE" ]; then
+            echo "tag version $VERSION != packages/core/package.json $CORE — refusing to stage a desynced Kotlin release"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "staging com.fundamental:{fundamental-core,fundamental-compose}:$VERSION from $TAG (dry_run=${{ inputs.dry_run }})"
+
+      - name: verify — publishToMavenLocal (core + compose; sources, javadoc, POM)
+        working-directory: android
+        run: |
+          ./gradlew :fundamental-core:publishToMavenLocal :fundamental-compose:publishToMavenLocal \
+            -PreleaseVersion="${{ steps.version.outputs.version }}"
+          echo "── ~/.m2 tree ──"
+          find ~/.m2/repository/com/fundamental -type f | sort
+
+      - name: stage + sign + bundle (prints what WOULD be uploaded; no network)
+        working-directory: android
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+        run: ./gradlew centralBundle -PreleaseVersion="${{ steps.version.outputs.version }}"
+
+      - name: attach the bundle to the run (inspect it before ever flipping dry_run off)
+        uses: actions/upload-artifact@v4
+        with:
+          name: maven-central-bundle-${{ steps.version.outputs.version }}
+          path: android/build/central/fundamental-android-${{ steps.version.outputs.version }}-central-bundle.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: upload to the Central Portal (ONLY when dry_run is off)
+        if: ${{ !inputs.dry_run }}
+        working-directory: android
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+        run: |
+          ./gradlew centralUpload \
+            -PreleaseVersion="${{ steps.version.outputs.version }}" \
+            -PcentralPublishingType="${{ inputs.publishing_type }}"
+
+      - name: dry-run summary
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "DRY RUN — nothing was uploaded. The bundle above is exactly what centralUpload would send."
+          echo "To upload for real: re-dispatch with dry_run unchecked (needs MAVEN_CENTRAL_USERNAME/PASSWORD + SIGNING_KEY secrets)."
+
+  # Repo convention: every workflow ends in a conclusion job that passes only if every dependency succeeded.
+  conclusion:
+    name: conclusion
+    needs: [stage]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: fail unless every job succeeded
+        run: |
+          echo "stage: ${{ needs.stage.result }}"
+          [ "${{ needs.stage.result }}" = "success" ]
