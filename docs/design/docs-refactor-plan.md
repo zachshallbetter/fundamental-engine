@@ -1,6 +1,6 @@
 # Documentation refactor — full plan (JS · Swift · Kotlin)
 
-**Status:** In progress — Phases 0–5 complete (see phase list §9). Phase 6 (IA refinement) active.
+**Status (verified against the site 2026-09-11):** Phases **0**, **1** and **4** complete — the `check:docs` gate + the parity-matrix generator (#803, #807, #1004), the feedback-channels canon (#811, #1004), and the generated parity page + honest platform guides (#810, #1075). **Phase 2** (#997), **Phase 3** (#998) and **Phase 5** (#1000) are **not** done: the declarative reference carries no per-platform support rows, the twelve `/docs/api/*` pages are not merged, and no cookbook page exists (the pattern gallery and studies are the nearest thing). **Phase 6** (#1001) has not started. An earlier version of this line claimed Phases 0–5 complete; that was an overclaim.
 **Goal:** Every user-facing API and capability, on every platform, documented — **correct, complete, current, and cross-platform-honest** — and *locked that way* by a gate so it cannot rot or contradict the engine again. No mysteries.
 **Grounding:** Written from a five-front audit of the actual surface (JS imperative + declarative, current docs IA, Swift, Kotlin). The numbers and parity facts below are from code, not memory.
 
