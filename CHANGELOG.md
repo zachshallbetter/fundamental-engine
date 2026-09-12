@@ -9,6 +9,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Site Lab: a saved-config list with notes** (#694). The Tune panel can snapshot the current force + tune overrides with a `good` / `bad` / `edge` tag and a free-text note; the list under the export row loads a snapshot back (the preset reads Custom) or deletes it, and persists on the device under `fui:lab-configs` through the site's `persisted()` helper. A snapshot carries exactly the shareable state of the copy-link hash (never the free-run `frames`), so loading one reproduces what the link would. Site-only; no package or engine change.
 - **`rust/` — the experimental Rust plane (milestone 1).** A fourth plane of the fleet lands in the monorepo: `rust/crates/fundamental-core`, an f64, seeded, zero-dependency headless port of the engine for server / data / CMS hosts, where a body is a data record rather than a widget. 28 of the 36 forces (the canonical nine, natural, extended, the spatial-hash neighbour forces and the resonate/spotlight modifier pass), the step loop, FieldStore, the legacy Euler integrator, and an rng that matches the JS mulberry32 stream bit for bit; held to the shared cross-plane golden at f64 tolerance (`tests/golden_conformance.rs`). A `rust.yml` workflow builds and tests the crate on changes under `rust/`. **Experimental and unpublished**: no crates.io release (#1047), not on the parity page; the remaining forces and the platform crate are #1037–#1046 under epic #1036. No npm package changes.
 
 ### Fixed
