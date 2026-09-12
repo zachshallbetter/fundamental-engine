@@ -77,6 +77,16 @@ export interface FieldHost extends MinimalFieldHost {
   onInput?(cb: () => void): () => void;
   /** subscribe to a composed shadow-DOM body event by name; returns an unsubscribe. Absent ⇒ programmatic bodies only (no DOM body-event registration). */
   onBodyEvent?(type: string, cb: (e: Event) => void): () => void;
+  /** observer-gated body measurement (#689, `FieldOptions.measure: 'observe'`): watch each element's
+   *  box size + viewport-visibility edges and call `markDirty(el)` when either may have changed, so the
+   *  engine re-reads only that body's rect instead of polling every body on the measure cadence. The
+   *  engine calls it after every scan/rescan with the current DOM-backed bodies and invokes the returned
+   *  disconnect before the next call and on destroy. A host binds `ResizeObserver` / `IntersectionObserver`
+   *  here (`browserHost`/`containerHost` in `@fundamental-engine/dom`, feature-detected — the member is
+   *  omitted where observers are unavailable). Absent ⇒ `'observe'` degrades to `'poll'` byte for byte.
+   *  Observers report size and threshold crossings, not position, so the engine keeps a slower fallback
+   *  poll regardless of what this reports. */
+  observeBodies?(els: readonly Element[], markDirty: (el: Element) => void): () => void;
   /** release host-side state when the field is destroyed — called once by `FieldHandle.destroy()`
    *  after every event subscription is unsubscribed. A contained host (`containerHost`) uses it to
    *  remove its `data-field-boundary` ownership marker so the outer/page field re-adopts the bodies
@@ -107,6 +117,8 @@ export interface HostCapabilities {
   events: boolean;
   /** the host relays composed shadow-DOM body events (`onBodyEvent`) — DOM body registration. */
   bodyEvents: boolean;
+  /** the host can dirty-mark body geometry from observers (`observeBodies`) — `measure: 'observe'` engages only here. */
+  observe: boolean;
 }
 
 /**
@@ -129,6 +141,7 @@ export function hostCapabilities(host: FieldHost): HostCapabilities {
       typeof host.onInput === 'function' ||
       typeof host.onBodyEvent === 'function',
     bodyEvents: typeof host.onBodyEvent === 'function',
+    observe: typeof host.observeBodies === 'function',
   };
 }
 
@@ -163,5 +176,6 @@ export function defineHost(host: MinimalFieldHost & Partial<FieldHost>): FieldHo
     onVisibility: host.onVisibility ?? (() => NEVER_UNSUBSCRIBE),
     onInput: host.onInput ?? (() => NEVER_UNSUBSCRIBE),
     onBodyEvent: host.onBodyEvent ?? (() => NEVER_UNSUBSCRIBE),
+    observeBodies: host.observeBodies,
   };
 }

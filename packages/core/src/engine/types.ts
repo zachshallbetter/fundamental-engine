@@ -554,6 +554,20 @@ export interface RestingMotion {
 }
 
 /**
+ * How the engine refreshes body geometry from the DOM (#689). `'poll'` (the default, the shipped
+ * behaviour) re-reads every body's box on the fixed measure cadence (every 6th frame). `'observe'`
+ * opts into observer-gated measurement: the host marks a body dirty from `ResizeObserver` /
+ * `IntersectionObserver` (size + visibility edges) and only dirty bodies are re-read, with a slower
+ * fallback poll (every 30th frame) bounding the drift observers cannot see — an ancestor layout
+ * shift or a CSS transform moves a box without resizing it. Requires a host that implements
+ * `FieldHost.observeBodies`; without one (headless, SSR, older runtimes) `'observe'` degrades to
+ * `'poll'` byte for byte. The per-frame scroll compensation of cached centres is identical in both
+ * modes. Bodies with a custom `rect` provider (programmatic / shadow bodies) have no observable
+ * element and stay on the poll cadence in either mode.
+ */
+export type MeasureMode = 'poll' | 'observe';
+
+/**
  * A single force's contribution to one agent in one step, in one channel (substrate doc 04).
  * The unit the diagnostics (`causality`/`prediction`), Field Query, and Causal Replay consume:
  * "this matter moved 0.42 in linear x because of `attract`."
@@ -771,6 +785,11 @@ export interface FieldOptions {
    * idle motion for a drawn field with nothing painted; see {@link RestingMotion}. Construction-time.
    */
   restingMotion?: RestingMotion;
+  /** how body geometry is refreshed from the DOM (#689): `'poll'` (default — re-read every body on
+   *  the 6-frame measure cadence) or `'observe'` (opt-in — observer dirty-marking via
+   *  `FieldHost.observeBodies`, only dirty bodies re-read, plus a 30-frame fallback poll). Degrades
+   *  to `'poll'` byte-identically when the host offers no observer seam. See {@link MeasureMode}. */
+  measure?: MeasureMode;
   /** draw the background Currents (§24); default **false** (opt-in, #979 — the signals-first
    *  companion to `render: 'none'`). A bare field has no carrier waves; set true for the ambient
    *  resting structure + the bound shimmer reservoir. */

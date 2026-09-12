@@ -8,6 +8,7 @@
  */
 import { FIELD_BOUNDARY_ATTR, type FieldHost } from '@fundamental-engine/core';
 import { prefersReducedMotion, pageHidden } from './env.ts';
+import { bodyObserversSupported, observeBodyGeometry } from './observe-bodies.ts';
 
 const INPUT_EVENTS = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const;
 
@@ -19,7 +20,7 @@ export function containerHost(el: HTMLElement): FieldHost {
   // flicker this prevents. Idempotent (setting an already-set marker is a no-op; a re-attach after
   // destroy simply re-marks); `detach()` removes it so the outer field re-adopts on rescan.
   el.setAttribute(FIELD_BOUNDARY_ATTR, '');
-  return {
+  const host: FieldHost = {
     root: el,
     detach: () => el.removeAttribute(FIELD_BOUNDARY_ATTR),
     viewport: () => {
@@ -72,4 +73,9 @@ export function containerHost(el: HTMLElement): FieldHost {
       return () => el.removeEventListener(type, cb);
     },
   };
+  // Observer-gated body measurement (#689): visibility edges are relative to the CONTAINER (the
+  // IntersectionObserver root), matching the contained field's local viewport. Feature-detected;
+  // omitted where unsupported so `measure: 'observe'` degrades to the default poll.
+  if (bodyObserversSupported()) host.observeBodies = (els, markDirty) => observeBodyGeometry(els, markDirty, { root: el });
+  return host;
 }

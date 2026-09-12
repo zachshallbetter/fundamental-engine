@@ -36,10 +36,15 @@ export interface FieldPlatform {
   tick(now?: number, viewport?: Viewport): FrameReport;
 }
 
-export interface PlatformOptions extends SchedulerOptions {}
+export interface PlatformOptions extends SchedulerOptions {
+  /** how the MeasurementRegistry refreshes geometry (#689): `'poll'` (default — every registered
+   *  rect is read each read phase) or `'observe'` (opt-in — observer/scroll dirty-marking, clean
+   *  entries reuse their last rect; falls back to per-tick reads where observers are unavailable). */
+  measure?: 'poll' | 'observe';
+}
 
 export function createFieldPlatform(root: Element, opts: PlatformOptions = {}): FieldPlatform {
-  const measure = new MeasurementRegistry();
+  const measure = new MeasurementRegistry({ observe: opts.measure === 'observe' });
   const state = new StateRegistry();
   const feedback = new FeedbackRegistry();
   const relationships = new RelationshipRegistry();

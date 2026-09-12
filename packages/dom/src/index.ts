@@ -31,6 +31,7 @@ export * from './bind-data.ts';
 export * from './browser-host.ts';
 export * from './register-properties.ts';
 export * from './container-host.ts';
+export * from './observe-bodies.ts';
 export * from './export-dom.ts';
 export * from './governor.ts';
 export * from './flip.ts';

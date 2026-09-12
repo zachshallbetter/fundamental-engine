@@ -157,8 +157,14 @@ export interface PlatformRuntime {
  * no `window` it returns a created-but-idle platform. D2+ register bodies/feedback/relationships
  * here; D1 measures only the root.
  */
-export function startPlatformRuntime(root: Element): PlatformRuntime {
-  const platform = createFieldPlatform(root);
+export interface PlatformRuntimeOptions {
+  /** (#689) forward `<field-root measure>` to the platform's MeasurementRegistry: `'observe'` opts the
+   *  registry into observer/scroll dirty-marking; default `'poll'` reads every rect each tick. */
+  measure?: 'poll' | 'observe';
+}
+
+export function startPlatformRuntime(root: Element, opts: PlatformRuntimeOptions = {}): PlatformRuntime {
+  const platform = createFieldPlatform(root, { measure: opts.measure });
   platform.measure.register(root, { role: 'field-root' });
   // Bound Visual tier: discover declarative [data-field-visual-for] visuals at start so the
   // platform's default state mirroring covers them (the registry re-copies on every source
@@ -194,6 +200,7 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
   // StateRegistry and FeedbackRegistry so removed elements are freed immediately — closing the
   // strong-ref retention window instead of leaning on the platform object being collected.
   const teardownRegistries = (): void => {
+    platform.measure.dispose(); // (#689) release the observe-mode observers + scroll listener, if any
     platform.visuals.setMirroring(false);
     platform.state.prune();
     platform.state.clearAll();

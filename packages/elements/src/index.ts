@@ -1,4 +1,4 @@
-import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RestingMotion, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
+import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RestingMotion, type IntegratorMode, type MeasureMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -47,6 +47,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {number} depth - Optional z-volume (default `0`, the flat field). `> 0` opens a shallow depth the matter drifts through, projected as a size/alpha recession. Construction-time — changing it rebuilds.
  * @attr {string} integrator - Integration scheme (substrate doc 04 §Step 3): `fixed` opts into the frame-rate-independent integrator, `velocity-verlet` into the second-order Verlet scheme (#659); anything else (incl. absent) is the default `legacy`. Construction-time — changing it rebuilds.
  * @attr {string} resting-motion - The resting-motion floor (declared, default OFF): `thermal` (a field-wide seeded Langevin kick) or `flow` (a divergence-free curl), optionally followed by a strength multiplier (`"flow 0.5"`, default `1`) — honest idle motion for a drawn field with nothing painted, measured as `--temperature`, and nothing under reduced motion. Absent = off. Construction-time — changing it rebuilds.
+ * @attr {string} measure - How body geometry is refreshed from the DOM (#689): `observe` opts into observer-gated measurement (ResizeObserver / IntersectionObserver dirty-marking, only dirty bodies re-read, a slower fallback poll; also opts the platform MeasurementRegistry into dirty-marking); anything else (incl. absent) is the default `poll` (every body re-read every 6th frame). Degrades to `poll` where observers are unavailable. Construction-time — changing it rebuilds.
  * @attr {number} grid-warp - Distortion multiplier for the `grid` overlay's lattice (default `1`, the calibrated amount). `2`–`3` exaggerates the deformation; `0` flattens it. Only affects the `grid` overlay mode.
  * @attr {number} grid-intensity - Stroke opacity ∈ [0,1] for the `grid` overlay lines (default `0.16`, the faint diagnostic). Raise it (≈`0.5`) to make the warped lattice a visual centerpiece. Only affects the `grid` overlay mode.
  */
@@ -113,6 +114,7 @@ export class FieldField extends HTMLElementBase {
     { key: 'ambientWander', attr: 'ambient-wander', read: (el) => el.ambientWander },
     { key: 'integrator', attr: 'integrator', read: (el) => el.integrator },
     { key: 'restingMotion', attr: 'resting-motion', read: (el) => el.restingMotion },
+    { key: 'measure', attr: 'measure', read: (el) => el.measure },
   ];
 
   // Literal (not computed) so the CEM analyzer can enumerate it; the test keeps it in sync with OPTIONS.
@@ -142,6 +144,7 @@ export class FieldField extends HTMLElementBase {
     'ambient-wander',
     'integrator',
     'resting-motion',
+    'measure',
     'background',
     'formation',
   ];
@@ -342,6 +345,11 @@ export class FieldField extends HTMLElementBase {
     if (mode !== 'thermal' && mode !== 'flow') return undefined;
     const strength = s === undefined ? NaN : Number(s);
     return Number.isFinite(strength) && strength >= 0 ? { mode, strength } : { mode };
+  }
+  /** `measure` — how body geometry is refreshed (#689): `'observe'` opts into observer-gated
+   *  measurement; anything else (incl. absent) is undefined, so the engine keeps its default `'poll'`. */
+  get measure(): MeasureMode | undefined {
+    return this.getAttribute('measure') === 'observe' ? 'observe' : undefined;
   }
   /** `theme` — ambient palette preset (`warm` (default) | `cool` | `mono`); undefined if absent (#529). */
   get theme(): string | undefined {
@@ -746,7 +754,7 @@ export class FieldField extends HTMLElementBase {
     let feedbackSink: FeedbackSink | undefined;
     if (shouldUsePlatformRuntime(this)) {
       const scanRoot = this.ownerDocument?.documentElement ?? this;
-      this.platformRuntime = startPlatformRuntime(scanRoot);
+      this.platformRuntime = startPlatformRuntime(scanRoot, { measure: this.measure });
       feedbackSink = makeFeedbackSink(this.platformRuntime.platform);
     }
     // Field Surfaces: the front overlay surface is created LAZILY (#676) — a full-viewport,

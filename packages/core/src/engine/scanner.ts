@@ -388,15 +388,54 @@ function refreshBodyParams(b: Body): void {
   }
 }
 
+/**
+ * Re-read ONE body's box from its rect provider / element and refresh the geometry-derived state
+ * (`cx/cy/hw/hh`, `vis`). The rect-only half of {@link measureBodies}; observer-gated measurement
+ * (#689) calls it per dirty body between cadences. Same arithmetic as the measure loop, so a body
+ * read here or there lands on identical values.
+ */
+export function readBodyBox(b: Body, W: number, H: number, originX = 0, originY = 0): void {
+  const margin = H * 0.15;
+  const r = b.rect ? b.rect() : b.el.getBoundingClientRect();
+  const left = r.left - originX;
+  const top = r.top - originY;
+  b.cx = left + r.width / 2;
+  b.cy = top + r.height / 2;
+  b.hw = r.width / 2;
+  b.hh = r.height / 2;
+  b.vis =
+    top + r.height > -margin && top < H + margin && left + r.width > -margin && left < W + margin;
+}
+
+/**
+ * Refresh every body on the measure cadence: its box (`cx/cy/hw/hh/vis`) plus the non-layout state
+ * that rides the same cadence (`on`, the reactive force params). `shouldRead` — observer-gated
+ * measurement only (#689) — decides per body whether the rect is actually re-read; a body it skips
+ * keeps its cached (scroll-compensated) box and still refreshes `on` / `vis` / params from it.
+ * Omitted (the default `'poll'` path) ⇒ every body is read, exactly as shipped.
+ */
 export function measureBodies(
   bodies: readonly Body[],
   W: number,
   H: number,
   originX = 0,
   originY = 0,
+  shouldRead?: (b: Body) => boolean,
 ): void {
   const margin = H * 0.15;
   for (const b of bodies) {
+    if (shouldRead !== undefined && !shouldRead(b)) {
+      // clean under observation: no layout read. Recompute visibility from the cached box (the
+      // per-frame scroll shift keeps it current) and refresh the non-layout state as usual.
+      const left = b.cx - b.hw;
+      const top = b.cy - b.hh;
+      const width = b.hw * 2;
+      const height = b.hh * 2;
+      b.on = b.el.dataset.active === '1';
+      b.vis = top + height > -margin && top < H + margin && left + width > -margin && left < W + margin;
+      refreshBodyParams(b);
+      continue;
+    }
     // a shadow-DOM body may carry a custom rect provider (closed root, internal core); the
     // host's own box is the default (shadow-dom.md §10/§16).
     const r = b.rect ? b.rect() : b.el.getBoundingClientRect();

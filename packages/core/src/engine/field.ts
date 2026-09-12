@@ -18,7 +18,7 @@ import type { AgentCapability, AgentFieldView, AgentViewOptions, AtomPayload, Bo
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
-import { scanBodies, measureBodies, bodyFromElement } from './scanner.ts';
+import { scanBodies, measureBodies, readBodyBox, bodyFromElement } from './scanner.ts';
 import {
   ShadowRegistry,
   REGISTER_BODY,
@@ -465,6 +465,25 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // internal default sink, whose writes are byte-identical to the historical direct writes.
     feedbackSink: opts.feedbackSink ?? defaultFeedbackSink,
   };
+  // Observer-gated body measurement (#689): opt-in via `measure: 'observe'`, and engaged only when the
+  // host can dirty-mark bodies (`observeBodies`) — otherwise it degrades to the default poll byte for
+  // byte (headless / SSR / an older runtime). The host's observer callback lands in `dirtyEls` between
+  // frames (never a layout read off-frame); the frame drains it into per-body rect reads. Observers
+  // see size + visibility edges, not position, so the fixed cadence keeps a slower full re-read.
+  const observeMode = opts.measure === 'observe' && typeof host.observeBodies === 'function';
+  const OBSERVE_FALLBACK_FRAMES = 30; // matches the scrollHeight resample; a multiple of the 6-frame cadence
+  const dirtyEls = new Set<Element>();
+  // contained fields skip the per-frame scroll compensation (#540), so an inner scroll leaves every
+  // cached centre stale until the next read; observe mode re-reads everything on the next cadence
+  // frame after one — never staler than the poll, never more reads than it.
+  let observeFullRead = false;
+  let unobserve: (() => void) | null = null;
+  const markDirty = (el: Element): void => {
+    dirtyEls.add(el);
+  };
+  // on a non-fallback cadence frame only bodies WITHOUT an observable element (custom rect providers:
+  // programmatic / shadow bodies) are re-read; every observed body keeps its compensated cache.
+  const readUnobserved = (b: Body): boolean => b.rect !== undefined;
   let heatmap: Heatmap | null = null; // lazily built once the viewport size is known
 
   let bodies: Body[] = [];
@@ -1019,6 +1038,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     boundTarget = bound.length;
   }
 
+  /** (#689) point the host's observers at the current DOM-backed bodies; the previous subscription
+   *  is released first and any pending marks dropped (the scan just re-read every rect). */
+  function observeScannedBodies(): void {
+    unobserve?.();
+    unobserve = null;
+    dirtyEls.clear();
+    const els: Element[] = [];
+    for (const b of bodies) if (b.rect === undefined) els.push(b.el);
+    if (els.length > 0) unobserve = host.observeBodies!(els, markDirty);
+  }
+
   function scan(): void {
     // capture the outgoing generation FIRST — the rebuild below replaces every DOM-scanned Body
     // object wholesale, and the reconciliation pass after the rebuild carries runtime state across.
@@ -1122,6 +1152,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
     }
     measureBodies(bodies, W, H, originX, originY);
+    if (observeMode) observeScannedBodies(); // (#689) re-bind the observers to the rebuilt body set
     bindEngagement();
     // Reconcile movers: carry forward offset + dock state for elements that persist across
     // rescans (shadow-DOM re-register, Astro nav re-mounts, explicit rescan()). An element that
@@ -2875,12 +2906,27 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // (it is centred on cy ± hh). Window fields only: a contained field's local positions are
     // scroll-invariant (container + contents move together), so this shift would corrupt them (#540).
     if (dScroll !== 0 && !contained) for (const b of bodies) b.cy -= dScroll;
+    else if (dScroll !== 0 && observeMode) observeFullRead = true; // (#689) contained inner scroll, see above
     for (const w of waves) {
       const target = scrollY * (0.025 + w.depth * 0.08); // wave parallax (§24)
       w.offsetY += (target - w.offsetY) * 0.04;
     }
+    // (#689) observe mode: drain the observer marks into rect reads for JUST those bodies, this frame.
+    // Runs after the scroll shift above so a clean body's cache and a dirty body's fresh read agree.
+    if (observeMode && dirtyEls.size > 0) {
+      for (const b of bodies) if (dirtyEls.has(b.el)) readBodyBox(b, W, H, originX, originY);
+      dirtyEls.clear();
+    }
     if (bodies.length && frameN % 6 === 0) {
-      measureBodies(bodies, W, H, originX, originY);
+      // the measure cadence. Poll (default): every body's rect. Observe: only the un-observable
+      // bodies, except on the fallback frame where everything is re-read — the bound on drift the
+      // observers cannot report (ancestor layout shifts, transform-driven motion). Everything else
+      // in this block (engagement, reactive params, proximity events, discharge) stays on the cadence.
+      if (observeMode) {
+        const full = observeFullRead || frameN % OBSERVE_FALLBACK_FRAMES === 0;
+        observeFullRead = false;
+        measureBodies(bodies, W, H, originX, originY, full ? undefined : readUnobserved);
+      } else measureBodies(bodies, W, H, originX, originY);
       detectProximityEvents(bodies); // #441 enter/exit/met — on the measure cadence, lazy
       // attention-gated discharge (#365): an engagement-gated sink releases on the falling
       // edge of engagement — the same conserved supernova ritual as saturation.
@@ -3778,6 +3824,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       for (const em of emitters) for (const clone of em.emitted) clone.remove();
       emitters = [];
       store.clear();
+      unobserve?.(); // (#689) disconnect the body observers, if any
+      unobserve = null;
+      dirtyEls.clear();
       // release host-side state last (e.g. a contained host's data-field-boundary marker, #980)
       // so an outer field re-adopts this field's bodies on its next rescan.
       host.detach?.();
