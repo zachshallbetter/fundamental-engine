@@ -125,6 +125,11 @@ public final class Body {
     public var tint: String?
     /// Shaped source: forces reference the nearest point on the box, not its centre.
     public var shaped: Bool
+    /// `data-potential` (#443) — the name of the `addField` channel this body admits as a scalar
+    /// POTENTIAL Φ, read by `relief` as downhill transport (−∇Φ). nil ⇒ `"height"`. `spin` selects
+    /// the sign: ≥ 0 (default) moves matter DOWN the potential, < 0 moves it up. Only read by
+    /// `relief`. An optional stored property, so every existing `Body(...)` call site is unchanged.
+    public var potential: String?
     public var fmin: Float
     public var fmax: Float
 
@@ -379,6 +384,16 @@ public final class Env {
     public var grid: (_ name: String) -> any ScalarGrid = { _ in NoopGrid() }
     /// Net structure field at a world point (dipoles + monopoles). Set by the integrator.
     public var fieldAt: ((_ p: Vec3) -> Vec3)?
+    /// OPT-IN declared-potential accessor (#443) — the JS `Env.potential?` mirror. A host channel
+    /// registered with `addField` (terrain height, a cost surface) admitted as a scalar POTENTIAL Φ
+    /// and handed to a force as a read-only grid, so the force reads transport as −∇Φ. Returns nil
+    /// for a channel that was never registered or has been removed, which is what makes `relief` a
+    /// pure no-op rather than a reader of stale state.
+    ///
+    /// nil on the default path — the `fieldAt` precedent. The engine assigns it only while a body
+    /// actually declares `relief`, so registering a channel never couples it. The returned grid is a
+    /// HELD raster (``GridMode/held``), refreshed when the channel changes.
+    public var potential: ((_ name: String) -> (any ScalarGrid)?)?
 
     public init() {}
 }

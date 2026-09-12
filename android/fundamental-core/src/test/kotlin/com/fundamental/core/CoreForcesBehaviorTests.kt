@@ -25,8 +25,8 @@ class CoreForcesBehaviorTests {
     @Test
     fun registryHasTheCanonicalNine() {
         val forces = Registry.standardForces()
-        // canonical nine + natural eight + extended nineteen = the full 36-token surface.
-        assertEquals(36, forces.size)
+        // canonical nine + natural eight + extended twenty = the full 37-token surface (#443 added `relief`).
+        assertEquals(37, forces.size)
         for (token in listOf("attract", "jet", "tether", "wall", "stream", "repel", "viscosity", "swirl", "sink")) {
             assertTrue(forces.containsKey(token), "missing canonical force '$token'")
             assertEquals(token, forces[token]!!.token)

@@ -120,9 +120,26 @@ This is the open **input** analog of the render surfaces (`setRender`/`setOverla
 layers; `addField` is an on-demand *input* channel) — the same shape as the `grid(name)` host-authorable
 buffer, but for a field the host already owns (terrain height, soil moisture, a temperature map). A
 channel sampler obeys the field-function contract above (side-effect free, stable for a fixed state); it
-is **pull-based** — called on demand, never cached — so it must stay cheap. The `FieldChannelHandle`
-swaps the sampler live or removes the channel. Reading a channel as a force *potential* is a separate,
-opt-in coupling — `addField` is the read substrate, not yet a cause.
+is **pull-based** — called on demand — so it must stay cheap. The `FieldChannelHandle` swaps the sampler
+live or removes the channel.
+
+**Amendment (#443) — the one place a channel is cached.** This paragraph promised "pull-based — called
+on demand, **never cached**". That promise is now *narrowed*, on the record, rather than left to be
+quietly contradicted. `sampleField` still calls the sampler on every read and caches nothing. The
+exception is opt-in and structural: a body declaring **`relief`** admits the channel as a scalar
+*potential* Φ, and the engine rasterises the sampler into a **held** grid (`GridMode` `held`, which
+never steps) so the force pass reads a buffer instead of calling the host once per particle per frame.
+That raster is invalidated — and refilled on the next read — by every event that could change what the
+sampler answers: `addField`, `set()`, `remove()` (which also **drops** the raster, so a withdrawn
+channel can never be read stale) and a viewport resize. Nothing is rasterised on a frame cadence, so
+held state is never frame-phase dependent. **With no such body declared, nothing is ever cached and the
+original promise holds verbatim** — registration is still structure, not cause.
+
+The sampler must therefore honour the field-function contract it always had. A sampler that silently
+changes its answers *without* `set()` was never contractual, and is the one case the raster can lag.
+
+Reading a channel as a force potential is that separate, opt-in coupling: `addField` is the read
+substrate, and `relief` (§20.11) is the only force that makes it a cause.
 
 ## 3. Force Contract
 

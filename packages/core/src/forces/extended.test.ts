@@ -110,6 +110,7 @@ test('extended forces expose the §20.3 class [A] set', () => {
       'pigment',
       'fieldflow',
       'warp',
+      'relief',
     ],
   );
 });

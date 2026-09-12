@@ -146,6 +146,14 @@ final class FieldEngine: FieldHandle {
     private var grids: [String: ScalarGridImpl] = [:]
     private var heatmap: Heatmap?
     private var fieldChannels: [String: (Float, Float) -> Float] = [:] // addField() open inputs
+    // ── declared potentials (#443) ────────────────────────────────────────────────────────────
+    // A host channel admitted as a scalar potential Φ, rasterised into a HELD grid that `relief`
+    // reads as −∇Φ. This raster is the ONE place a channel sampler is cached (the amended
+    // `addField` contract), so its invalidation set is the whole correctness story: addField, set,
+    // remove (which also DROPS the grid) and resize. There is deliberately NO frame cadence, so
+    // held state can never be frame-phase dependent or outlive its channel.
+    private var channelEpoch = 0
+    private var potentialStamp: [String: Int] = [:] // grid key → the epoch its cells were filled at
 
     // MARK: - Relationship edges (addEdge / readEdges)
 
@@ -271,7 +279,7 @@ final class FieldEngine: FieldHandle {
             guard let self else { return NoopGrid() }
             if let g = self.grids[name] { return g }
             let vol = self.host.volume
-            let mode: GridMode = name.hasPrefix("wave") ? .wave : name.hasPrefix("memory") ? .memory : .diffuse
+            let mode: GridMode = name.hasPrefix("wave") ? .wave : name.hasPrefix("memory") ? .memory : name.hasPrefix("potential:") ? .held : .diffuse
             let g = ScalarGridImpl(width: vol.width, height: vol.height, mode: mode)
             self.grids[name] = g
             return g
@@ -340,6 +348,9 @@ final class FieldEngine: FieldHandle {
 
         let vol = host.volume
         for g in grids.values { g.resize(width: vol.width, height: vol.height) }
+        // resize() preserves NOTHING, so every held raster is now all zeros — a flat potential.
+        // Invalidate so the next force pass refills it; `relief` would otherwise read a zero gradient.
+        invalidatePotentials()
         heatmap?.resize(width: vol.width, height: vol.height)
     }
 
@@ -527,6 +538,12 @@ final class FieldEngine: FieldHandle {
 
         // simulate
         store.reindex()
+        // `Env.potential` is an OPT-IN service (the `fieldAt` precedent): present only while a body
+        // actually declares `relief`, so registering a channel never couples it and the default path
+        // is byte-identical. Decided from the live body list each frame.
+        env.potential = bodies.contains { $0.tokens.contains("relief") }
+            ? { [weak self] name in self?.potentialAt(name) ?? nil }
+            : nil
         step(StepInput(store: store, bodies: bodies, env: env,
                        forces: registry.forces, conditions: registry.conditions,
                        waves: waves.isEmpty ? nil : waves,
@@ -708,11 +725,50 @@ final class FieldEngine: FieldHandle {
 
     func addField(_ name: String, _ sampler: @escaping (Float, Float) -> Float) -> FieldChannelHandle {
         fieldChannels[name] = sampler
+        invalidatePotentials() // a channel registered AFTER a `relief` body was declared must couple
         return FieldChannelHandle(
             name: name,
-            set: { [weak self] next in self?.fieldChannels[name] = next },
-            remove: { [weak self] in self?.fieldChannels[name] = nil }
+            set: { [weak self] next in
+                self?.fieldChannels[name] = next
+                self?.invalidatePotentials() // the swap is live on the next force pass
+            },
+            remove: { [weak self] in
+                guard let self else { return }
+                self.fieldChannels[name] = nil
+                // Drop the raster with the channel. Without this the held cells outlive the channel
+                // and `relief` keeps transporting matter down terrain the host has withdrawn.
+                self.grids[self.potentialKey(name)] = nil
+                self.potentialStamp[self.potentialKey(name)] = nil
+                self.invalidatePotentials()
+            }
         )
+    }
+
+    // MARK: - Declared potentials (#443)
+
+    private func potentialKey(_ name: String) -> String { "potential:\(name)" }
+    private func invalidatePotentials() { channelEpoch += 1 }
+
+    /// The held raster of a declared potential, refilled when the channel it came from has changed.
+    /// nil for a channel that was never registered or has been removed — which is what makes `relief`
+    /// a pure no-op rather than a reader of stale state.
+    func potentialAt(_ name: String) -> (any ScalarGrid)? {
+        guard let sampler = fieldChannels[name] else { return nil }
+        let key = potentialKey(name)
+        let g: ScalarGridImpl
+        if let existing = grids[key] {
+            g = existing
+        } else {
+            let vol = host.volume
+            g = ScalarGridImpl(width: vol.width, height: vol.height, mode: .held)
+            grids[key] = g
+            potentialStamp[key] = -1
+        }
+        if potentialStamp[key] != channelEpoch {
+            g.fillFrom(sampler) // non-finite samples are clamped to 0 inside fillFrom, at the boundary
+            potentialStamp[key] = channelEpoch
+        }
+        return g
     }
 
     func sampleField(_ name: String, _ x: Float, _ y: Float) -> Float {
@@ -994,7 +1050,7 @@ final class FieldEngine: FieldHandle {
     func grid(_ name: String) -> any ScalarGrid {
         if let g = grids[name] { return g }
         let vol = host.volume
-        let mode: GridMode = name.hasPrefix("wave") ? .wave : name.hasPrefix("memory") ? .memory : .diffuse
+        let mode: GridMode = name.hasPrefix("wave") ? .wave : name.hasPrefix("memory") ? .memory : name.hasPrefix("potential:") ? .held : .diffuse
         let g = ScalarGridImpl(width: vol.width, height: vol.height, mode: mode)
         grids[name] = g
         return g

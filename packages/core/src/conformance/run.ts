@@ -7,7 +7,7 @@
  * the `Env.rng` seam (no global `Math.random` monkey-patch). Returns the full trajectory plus each particle's
  * frame-0 force delta (one direct `apply`, before friction) for exact/invariant checks.
  */
-import type { Body, Env, ForceRegistry, Particle } from '../engine/types.ts';
+import type { Body, Env, ForceRegistry, Particle, ScalarGrid } from '../engine/types.ts';
 import { FieldStore } from '../engine/field-store.ts';
 import { step } from '../engine/integrator.ts';
 import { netField } from '../engine/streamlines.ts';
@@ -141,7 +141,7 @@ function makeParticle(p: import('./types.ts').ScenarioParticle): Particle {
   };
 }
 
-function makeEnv(store: FieldStore, rng?: () => number): Env {
+function makeEnv(store: FieldStore, rng?: () => number, channel?: Scenario['channel']): Env {
   const grids = new Map<string, ScalarGridImpl>();
   return {
     dx: 0,
@@ -178,12 +178,41 @@ function makeEnv(store: FieldStore, rng?: () => number): Env {
     grid: (name) => {
       let g = grids.get(name);
       if (!g) {
-        const mode = name.startsWith('wave') ? 'wave' : name.startsWith('memory') ? 'memory' : 'diffuse';
+        // The harness builds its OWN grid map, so the engine's name inference has to be mirrored here
+        // or it silently diverges. Before #443 a `potential:` grid opened here as DIFFUSE and was
+        // stepped every frame — a conformance run would have read a declared terrain that was blurring
+        // and decaying from frame 1. Held grids never step (see ScalarGridImpl.step).
+        const mode = name.startsWith('wave')
+          ? 'wave'
+          : name.startsWith('memory')
+            ? 'memory'
+            : name.startsWith('potential:')
+              ? 'held'
+              : 'diffuse';
         g = new ScalarGridImpl(W, H, mode);
         grids.set(name, g);
       }
       return g;
     },
+    // The declared-potential accessor (#443), present ONLY for a scenario that registers a channel —
+    // so the ~24k-cell raster over this 6000x4000 field is paid by the one experiment that needs it,
+    // and every other scenario's env is exactly as before (no property, no allocation). A scenario's
+    // sampler never changes mid-run, so one raster on first pull is the whole lifecycle.
+    ...(channel
+      ? {
+          potential: (name: string): ScalarGrid | undefined => {
+            if (name !== channel.name) return undefined;
+            const key = `potential:${name}`;
+            let g = grids.get(key);
+            if (!g) {
+              g = new ScalarGridImpl(W, H, 'held');
+              g.fillFrom(channel.sampler);
+              grids.set(key, g);
+            }
+            return g;
+          },
+        }
+      : {}),
     // expose the grid map so the runner can advance buffers each frame
     __grids: grids,
   } as Env & { __grids: Map<string, ScalarGridImpl> };
@@ -213,7 +242,7 @@ function frameZeroDelta(s: Scenario, body: Body, forces: ForceRegistry, store: F
     const dy = body.cy - p.y;
     const d = Math.hypot(dx, dy);
     // a transient env for the single apply (real neighbours, fresh grid)
-    const env = makeEnv(store, rng);
+    const env = makeEnv(store, rng, s.channel);
     env.dx = dx;
     env.dy = dy;
     env.dist = d < 1 ? 1 : d;
@@ -242,7 +271,7 @@ export function runScenario(input: Scenario, forces: ForceRegistry = allForces()
   // consumed in exactly the historical order (frame-0 apply first, then each stepped frame). Unseeded
   // scenarios pass `undefined` → forces fall back to Math.random, unchanged.
   const rng = s.seed != null ? mulberry(s.seed) : undefined;
-  const env = makeEnv(store, rng) as Env & { __grids: Map<string, ScalarGridImpl> };
+  const env = makeEnv(store, rng, s.channel) as Env & { __grids: Map<string, ScalarGridImpl> };
 
   // build the spatial index first so neighbour queries (class B) see the other
   // particles, then measure frame-0 deltas on pristine clones.

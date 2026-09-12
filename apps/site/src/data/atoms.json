@@ -1,6 +1,6 @@
 {
   "generated": "pnpm gen:atoms",
-  "count": 134,
+  "count": 135,
   "atoms": [
     {
       "kind": "force",
@@ -630,6 +630,24 @@
         "effect": "Streams matter along the field lines.",
         "example": "A magnet or charge whose field lines the swarm threads, like plasma along a solar prominence.",
         "symbol": "Ff"
+      }
+    },
+    {
+      "kind": "force",
+      "id": "force:relief",
+      "label": "Relief",
+      "color": "#b0846a",
+      "href": "/docs/api/forces#force-relief",
+      "weight": 1,
+      "data": {
+        "token": "relief",
+        "family": "extended",
+        "formula": "Φ = G·h(x,y) from an addField channel;  v += −∇Φ·S·(1 − d/r)   (data-spin < 0 ⇒ uphill)",
+        "desc": "transport down a host-declared potential — downhill flow over terrain height",
+        "summary": "The ground itself tilts — matter finds the low places without being told where they are.",
+        "effect": "Slides matter down a height field the host supplies.",
+        "example": "Drain a map: matter settles into the valleys of the terrain your app already owns.",
+        "symbol": "Rf"
       }
     },
     {

@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AgentCapability, AgentFieldView, AgentViewOptions, AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldPolicy, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldBodyIdentity, FocusSource, FocusInput, FocusState, FocusReadOptions, FocusEntry, FocusSourceShare, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, ProjectionSource, FieldProjectionTarget, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
+import type { AgentCapability, AgentFieldView, AgentViewOptions, AtomPayload, Body, ScalarGrid, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldPolicy, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldBodyIdentity, FocusSource, FocusInput, FocusState, FocusReadOptions, FocusEntry, FocusSourceShare, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, ProjectionSource, FieldProjectionTarget, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -168,6 +168,44 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const store = new FieldStore();
   let nextParticleId = 1; // monotonic stable particle identity (readParticleIds); never reused
   const grids = new Map<string, ScalarGridImpl>(); // §20.1 class [C] field buffers, lazy
+  // ── declared potentials (#443) ──────────────────────────────────────────────────────────────
+  // A host channel (`addField`) admitted as a scalar potential Φ and rasterised into a HELD grid the
+  // `relief` force reads as −∇Φ. This raster is the ONE place the engine caches a channel sampler
+  // (the amended `addField` contract), so its invalidation set is the entire correctness story:
+  //
+  //   addField(name, …)   a channel appeared          ─┐
+  //   handle.set(next)    the sampler was swapped      │  bump the epoch ⇒ the next read re-rasters
+  //   handle.remove()     the channel is gone          │  (remove ALSO drops the grid, so a removed
+  //   resize()            the buffers were rebuilt    ─┘   channel can never be read stale)
+  //
+  // There is deliberately NO schedule. Nothing re-rasters on a frame cadence, so held state cannot be
+  // frame-phase dependent — registering a channel on frame 3 gives the same trajectory as on frame 0 —
+  // and it cannot outlive its channel. `potentialAt` is pulled BY the force during the force pass and
+  // re-rasters exactly when the epoch it last saw has moved. Under reduced motion the integrator
+  // returns before the force pass (`dt === 0`), so nothing is sampled at all: the raster freezes with
+  // the motion, with no dt special-case here.
+  let channelEpoch = 0;
+  const potentialStamp = new Map<string, number>(); // grid key → the epoch its cells were filled at
+  const potentialKey = (name: string): string => `potential:${name}`;
+  function invalidatePotentials(): void {
+    channelEpoch++;
+  }
+  function potentialAt(name: string): ScalarGrid | undefined {
+    const sampler = fieldChannels.get(name);
+    if (!sampler) return undefined; // never registered, or removed — the force no-ops (never stale)
+    const key = potentialKey(name);
+    let g = grids.get(key);
+    if (!g) {
+      g = new ScalarGridImpl(W, H, 'held');
+      grids.set(key, g);
+      potentialStamp.set(key, -1);
+    }
+    if (potentialStamp.get(key) !== channelEpoch) {
+      g.fillFrom(sampler); // non-finite samples are clamped to 0 inside fillFrom, at the boundary
+      potentialStamp.set(key, channelEpoch);
+    }
+    return g;
+  }
   const reg = createRegistry();
 
   // host-agnostic discrete event bus (the read side): plain-data push for occurrences a non-DOM
@@ -257,7 +295,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // through its `data-body` token (e.g. `data-body="lens crystallize"`); an unused force costs nothing.
   registerCoreForces(reg); // the canonical nine (§6)
   registerNaturalForces(reg); // 8 natural primitives: gravity, charge, magnetism, thermal, … (§20.10)
-  registerExtendedForces(reg); // 19 designed extended forces: lens, crystallize, link, morph, … (§20.3)
+  registerExtendedForces(reg); // 20 designed extended forces: lens, crystallize, link, morph, relief, … (§20.3)
   // the environment seam: all DOM access goes through this injected host — core imports zero DOM.
   // In the browser, pass `browserHost()` from @fundamental-engine/dom (or use createBrowserField); the
   // @fundamental-engine/{elements,react,vanilla} entry points wire it for you.
@@ -856,11 +894,23 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     neighbors: (p, r) => store.neighbors(p, r),
     // scalar field-buffer service (§20.1 class [C]): created on demand, so a page
     // with no diffuse/propagate body allocates nothing. Grids named "wave…" use the
-    // wave scheme; everything else diffuses.
+    // wave scheme, "memory…" the slow-decay scheme, "potential:…" the HELD raster of a
+    // declared potential (#443 — it never steps); everything else diffuses.
+    //
+    // THE ONE NON-BYTE-IDENTICAL CHANGE in #443, stated rather than buried: a host that was
+    // already calling `grid('potential:…')` got a DIFFUSING grid before this change and gets a
+    // held one after. No shipped code, recipe or doc opens such a name; it is called out here and
+    // in the CHANGELOG because it is the only way any existing field could move.
     grid: (name) => {
       let g = grids.get(name);
       if (!g) {
-        const mode = name.startsWith('wave') ? 'wave' : name.startsWith('memory') ? 'memory' : 'diffuse';
+        const mode = name.startsWith('wave')
+          ? 'wave'
+          : name.startsWith('memory')
+            ? 'memory'
+            : name.startsWith('potential:')
+              ? 'held'
+              : 'diffuse';
         g = new ScalarGridImpl(W, H, mode);
         grids.set(name, g);
       }
@@ -1573,6 +1623,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     env.H = H;
     maxScroll = (host.scrollHeight?.() ?? H) - H || 1;
     for (const g of grids.values()) g.resize(W, H); // keep field buffers viewport-sized
+    // resize() rebuilds the buffers and preserves NOTHING — every held raster is now all zeros, i.e.
+    // a flat potential. Invalidate so the next force pass refills it; `relief` would otherwise read a
+    // zero gradient (no transport at all) rather than stale data. The refill happens on the next PULL,
+    // which is necessarily after the scan() below has re-detected the bodies.
+    invalidatePotentials();
     if (cfg.heatmap) {
       if (!heatmap) heatmap = new Heatmap(W, H);
       else heatmap.resize(W, H);
@@ -2871,6 +2926,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
 
     updateWarpTargets(); // refresh warp relocate targets from paired bodies (§22.3) before the step
+    // `Env.potential` follows the `fieldAt?` / `accum?` precedent: an opt-in service, present only
+    // while some body actually declares `relief`. A field that never declares one — INCLUDING every
+    // field whose host called `addField` — carries no such property, so `applyForce` never sees it and
+    // the default hot path is byte-identical. This is the "registration does not couple" guarantee the
+    // shipped docs make, enforced structurally rather than by a flag. Decided from the live body list
+    // each frame rather than at scan time, because `addBody` appends a programmatic body without a
+    // rescan — deciding in `scan()` would leave a programmatic `relief` body permanently uncoupled.
+    if (bodies.some((b) => b.tokens.includes('relief'))) env.potential = potentialAt;
+    else if (env.potential) delete env.potential;
     step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves, waveStyle: cfg.waveStyle, waveCenter: resolvedWaveCenter, separation: cfg.separation, restingMotion: cfg.restingMotion });
     // hover-focus (field.focusAt): hold the focused particle still and light it up — the dwell
     // affordance ("it stops and does something") before a click opens its record.
@@ -3333,6 +3397,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (spec.spin != null) attrs['data-spin'] = String(spec.spin);
       if (spec.angle != null) attrs['data-angle'] = String(spec.angle);
       if (spec.color != null) attrs['data-color'] = spec.color;
+      // the declared-potential channel (#443) — the programmatic mirror of data-potential, so a
+      // non-DOM host (a game, an agent runtime) can declare terrain-coupled matter through addBody.
+      if (spec.potential != null) attrs['data-potential'] = spec.potential;
       const toRect = (): DOMRect => {
         const r = spec.rect();
         return {
@@ -3622,10 +3689,21 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     replay: (a: FieldSnapshot, b: FieldSnapshot, opts?: ReplayOptions): CausalReplay => replayFieldSnapshots(a, b, opts),
     addField: (name, sampler) => {
       fieldChannels.set(name, sampler);
+      invalidatePotentials(); // a channel registered AFTER a `relief` body was declared must couple
       return {
         name,
-        set: (next) => { fieldChannels.set(name, next); },
-        remove: () => { fieldChannels.delete(name); },
+        set: (next) => {
+          fieldChannels.set(name, next);
+          invalidatePotentials(); // the swap is live: the next force pass reads the NEW surface
+        },
+        remove: () => {
+          fieldChannels.delete(name);
+          // Drop the raster with the channel. Without this the held cells would outlive the channel
+          // and `relief` would keep transporting matter down a terrain the host has withdrawn.
+          grids.delete(potentialKey(name));
+          potentialStamp.delete(potentialKey(name));
+          invalidatePotentials();
+        },
       };
     },
     sampleField: (name, x, y) => {

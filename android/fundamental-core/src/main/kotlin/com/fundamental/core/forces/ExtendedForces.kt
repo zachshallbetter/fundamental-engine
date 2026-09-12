@@ -10,6 +10,7 @@ import com.fundamental.core.math.curlNoise
 import com.fundamental.core.math.mixHex
 import com.fundamental.core.math.roundHalfAway
 import kotlin.math.floor
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -377,9 +378,43 @@ class WarpForce : Force {
 }
 
 /** The designed extended forces, in spec order (§20.3). */
+private const val RELIEF_FLAT = 1e-9f // below this |grad(Phi)| the ground is flat — nothing to slide down
+
+/**
+ * §20.11 — `relief`: transport down a DECLARED POTENTIAL (#443, FieldKit gap #6).
+ *
+ * The engine does not own terrain — a host does. `addFieldChannel("height", sampler)` has let a host
+ * hand the engine an elevation surface since 0.5.1; `relief` is the coupling that finally reads it as
+ * a cause. It admits the named channel as a scalar potential Phi = G*h and moves matter down its
+ * gradient, `a = -grad(Phi)`. Water drains into the basins of the host's own height map.
+ *
+ * A pure no-op unless a host supplied the structure (no accessor, or no such channel) — which is what
+ * earns truthMode `physical` under the wallpaper rule. [Body.potential] names the channel (default
+ * "height"); [Body.spin] < 0 climbs instead of drains; `range` 0 => global, which terrain usually wants.
+ */
+class ReliefForce : Force {
+    override val token = "relief"
+    override val label = "Relief"
+    override fun apply(body: Body, particle: Particle, env: Env) {
+        // Both no-coupling cases land here, before any state is touched: no accessor (the default
+        // path) and no such channel (never registered, or removed).
+        val phi = env.potential?.invoke(body.potential ?: "height") ?: return
+        if (body.range > 0f && env.dist >= body.range) return // range 0 => global (the fieldflow convention)
+        val g = phi.gradient(particle.position) // grad(Phi), up-slope; a scalar grid's gradient has z = 0
+        if (!g.x.isFinite() || !g.y.isFinite()) return // a hostile channel never reaches v
+        if (abs(g.x) < RELIEF_FLAT && abs(g.y) < RELIEF_FLAT) return // flat ground
+        val falloff = if (body.range > 0f) 1f - env.dist / body.range else 1f
+        val dir = if (body.spin < 0f) 1f else -1f // spin < 0 => climb the potential instead of draining
+        particle.velocity += g * (body.strength * falloff * env.G * dir)
+        // Not decoration: a DISCONTINUOUS channel (a cliff) has an unbounded gradient, and without the
+        // cap one bad cell is a particle leaving the field at any speed.
+        clampToC(particle, env.c)
+    }
+}
+
 fun extendedForces(): List<Force> = listOf(
     LensForce(), GateForce(), BuoyancyForce(), ShearForce(), CrystallizeForce(),
     AlignForce(), WindForce(), CohesionForce(), PressureForce(), LinkForce(),
     HuntForce(), MorphForce(), SpawnForce(), ResonateForce(), SpotlightForce(),
-    ScreenForce(), PigmentForce(), FieldFlowForce(), WarpForce(),
+    ScreenForce(), PigmentForce(), FieldFlowForce(), WarpForce(), ReliefForce(),
 )

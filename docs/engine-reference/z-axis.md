@@ -92,7 +92,9 @@ the DOM box has no depth, so the membrane bounds x/y at every depth),
 `gate` (a planar membrane), `buoyancy` (lift is −y), `shear`, `crystallize`, `wind`
 (the curl noise is a 2D streamfunction), the wave currents (§2.3), the scalar grids
 (§20.1 [C] — field buffers are a surface phenomenon; `diffuse` deposits/follows at
-the particle's (x, y) regardless of depth), and the modifiers
+the particle's (x, y) regardless of depth), `relief` (a *declared* potential Φ(x, y)
+is a surface by construction — phase 1 of #443 biases planar flow by terrain height;
+height as a genuine z coordinate is phase 2 and is **not** additive), and the modifiers
 (`resonate`/`spotlight`/`screen` — scalar gates and multipliers).
 
 **Volume-gated extras** (run only when `D > 0`, so the flat path never pays them):
