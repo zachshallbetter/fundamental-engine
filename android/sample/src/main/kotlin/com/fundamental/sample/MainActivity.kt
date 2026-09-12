@@ -13,13 +13,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.fundamental.compose.FieldView
-import com.fundamental.compose.RenderMode
+import com.fundamental.core.runtime.RenderMode
 import com.fundamental.compose.fieldBody
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Optional `--es mode DOTS|TRAILS|LINKS|GLOW` to pick the render mode (defaults to TRAILS).
+        // Optional `--es mode DOTS|TRAILS|LINKS|METABALLS|VORONOI|STREAMLINES|NONE` to pick the
+        // render mode (defaults to TRAILS). This is the engine's RenderMode — the same vocabulary
+        // the JS and Swift planes take (#1158).
         val mode = runCatching { RenderMode.valueOf(intent?.getStringExtra("mode") ?: "") }
             .getOrDefault(RenderMode.TRAILS)
         setContent { Demo(mode) }

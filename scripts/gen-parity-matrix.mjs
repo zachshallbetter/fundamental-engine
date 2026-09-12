@@ -241,8 +241,10 @@ function kotlinFeedbackChannels() {
 
 /** The render modes each plane's DECLARATIVE HOST actually DRAWS — the layer a capability can be lost
  *  at without any engine symbol going missing. This is the render-surface analogue of the palette
- *  dimension (#1091): the Kotlin CORE declares a `RenderMode` enum of seven, but the Compose host that
- *  paints the canvas declares its own four-case enum, so a `metaballs` field renders as nothing there.
+ *  dimension (#1091): the Kotlin CORE declares a `RenderMode` enum of seven, and the Compose host that
+ *  paints the canvas used to declare its own four-case enum — so `metaballs`, `voronoi` and
+ *  `streamlines` could not even be EXPRESSED from a Compose app (#1158, closed: the host now takes the
+ *  core enum and draws every mode).
  *  JS has no separate host renderer (the engine owns the underlay draw), so its host set IS the
  *  `setRender` vocabulary. */
 function jsRenderHostModes() {
@@ -259,10 +261,18 @@ function swiftRenderHostModes() {
   return set;
 }
 function kotlinRenderHostModes() {
-  // the COMPOSE host's own enum, not the core runtime's — the four cases its `Canvas` actually paints.
+  // The modes the Compose `Canvas` actually PAINTS, read from the `when (renderMode)` branches in
+  // FieldView.kt. Until #1158 this read a host-local `enum class RenderMode` of four cases; the host
+  // no longer declares one — it takes the engine's `RenderMode`, and the `when` is an exhaustive
+  // expression over it, so the branch set IS the honest draw surface (and a new core mode breaks the
+  // host build rather than silently drawing nothing). `NONE` is dropped, as it is on the other planes:
+  // this dimension counts modes that DRAW.
   const set = new Set();
-  const block = blockAfter(ktComposeViewSrc, 'enum class RenderMode');
-  for (const m of block.matchAll(/\n\s{4}([A-Z][A-Z0-9_]*)\s*,?\s*$/gm)) set.add(m[1]);
+  const at = ktComposeViewSrc.indexOf('when (renderMode)');
+  if (at < 0) return set;
+  const block = ktComposeViewSrc.slice(at, ktComposeViewSrc.indexOf('\n            }', at));
+  for (const m of block.matchAll(/RenderMode\.([A-Z][A-Z0-9_]*)\s*->/g)) set.add(m[1].toLowerCase());
+  set.delete('none');
   return set;
 }
 
@@ -558,7 +568,7 @@ export async function buildParityMatrix() {
       {
         js: 'the engine owns the underlay draw — no separate host renderer',
         swift: '`CoreGraphicsRenderer.draw(in:)` (Metal hybrid for dots/trails/links)',
-        kotlin: 'the Compose `FieldView` `Canvas`, driven by its OWN four-case `RenderMode`',
+        kotlin: 'the Compose `FieldView` `Canvas`, driven by the engine\'s `RenderMode` (an exhaustive `when`)',
       },
     ),
     dimension(
