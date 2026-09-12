@@ -230,8 +230,8 @@ export const FIELD_ROOT_ATTRS: { name: string; option: string; desc: string }[] 
   { name: 'resting-motion', option: 'restingMotion', desc: "The resting-motion floor (declared, default OFF): 'thermal' | 'flow', optionally followed by a strength multiplier ('flow 0.5'). Honest idle motion for a drawn field with nothing painted; nothing under reduced motion. Mirrors the restingMotion createField option. Construction-time." },
   { name: 'background', option: 'background', desc: "Substrate background (opaque / transparent). Mirrors the background createField option." },
   { name: 'formation', option: 'formation', desc: 'Global formation preset name. Mirrors the formation createField option (setFormation).' },
-  { name: 'overlay-blend', option: 'overlayCanvas', desc: "CSS mix-blend-mode of the front overlay canvas (default 'screen'). Host placement, not a createField option — the element passes it to createOverlaySurface from @fundamental-engine/dom; applied live to the existing surface, never a rebuild (#721)." },
-  { name: 'overlay-z', option: 'overlayCanvas', desc: 'CSS z-index of the front overlay canvas (default 5). Host placement, not a createField option; applied live, never a rebuild; a non-numeric value falls back to 5 (#721).' },
+  { name: 'overlay-blend', option: 'overlayCanvas', desc: "CSS mix-blend-mode of the front overlay canvas (default 'screen'). Host placement, not a createField option — the element passes it to createOverlaySurface from @fundamental-engine/dom; applied live to the existing surface, never a rebuild. Must be a single CSS keyword; anything else falls back to 'screen' (#721)." },
+  { name: 'overlay-z', option: 'overlayCanvas', desc: 'CSS z-index of the front overlay canvas (default 5). Host placement, not a createField option; applied live, never a rebuild. Must be an integer; a non-integer or non-numeric value falls back to 5 (#721).' },
 ];
 
 /** Observed HTML attributes on `<field-cell>` — the standalone one-force demo/poster surface

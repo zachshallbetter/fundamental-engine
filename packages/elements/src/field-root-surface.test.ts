@@ -233,6 +233,13 @@ test('setOverlayBlend / setOverlayZ apply + reflect (#721, #541 symmetry)', () =
   stub.setOverlayZ(30);
   assert.equal(style.zIndex, '30');
   assert.equal(attrs.get('overlay-z'), '30');
+  // validated like the attributes: an invalid value applies + reflects as the default, never raw.
+  stub.setOverlayBlend('screen;pointer-events:auto');
+  assert.equal(style.mixBlendMode, 'screen', 'an injected blend applies as the default');
+  assert.equal(attrs.get('overlay-blend'), 'screen', 'and reflects as the default');
+  stub.setOverlayZ(1.5);
+  assert.equal(style.zIndex, '5', 'a fractional z-index applies as 5');
+  assert.equal(attrs.get('overlay-z'), '5');
 });
 
 const overlayBlendGet = Object.getOwnPropertyDescriptor(FieldField.prototype, 'overlayBlend')!.get!;
@@ -245,12 +252,40 @@ test('overlayBlend / overlayZ getters default to the pre-#721 surface (screen / 
   assert.equal(overlayBlendFor(''), 'screen', 'empty ⇒ screen');
   assert.equal(overlayBlendFor('  '), 'screen', 'whitespace ⇒ screen');
   assert.equal(overlayBlendFor(' multiply '), 'multiply', 'trimmed value passes through');
+  assert.equal(overlayBlendFor('plus-lighter'), 'plus-lighter', 'hyphenated keyword passes through');
+  assert.equal(
+    overlayBlendFor('screen;pointer-events:auto'),
+    'screen',
+    'a value carrying a second declaration is rejected — the attribute reaches the surface cssText, so it must never be able to undo click-through',
+  );
+  assert.equal(overlayBlendFor('url(x)'), 'screen', 'not a keyword ⇒ screen');
   assert.equal(overlayZFor(null), 5, 'absent ⇒ 5');
   assert.equal(overlayZFor(''), 5, 'empty ⇒ 5');
   assert.equal(overlayZFor('auto'), 5, 'non-numeric ⇒ 5');
   assert.equal(overlayZFor('12'), 12);
   assert.equal(overlayZFor('0'), 0, 'zero is a legitimate stacking level');
   assert.equal(overlayZFor('-1'), -1, 'negative is legitimate too');
+  assert.equal(overlayZFor('1.5'), 5, 'fractional ⇒ 5 (CSS z-index is integer-only; the browser would otherwise drop it)');
+  assert.equal(overlayZFor('5;pointer-events:auto'), 5, 'a value carrying a second declaration ⇒ 5');
+});
+
+test('an injected overlay-blend / overlay-z attribute at creation never reaches the surface cssText (#721)', () => {
+  const attrs = new Map<string, string>([
+    ['overlay-blend', 'screen;pointer-events:auto'],
+    ['overlay-z', '5;pointer-events:auto'],
+  ]);
+  const { appended } = withFakeDocument(() => {
+    const self = Object.assign(Object.create(FieldField.prototype) as object, {
+      overlayCanvas: undefined,
+      getAttribute: (k: string) => attrs.get(k) ?? null,
+    });
+    return ensureOverlayCanvas.call(self as unknown as FieldField);
+  });
+  assert.equal(
+    appended[0]!.style.cssText,
+    'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;mix-blend-mode:screen',
+    'both fall back to the defaults — the click-through contract holds',
+  );
 });
 
 test('overlay-blend / overlay-z are observed attributes (#721)', () => {

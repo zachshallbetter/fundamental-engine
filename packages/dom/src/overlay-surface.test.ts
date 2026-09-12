@@ -6,7 +6,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createOverlaySurface, overlaySurfaceCssText } from './overlay-surface.ts';
+import { createOverlaySurface, normalizeOverlayBlend, normalizeOverlayZ, overlaySurfaceCssText } from './overlay-surface.ts';
 
 const TODAY = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;mix-blend-mode:screen';
 
@@ -83,6 +83,52 @@ test('blend + zIndex interpolate into the inline style', () => {
   );
   const t = createOverlaySurface(doc, { zIndex: 'auto' });
   assert.match((t.canvas as unknown as FakeCanvas).style.cssText, /z-index:auto;/, 'a string z-index passes through');
+});
+
+test('blend / zIndex are validated — a value cannot inject a declaration into cssText', () => {
+  const { doc } = fakeDocument();
+  // a blend that smuggles a second declaration would turn the click-through surface into an input blocker.
+  const a = createOverlaySurface(doc, { blend: 'screen;pointer-events:auto' });
+  assert.equal((a.canvas as unknown as FakeCanvas).style.cssText, TODAY, 'injected blend falls back to the default');
+  const b = createOverlaySurface(doc, { zIndex: '5;pointer-events:auto' });
+  assert.equal((b.canvas as unknown as FakeCanvas).style.cssText, TODAY, 'injected z-index falls back to the default');
+  const c = createOverlaySurface(doc, { zIndex: 1.5 });
+  assert.equal((c.canvas as unknown as FakeCanvas).style.cssText, TODAY, 'a fractional z-index (invalid CSS) falls back to 5');
+  const d = createOverlaySurface(doc, { blend: ' plus-lighter ', zIndex: ' -1 ' });
+  assert.equal(
+    (d.canvas as unknown as FakeCanvas).style.cssText,
+    'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;mix-blend-mode:plus-lighter',
+    'legitimate values are trimmed and pass through',
+  );
+  assert.equal(overlaySurfaceCssText('multiply;color:red', '7;x:y'), TODAY, 'the exported builder validates too');
+});
+
+test('normalizeOverlayBlend / normalizeOverlayZ — the shared validation the element getters use', () => {
+  assert.equal(normalizeOverlayBlend(undefined), 'screen');
+  assert.equal(normalizeOverlayBlend(null), 'screen');
+  assert.equal(normalizeOverlayBlend(''), 'screen');
+  assert.equal(normalizeOverlayBlend('  '), 'screen');
+  assert.equal(normalizeOverlayBlend(' multiply '), 'multiply');
+  assert.equal(normalizeOverlayBlend('color-dodge'), 'color-dodge');
+  assert.equal(normalizeOverlayBlend('screen;pointer-events:auto'), 'screen', 'a semicolon is never a keyword');
+  assert.equal(normalizeOverlayBlend('screen }'), 'screen');
+  assert.equal(normalizeOverlayBlend('1x', 'normal'), 'normal', 'a keyword starts with a letter; custom fallback');
+  assert.equal(normalizeOverlayZ(undefined), 5);
+  assert.equal(normalizeOverlayZ(null), 5);
+  assert.equal(normalizeOverlayZ(''), 5);
+  assert.equal(normalizeOverlayZ('auto'), 'auto');
+  assert.equal(normalizeOverlayZ(12), 12);
+  assert.equal(normalizeOverlayZ(0), 0);
+  assert.equal(normalizeOverlayZ(-1), -1);
+  assert.equal(normalizeOverlayZ('12'), 12);
+  assert.equal(normalizeOverlayZ(' -3 '), -3);
+  assert.equal(normalizeOverlayZ(1.5), 5, 'fractional number ⇒ fallback');
+  assert.equal(normalizeOverlayZ('1.5'), 5, 'fractional string ⇒ fallback');
+  assert.equal(normalizeOverlayZ(NaN), 5);
+  assert.equal(normalizeOverlayZ(Infinity), 5);
+  assert.equal(normalizeOverlayZ('1e3'), 5, 'no exponent form');
+  assert.equal(normalizeOverlayZ('5;pointer-events:auto'), 5);
+  assert.equal(normalizeOverlayZ('x', 'auto'), 'auto', 'custom fallback');
 });
 
 test('marker:false omits data-field-overlay; parent overrides body', () => {

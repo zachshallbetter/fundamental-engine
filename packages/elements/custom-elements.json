@@ -674,7 +674,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "`overlay-blend` — CSS `mix-blend-mode` of the overlay surface; `'screen'` (today's surface) when\nabsent/empty. Host placement, not an engine option (#721).",
+              "description": "`overlay-blend` — CSS `mix-blend-mode` of the overlay surface; `'screen'` (today's surface) when\nabsent/empty or not a single CSS keyword (the value is interpolated into the surface's inline style,\nso it is validated — `normalizeOverlayBlend`). Host placement, not an engine option (#721).",
               "readonly": true
             },
             {
@@ -683,7 +683,7 @@
               "type": {
                 "text": "number"
               },
-              "description": "`overlay-z` — CSS `z-index` of the overlay surface; `5` (today's surface) when absent/non-numeric.",
+              "description": "`overlay-z` — CSS `z-index` of the overlay surface; `5` (today's surface) when absent, non-numeric,\nor not an integer (`normalizeOverlayZ` — CSS `z-index` rejects fractions).",
               "readonly": true
             },
             {
@@ -1116,7 +1116,7 @@
                   }
                 }
               ],
-              "description": "set the overlay surface's CSS `mix-blend-mode` live (host placement, #721) and reflect to `overlay-blend`."
+              "description": "set the overlay surface's CSS `mix-blend-mode` live (host placement, #721) and reflect to `overlay-blend`.\nValidated like the attribute: a value that is not a single CSS keyword applies and reflects as `screen`."
             },
             {
               "kind": "method",
@@ -1134,7 +1134,7 @@
                   }
                 }
               ],
-              "description": "set the overlay surface's CSS `z-index` live (host placement, #721) and reflect to `overlay-z`."
+              "description": "set the overlay surface's CSS `z-index` live (host placement, #721) and reflect to `overlay-z`.\nValidated like the attribute: a non-integer applies and reflects as `5`."
             },
             {
               "kind": "method",
@@ -2394,7 +2394,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "`overlay-blend` — CSS `mix-blend-mode` of the overlay surface; `'screen'` (today's surface) when\nabsent/empty. Host placement, not an engine option (#721).",
+              "description": "`overlay-blend` — CSS `mix-blend-mode` of the overlay surface; `'screen'` (today's surface) when\nabsent/empty or not a single CSS keyword (the value is interpolated into the surface's inline style,\nso it is validated — `normalizeOverlayBlend`). Host placement, not an engine option (#721).",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -2407,7 +2407,7 @@
               "type": {
                 "text": "number"
               },
-              "description": "`overlay-z` — CSS `z-index` of the overlay surface; `5` (today's surface) when absent/non-numeric.",
+              "description": "`overlay-z` — CSS `z-index` of the overlay surface; `5` (today's surface) when absent, non-numeric,\nor not an integer (`normalizeOverlayZ` — CSS `z-index` rejects fractions).",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -2964,7 +2964,7 @@
                   }
                 }
               ],
-              "description": "set the overlay surface's CSS `mix-blend-mode` live (host placement, #721) and reflect to `overlay-blend`.",
+              "description": "set the overlay surface's CSS `mix-blend-mode` live (host placement, #721) and reflect to `overlay-blend`.\nValidated like the attribute: a value that is not a single CSS keyword applies and reflects as `screen`.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2986,7 +2986,7 @@
                   }
                 }
               ],
-              "description": "set the overlay surface's CSS `z-index` live (host placement, #721) and reflect to `overlay-z`.",
+              "description": "set the overlay surface's CSS `z-index` live (host placement, #721) and reflect to `overlay-z`.\nValidated like the attribute: a non-integer applies and reflects as `5`.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

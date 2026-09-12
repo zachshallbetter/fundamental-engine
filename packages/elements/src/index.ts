@@ -1,5 +1,5 @@
 import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RestingMotion, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
-import { createBrowserField, createOverlaySurface, type FieldPlatform, type OverlaySurface } from '@fundamental-engine/dom';
+import { createBrowserField, createOverlaySurface, normalizeOverlayBlend, normalizeOverlayZ, type FieldPlatform, type OverlaySurface } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
 import {
@@ -49,8 +49,8 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {string} resting-motion - The resting-motion floor (declared, default OFF): `thermal` (a field-wide seeded Langevin kick) or `flow` (a divergence-free curl), optionally followed by a strength multiplier (`"flow 0.5"`, default `1`) — honest idle motion for a drawn field with nothing painted, measured as `--temperature`, and nothing under reduced motion. Absent = off. Construction-time — changing it rebuilds.
  * @attr {number} grid-warp - Distortion multiplier for the `grid` overlay's lattice (default `1`, the calibrated amount). `2`–`3` exaggerates the deformation; `0` flattens it. Only affects the `grid` overlay mode.
  * @attr {number} grid-intensity - Stroke opacity ∈ [0,1] for the `grid` overlay lines (default `0.16`, the faint diagnostic). Raise it (≈`0.5`) to make the warped lattice a visual centerpiece. Only affects the `grid` overlay mode.
- * @attr {string} overlay-blend - CSS `mix-blend-mode` of the overlay surface (default `screen`) — host placement of the front canvas, not an engine option (#721). Applied live to the existing surface (no rebuild) or on its first creation.
- * @attr {number} overlay-z - CSS `z-index` of the overlay surface (default `5`) — host placement of the front canvas, not an engine option (#721). Applied live (no rebuild); a non-numeric value falls back to `5`.
+ * @attr {string} overlay-blend - CSS `mix-blend-mode` of the overlay surface (default `screen`) — host placement of the front canvas, not an engine option (#721). Applied live to the existing surface (no rebuild) or on its first creation. Must be a single CSS keyword (`multiply`, `plus-lighter`, …); anything else falls back to `screen`.
+ * @attr {number} overlay-z - CSS `z-index` of the overlay surface (default `5`) — host placement of the front canvas, not an engine option (#721). Applied live (no rebuild). Must be an integer; a non-integer or non-numeric value falls back to `5`.
  */
 
 /** A no-op scalar grid returned by `grid()` before the element's field has started. */
@@ -316,16 +316,16 @@ export class FieldField extends HTMLElementBase {
     return Number.isFinite(v) && v >= 0 ? v : undefined;
   }
   /** `overlay-blend` — CSS `mix-blend-mode` of the overlay surface; `'screen'` (today's surface) when
-   *  absent/empty. Host placement, not an engine option (#721). */
+   *  absent/empty or not a single CSS keyword (the value is interpolated into the surface's inline style,
+   *  so it is validated — `normalizeOverlayBlend`). Host placement, not an engine option (#721). */
   get overlayBlend(): string {
-    const v = this.getAttribute('overlay-blend')?.trim();
-    return v ? v : 'screen';
+    return normalizeOverlayBlend(this.getAttribute('overlay-blend'));
   }
-  /** `overlay-z` — CSS `z-index` of the overlay surface; `5` (today's surface) when absent/non-numeric. */
+  /** `overlay-z` — CSS `z-index` of the overlay surface; `5` (today's surface) when absent, non-numeric,
+   *  or not an integer (`normalizeOverlayZ` — CSS `z-index` rejects fractions). */
   get overlayZ(): number {
-    const raw = this.getAttribute('overlay-z');
-    const v = raw === null || raw.trim() === '' ? NaN : Number(raw);
-    return Number.isFinite(v) ? v : 5;
+    const z = normalizeOverlayZ(this.getAttribute('overlay-z'));
+    return typeof z === 'number' ? z : 5;
   }
   /** `separation` — particle-to-particle separation force strength ∈ [0,1]; undefined if absent/invalid. */
   get separation(): number | undefined {
@@ -516,15 +516,20 @@ export class FieldField extends HTMLElementBase {
     const serial = mode === 'off' ? null : typeof mode === 'string' ? mode : mode.join(' ') || null;
     this.reflect('overlay', serial);
   }
-  /** set the overlay surface's CSS `mix-blend-mode` live (host placement, #721) and reflect to `overlay-blend`. */
+  /** set the overlay surface's CSS `mix-blend-mode` live (host placement, #721) and reflect to `overlay-blend`.
+   *  Validated like the attribute: a value that is not a single CSS keyword applies and reflects as `screen`. */
   setOverlayBlend(mode: string): void {
-    if (this.overlayCanvas) this.overlayCanvas.style.mixBlendMode = mode;
-    this.reflect('overlay-blend', mode);
+    const v = normalizeOverlayBlend(mode);
+    if (this.overlayCanvas) this.overlayCanvas.style.mixBlendMode = v;
+    this.reflect('overlay-blend', v);
   }
-  /** set the overlay surface's CSS `z-index` live (host placement, #721) and reflect to `overlay-z`. */
+  /** set the overlay surface's CSS `z-index` live (host placement, #721) and reflect to `overlay-z`.
+   *  Validated like the attribute: a non-integer applies and reflects as `5`. */
   setOverlayZ(z: number): void {
-    if (this.overlayCanvas) this.overlayCanvas.style.zIndex = String(z);
-    this.reflect('overlay-z', String(z));
+    const n = normalizeOverlayZ(z);
+    const v = typeof n === 'number' ? n : 5;
+    if (this.overlayCanvas) this.overlayCanvas.style.zIndex = String(v);
+    this.reflect('overlay-z', String(v));
   }
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void {
