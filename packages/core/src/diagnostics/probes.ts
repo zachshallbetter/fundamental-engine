@@ -38,6 +38,11 @@ function probeEnv(b: Body, x: number, y: number): Env {
     c: 12,
     G: 1,
     t: 0,
+    // a READING, not a capture (#1155). Without this `sink.apply` bills a real body for being probed
+    // (`b.accreted += 1`) and only then trips over this bare env's missing `supernova`, so the mutation
+    // lands and the TypeError is swallowed by the callers' `catch`. Sink adds no velocity either way,
+    // so every probe vector is unchanged.
+    probe: true,
   } as unknown as Env;
 }
 
