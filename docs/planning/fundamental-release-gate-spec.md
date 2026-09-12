@@ -1,6 +1,6 @@
 # TASK: Fundamental Release-Gate Program (0.x → RC → 1.0)
 
-**Status:** Active — RC engineering phase; open gates: RC-6 (contract coverage), RC-7 (perf budgets — blocked, hardware fact sheet needed), RC-8 (real AT pass), ST-5 (support published on live site).
+**Status:** Active — RC engineering phase; open gates: RC-6 (contract coverage), RC-7 (perf budgets — blocked, hardware fact sheet needed), ST-5 (support published on live site).
 **Predecessor / Position:** Consumes `Fundamental-homepage-reorg-spec.md` (the install/docs coherence requirement) and `Fundamental-launch-brief.md` (the cohort, which *is* the RC validation phase). Sits as release governance over the project — every feature/fix task flows up into these gates.
 **Scope:** The gates that must pass to cut `1.0.0-rc.1`, and to promote `rc` → `1.0.0`, each stated as an evidence-bearing predicate. / **Excluded:** The implementation work behind any gate (the React fix, the CI wiring, the study) — those are separate tasks; this spec defines *what proves them done*, not how to do them.
 **Authority class:** Release governance. The **1.0 API freeze** and the **1.0 support commitment** are irreversible promises — treat both as critical-path; a wrong call propagates into every dependent.
@@ -52,7 +52,7 @@ Ordered cheapest-and-most-blocking first within each gate.
 | RC-5 | **Support matrix declared and CI-tested** | The supported browsers, DPR, reduced-motion, and SSR/hydration behaviors are stated and exercised in CI | the matrix doc + green CI run |
 | RC-6 | **Contract-level coverage** | Every documented attribute, metric, and option has a test; conformance tests and determinism fingerprints green across the matrix | coverage report + green conformance/fingerprint runs |
 | RC-7 | **Performance budgets as gates** | Frame-time, long-task, and heap budgets (sourced from the fact sheet) are CI gates that fail the build on regression | the budget config + a passing run |
-| RC-8 | **Accessibility verified, not just architectural** | Reduced-motion/semantic-truth lints pass on every shipped example, plus ≥1 real assistive-tech pass logged | lint run + the AT-pass note |
+| RC-8 | **Accessibility verified, not just architectural** | Reduced-motion/semantic-truth lints pass on every shipped example, plus ≥1 real assistive-tech pass logged | lint run + the AT-pass note — **met 2026-09-11:** Orca pass logged in `support-matrix.md` §AT-pass log, record `rc8-at-pass-2026-09-11.md` |
 | RC-9 | **Docs complete for the 1.0 surface** | Every public API documented; a 0.x→1.0 migration note exists; the semver policy is stated | the docs diff |
 | RC-10 | **Install/docs coherence shipped** | The homepage-reorg spec's install gates are green (vanilla default, no bare `Fundamental`, homepage matches `/docs`) | reference: `Fundamental-homepage-reorg-spec.md` §7 |
 

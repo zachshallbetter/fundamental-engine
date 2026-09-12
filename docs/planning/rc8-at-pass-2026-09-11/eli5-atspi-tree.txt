@@ -1,0 +1,950 @@
+APP Google Chrome
+  application | Google Chrome | focusable,showing,visible
+    frame | Fundamental — explained like you're 5 - Google Chrome | showing,visible
+      panel |  | showing,visible
+        panel |  | showing,visible
+          push button | Minimize | focusable,showing,visible
+          push button | Maximize | focusable,showing,visible
+          push button | Restore | 
+          push button | Close | focusable,showing,visible
+          static | Untitled - Google Chrome | 
+          panel |  | showing,visible
+            panel |  | 
+            panel |  | showing,visible
+              tool bar |  | showing,visible
+                push button | Back | showing,visible
+                push button | Forward | showing,visible
+                push button | Reload | focusable,showing,visible
+                push button | Home | 
+                push button | Open tab in split view | 
+                panel |  | showing,visible
+                  push button |  | 
+                  push button | View site information | focusable,showing,visible
+                    notification |  | 
+                  entry | Address and search bar | focusable,showing,visible
+                  static |  | 
+                  static |  | 
+                  push button |  | 
+                    notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  push button |  | 
+                    notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  notification |  | 
+                  panel |  | showing,visible
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button |  | 
+                      notification |  | 
+                    push button | Bookmark this tab | focusable,showing,visible
+                      notification |  | 
+                  panel |  | showing,visible
+                  push button | Clear input | 
+                  static |  | 
+                panel |  | 
+                  push button | Extensions | 
+                  push button | Close side panel | 
+                panel |  | 
+                panel |  | 
+                  panel |  | 
+                push button | Energy Saver is on | 
+                push button | Performance issue alert | 
+                push button | Control your music, videos, and more | 
+                push button | You | focusable,showing,visible
+                push button | Hidden toolbar buttons | 
+                push button | New Chrome available | focusable,showing,visible
+                push button | Close website | 
+              tool bar | Bookmarks | 
+                push button | Apps | 
+                push button | Managed bookmarks | 
+                tool bar | Saved Tab Groups | 
+                  push button | Tab groups | 
+                separator | Separator | 
+                push button | Menu containing hidden bookmarks | 
+                push button | All Bookmarks | 
+                separator | Separator | 
+              panel |  | showing,visible
+            panel |  | showing,visible
+              panel |  | showing,visible
+                panel |  | 
+                panel |  | showing,visible
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                  document web | Fundamental — explained like you're 5 | focusable,focused,showing,visible
+                    link | SKIP TO CONTENT | focusable,visible
+                      static | SKIP TO CONTENT | visible
+                    landmark |  | showing,visible
+                      link | Fundamental — home | focusable,showing,visible
+                        static | Fundamental | showing,visible
+                      link | v0.10.1 | focusable,showing,visible
+                        static | v0.10.1 | showing,visible
+                      landmark | Primary | showing,visible
+                        link | DOCS | focusable,showing,visible
+                          static | DOCS | showing,visible
+                        link | TOUR | focusable,showing,visible
+                          static | TOUR | showing,visible
+                        link | USE CASES | focusable,showing,visible
+                          static | USE CASES | showing,visible
+                        link | PATTERNS | focusable,showing,visible
+                          static | PATTERNS | showing,visible
+                        link | EVIDENCE | focusable,showing,visible
+                          static | EVIDENCE | showing,visible
+                        link | WRITINGS | focusable,showing,visible
+                          static | WRITINGS | showing,visible
+                        link | LAB | focusable,showing,visible
+                          static | LAB | showing,visible
+                        toggle button | Toggle field-flow arrows | focusable,showing,visible
+                        toggle button | Toggle density heatmap | focusable,showing,visible
+                        toggle button | Toggle field grid | focusable,showing,visible
+                    section |  | showing,visible
+                      landmark |  | visible
+                        paragraph |  | visible
+                          static | FUNDAMENTAL · EXPLAINED LIKE YOU'RE 5 | visible
+                        heading | Web elements have mass. | visible
+                          static | Web elements have | visible
+                          static | mass | visible
+                          static | . | visible
+                        paragraph |  | visible
+                          static | Not literally — but it sure starts to feel that way. Fundamental sprinkles invisible magne | visible
+                          static |  | visible
+                            static | notices | visible
+                          static | — it grows heavier, bolder, brighter. | visible
+                        paragraph |  | visible
+                          static |  | visible
+                            static | That’s the whole trick, and it goes both ways. | visible
+                          static | Things bend the invisible field; the field bends them back. Start there, give it a few sim | visible
+                        link | OPEN THE LAB → | focusable,visible
+                          static | OPEN THE LAB → | visible
+                        link | READ THE DOCS → | focusable,visible
+                          static | READ THE DOCS → | visible
+                        link | SEE THE GROWN-UP VERSION → | focusable,visible
+                          static | SEE THE GROWN-UP VERSION → | visible
+                        paragraph |  | visible
+                          static | Early days — a | visible
+                          static |  | visible
+                            static | 0.x preview | visible
+                          static | , a thing to build on rather than a finished product, and nobody’s shipping it to real use | visible
+                        toggle button | Make the dots follow you | focusable,visible
+                        static | move your cursor — the whole field leans toward it | visible
+                      landmark | Chapters | showing,visible
+                        link | I THE SUBSTRATE | focusable,showing,visible
+                          static | I | showing,visible
+                          static | THE SUBSTRATE | showing,visible
+                        link | II FOUR FEELINGS | focusable,showing,visible
+                          static | II | showing,visible
+                          static | FOUR FEELINGS | showing,visible
+                        link | III BOTH WAYS | focusable,showing,visible
+                          static | III | showing,visible
+                          static | BOTH WAYS | showing,visible
+                        link | IV IT FEELS ALIVE | focusable,showing,visible
+                          static | IV | showing,visible
+                          static | IT FEELS ALIVE | showing,visible
+                        link | V PATTERNS | focusable,showing,visible
+                          static | V | showing,visible
+                          static | PATTERNS | showing,visible
+                        link | VI THE HONEST TRUTH | focusable,showing,visible
+                          static | VI | showing,visible
+                          static | THE HONEST TRUTH | showing,visible
+                      section |  | visible
+                        static | I | visible
+                        heading | The substrate | visible
+                          static | The substrate | visible
+                        paragraph |  | visible
+                          static | What the field is made of — before any magnet shows up. | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 01 — One space | visible
+                        heading | The page and the field are the same place. | visible
+                          static | The page and the field are the same place. | visible
+                        paragraph |  | visible
+                          static | Fundamental measures every element’s box and drops it into the field, so the invisible par | visible
+                          static |  | visible
+                            static | same coordinates | visible
+                          static | . They aren’t two layers stacked up — they’re one. | visible
+                        paragraph |  | visible
+                          static | And it re-measures as you scroll and resize, so the invisible forces stay | visible
+                          static |  | visible
+                            static | glued | visible
+                          static | to the boxes you can see. Move the page, move the field — for free. | visible
+                        section |  | visible
+                          static |  | visible
+                          static | measure: | visible
+                          static | the word’s box | visible
+                          static | → | visible
+                          static |  | visible
+                          static | a place in the field | visible
+                          static |  | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 02 — Weight & calm | visible
+                        heading | The dots have weight, and they slow down. | visible
+                          static | The dots have weight, and they slow down. | visible
+                        paragraph |  | visible
+                          static | Each dot is a tiny ball with a bit of | visible
+                          static |  | visible
+                            static | mass | visible
+                          static | , and every moment a little | visible
+                          static |  | visible
+                            static | friction | visible
+                          static | bleeds its speed away. So the field doesn’t fly apart — it eases into slow, calm swarms. | visible
+                        paragraph |  | visible
+                          static | That gentle brake is on purpose. It’s why a Fundamental page feels calm, not like a screen | visible
+                        section |  | visible
+                          static | speed | visible
+                          static | next | visible
+                          static | = speed | visible
+                          static | now | visible
+                          static | · | visible
+                          static | a little less | visible
+                          static |  | visible
+                          static | (every frame) | visible
+                          static |  | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 03 — Always alive | visible
+                        heading | Even when you do nothing, it drifts. | visible
+                          static | Even when you do nothing, it drifts. | visible
+                        paragraph |  | visible
+                          static | Underneath everything are slow waves, and dots near a wave get nudged along its slope — dr | visible
+                        paragraph |  | visible
+                          static | It’s the reason a Fundamental page feels alive the instant it loads, before you’ve touched | visible
+                      section |  | showing,visible
+                        static | II | visible
+                        heading | Four forces, four feelings | visible
+                          static | Four forces, four feelings | visible
+                        paragraph |  | showing,visible
+                          static | The universe runs on four big forces. Fundamental borrows all four — not the physics, the | showing,visible
+                          static |  | showing,visible
+                            static | feelings | showing,visible
+                          static | . | showing,visible
+                      section |  | showing,visible
+                        section |  | showing,visible
+                          static | 04 — The translation | showing,visible
+                        heading | Every page already has these four. Fundamental gives them behavior. | showing,visible
+                          static | Every page already has these four. Fundamental gives them behavior. | showing,visible
+                        paragraph |  | showing,visible
+                          static | Pick one, and watch the same page resolve through a different field. | showing,visible
+                        list | Pick a natural field to read the page through | showing,visible
+                          list item |  | showing,visible
+                            toggle button | Gravity importance what matters bends the field | focusable,showing,visible
+                              static | Gravity | showing,visible
+                              static | importance | showing,visible
+                              static | what matters bends the field | showing,visible
+                          list item |  | showing,visible
+                            toggle button | Electromagnetic polarity meaning pushes, pulls, and routes signal | focusable,showing,visible
+                              static | Electromagnetic | showing,visible
+                              static | polarity | showing,visible
+                              static | meaning pushes, pulls, and routes signal | showing,visible
+                          list item |  | showing,visible
+                            toggle button | Strong belonging what belongs together binds | focusable,showing,visible
+                              static | Strong | showing,visible
+                              static | belonging | showing,visible
+                              static | what belongs together binds | showing,visible
+                          list item |  | showing,visible
+                            toggle button | Weak release what changes loosens and transforms | focusable,showing,visible
+                              static | Weak | showing,visible
+                              static | release | showing,visible
+                              static | what changes loosens and transforms | showing,visible
+                        paragraph |  | showing,visible
+                          static | Gravity | showing,visible
+                          static | translates priority into convergence. | showing,visible
+                        paragraph |  | showing,visible
+                          static | They are not four effects — they are four ways a semantic surface can behave. | showing,visible
+                      section |  | showing,visible
+                        section |  | showing,visible
+                          static | 05 — Body interaction model | showing,visible
+                        heading | A body isn’t only a force. It can be a vessel. | visible
+                          static | A body isn’t only a force. It can be a vessel. | visible
+                        paragraph |  | visible
+                          static | Forces push and pull. But a body can also | visible
+                          static |  | visible
+                            static | take matter in | visible
+                          static | — it | visible
+                          static |  | visible
+                            static | captures | visible
+                          static | the dots near it, | visible
+                          static |  | visible
+                            static | holds | visible
+                          static | them as it fills, and | visible
+                          static |  | visible
+                            static | releases | visible
+                          static | them all at once when it’s full. Capture, hold, release: nothing conjured, nothing deleted | visible
+                        paragraph |  | visible
+                          static | The shipped case is a | visible
+                          static |  | visible
+                            static | sink | visible
+                          static | . | visible
+                          static |  | visible
+                            static | data-absorb | visible
+                          static | sets how close it grabs from; | visible
+                          static |  | visible
+                            static | data-max | visible
+                          static | sets how much it can hold; the engine writes the fill back as | visible
+                          static |  | visible
+                            static | --load | visible
+                          static | , so the body can show how full it is. Drag it through the swarm and watch the meter climb | visible
+                        section |  | visible
+                          static |  | visible
+                          static | capture | visible
+                          static | → | visible
+                          static | hold | visible
+                          static | → | visible
+                          static | release | visible
+                          static |  | visible
+                          static | (at data-max) | visible
+                          static |  | visible
+                        section |  | visible
+                          static | A VESSEL — DRAG IT; IT FILLS, THEN POPS | visible
+                          push button | sink attract — drag, or use arrow keys to move | focusable,visible
+                          section |  | showing,visible
+                          push button | STIR THE FIELD | focusable,visible
+                          static | it captures nearby dots, holds them, and releases on supernova | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 06 — Real, tuned, or pretend | visible
+                        heading | And it always tells you which is which. | visible
+                          static | And it always tells you which is which. | visible
+                        heading | Real physics | visible
+                          static | Real physics | visible
+                        paragraph |  | visible
+                          static | The genuine laws — | visible
+                          static |  | visible
+                            static | gravity | visible
+                          static | , | visible
+                          static |  | visible
+                            static | charge | visible
+                          static | , | visible
+                          static |  | visible
+                            static | magnetism | visible
+                          static | , heat, waves, bouncing. | visible
+                        heading | Tuned to feel nice | visible
+                          static | Tuned to feel nice | visible
+                        paragraph |  | visible
+                          static | The everyday | visible
+                          static |  | visible
+                            static | attract | visible
+                          static | , | visible
+                          static |  | visible
+                            static | repel | visible
+                          static | , | visible
+                          static |  | visible
+                            static | swirl | visible
+                          static | — softened so a page stays calm and readable. | visible
+                        heading | Pure pretend | visible
+                          static | Pure pretend | visible
+                        paragraph |  | visible
+                          static | Real pieces stacked into make-believe — | visible
+                          static |  | visible
+                            static | blackhole | visible
+                          static | , | visible
+                          static |  | visible
+                            static | galaxy | visible
+                          static | , | visible
+                          static |  | visible
+                            static | tornado | visible
+                          static | . | visible
+                        paragraph |  | visible
+                          static | The one rule it never breaks: | visible
+                          static |  | visible
+                            static | attract | visible
+                          static | is | visible
+                          static |  | visible
+                            static | not | visible
+                          static | gravity. One is the universe’s law; the other just borrows its costume — and the docs say  | visible
+                      section |  | visible
+                        static | III | visible
+                        heading | It goes both ways | visible
+                          static | It goes both ways | visible
+                        paragraph |  | visible
+                          static | The dots were never the point. The field reaches back and changes the things on the page. | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 07 — Material type | visible
+                        heading | A word gains weight — literally. | visible
+                          static | A word gains weight — literally. | visible
+                        paragraph |  | visible
+                          static | This is the “mass” from the title, made real. The word pulls the dots in, they pool beneat | visible
+                          static |  | visible
+                            static | whole look at once | visible
+                          static | — | visible
+                          static |  | visible
+                            static | weight, size, spacing, glow, color | visible
+                          static | . One number does all of it. Type as a | visible
+                          static |  | visible
+                            static | material | visible
+                          static | , not a style. | visible
+                        paragraph |  | visible
+                          static | Hit the button — scatter the pile, watch the letters thin out and pale, then fatten back u | visible
+                        push button | ↯ DISTURB THE TYPE | focusable,visible
+                        section |  | visible
+                          static | ONE NUMBER → EVERY TYPE AXIS | visible
+                          section |  | visible
+                            static | mass | visible
+                          static | weight, size, spacing, glow and color are one density | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 08 — Threads | visible
+                        heading | Related things tie themselves together. | visible
+                          static | Related things tie themselves together. | visible
+                        paragraph |  | visible
+                          static | Touch one thing in a group and the field draws living threads to its siblings. A list stop | visible
+                          static |  | visible
+                            static | connected set | visible
+                          static | — the relationships were always there; now you can see them. | visible
+                        paragraph |  | visible
+                          static | Hover any word to light up its set. | visible
+                        section |  | visible
+                          static | A CONNECTED SET | visible
+                          section |  | visible
+                            static | claim | visible
+                            static | proof | visible
+                            static | source | visible
+                            static | footnote | visible
+                          static | threads connect what belongs together | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 09 — Shared attention | visible
+                        heading | The page can’t shout about two things at once. | visible
+                          static | The page can’t shout about two things at once. | visible
+                        paragraph |  | visible
+                          static | There’s | visible
+                          static |  | visible
+                            static | one | visible
+                          static | bucket of focus for the whole page. Engage one word and it pulls force off every other — s | visible
+                          static |  | visible
+                            static | give theirs up | visible
+                          static | . Emphasis isn’t painted on; it’s | visible
+                          static |  | visible
+                            static | shared | visible
+                          static | , and it always adds up to the same total. | visible
+                        paragraph |  | visible
+                          static | Hover one word — watch the others surrender their glow to it. | visible
+                        section |  | visible
+                          static | ONE BUDGET, REDISTRIBUTED | visible
+                          section |  | visible
+                            static | here | visible
+                            static | now | visible
+                            static | read | visible
+                          static | engage one — the others give up their glow | visible
+                      section |  | visible
+                        paragraph |  | visible
+                          static | THE BIG IDEA | visible
+                        heading | The dots show you the field is there. Everything else is what the field is for. | visible
+                          static | The dots show you the field is there. | visible
+                          static | Everything else is what the field is for. | visible
+                        paragraph |  | visible
+                          static | It’s not “a webpage with floating dots.” It’s a webpage where meaning has weight — where b | visible
+                          static |  | visible
+                            static | see and feel | visible
+                          static | , not just words someone typed. | visible
+                      section |  | visible
+                        static | IV | visible
+                        heading | And then it starts to feel alive | visible
+                          static | And then it starts to feel alive | visible
+                        paragraph |  | visible
+                          static | Give the same simple field a few more rules and behaviour shows up that nobody coded. This | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 10 — Emergence | visible
+                        heading | Three rules, and it flocks. | visible
+                          static | Three rules, and it flocks. | visible
+                        paragraph |  | visible
+                          static | Give every dot three tiny rules — | visible
+                          static |  | visible
+                            static | face the same way as your neighbours, stay close, don’t bump | visible
+                          static | — and they swarm like a flock of starlings. Nobody wrote “flock.” It just happens. Leave a | visible
+                          static |  | visible
+                            static | ants | visible
+                          static | do. | visible
+                        paragraph |  | visible
+                          static | Intelligence you didn’t write — it | visible
+                          static |  | visible
+                            static | emerges | visible
+                          static | from a few pieces playing together. | visible
+                        link | PLAY WITH SWARMS IN THE LAB → | focusable,visible
+                          static | PLAY WITH SWARMS IN THE LAB → | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 11 — Formations | visible
+                        heading | The whole field can change its mind. | visible
+                          static | The whole field can change its mind. | visible
+                        paragraph |  | visible
+                          static | A single magnet tugs the dots near it. A | visible
+                          static |  | visible
+                            static | formation | visible
+                          static | is a mood for the | visible
+                          static |  | visible
+                            static | entire | visible
+                          static | field at once — calm drifting, or pulled into wells, or marched into lanes, or scattered a | visible
+                        paragraph |  | visible
+                          static | Calm — gentle drifting, the resting state. | visible
+                        section |  | visible
+                          push button | CALM | focusable,visible
+                          push button | WELLS | focusable,visible
+                          push button | LANES | focusable,visible
+                          push button | SCATTER | focusable,visible
+                          push button | GATHER | focusable,visible
+                      section |  | visible
+                        section |  | visible
+                          static | 12 — Memory | visible
+                        heading | It remembers where you go. | visible
+                          static | It remembers where you go. | visible
+                        paragraph |  | visible
+                          static | Footsteps leave a warm trail that slowly fades. So the spots people keep visiting light up | visible
+                          static |  | visible
+                            static | on their own | visible
+                          static | , and the worn paths start to pull. The page grows a | visible
+                          static |  | visible
+                            static | memory of attention | visible
+                          static | — not just a log of clicks. | visible
+                        paragraph |  | visible
+                          static | A long article that quietly knows “you are here, you’ve read this.” | visible
+                        link | SEE IT ON A REAL ARTICLE → | focusable,visible
+                          static | SEE IT ON A REAL ARTICLE → | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 13 — Explainable | visible
+                        heading | It can tell you why. | visible
+                          static | It can tell you why. | visible
+                        paragraph |  | visible
+                          static | Click anything and ask | visible
+                          static |  | visible
+                            static | why | visible
+                          static | . It shows its work: “I moved 60% because of | visible
+                          static |  | visible
+                            static | this | visible
+                          static | pull, 24% because of that swirl. I’m glowing because of these three neighbours.” Most clev | visible
+                          static |  | visible
+                            static | receipts | visible
+                          static | . | visible
+                        paragraph |  | visible
+                          static | Nothing on the page moves without a reason you can read. | visible
+                        link | OPEN THE INSPECTOR → | focusable,visible
+                          static | OPEN THE INSPECTOR → | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 14 — Prediction | visible
+                        heading | It thinks one step ahead. | visible
+                          static | It thinks one step ahead. | visible
+                        paragraph |  | visible
+                          static | It can quietly run the | visible
+                          static |  | visible
+                            static | next | visible
+                          static | few moments — without touching the live page — and draw a | visible
+                          static |  | visible
+                            static | ghost trail | visible
+                          static | of where the dots are about to go. The present and the predicted future, side by side, so  | visible
+                        paragraph |  | visible
+                          static | A field that can show you the future it expects. | visible
+                        link | SEE PREDICTION IN DIAGNOSTICS → | focusable,visible
+                          static | SEE PREDICTION IN DIAGNOSTICS → | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 15 — Trust | visible
+                        heading | It tells you what to trust. | visible
+                          static | It tells you what to trust. | visible
+                        paragraph |  | visible
+                          static | Point it at an AI’s answer: a claim with real sources sits | visible
+                          static |  | visible
+                            static | solid and calm | visible
+                          static | ; a made-up one | visible
+                          static |  | visible
+                            static | wobbles and drifts | visible
+                          static | ; two facts that argue push apart. You feel which parts to trust before you finish reading | visible
+                          static |  | visible
+                            static | never invents | visible
+                          static | confidence it doesn’t have. | visible
+                        paragraph |  | visible
+                          static | It shows you the evidence; it doesn’t pretend to know the truth. | visible
+                        link | SEE THE EVIDENCE STUDY → | focusable,visible
+                          static | SEE THE EVIDENCE STUDY → | visible
+                      section |  | visible
+                        static | V | visible
+                        heading | Patterns, one pond | visible
+                          static | Patterns, one pond | visible
+                        paragraph |  | visible
+                          static | You don’t wire raw magnets. You write little cards — and everything you add swims in the s | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 16 — Patterns | visible
+                        heading | A pattern is a card. | visible
+                          static | A pattern is a card. | visible
+                        paragraph |  | visible
+                          static | Magnets, a look, and a meaning, on one card — like a pattern for cookies. Idea words descr | visible
+                          static |  | visible
+                            static | magnet names | visible
+                          static | do the work. You can be poetic in the idea box, but the magnet box has to name a | visible
+                          static |  | visible
+                            static | real | visible
+                          static | magnet, and a checker bounces any card that fibs. There are already 64. | visible
+                        paragraph |  | visible
+                          static | A new idea is usually just a new card — no new physics. | visible
+                        static | Evidence Field | visible
+                        static | for showing whether you can trust an answer | visible
+                        description list |  | visible
+                          description term | MAGNETS | visible
+                            static | MAGNETS | visible
+                          description value |  | visible
+                            static |  | visible
+                              static | charge | visible
+                            static |  | visible
+                            static |  | visible
+                              static | link | visible
+                            static |  | visible
+                            static |  | visible
+                              static | repel | visible
+                            static |  | visible
+                            static |  | visible
+                              static | memory | visible
+                          description term | WIRE | visible
+                            static | WIRE | visible
+                          description value |  | visible
+                            static | each claim → its sources | visible
+                          description term | DRAW | visible
+                            static | DRAW | visible
+                          description value |  | visible
+                            static | dots · threads · a soft glow | visible
+                          description term | MOTION OFF | visible
+                            static | MOTION OFF | visible
+                          description value |  | visible
+                            static | a plain list with ✓ and ✗ | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 17 — One pond | visible
+                        heading | Drop two in and they share the same water. | visible
+                          static | Drop two in and they share the same water. | visible
+                        paragraph |  | visible
+                          static | There’s only | visible
+                          static |  | visible
+                            static | one pond | visible
+                          static | . Every magnet tugs the | visible
+                          static |  | visible
+                            static | same | visible
+                          static | dots, so the pulls just add up — like two kids pulling one wagon. A page isn’t a list of s | visible
+                          static |  | visible
+                            static | soup | visible
+                          static | , where everything ripples through everything else. | visible
+                        paragraph |  | visible
+                          static | Drag both — watch them fight over the same dots. | visible
+                        section |  | visible
+                          static | TWO MAGNETS, ONE POND — DRAG BOTH | visible
+                          push button | attract — drag, or use arrow keys to move | focusable,visible
+                          push button | repel — drag, or use arrow keys to move | focusable,visible
+                          static | the dots get torn between them | visible
+                      section |  | visible
+                        section |  | visible
+                          section |  | visible
+                          static | 17 — Or just something beautiful | visible
+                        heading | Type blackhole and watch a universe form. | visible
+                          static | Type | visible
+                          static |  | visible
+                            static | blackhole | visible
+                          static | and watch a universe form. | visible
+                        paragraph |  | visible
+                          static | The same little pieces swirl into whole tiny universes — try | visible
+                          static |  | visible
+                            static | blackhole | visible
+                          static | , | visible
+                          static |  | visible
+                            static | galaxy | visible
+                          static | , | visible
+                          static |  | visible
+                            static | tornado | visible
+                          static | , | visible
+                          static |  | visible
+                            static | fountain | visible
+                          static | . A preset is just a bundle of magnets given a name. | visible
+                        paragraph |  | visible
+                          static | Drag it around and let it pull the field into shape. | visible
+                        section |  | visible
+                          static | BLACKHOLE — DRAG ME | visible
+                          push button | blackhole — drag, or use arrow keys to move | focusable,visible
+                            section |  | visible
+                            static | blackhole | visible
+                          static | a whole little universe from a few magnets | visible
+                      section |  | visible
+                        static | VI | visible
+                        heading | The honest truth | visible
+                          static | The honest truth | visible
+                        paragraph |  | visible
+                          static | Being honest is the whole point — so here’s the part most “magic” websites skip. | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 18 — Why this, not anything else | visible
+                        heading | Often you wouldn’t use it — and that’s the honest answer. | visible
+                          static | Often you wouldn’t use it — and that’s the honest answer. | visible
+                        paragraph |  | visible
+                          static | For a plain landing page or a login, normal web tools are perfect and this would be overki | visible
+                          static |  | visible
+                            static | nothing else | visible
+                          static | does is treat “this is important,” “these relate,” “you already read this,” and “this answ | visible
+                          static |  | visible
+                            static | real forces in one shared field | visible
+                          static | — instead of things you hand-paint, differently, in a dozen places. | visible
+                        paragraph |  | visible
+                          static | So it earns its place when your stuff already has hidden | visible
+                          static |  | visible
+                            static | relationships | visible
+                          static | : long articles, AI answers and evidence, dashboards, maps of how things connect. That’s w | visible
+                      section |  | visible
+                        section |  | visible
+                          static | 19 — The fine print | visible
+                        heading | What it can’t (yet) do — said plainly. | visible
+                          static | What it can’t (yet) do — said plainly. | visible
+                        list |  | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | • | visible
+                            static |  | visible
+                              static | “Heavier swings wider” is mostly pretend | visible
+                            static | by default — real weight is opt-in. | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | • | visible
+                            static |  | visible
+                              static | Energy isn’t saved | visible
+                            static | , on purpose — there’s a gentle brake so the page stays calm instead of bouncing forever. | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | • | visible
+                            static |  | visible
+                              static | It costs something | visible
+                            static | — lots of dots is real work for the browser, so there are budgets and caps. | visible
+                          list item |  | visible
+                            section |  | visible
+                              static | • | visible
+                            static |  | visible
+                              static | Nobody’s tested it on real people yet. | visible
+                            static | The research papers | visible
+                            static |  | visible
+                              static | design | visible
+                            static | the experiments and make predictions — but the “does this actually help you read or trust  | visible
+                        paragraph |  | visible
+                          static | Want the grown-up version? The | visible
+                          link | field guide | focusable,visible
+                            static | field guide | visible
+                          static | and the | visible
+                          link | research papers | focusable,visible
+                            static | research papers | visible
+                          static | pick up right where this leaves off. | visible
+                      section |  | visible
+                        heading | Now go bend it yourself. | visible
+                          static | Now go bend it yourself. | visible
+                        paragraph |  | visible
+                          static | A story, a dashboard, a game — they’re all the same field underneath. Give it a few rules  | visible
+                        link | OPEN THE LAB → | focusable,visible
+                          static | OPEN THE LAB → | visible
+                        link | READ THE DOCS → | focusable,visible
+                          static | READ THE DOCS → | visible
+                        link | SEE THE GROWN-UP VERSION → | focusable,visible
+                          static | SEE THE GROWN-UP VERSION → | visible
+                    landmark |  | visible
+                      static | Fundamental | visible
+                      static | A PHYSICS ENGINE FOR INTERFACES · V0.10.1 · CREATED BY | visible
+                      link | ZACH SHALLBETTER | focusable,visible
+                        static | ZACH SHALLBETTER | visible
+                      landmark | Footer | visible
+                        link | DOCS | focusable,visible
+                          static | DOCS | visible
+                        link | LAB | focusable,visible
+                          static | LAB | visible
+                        link | CONTACT | focusable,visible
+                          static | CONTACT | visible
+                    push button | Open data console | focusable,showing,visible
+                  panel |  | 
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                  panel |  | 
+                  panel |  | 
+                  panel |  | 
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                    static | 127.0.0.1:4399 | 
+                    push button | Close this view | 
+                  panel |  | 
+                  panel |  | 
+                separator |  | 
+                  slider | Split View Resize Handle (draggable) | 
+                panel |  | 
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                  panel |  | 
+                  panel |  | 
+                  panel |  | 
+                  panel |  | 
+                    panel |  | 
+                  panel |  | 
+                    static |  | 
+                    push button | Close this view | 
+                  panel |  | 
+                  panel |  | 
+                panel |  | 
+                  panel |  | 
+                    static | Create split view | 
+                panel |  | 
+                panel |  | 
+                panel |  | 
+                panel |  | 
+              panel |  | 
+              panel |  | 
+            panel | Infobar Container | showing,visible
+              alert | Infobar | showing,visible
+                panel |  | showing,visible
+                panel |  | showing,visible
+                panel |  | showing,visible
+                  static | You are using an unsupported command-line flag: --no-sandbox. Stability and security will  | showing,visible
+                panel |  | showing,visible
+                panel |  | showing,visible
+                  push button | Close | focusable,showing,visible
+              panel |  | showing,visible
+            panel |  | 
+              panel |  | 
+              panel |  | 
+              panel |  | 
+              panel |  | 
+              panel |  | 
+            panel |  | 
+              panel |  | 
+              slider | Side Panel Resize Handle (draggable) | 
+            page tab list |  | showing,visible
+              panel |  | showing,visible
+                push button | Tab search | focusable,showing,visible
+              panel |  | showing,visible
+                panel |  | showing,visible
+                  page tab | Fundamental — explained like you're 5 | focusable,showing,visible
+                    push button | Mute tab | 
+                    push button | Close | focusable,showing,visible
+                  panel |  | 
+                panel |  | showing,visible
+              push button | New Tab | focusable,showing,visible
+              panel |  | showing,visible
+            page tab list |  | 
+              panel |  | 
+                push button | Collapse tabs | 
+                panel |  | 
+                  push button | Tab groups | 
+                  push button | Tab search | 
+              panel |  | 
+              panel |  | 
+                push button | New tab | 
+              panel |  | 
+              slider | Vertical Tab Strip Resize Handle (Draggable) | 
+              panel |  | 
+            panel |  | 
+            panel |  | 
+            panel |  | showing,visible
+            panel |  | 
+        panel |  | 
+      alert | Can't update Chrome | showing,visible
+        panel |  | showing,visible
+          panel |  | showing,visible
+            panel |  | showing,visible
+              heading | Can't update Chrome | showing,visible
+              static |  | 
+            push button | Close | focusable,showing,visible
+            panel |  | showing,visible
+              panel |  | showing,visible
+                static | Chrome couldn't update to the latest version, so you're missing out on new features and se | showing,visible
+              panel |  | showing,visible
+                panel |  | showing,visible
+                panel |  | showing,visible
+                push button | Reinstall Chrome | focusable,focused,showing,visible
+    frame |  | showing,visible
+      panel |  | showing,visible
+        panel |  | showing,visible
+          panel |  | 
+          panel |  | showing,visible
+            document web |  | focused,showing,visible
+    frame |  | showing,visible
+      panel |  | showing,visible
+        panel |  | showing,visible
+          panel |  | showing,visible
+          panel |  | showing,visible
+            document web |  | focused,showing,visible
+    alert | Can't update Chrome | showing,visible
+      panel |  | showing,visible
+        panel |  | showing,visible
+          panel |  | showing,visible
+            heading | Can't update Chrome | showing,visible
+            static |  | 
+          push button | Close | focusable,showing,visible
+          panel |  | showing,visible
+            panel |  | showing,visible
+              static | Chrome couldn't update to the latest version, so you're missing out on new features and se | showing,visible
+            panel |  | showing,visible
+              panel |  | showing,visible
+              panel |  | showing,visible
+              push button | Reinstall Chrome | focusable,focused,showing,visible

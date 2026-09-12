@@ -1,0 +1,1097 @@
+Screen reader on.
+Google Chrome frame.
+SKIP TO CONTENT link.
+Loading.  Please wait.
+ATTRACT
+Finished loading Fundamental — a physics engine for interfaces.
+Page has 5 landmarks, 14 headings, 1 visited link, 68 unvisited links.
+SKIP TO CONTENT
+link
+Fundamental — home
+visited link
+v0.10.1
+link
+DOCS
+link
+TOUR
+link
+USE CASES
+link
+PATTERNS
+link
+EVIDENCE
+link
+WRITINGS
+link
+LAB
+link
+Toggle field-flow arrows
+toggle button
+not pressed
+Toggle density heatmap
+toggle button
+not pressed
+Toggle field grid
+toggle button
+not pressed
+Toggle field lines
+toggle button
+pressed
+leaving navigation.
+leaving banner.
+main content
+FUNDAMENTAL · A PHYSICS ENGINE FOR INTERFACES
+Elements have mass
+heading level 1
+.
+heading level 1
+Elements attract, repel and settle like real matter, so a layout
+shows
+its relationships instead of listing them.
+Nothing on this page is animated — every motion you can see is the field resolving.
+You add a
+data dash body
+attribute; the runtime measures and hands back live
+ dash  dash field dash  star 
+variables you style with.
+You can label everything urgent.
+You cannot make everything heavy.
+Priority becomes a force, not a flag — emphasize one thing, and the rest yield.
+ENTER THE GARDEN →
+link
+SEE IT WORK →
+link
+INSTALL →
+link
+CATEGORY  ADD A DATA-* ATTRIBUTE, GET --FIELD-* BACKFOR  DESIGN ENGINEERS · AI-PRODUCT BUILDERS · COMPONENT-LIBRARY AUTHORSPARITY  JS · SWIFT · KOTLIN — SIX FORCES, IDENTICAL OUTPUT, CHECKED IN CIMATURITY  0.X PREVIEW — SHIPPING IN PRODUCTION APPS, NO THIRD-PARTY ADOPTERS YET
+header
+density
+·
+bodies
+·
+particles
+·
+query
+readable
+projection
+css · json
+policy
+limited
+A real interface
+A real interface you’d actually build.
+heading level 2
+An inbox of real unanswered questions, ranked by urgency — recency, votes, and views become mass.
+But the page holds one fixed attention budget, so brightening one ask dims the rest.
+No particle swarm; the measurement comes back as type and ink.
+OPEN THIS EXAMPLE →
+link
+Shipped
+Built on this, running now.
+heading level 2
+Four doors into one core.
+Not ports — the same engine, reached differently.
+Habitat
+link
+A living garden. Plants, critters and weather respond to each other — nothing is scripted.
+link
+ at fundamental dash engine slash three
+link
+Ascent
+link
+Adaptive CAPM® prep on iPhone, on the App Store. The field drives readiness and pacing.
+link
+ less field dash root greater   middle dot  elements
+link
+zachshallbetter.com
+link
+A personal site where the writing itself is the field — typographic, no particle swarm.
+link
+ at fundamental dash engine slash vanilla
+link
+Native parity
+link
+Six forces reproduce identical output across JavaScript, Swift and Kotlin — checked on every commit.
+link
+js  middle dot  swift  middle dot  kotlin
+link
+Try it
+Change a
+heading level 2
+data dash  star 
+heading level 2
+and watch the field answer.
+heading level 2
+Every control rewrites one attribute on the real element to the right — the same
+data dash  star 
+you'd author.
+The engine re-reads it and the field responds.
+That's the whole surface: attributes in, motion out.
+Move your cursor through it, too.
+FORCE
+combo box
+attract
+opens menu
+STRENGTH 0.9
+horizontal slider
+0.9
+SPIN 1.1
+horizontal slider
+1.1
+RANGE 180
+horizontal slider
+180
+data-body="attract"
+data-strength="0.9"
+data-range="180"
+data-spin="1.1"
+The wedge
+Make model output you can read at a glance.
+heading level 2
+A model hands you answers; it rarely shows how sure it is.
+Make each claim a body in the field, and confidence becomes weight, agreement becomes proximity, and contradictions pull apart — so a shaky answer
+looks
+shaky and its sources are one hop away, before anyone acts on it.
+The interface projects that state as type and layout; an agent reads the same field as JSON through
+field dot query left paren  right paren 
+.
+The same deterministic math drives the Evidence and Search studies.
+SEE AI EVIDENCE →
+link
+HOW IT WORKS →
+link
+How it works
+Declare, influence, read, reveal, govern.
+heading level 2
+Five verbs are the whole loop.
+You declare host objects into the field; forces influence them through declared channels; you read the state back; projections reveal it; policy governs what may run and what an agent may read.
+List with 5 items
+Declare
+Host objects become bodies — a
+data dash body
+attribute,
+addBody left paren  right paren 
+, or a declared edge.
+Influence
+Forces act through declared channels, accumulated centrally — deterministic and replayable.
+Read
+query left paren  right paren 
+and
+snapshot left paren  right paren 
+expose the field as plain, serializable state.
+Reveal
+Projections express that state through CSS variables, DOM attributes, JSON, native views, or overlays.
+Govern
+Policies, budgets, redactions, lane lints, and reduced-motion rules constrain what runs and what an agent reads.
+leaving list.
+Want the exact API?
+Read the docs
+link
+.
+Want the live engine?
+Open the manual
+link
+.
+Want the substrate proof?
+One field, two readings →
+link
+Why it’s different
+Most interfaces
+heading level 2
+store
+heading level 2
+meaning, then
+heading level 2
+fake
+heading level 2
+its effects.
+heading level 2
+You can’t style everything as urgent — the attention budget is conserved.
+Express “these are related,” “the user has dwelled here,” or “this is unstable” as first-class runtime state, instead of hand-rolling badges, spinners, and bespoke animation for each.
+See conserved attention →
+link
+figure
+data dash  star 
+YOU AUTHOR→
+figure
+measure
+RUNTIME→
+figure
+ dash  dash field dash  star 
+RUNTIME WRITES BACK→
+figure
+you style
+CSS
+figure
+You author meaning; the field returns measurement.
+caption
+leaving figure.
+Stop building the systems that exist because the DOM is blind.
+heading level 3
+The DOM can’t see what matters, what’s related, or what’s gone stale — so teams build that sight by hand, again and again.
+Fundamental gives the DOM a continuous answer, and a whole category of code stops being yours to write and maintain.
+List with 5 items
+Priority you don’t store or sort. Importance is a live field reading (
+ dash  dash d
+, with
+ dash  dash field dash density
+as the field-namespaced alias), not state you keep in a store and re-sort on every change.
+See it work →
+link
+“Everything is P1,” solved by a law. Attention is one conserved budget — emphasize one thing and the rest necessarily yield. The normalization pass teams enforce with scoring schemes and meetings becomes something the runtime cannot violate.
+See it work →
+link
+Relationships you can read. Declared associations become field-visible structure — a Field Pattern decides when association becomes coupling, not adjacency lists and graph traversal you maintain by hand.
+See it work →
+link
+Staleness without timers. Recency and decay are a force in the runtime, continuous, not a cron job or a computed column you babysit.
+See it work →
+link
+One model, always current. The field re-resolves every frame, so a priority shift doesn’t fire a sort-and-re-render pass — the readout is simply already current.
+See it work →
+link
+leaving list.
+Fundamental doesn’t hand you a better abstraction over these jobs.
+It makes the question each one answered — what matters, what’s related, what’s stale — answerable by the field, so the job itself goes away.
+Install
+Add it to the stack you already have.
+heading level 2
+One package per framework — pick the one for your stack and you’re done.
+Each bundles the engine (
+core
++ the DOM binding) for you; there’s nothing to wire together.
+START HERE
+ dollar 
+npm i  at fundamental dash engine slash vanilla
+clickable
+COPY
+Plain TS / JS, no framework — the typed
+FieldField
+class; one call mounts a field.
+This card is itself a live field body: it accretes the swarm and fills as it gathers.
+Guide →
+link
+ dollar 
+npm i  at fundamental dash engine slash react
+clickable
+COPY
+React — the
+ less FieldField greater 
+component +
+useFieldField
+hook.
+Guide →
+link
+ dollar 
+npm i  at fundamental dash engine slash elements
+COPY
+Any framework or plain HTML — the
+ less field dash root greater 
+web component.
+Guide →
+link
+ dollar 
+npm i  at fundamental dash engine slash three
+clickable
+COPY
+Three.js / WebGL — the swarm as a
+THREE dot Points
+layer.
+Guide →
+link
+Own the canvas / building your own renderer?
+ at fundamental dash engine slash core
+is the renderer-agnostic engine — you supply a host (
+Core guide
+link
+).
+You don’t install
+ at fundamental dash engine slash dom
+directly — the packages above already bundle it for you.
+No build step?
+Import from a CDN (playground / prototyping only):
+import  left brace  createField  right brace  from  apostrophe https colon  slash  slash esm dot sh slash  at fundamental dash engine slash vanilla apostrophe 
+The full package map and an install-to-reacting-headline walkthrough live in the
+docs
+link
+.
+Hosts
+One engine, many hosts.
+heading level 2
+The core computes the field against plain data and imports zero DOM.
+A thin host binds it to a host — so the same physics runs on the web, natively, in your renderer, or headless:
+List with 4 items
+• Web —
+ at fundamental dash engine slash dom
+binds the engine to the page: every
+ left bracket data dash body right bracket 
+element a body, feedback returned as
+ dash  dash field dash  star 
+variables. The primary surface — and what this page runs on.
+• Native — a Swift port runs the same field on Apple platforms (Metal / SwiftUI), and a Kotlin port runs it on Android (Jetpack Compose, plus a non-Compose
+View
+/
+Canvas
+host) — both free of the browser’s compositing ceiling. The
+Field Lab
+link
+is the showcase: a native app to explore every force live.
+• Your renderer —
+ at fundamental dash engine slash three
+drives a
+THREE dot Points
+swarm in your own WebGL scene; the read primitives (
+sample
+,
+readParticles
+,
+addField
+) bind the engine to anything that draws.
+• Headless — no DOM, no canvas: records become bodies and relationships become edges, and a tool reads the field through
+query left paren  right paren 
+and
+snapshot left paren  right paren 
+. The smallest conformant host — for servers, tests, and agents.
+leaving list.
+How the hosts relate — and what’s at parity across them — in
+Implementations
+link
+.
+Trust
+Built to be inspected.
+heading level 2
+List with 5 items
+Zero runtime dependencies.
+The core engine ships with none.
+Signals-first by default.
+A field renders nothing unless you ask for it — the invisible field is the baseline.
+Accessible by construction.
+Semantic HTML stays the source of meaning; reduced motion removes motion, not meaning — enforced and linted.
+Measured, not guessed.
+Sub-millisecond
+compute
+per frame at real-page scale; fill-rate is the real budget and is
+measured on real hardware
+link
+.
+Stable 0.x surface, cross-plane conformance.
+Code-verified docs, a frozen public API, and shared-physics conformance across web, Apple, and Android.
+leaving list.
+The full engine, live
+36 forces. 64 patterns. 8 presets. One 0.x API.
+heading level 2
+Everything above is built from one contract:
+data dash  star 
+in,
+ dash  dash field dash  star 
+out.
+The complete force-by-force manual — every force, preset, and system behaviour, each demo running live on the real engine — now has its own page, so the homepage can stay about the substrate.
+OPEN THE EXECUTABLE MANUAL →
+link
+OPEN THE LAB →
+link
+Or jump straight to a surface:
+the API
+link
+·
+patterns
+link
+·
+the force catalog
+link
+.
+Seven forces, rendered live
+carousel
+SWIRL
+orbits it around
+caption
+Previous force
+push button
+attract
+push button
+repel
+push button
+swirl
+push button
+gravity
+push button
+stream
+push button
+buoyancy
+push button
+tether
+push button
+Next force
+push button
+SEE ALL 36 FORCES →
+link
+leaving figure.
+invisible fields — live, over real data
+Everything above shows the field. These twelve never do.
+heading level 2
+Twelve ordinary page types — an inbox, a market, a backlog, a front page — run as fields over
+real data
+: no particle swarm, the measurements come back as type, ink, and anchor.
+Each ships its data as a committed snapshot, upgrades itself to live counts when the source is reachable, and says which mode it's in.
+EVIDENCEcitations are mass — trust you can feel in the type
+link
+INBOXurgency is mass; attention is one finite budget; old asks decay toward quiet
+link
+MARKETmarket cap is mass; the day's move polarizes; correlated assets thread
+link
+BACKLOGpriority is mass; references bind; the cycle is a sink with capacity
+link
+CALENDARthe next launch pulls hardest; imminence ramps the weight in real time
+link
+THREADSvotes are mass; controversy is charge; reply chains bind and heat
+link
+DEPENDENCIESdownloads are mass; staleness decays; one advisory charges the graph
+link
+FLEETservices carry traffic; incidents accrete their updates; impact is heat
+link
+CATALOGreview consensus is mass — the evidence trust math, retargeted at a shelf
+link
+LIBRARYlistens are mass; the queue accretes and releases
+link
+MEMORYthe forgetting curve is decay; frequency anchors; review re-binds
+link
+NEWSROOMpageviews are mass; the cycle's rise and fall polarizes
+link
+See the family →
+link
+Explore
+Go deeper.
+heading level 2
+AI Evidence
+link
+Claims & sources as a readable field.
+link
+Substrate Demo
+link
+One field, two readings — UI and agent-json.
+link
+Invisible Fields
+link
+Twelve real-data examples, no particle drawn.
+link
+The executable manual
+link
+Every force, live, end to end.
+link
+The Lab
+link
+Inspect the engine live.
+link
+The API
+link
+query, snapshot, projections.
+link
+Patterns
+link
+64 composed behaviours.
+link
+The docs
+link
+Start here — guides + reference.
+link
+information
+FundamentalA PHYSICS ENGINE FOR INTERFACES · V0.10.1 · CREATED BY
+ZACH SHALLBETTER
+link
+DOCS
+link
+LAB
+link
+CONTACT
+link
+leaving navigation.
+leaving information.
+Open data console
+collapsed
+push button
+data-body="attract"
+ATTRACT pulls matter in
+left control ' {'established
+SKIP TO CONTENT.
+SKIP TO CONTENT
+Fundamental — home
+visited link
+v0.10.1
+link
+DOCS
+link
+TOUR
+link
+USE CASES
+link
+PATTERNS
+link
+EVIDENCE
+link
+WRITINGS
+link
+LAB
+link
+Toggle field-flow arrows
+toggle button
+not pressed
+Toggle density heatmap
+toggle button
+not pressed
+Toggle field grid
+toggle button
+not pressed
+Toggle field lines
+toggle button
+pressed
+leaving navigation.
+leaving banner.
+main content
+FUNDAMENTAL · A PHYSICS ENGINE FOR INTERFACES
+Elements have mass
+heading level 1
+.
+heading level 1
+Elements attract, repel and settle like real matter, so a layout
+shows
+its relationships instead of listing them.
+Nothing on this page is animated — every motion you can see is the field resolving.
+You add a
+data dash body
+attribute; the runtime measures and hands back live
+ dash  dash field dash  star 
+variables you style with.
+You can label everything urgent.
+You cannot make everything heavy.
+Priority becomes a force, not a flag — emphasize one thing, and the rest yield.
+ENTER THE GARDEN →
+link
+SEE IT WORK →
+link
+INSTALL →
+link
+CATEGORY  ADD A DATA-* ATTRIBUTE, GET --FIELD-* BACKFOR  DESIGN ENGINEERS · AI-PRODUCT BUILDERS · COMPONENT-LIBRARY AUTHORSPARITY  JS · SWIFT · KOTLIN — SIX FORCES, IDENTICAL OUTPUT, CHECKED IN CIMATURITY  0.X PREVIEW — SHIPPING IN PRODUCTION APPS, NO THIRD-PARTY ADOPTERS YET
+header
+density
+0.00
+bodies
+13
+particles
+468
+query
+readable
+projection
+css · json
+policy
+limited
+A real interface
+A real interface you’d actually build.
+heading level 2
+An inbox of real unanswered questions, ranked by urgency — recency, votes, and views become mass.
+But the page holds one fixed attention budget, so brightening one ask dims the rest.
+No particle swarm; the measurement comes back as type and ink.
+OPEN THIS EXAMPLE →
+link
+Shipped
+Built on this, running now.
+heading level 2
+Four doors into one core.
+Not ports — the same engine, reached differently.
+Habitat
+link
+A living garden. Plants, critters and weather respond to each other — nothing is scripted.
+link
+ at fundamental dash engine slash three
+link
+Ascent
+link
+Adaptive CAPM® prep on iPhone, on the App Store. The field drives readiness and pacing.
+link
+ less field dash root greater   middle dot  elements
+link
+zachshallbetter.com
+link
+A personal site where the writing itself is the field — typographic, no particle swarm.
+link
+ at fundamental dash engine slash vanilla
+link
+Native parity
+link
+Six forces reproduce identical output across JavaScript, Swift and Kotlin — checked on every commit.
+link
+js  middle dot  swift  middle dot  kotlin
+link
+Try it
+Change a
+heading level 2
+data dash  star 
+heading level 2
+and watch the field answer.
+heading level 2
+Every control rewrites one attribute on the real element to the right — the same
+data dash  star 
+you'd author.
+The engine re-reads it and the field responds.
+That's the whole surface: attributes in, motion out.
+Move your cursor through it, too.
+FORCE
+combo box
+attract
+opens menu
+STRENGTH 0.9
+horizontal slider
+0.9
+SPIN 1.1
+horizontal slider
+1.1
+RANGE 180
+horizontal slider
+180
+data-body="attract"
+data-strength="0.9"
+data-range="180"
+data-spin="1.1"
+The wedge
+Make model output you can read at a glance.
+heading level 2
+A model hands you answers; it rarely shows how sure it is.
+Make each claim a body in the field, and confidence becomes weight, agreement becomes proximity, and contradictions pull apart — so a shaky answer
+looks
+shaky and its sources are one hop away, before anyone acts on it.
+The interface projects that state as type and layout; an agent reads the same field as JSON through
+field dot query left paren  right paren 
+.
+The same deterministic math drives the Evidence and Search studies.
+SEE AI EVIDENCE →
+link
+HOW IT WORKS →
+link
+How it works
+Declare, influence, read, reveal, govern.
+heading level 2
+Five verbs are the whole loop.
+You declare host objects into the field; forces influence them through declared channels; you read the state back; projections reveal it; policy governs what may run and what an agent may read.
+List with 5 items
+Declare
+Host objects become bodies — a
+data dash body
+attribute,
+addBody left paren  right paren 
+, or a declared edge.
+Influence
+Forces act through declared channels, accumulated centrally — deterministic and replayable.
+Read
+query left paren  right paren 
+and
+snapshot left paren  right paren 
+expose the field as plain, serializable state.
+Reveal
+Projections express that state through CSS variables, DOM attributes, JSON, native views, or overlays.
+Govern
+Policies, budgets, redactions, lane lints, and reduced-motion rules constrain what runs and what an agent reads.
+leaving list.
+Want the exact API?
+Read the docs
+link
+.
+Want the live engine?
+Open the manual
+link
+.
+Want the substrate proof?
+One field, two readings →
+link
+Why it’s different
+Most interfaces
+heading level 2
+store
+heading level 2
+meaning, then
+heading level 2
+fake
+heading level 2
+its effects.
+heading level 2
+You can’t style everything as urgent — the attention budget is conserved.
+Express “these are related,” “the user has dwelled here,” or “this is unstable” as first-class runtime state, instead of hand-rolling badges, spinners, and bespoke animation for each.
+See conserved attention →
+link
+figure
+data dash  star 
+YOU AUTHOR→
+figure
+measure
+RUNTIME→
+figure
+ dash  dash field dash  star 
+RUNTIME WRITES BACK→
+figure
+you style
+CSS
+figure
+You author meaning; the field returns measurement.
+caption
+leaving figure.
+Stop building the systems that exist because the DOM is blind.
+heading level 3
+The DOM can’t see what matters, what’s related, or what’s gone stale — so teams build that sight by hand, again and again.
+Fundamental gives the DOM a continuous answer, and a whole category of code stops being yours to write and maintain.
+List with 5 items
+Priority you don’t store or sort. Importance is a live field reading (
+ dash  dash d
+, with
+ dash  dash field dash density
+as the field-namespaced alias), not state you keep in a store and re-sort on every change.
+See it work →
+link
+“Everything is P1,” solved by a law. Attention is one conserved budget — emphasize one thing and the rest necessarily yield. The normalization pass teams enforce with scoring schemes and meetings becomes something the runtime cannot violate.
+See it work →
+link
+Relationships you can read. Declared associations become field-visible structure — a Field Pattern decides when association becomes coupling, not adjacency lists and graph traversal you maintain by hand.
+See it work →
+link
+Staleness without timers. Recency and decay are a force in the runtime, continuous, not a cron job or a computed column you babysit.
+See it work →
+link
+One model, always current. The field re-resolves every frame, so a priority shift doesn’t fire a sort-and-re-render pass — the readout is simply already current.
+See it work →
+link
+leaving list.
+Fundamental doesn’t hand you a better abstraction over these jobs.
+It makes the question each one answered — what matters, what’s related, what’s stale — answerable by the field, so the job itself goes away.
+Install
+Add it to the stack you already have.
+heading level 2
+One package per framework — pick the one for your stack and you’re done.
+Each bundles the engine (
+core
++ the DOM binding) for you; there’s nothing to wire together.
+START HERE
+ dollar 
+npm i  at fundamental dash engine slash vanilla
+clickable
+COPY
+Plain TS / JS, no framework — the typed
+FieldField
+class; one call mounts a field.
+This card is itself a live field body: it accretes the swarm and fills as it gathers.
+Guide →
+link
+ dollar 
+npm i  at fundamental dash engine slash react
+clickable
+COPY
+React — the
+ less FieldField greater 
+component +
+useFieldField
+hook.
+Guide →
+link
+ dollar 
+npm i  at fundamental dash engine slash elements
+COPY
+Any framework or plain HTML — the
+ less field dash root greater 
+web component.
+Guide →
+link
+ dollar 
+npm i  at fundamental dash engine slash three
+clickable
+COPY
+Three.js / WebGL — the swarm as a
+THREE dot Points
+layer.
+Guide →
+link
+Own the canvas / building your own renderer?
+ at fundamental dash engine slash core
+is the renderer-agnostic engine — you supply a host (
+Core guide
+link
+).
+You don’t install
+ at fundamental dash engine slash dom
+directly — the packages above already bundle it for you.
+No build step?
+Import from a CDN (playground / prototyping only):
+import  left brace  createField  right brace  from  apostrophe https colon  slash  slash esm dot sh slash  at fundamental dash engine slash vanilla apostrophe 
+The full package map and an install-to-reacting-headline walkthrough live in the
+docs
+link
+.
+Hosts
+One engine, many hosts.
+heading level 2
+The core computes the field against plain data and imports zero DOM.
+A thin host binds it to a host — so the same physics runs on the web, natively, in your renderer, or headless:
+List with 4 items
+• Web —
+ at fundamental dash engine slash dom
+binds the engine to the page: every
+ left bracket data dash body right bracket 
+element a body, feedback returned as
+ dash  dash field dash  star 
+variables. The primary surface — and what this page runs on.
+• Native — a Swift port runs the same field on Apple platforms (Metal / SwiftUI), and a Kotlin port runs it on Android (Jetpack Compose, plus a non-Compose
+View
+/
+Canvas
+host) — both free of the browser’s compositing ceiling. The
+Field Lab
+link
+is the showcase: a native app to explore every force live.
+• Your renderer —
+ at fundamental dash engine slash three
+drives a
+THREE dot Points
+swarm in your own WebGL scene; the read primitives (
+sample
+,
+readParticles
+,
+addField
+) bind the engine to anything that draws.
+• Headless — no DOM, no canvas: records become bodies and relationships become edges, and a tool reads the field through
+query left paren  right paren 
+and
+snapshot left paren  right paren 
+. The smallest conformant host — for servers, tests, and agents.
+leaving list.
+How the hosts relate — and what’s at parity across them — in
+Implementations
+link
+.
+Trust
+Built to be inspected.
+heading level 2
+List with 5 items
+Zero runtime dependencies.
+The core engine ships with none.
+Signals-first by default.
+A field renders nothing unless you ask for it — the invisible field is the baseline.
+Accessible by construction.
+Semantic HTML stays the source of meaning; reduced motion removes motion, not meaning — enforced and linted.
+Measured, not guessed.
+Sub-millisecond
+compute
+per frame at real-page scale; fill-rate is the real budget and is
+measured on real hardware
+link
+.
+Stable 0.x surface, cross-plane conformance.
+Code-verified docs, a frozen public API, and shared-physics conformance across web, Apple, and Android.
+leaving list.
+The full engine, live
+36 forces. 64 patterns. 8 presets. One 0.x API.
+heading level 2
+Everything above is built from one contract:
+data dash  star 
+in,
+ dash  dash field dash  star 
+out.
+The complete force-by-force manual — every force, preset, and system behaviour, each demo running live on the real engine — now has its own page, so the homepage can stay about the substrate.
+OPEN THE EXECUTABLE MANUAL →
+link
+OPEN THE LAB →
+link
+Or jump straight to a surface:
+the API
+link
+·
+patterns
+link
+·
+the force catalog
+link
+.
+Seven forces, rendered live
+carousel
+STREAM
+a uniform current
+caption
+Previous force
+push button
+attract
+push button
+repel
+push button
+swirl
+push button
+gravity
+push button
+stream
+push button
+buoyancy
+push button
+tether
+push button
+Next force
+push button
+SEE ALL 36 FORCES →
+link
+leaving figure.
+invisible fields — live, over real data
+Everything above shows the field. These twelve never do.
+heading level 2
+Twelve ordinary page types — an inbox, a market, a backlog, a front page — run as fields over
+real data
+: no particle swarm, the measurements come back as type, ink, and anchor.
+Each ships its data as a committed snapshot, upgrades itself to live counts when the source is reachable, and says which mode it's in.
+EVIDENCEcitations are mass — trust you can feel in the type
+link
+INBOXurgency is mass; attention is one finite budget; old asks decay toward quiet
+link
+MARKETmarket cap is mass; the day's move polarizes; correlated assets thread
+link
+BACKLOGpriority is mass; references bind; the cycle is a sink with capacity
+link
+CALENDARthe next launch pulls hardest; imminence ramps the weight in real time
+link
+THREADSvotes are mass; controversy is charge; reply chains bind and heat
+link
+DEPENDENCIESdownloads are mass; staleness decays; one advisory charges the graph
+link
+FLEETservices carry traffic; incidents accrete their updates; impact is heat
+link
+CATALOGreview consensus is mass — the evidence trust math, retargeted at a shelf
+link
+LIBRARYlistens are mass; the queue accretes and releases
+link
+MEMORYthe forgetting curve is decay; frequency anchors; review re-binds
+link
+NEWSROOMpageviews are mass; the cycle's rise and fall polarizes
+link
+See the family →
+link
+Explore
+Go deeper.
+heading level 2
+AI Evidence
+link
+Claims & sources as a readable field.
+link
+Substrate Demo
+link
+One field, two readings — UI and agent-json.
+link
+Invisible Fields
+link
+Twelve real-data examples, no particle drawn.
+link
+The executable manual
+link
+Every force, live, end to end.
+link
+The Lab
+link
+Inspect the engine live.
+link
+The API
+link
+query, snapshot, projections.
+link
+Patterns
+link
+64 composed behaviours.
+link
+The docs
+link
+Start here — guides + reference.
+link
+information
+FundamentalA PHYSICS ENGINE FOR INTERFACES · V0.10.1 · CREATED BY
+ZACH SHALLBETTER
+link
+DOCS
+link
+LAB
+link
+CONTACT
+link
+leaving navigation.
+leaving information.
+Open data console
+collapsed
+push button
+GRAVITY
+STREAM
+STREAM a uniform current
+BUOYANCY
+BUOYANCY a steady lift
+TETHER
+TETHER a spring to a rest shell
+ATTRACT
+ATTRACT pulls matter in
+REPEL
+REPEL pushes it away
+SWIRL
+SWIRL orbits it around
+GRAVITY
+GRAVITY a true 1/d² fall-in
+STREAM
+STREAM a uniform current
+BUOYANCY
+BUOYANCY a steady lift
+tab ' {'established
+Fundamental — home visited link.
+tab ' {'established
+v0.10.1 link.
+What's new — v0.10.1.
+tab ' {'established
+DOCS link.
+TETHER
+TETHER a spring to a rest shell
+tab ' {'established
+TOUR link.
+tab ' {'established
+USE CASES link.
+tab ' {'established
+PATTERNS link.
+tab ' {'established
+EVIDENCE link.
+tab ' {'established
+WRITINGS link.
+ATTRACT
+tab ' {'established
+LAB link.
+tab ' {'established
+Toggle field-flow arrows toggle button not pressed.
+Show field flow.
+tab ' {'established
+Toggle density heatmap toggle button not pressed.
+Show density heatmap.
+tab ' {'established
+Toggle field grid toggle button not pressed.
+Show field grid.
+tab ' {'established
+Toggle field lines toggle button pressed.
+Hide field lines.
+tab ' {'established
+ENTER THE GARDEN → link.
+REPEL pushes it away
+tab ' {'established
+SEE IT WORK → link.
+tab ' {'established
+INSTALL → link.
+tab ' {'established
+OPEN THIS EXAMPLE → link.
+tab ' {'established
+Habitat A living garden. Plants, critters and weather respond to each other — nothing is scripted. @fundamental-engine/three link.
+alert Can't update Chrome.
+Chrome couldn't update to the latest version, so you're missing out on new features and security fixes.
+Reinstall Chrome push button.
+tab ' {'established
+Close push button.
+tab ' {'established
+Reinstall Chrome push button.
+tab ' {'established
+Close push button.
+tab ' {'established
+Reinstall Chrome push button.
+tab ' {'established
+Close push button.
+tab ' {'established
+Reinstall Chrome push button.
+tab ' {'established
+Close push button.
