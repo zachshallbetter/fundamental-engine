@@ -163,7 +163,7 @@ export const WRITEBACK: { name: string; on: string; desc: string }[] = [
   { name: '--field-density', on: 'data-feedback', desc: 'Namespaced alias of --d (same value).' },
   { name: '--field-heatmap-density', on: 'data-feedback + heatmap', desc: 'The ambient heatmap density under the body ∈ [0,1] — where matter pools around it, distinct from --d.' },
   { name: '--load', on: 'sink body', desc: "A sink's accretion fill fraction ∈ [0,1] — rises as the sink captures matter, peaks at data-max, then supernovas (releases). The live level indicator for a capturing body." },
-  { name: '--mass', on: 'sink body', desc: 'Back-compat alias of --load — same value, same semantics. Prefer --load in new stylesheets; --mass is kept for existing consumers.' },
+  { name: '--mass', on: 'RETIRED — nothing writes it', desc: 'A former alias of --load. No engine path writes it any more (neither the core feedback sink nor the platform FeedbackRegistry): a stylesheet reading var(--mass) gets its fallback, never a live value. The name is still reserved in lintFeedbackEngineOwned so a binding that SETS it is flagged as a second writer. Style off --load.' },
   { name: '--lit', on: 'causality', desc: 'Spillover-lit density when a saturated neighbour bleeds density across a boundary.' },
   { name: '--entropy', on: 'data-feedback', desc: 'Measured local disorder ∈ [0,1] — velocity-direction dispersion, gated by agitation (physics workover v0.3). Engine-measured; distinct from the platform\'s inferred --field-entropy lane.' },
   { name: '--coherence', on: 'data-feedback', desc: 'Measured local order ∈ [0,1] (= 1 − entropy; velocity alignment). Numeric — not the --coherence palette color on :root.' },
@@ -171,6 +171,7 @@ export const WRITEBACK: { name: string; on: string; desc: string }[] = [
 ];
 
 export const RENDER_MODES: { name: string; desc: string }[] = [
+  { name: 'none', desc: "Signals-only — the simulation and every signal (feedback vars, events, scrollV) stay live while DRAWING stops. A field created with render: 'none' never acquires a 2d context; switching to 'none' at runtime stops the draw from the next frame and keeps the context it already has." },
   { name: 'dots', desc: 'The default — each particle a soft dot, cool centre → warm edge → accent.' },
   { name: 'trails', desc: 'Light-painting — particle history persists and fades.' },
   { name: 'links', desc: 'Constellation — lines drawn between nearby particles.' },
@@ -187,6 +188,7 @@ export const RENDER_MODES: { name: string; desc: string }[] = [
 /** Field Surfaces — the overlay READINGS (`field.setOverlay`). Line/text diagnostics drawn in front of
  *  content; additive — pass one, or a stack (array / space-separated attribute) and they compose. */
 export const OVERLAY_MODES: { name: string; desc: string }[] = [
+  { name: 'off', desc: 'Clears the overlay surface — the default, and what an empty stack resolves to. Pass it to setOverlay to remove every reading without touching the underlay render mode.' },
   { name: 'streamlines', desc: 'Arrows along the net push a still probe would feel — vector flow, felt.' },
   { name: 'force-vectors', desc: 'The same arrows scaled by raw magnitude — strong forces read strong, weak stay faint.' },
   { name: 'field-lines', desc: 'Arrows along the structure-only field (dipoles / monopoles) — the geometry, not the felt push.' },
@@ -228,4 +230,17 @@ export const FIELD_ROOT_ATTRS: { name: string; option: string; desc: string }[] 
   { name: 'resting-motion', option: 'restingMotion', desc: "The resting-motion floor (declared, default OFF): 'thermal' | 'flow', optionally followed by a strength multiplier ('flow 0.5'). Honest idle motion for a drawn field with nothing painted; nothing under reduced motion. Mirrors the restingMotion createField option. Construction-time." },
   { name: 'background', option: 'background', desc: "Substrate background (opaque / transparent). Mirrors the background createField option." },
   { name: 'formation', option: 'formation', desc: 'Global formation preset name. Mirrors the formation createField option (setFormation).' },
+];
+
+/** Observed HTML attributes on `<field-cell>` — the standalone one-force demo/poster surface
+ *  (`packages/elements/src/field-cell.ts`, shadow-dom.md §25.1/§31.19). A cell is NOT the page field:
+ *  it owns its own lightweight particle pool, its own pointer interaction, and its own budget, so a
+ *  docs page can carry dozens without them sharing or starving one pool. Separate from
+ *  `<field-root>` — none of the createField options apply here. */
+export const FIELD_CELL_ATTRS: { name: string; type: string; def?: string; desc: string }[] = [
+  { name: 'force', type: 'token', def: "'attract'", desc: 'The single force token the cell renders: attract | repel | swirl | gravity | stream | buoyancy | tether. One force only — a cell is a poster for one verb, not a composed body.' },
+  { name: 'color', type: 'hex', def: '#4da3ff', desc: "The cell's particle accent color." },
+  { name: 'count', type: 'number', def: '0 (auto)', desc: "Particle-pool size. 0 — the default — auto-sizes the pool to the cell's frame area." },
+  { name: 'max-particles', type: 'number', def: '0 (uncapped)', desc: 'Hard ceiling on the pool size (§31.19). Clamps BOTH the auto-size and an explicit count, so a cell can never exceed its declared budget however large its frame grows.' },
+  { name: 'fps', type: 'number', def: '0 (native rAF)', desc: 'Target framerate for the cell\'s animation loop (§31.19). 0 runs at the display cadence; a positive value throttles rAF so a page full of demo cells stays cheap.' },
 ];

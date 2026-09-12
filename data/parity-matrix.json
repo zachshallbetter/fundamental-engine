@@ -1453,28 +1453,35 @@
       "id": "render-modes",
       "label": "Render modes",
       "union": [
+        "blackbody",
+        "depth",
         "dots",
-        "field-lines",
-        "heatmap",
+        "flow",
+        "knockout",
         "links",
         "metaballs",
         "none",
+        "redshift",
         "streamlines",
         "trails",
         "voronoi"
       ],
       "counts": {
-        "js": 8,
+        "js": 12,
         "swift": 7,
         "kotlin": 7
       },
       "planes": {
         "js": [
+          "blackbody",
+          "depth",
           "dots",
-          "field-lines",
-          "heatmap",
+          "flow",
+          "knockout",
           "links",
           "metaballs",
+          "none",
+          "redshift",
           "streamlines",
           "trails",
           "voronoi"
@@ -1500,19 +1507,31 @@
       },
       "support": [
         {
+          "symbol": "blackbody",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "depth",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
           "symbol": "dots",
           "js": true,
           "swift": true,
           "kotlin": true
         },
         {
-          "symbol": "field-lines",
+          "symbol": "flow",
           "js": true,
           "swift": false,
           "kotlin": false
         },
         {
-          "symbol": "heatmap",
+          "symbol": "knockout",
           "js": true,
           "swift": false,
           "kotlin": false
@@ -1531,9 +1550,15 @@
         },
         {
           "symbol": "none",
-          "js": false,
+          "js": true,
           "swift": true,
           "kotlin": true
+        },
+        {
+          "symbol": "redshift",
+          "js": true,
+          "swift": false,
+          "kotlin": false
         },
         {
           "symbol": "streamlines",
@@ -1713,6 +1738,808 @@
           "js": true,
           "swift": true,
           "kotlin": false
+        }
+      ]
+    },
+    {
+      "id": "declarative-body",
+      "label": "Declarative body contract (the parameters an author sets on the element itself)",
+      "idiom": {
+        "js": "`data-*` attributes on any element, found by the DOM scan",
+        "swift": "the SwiftUI `.fieldBody(tokens:…)` view modifier",
+        "kotlin": "the Compose `Modifier.fieldBody(tokens, …)` modifier"
+      },
+      "union": [
+        "absorb",
+        "affects",
+        "angle",
+        "authority",
+        "boundary",
+        "budget",
+        "cap",
+        "charge-gated",
+        "color",
+        "feedback",
+        "fmax",
+        "fmin",
+        "intensity",
+        "intent",
+        "life",
+        "max",
+        "opsz",
+        "pair",
+        "preset",
+        "range",
+        "risk",
+        "role",
+        "scale",
+        "screen-min",
+        "shaped",
+        "sink",
+        "species",
+        "spin",
+        "strength",
+        "tokens",
+        "twist",
+        "when"
+      ],
+      "counts": {
+        "js": 32,
+        "swift": 4,
+        "kotlin": 4
+      },
+      "planes": {
+        "js": [
+          "absorb",
+          "affects",
+          "angle",
+          "authority",
+          "boundary",
+          "budget",
+          "cap",
+          "charge-gated",
+          "color",
+          "feedback",
+          "fmax",
+          "fmin",
+          "intensity",
+          "intent",
+          "life",
+          "max",
+          "opsz",
+          "pair",
+          "preset",
+          "range",
+          "risk",
+          "role",
+          "scale",
+          "screen-min",
+          "shaped",
+          "sink",
+          "species",
+          "spin",
+          "strength",
+          "tokens",
+          "twist",
+          "when"
+        ],
+        "swift": [
+          "feedback",
+          "range",
+          "strength",
+          "tokens"
+        ],
+        "kotlin": [
+          "range",
+          "spin",
+          "strength",
+          "tokens"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "absorb",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "affects",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "angle",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "authority",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "boundary",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "budget",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "cap",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "charge-gated",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "color",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "feedback",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "fmax",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "fmin",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "intensity",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "intent",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "life",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "max",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "opsz",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "pair",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "preset",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "range",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "risk",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "role",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "scale",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "screen-min",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "shaped",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "sink",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "species",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "spin",
+          "js": true,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "strength",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "tokens",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "twist",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "when",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        }
+      ]
+    },
+    {
+      "id": "body-spec",
+      "label": "Programmatic body spec (`addBody`) — the same contract for a body with no backing element",
+      "idiom": {
+        "js": "`BodySpec` object literal",
+        "swift": "`BodySpec` struct",
+        "kotlin": "`BodySpec` class"
+      },
+      "union": [
+        "angle",
+        "authority",
+        "color",
+        "data",
+        "feedback",
+        "identity",
+        "range",
+        "spin",
+        "strength",
+        "tokens"
+      ],
+      "counts": {
+        "js": 10,
+        "swift": 9,
+        "kotlin": 8
+      },
+      "planes": {
+        "js": [
+          "angle",
+          "authority",
+          "color",
+          "data",
+          "feedback",
+          "identity",
+          "range",
+          "spin",
+          "strength",
+          "tokens"
+        ],
+        "swift": [
+          "angle",
+          "color",
+          "data",
+          "feedback",
+          "identity",
+          "range",
+          "spin",
+          "strength",
+          "tokens"
+        ],
+        "kotlin": [
+          "angle",
+          "color",
+          "data",
+          "identity",
+          "range",
+          "spin",
+          "strength",
+          "tokens"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "angle",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "authority",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "color",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "data",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "feedback",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "identity",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "range",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "spin",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "strength",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "tokens",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        }
+      ]
+    },
+    {
+      "id": "feedback-channels",
+      "label": "Feedback channels — the per-body readings the field writes back each frame",
+      "idiom": {
+        "js": "CSS custom properties on the element (`--d`, `--load`, …), or a `feedbackSink`",
+        "swift": "the `onFeedback: (FeedbackChannels) -> Void` closure, or a `FeedbackSink`",
+        "kotlin": "a `FeedbackSink` / the `StateRegistry` (no per-body callback on `Modifier.fieldBody`)"
+      },
+      "union": [
+        "coherence",
+        "density",
+        "entropy",
+        "heatmapDensity",
+        "lit",
+        "load",
+        "temperature"
+      ],
+      "counts": {
+        "js": 7,
+        "swift": 7,
+        "kotlin": 7
+      },
+      "planes": {
+        "js": [
+          "coherence",
+          "density",
+          "entropy",
+          "heatmapDensity",
+          "lit",
+          "load",
+          "temperature"
+        ],
+        "swift": [
+          "coherence",
+          "density",
+          "entropy",
+          "heatmapDensity",
+          "lit",
+          "load",
+          "temperature"
+        ],
+        "kotlin": [
+          "coherence",
+          "density",
+          "entropy",
+          "heatmapDensity",
+          "lit",
+          "load",
+          "temperature"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "coherence",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "density",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "entropy",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "heatmapDensity",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "lit",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "load",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "temperature",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        }
+      ]
+    },
+    {
+      "id": "render-host-modes",
+      "label": "Render modes the declarative HOST draws (the layer a mode can be silently lost at)",
+      "idiom": {
+        "js": "the engine owns the underlay draw — no separate host renderer",
+        "swift": "`CoreGraphicsRenderer.draw(in:)` (Metal hybrid for dots/trails/links)",
+        "kotlin": "the Compose `FieldView` `Canvas`, driven by its OWN four-case `RenderMode`"
+      },
+      "union": [
+        "blackbody",
+        "depth",
+        "dots",
+        "flow",
+        "glow",
+        "knockout",
+        "links",
+        "metaballs",
+        "redshift",
+        "streamlines",
+        "trails",
+        "voronoi"
+      ],
+      "counts": {
+        "js": 11,
+        "swift": 6,
+        "kotlin": 4
+      },
+      "planes": {
+        "js": [
+          "blackbody",
+          "depth",
+          "dots",
+          "flow",
+          "knockout",
+          "links",
+          "metaballs",
+          "redshift",
+          "streamlines",
+          "trails",
+          "voronoi"
+        ],
+        "swift": [
+          "dots",
+          "links",
+          "metaballs",
+          "streamlines",
+          "trails",
+          "voronoi"
+        ],
+        "kotlin": [
+          "dots",
+          "glow",
+          "links",
+          "trails"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "blackbody",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "depth",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "dots",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "flow",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "glow",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "knockout",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "links",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "metaballs",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "redshift",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "streamlines",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        },
+        {
+          "symbol": "trails",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "voronoi",
+          "js": true,
+          "swift": true,
+          "kotlin": false
+        }
+      ]
+    },
+    {
+      "id": "conditions",
+      "label": "Conditional gates (`data-when`) — the built-in condition registry",
+      "idiom": {
+        "js": "`data-when=\"fast\"`",
+        "swift": "`Body.when`, resolved against `builtinConditions()`",
+        "kotlin": "`Body.when`, resolved against `builtinConditions()`"
+      },
+      "union": [
+        "active",
+        "cool",
+        "fast",
+        "hot",
+        "scrolling",
+        "slow"
+      ],
+      "counts": {
+        "js": 6,
+        "swift": 6,
+        "kotlin": 6
+      },
+      "planes": {
+        "js": [
+          "active",
+          "cool",
+          "fast",
+          "hot",
+          "scrolling",
+          "slow"
+        ],
+        "swift": [
+          "active",
+          "cool",
+          "fast",
+          "hot",
+          "scrolling",
+          "slow"
+        ],
+        "kotlin": [
+          "active",
+          "cool",
+          "fast",
+          "hot",
+          "scrolling",
+          "slow"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "active",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "cool",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "fast",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "hot",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "scrolling",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "slow",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        }
+      ]
+    },
+    {
+      "id": "formations",
+      "label": "Global formation presets (`setFormation` / `<field-root formation>`)",
+      "idiom": {
+        "js": "`<field-root formation=\"wells\">` or `field.setFormation('wells')`",
+        "swift": "`FORMATIONS` / `formation(named:)`",
+        "kotlin": "`FORMATIONS` / `formation(named)`"
+      },
+      "union": [
+        "accretion",
+        "ambient",
+        "lanes",
+        "scatter",
+        "wells"
+      ],
+      "counts": {
+        "js": 5,
+        "swift": 5,
+        "kotlin": 5
+      },
+      "planes": {
+        "js": [
+          "accretion",
+          "ambient",
+          "lanes",
+          "scatter",
+          "wells"
+        ],
+        "swift": [
+          "accretion",
+          "ambient",
+          "lanes",
+          "scatter",
+          "wells"
+        ],
+        "kotlin": [
+          "accretion",
+          "ambient",
+          "lanes",
+          "scatter",
+          "wells"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "accretion",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "ambient",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "lanes",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "scatter",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "wells",
+          "js": true,
+          "swift": true,
+          "kotlin": true
         }
       ]
     }

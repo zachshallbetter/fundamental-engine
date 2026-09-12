@@ -116,6 +116,7 @@ const DOC_DESC = {
   '/docs/api': 'the complete API surface, generated from the engine catalog',
   '/docs/api/options': 'createField(canvas, opts) and every FieldOptions field with types and defaults',
   '/docs/api/handle': 'the FieldHandle every entry point returns — all runtime methods',
+  '/docs/api/declarative': 'the whole markup-authored surface in one place — the [data-body] contract, the 36 forces, the feedback channels, conditions, formations, render/overlay vocab and the two custom elements, each with a generated JS/Swift/Kotlin support row',
   '/docs/api/attributes': 'every data-* attribute a body reads, plus the CSS variables the field writes back',
   '/docs/api/metrics': 'every --field-* custom property the field writes back — ranges, cadence, and when to use each',
   '/docs/api/types': 'the exported TypeScript contracts, core and platform',

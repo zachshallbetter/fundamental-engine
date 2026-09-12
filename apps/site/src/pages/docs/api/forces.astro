@@ -35,6 +35,13 @@ const CELL_FORCES = new Set(['attract', 'repel', 'swirl', 'gravity', 'stream', '
   </header>
 
   <div class="callout">
+    <b>All {MANUAL_FORCES.length} ship on all three planes</b> — JS, Swift and Kotlin — and the shared
+    conformance golden pins the force math identical across them, not just the names. The
+    <a href="/docs/api/declarative">declarative authoring reference</a> carries the generated
+    per-platform support row for every token, alongside the rest of the markup surface.
+  </div>
+
+  <div class="callout">
     <b>Runtime tokens only.</b> Every card here is a real, passported engine token. Each carries a badge
     from the engine's classification — either a fundamental-field parent
     (<span class="rc-kind" style="--kc:#4da3ff">gravity</span>
@@ -93,6 +100,7 @@ const CELL_FORCES = new Set(['attract', 'repel', 'swirl', 'gravity', 'stream', '
 
   <SeeAlso
     links={[
+      { href: '/docs/api/declarative', label: 'Declarative reference (with platform rows)' },
       { href: '/docs/natural-fields', label: 'Natural fields' },
       { href: '/docs/api/attributes', label: 'data-* attributes' },
       { href: '/docs/api/presets', label: 'Presets' },
