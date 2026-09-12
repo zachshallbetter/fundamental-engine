@@ -47,7 +47,7 @@ import kotlin.random.Random
  * drawn diagnostic is reproducible rather than drawn from the platform generator, which is what a bare
  * [Env] defaults to.
  */
-const val PROBE_SEED: Long = 0x9e37_79b9L
+internal const val PROBE_SEED: Long = 0x9e37_79b9L
 
 /**
  * The env one probe sample runs under. Every service that WRITES is inert — [Env.spark]/[Env.supernova]
@@ -58,7 +58,9 @@ const val PROBE_SEED: Long = 0x9e37_79b9L
  *
  * Built per sample, as the Swift port does, rather than cached in a module-level singleton as the JS port
  * does: `forceAt` already allocates a fresh `Particle` per call, and a shared mutable env would not be
- * safe to sample from two threads.
+ * safe to sample from two threads. `internal`, as in Swift — an implementation detail of the sampler,
+ * not published Maven surface; only [Env.isProbe] is public, so a consumer's own `Force` can honour the
+ * same contract.
  *
  * NOTE (the accuracy gap, deliberately unchanged here): Kotlin's `forceAt` takes no live env, so unlike
  * Swift's `makeProbeEnv(mirroring:)` this cannot mirror the caller's per-frame scalars (`t`, `frameN`,
@@ -66,7 +68,7 @@ const val PROBE_SEED: Long = 0x9e37_79b9L
  * gap, not a mutation one, and threading the live env is a public-signature change out of scope for
  * this fix.
  */
-fun makeProbeEnv(): Env {
+internal fun makeProbeEnv(): Env {
     val env = Env()
     env.isProbe = true
     val noise = Random(PROBE_SEED)
