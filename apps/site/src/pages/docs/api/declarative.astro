@@ -1,0 +1,692 @@
+---
+// The DECLARATIVE AUTHORING REFERENCE — docs-refactor Phase 2 (#997), plan §6.4/§3/§5.
+//
+// One consolidated, generated, searchable surface for everything an author writes in MARKUP rather
+// than in code: the `[data-body]` body contract, the 36 forces, the feedback channels the field
+// writes back, the conditional gates, the global formations, the render/overlay vocabularies, and
+// the two custom elements. Previously this was spread across /docs/api/attributes (the attribute
+// table), /docs/api/forces (the force cards), /docs/api/catalog (conditions/formations/modes) and
+// /docs/authoring (the prose) with NO per-platform information anywhere — a reader could not tell
+// what a Swift or Kotlin app actually gets.
+//
+// EVERY support row on this page is rendered by <PlatformSupport>, which reads data/parity-matrix.json
+// — the `pnpm gen:parity-matrix` output, regenerated and diffed by `pnpm check:docs`. Nothing here
+// hand-types a ✓ or a ✗. The editorial content is the GROUPING and the per-row notes; membership is
+// asserted at build time below, so a new `data-*` attribute cannot land without appearing here.
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import PlatformSupport from '../../../components/PlatformSupport.astro';
+import {
+  ATTRS,
+  WRITEBACK,
+  RENDER_MODES,
+  OVERLAY_MODES,
+  FIELD_ROOT_ATTRS,
+  FIELD_CELL_ATTRS,
+} from '../../../lib/docs-api.ts';
+import { MANUAL_FORCES, CONDITIONS, FORMATIONS } from '@fundamental-engine/core';
+import parityData from '../../../../../../data/parity-matrix.json';
+import '../../../styles/force-glyphs.css';
+
+interface Dim {
+  id: string;
+  label: string;
+  idiom?: { js: string; swift: string; kotlin: string };
+  union: string[];
+  counts: { js: number; swift: number; kotlin: number };
+  planes: { js: string[]; swift: string[]; kotlin: string[] };
+}
+const dims = parityData.dimensions as Dim[];
+const dimBy = (id: string): Dim => {
+  const d = dims.find((x) => x.id === id);
+  if (!d) throw new Error(`docs/api/declarative: no '${id}' dimension in data/parity-matrix.json — run \`pnpm gen:parity-matrix\`.`);
+  return d;
+};
+
+const declBody = dimBy('declarative-body');
+const bodySpec = dimBy('body-spec');
+const forceDim = dimBy('force-tokens');
+const feedbackDim = dimBy('feedback-channels');
+const conditionDim = dimBy('conditions');
+const formationDim = dimBy('formations');
+const renderDim = dimBy('render-modes');
+const renderHostDim = dimBy('render-host-modes');
+const overlayDim = dimBy('overlay-modes');
+
+// ── attribute name → the matrix's canonical CONCEPT id ───────────────────────────────────────────
+// The same naming-lane collapse the generator applies (`data-body` carries the token list, so its
+// concept is `tokens`). Returns null for an attribute the DOM SCANNER does not read — `data-active`
+// is written BY the platform on engage, never parsed as a body parameter, so it has no support row.
+const ATTR_CONCEPT: Record<string, string | null> = {
+  'data-body': 'tokens',
+  'data-field-role': 'role',
+  'data-field-boundary': 'boundary',
+  'data-fmin / data-fmax': 'fmin',
+  'data-active': null,
+};
+const conceptFor = (attrName: string): string | null => {
+  if (attrName in ATTR_CONCEPT) return ATTR_CONCEPT[attrName]!;
+  return attrName.replace(/^data-/, '');
+};
+
+// ── editorial grouping of the body contract ─────────────────────────────────────────────────────
+// Order and grouping only — by concern, because 32 alphabetical attributes is a wall, not a
+// reference. MEMBERSHIP is asserted against ATTRS below, so this list cannot drift.
+const ATTR_GROUPS: { title: string; blurb: string; names: string[] }[] = [
+  {
+    title: 'The universal contract',
+    blurb:
+      'Every body reads these, whatever forces it carries. `data-body` is the only required attribute — it turns an element into a body and names the forces it exerts; the rest tune them.',
+    names: ['data-body', 'data-strength', 'data-range', 'data-spin', 'data-angle', 'data-color', 'data-when', 'data-feedback'],
+  },
+  {
+    title: 'Semantic authoring — say what you mean',
+    blurb:
+      'The intent lane compiles a plain-language purpose into forces, so `data-body` becomes optional. Reach for it when the *meaning* is stable and the physics is an implementation detail.',
+    names: ['data-intent', 'data-intensity', 'data-risk', 'data-field-role'],
+  },
+  {
+    title: 'Shape, species & authority',
+    blurb: 'Who a body acts on, what geometry it acts from, and who owns its position.',
+    names: ['data-shaped', 'data-affects', 'data-species', 'data-authority'],
+  },
+  {
+    title: 'Per-force parameters',
+    blurb:
+      'Each force reads only the attributes it uses and ignores the rest, so these compose freely — a body with no `sink` token simply never reads `data-absorb`.',
+    names: [
+      'data-absorb',
+      'data-max',
+      'data-life',
+      'data-cap',
+      'data-budget',
+      'data-sink',
+      'data-pair',
+      'data-twist',
+      'data-scale',
+      'data-screen-min',
+      'data-charge-gated',
+      'data-preset',
+    ],
+  },
+  {
+    title: 'Typographic reaction',
+    blurb: 'The variable-font axes `--d` drives on a feedback body — type that thickens where matter gathers.',
+    names: ['data-fmin / data-fmax', 'data-opsz'],
+  },
+  {
+    title: 'Engine-set markers (read, do not author)',
+    blurb:
+      'These appear in your DOM but are written BY the engine or the platform. They are documented so you can read them in CSS and in the inspector — not so you can set them.',
+    names: ['data-active', 'data-field-boundary'],
+  },
+];
+
+// ── build-time anti-drift assertion ──────────────────────────────────────────────────────────────
+// The grouping above is hand-ordered; its MEMBERSHIP is not allowed to be. If a `data-*` attribute is
+// added to (or removed from) the engine — which `check:docs` already forces into ATTRS — the site
+// build FAILS here rather than rendering a reference that silently omits it.
+const attrByName = new Map(ATTRS.map((a) => [a.name, a]));
+const groupedNames = ATTR_GROUPS.flatMap((g) => g.names);
+const missingFromGroups = ATTRS.map((a) => a.name).filter((n) => !groupedNames.includes(n));
+const extraInGroups = groupedNames.filter((n) => !attrByName.has(n));
+if (missingFromGroups.length || extraInGroups.length) {
+  throw new Error(
+    'docs/api/declarative: ATTR_GROUPS has drifted from the ATTRS table in lib/docs-api.ts.\n' +
+      (missingFromGroups.length ? `  In ATTRS but not grouped on this page: ${missingFromGroups.join(', ')}\n` : '') +
+      (extraInGroups.length ? `  Grouped on this page but not in ATTRS: ${extraInGroups.join(', ')}\n` : '') +
+      '  Add the attribute to the right group (or remove it) — do not delete this check.',
+  );
+}
+
+// ── the feedback channels → CSS custom properties map ────────────────────────────────────────────
+// Which var(s) the DOM sink writes for each channel, read off packages/core/src/engine/feedback-sink.ts.
+// The CHANNEL is the cross-platform capability; the CSS variable is the JS DELIVERY of it.
+const CHANNEL_VARS: Record<string, string[]> = {
+  density: ['--d', '--field-density'],
+  heatmapDensity: ['--field-heatmap-density'],
+  load: ['--load'],
+  lit: ['--lit'],
+  entropy: ['--entropy'],
+  coherence: ['--coherence'],
+  temperature: ['--temperature'],
+};
+const writebackBy = new Map(WRITEBACK.map((w) => [w.name, w]));
+// Every channel must map to at least one var the sink actually writes (WRITEBACK is itself gated by
+// check:docs against feedback-sink.ts), so a renamed var fails the build instead of the reader.
+for (const ch of feedbackDim.union) {
+  const vars = CHANNEL_VARS[ch];
+  if (!vars) throw new Error(`docs/api/declarative: feedback channel '${ch}' has no CSS-variable mapping — update CHANNEL_VARS.`);
+  for (const v of vars) {
+    if (!writebackBy.has(v)) throw new Error(`docs/api/declarative: '${v}' is not in the WRITEBACK table — feedback-sink.ts changed; update lib/docs-api.ts.`);
+  }
+}
+
+const FORCE_FAMILIES = [
+  { key: 'canonical', label: 'Canonical nine' },
+  { key: 'natural', label: 'Natural & derived' },
+  { key: 'extended', label: 'Designed extended' },
+] as const;
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const golden = parityData.conformanceGolden as { forces: string[]; count: number };
+
+// the one genuine declarative-host gap worth calling out by name, computed not asserted
+const kotlinHostRenderGap = renderDim.planes.kotlin.filter((m) => m !== 'none' && !renderHostDim.planes.kotlin.includes(m));
+
+const bodyHtml = `<!-- a body is an ordinary element with a contract on it -->
+<article
+  data-body="attract swirl"
+  data-strength="0.8"
+  data-range="240"
+  data-spin="1.2"
+  data-when="active"
+  data-feedback
+>
+  <h2>Gravity well</h2>
+</article>`;
+
+const bodySwift = `// SwiftUI: the same contract as a view modifier
+Text("Gravity well")
+    .fieldBody(
+        tokens: ["attract", "swirl"],
+        strength: 0.8,
+        range: 240,
+        feedback: true
+    ) { channels in
+        // the feedback channels, per frame — the CSS vars' native twin
+        density = channels.density ?? 0
+    }`;
+
+const bodyKotlin = `// Compose: the same contract as a Modifier
+Text(
+    text = "Gravity well",
+    modifier = Modifier.fieldBody(
+        tokens = listOf("attract", "swirl"),
+        strength = 0.8f,
+        range = 240f,
+        spin = 1.2f,
+    ),
+)
+// no per-body feedback callback on the modifier yet — read feedback through the
+// FeedbackSink / StateRegistry on the platform layer instead.`;
+
+const feedbackCss = `/* the reciprocal half: the field writes, your CSS reads */
+[data-feedback] {
+  /* --d rests as a small fraction — amplify once, here, not in every consumer */
+  --d-amp: clamp(0, calc(var(--d, 0) * 12), 1);
+}
+article[data-feedback] h2 {
+  font-variation-settings: 'wght' calc(400 + var(--d-amp) * 300);
+  opacity: calc(0.6 + var(--d-amp) * 0.4);
+}`;
+---
+
+<DocsLayout
+  title="Fundamental — the declarative authoring reference"
+  description="Everything you write in markup, in one place: the [data-body] contract (every data-* attribute), the 36 forces, the feedback channels the field writes back, conditions, formations, render and overlay vocabularies, and the two custom elements — each with a generated JS · Swift · Kotlin support row."
+>
+  <header class="docs-hero">
+    <p class="kicker">API reference</p>
+    <h1>The <span class="accent">declarative</span> authoring reference</h1>
+    <StatusChip label="Shipped · support rows generated" tone="stable" />
+    <p class="lede">
+      Most of Fundamental is authored in markup, not in code: you put a contract on an element and the
+      field reads it. This is that contract, whole — the {ATTRS.length} <code>data-*</code> attributes, the
+      {MANUAL_FORCES.length} forces, the {feedbackDim.union.length} feedback channels the field writes back, and the
+      vocabularies they draw on. <strong>Every entry carries a per-platform support row</strong>, rendered from
+      the generated <a href="/docs/api/parity">parity matrix</a> — so you can see what a Swift or Kotlin app
+      actually gets before you design around it.
+    </p>
+  </header>
+
+  <div class="callout">
+    <b>How to read a support row.</b> <span class="parity-chip parity-yes">JS ✓</span> means the capability
+    exists on that plane — <em>however that plane spells it</em>. The three planes are different idioms, and an
+    idiom difference is an <strong>equivalent</strong>, not a gap: the matrix collapses
+    <code>data-body</code>, <code>.fieldBody(tokens:)</code> and <code>Modifier.fieldBody(tokens)</code> to one
+    capability before comparing. A <span class="parity-chip parity-no">Kotlin —</span> is therefore a
+    <strong>real</strong> gap: the plane has no way to express that capability at that layer today. Nothing on
+    this page is hand-typed; the chips are read out of <code>data/parity-matrix.json</code>, which
+    <code>pnpm check:docs</code> regenerates and diffs on every CI run.
+  </div>
+
+  <section class="docs-sec">
+    <h2 id="a-body-three-ways">A body, three ways</h2>
+    <p>
+      Same contract, three idioms. The DOM scan finds bodies by attribute; SwiftUI and Compose attach them
+      through a view modifier. Underneath, all three build the same body and run the same force math — the
+      cross-plane conformance golden pins {golden.count} forces (<code>{golden.forces.join(', ')}</code>) to
+      identical output at <code>depth: 0</code>.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'HTML', lang: 'html', code: bodyHtml },
+        { label: 'Swift', lang: 'swift', code: bodySwift },
+        { label: 'Kotlin', lang: 'kotlin', code: bodyKotlin },
+      ]}
+    />
+    <table class="matrix">
+      <thead>
+        <tr><th>Plane</th><th>How a body is declared</th><th>Contract parameters at that layer</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>JS</b></td>
+          <td>{declBody.idiom?.js}</td>
+          <td><code>{declBody.counts.js}</code> of {declBody.union.length}</td>
+        </tr>
+        <tr>
+          <td><b>Swift</b></td>
+          <td>{declBody.idiom?.swift}</td>
+          <td><code>{declBody.counts.swift}</code> of {declBody.union.length}</td>
+        </tr>
+        <tr>
+          <td><b>Kotlin</b></td>
+          <td>{declBody.idiom?.kotlin}</td>
+          <td><code>{declBody.counts.kotlin}</code> of {declBody.union.length}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <b>Read that honestly.</b> The DOM scan is the widest declarative surface by a long way — the attribute
+      lane costs nothing to extend, so it carries the whole contract. The SwiftUI and Compose modifiers expose
+      the common core (<code>tokens</code>, <code>strength</code>, <code>range</code>, plus
+      <code>feedback</code> on Swift and <code>spin</code> on Kotlin); everything else on those planes is
+      reached through the <a href="#programmatic">programmatic body spec</a>, which is much closer to parity.
+      The gap is in the <em>declarative sugar</em>, not in the engine.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="body-contract">The body contract — every <code>data-*</code> attribute</h2>
+    <p>
+      A body is configured entirely in markup. Each force reads only the attributes it uses and ignores the
+      rest, so you can set a few and compose freely. The support row on each entry is for the
+      <strong>declarative</strong> layer specifically — see <a href="#programmatic">the programmatic spec</a>
+      for what a port can express in code.
+    </p>
+    {
+      ATTR_GROUPS.map((g) => (
+        <>
+          <h3>{g.title}</h3>
+          <p>{g.blurb}</p>
+          <dl class="api-table">
+            {g.names.map((name) => {
+              const a = attrByName.get(name)!;
+              const concept = conceptFor(name);
+              return (
+                <div class="api-row" id={`attr-${name.replace(/[^\w-]+/g, '-')}`}>
+                  <dt class="k">
+                    <code>{a.name}</code>
+                    <span class="ty">
+                      {a.type}
+                      {a.def ? <> · <b>default {a.def}</b></> : null}
+                    </span>
+                    {concept ? (
+                      <PlatformSupport dimension="declarative-body" symbol={concept} />
+                    ) : (
+                      <span class="parity-chips">
+                        <span class="parity-chip parity-no" title="written by the engine, not authored">
+                          engine-set
+                        </span>
+                      </span>
+                    )}
+                  </dt>
+                  <dd class="d">{a.desc}</dd>
+                </div>
+              );
+            })}
+          </dl>
+        </>
+      ))
+    }
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="programmatic">The same contract without an element</h2>
+    <p>
+      A body does not need a backing element. <code>addBody</code> takes a <code>BodySpec</code> — the same
+      contract, supplied directly, with a <code>rect</code> callback as the position source. This is how a
+      Three.js mesh, a SwiftUI canvas, or a headless host participates. The ports are near-parity here, which is
+      why a Swift or Kotlin app is not limited to the four-parameter modifier above.
+    </p>
+    <dl class="api-table">
+      {
+        bodySpec.union.map((field) => (
+          <div class="api-row">
+            <dt class="k">
+              <code>{field}</code>
+              <PlatformSupport dimension="body-spec" symbol={field} />
+            </dt>
+            <dd class="d">
+              {field === 'tokens' && 'The force ids this body emits — a space-joined string or an array. The only required field besides the position source.'}
+              {field === 'strength' && 'Overall force magnitude; scales every token on the body.'}
+              {field === 'range' && 'Radius of influence, in field pixels.'}
+              {field === 'spin' && 'Rotation sign and scale for swirl / lens / charge / magnetism.'}
+              {field === 'angle' && 'Heading in degrees for the directional forces (stream, jet, gate, shear, align). Kotlin spells it angleDeg.'}
+              {field === 'color' && 'Tint carried for pigment transport, and the accent override on engage. Kotlin spells it tint.'}
+              {field === 'identity' && 'First-class identity — a stable id (plus optional namespace / kind / host) so snapshots, diff, replay and relationships can reference the body rather than the handle. Omitted, the engine derives a deterministic body-N.'}
+              {field === 'data' && 'An arbitrary record carried with the body and surfaced on its handle. Opaque to the engine.'}
+              {field === 'feedback' && 'The per-body feedback callback (onFeedback) — this body’s channels, every frame, demultiplexed from the global sink. The Kotlin BodySpec does not carry one yet; use a FeedbackSink or the StateRegistry on the platform layer there.'}
+              {field === 'authority' && 'Who owns the body’s position: anchored (measured from the host rect), kinematic (the engine writes the visual transform), or dynamic (the engine owns position and velocity and the body moves under the net field). JS only today — the ports treat every programmatic body as anchored. Experimental.'}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="forces">The {MANUAL_FORCES.length} forces</h2>
+    <p>
+      Compose them on any <code>data-body</code> element, space-separated. Every token is a real, passported
+      engine token and every one of them ships on all three planes — this is the part of the surface with no
+      parity story to tell, and the conformance golden proves the math agrees, not just the names. The
+      per-force <em>law</em>, glyph, live cell and worked example live on the
+      <a href="/docs/api/forces">force cards</a>; this table is the contract summary: what each token reads,
+      and where it runs.
+    </p>
+    {
+      FORCE_FAMILIES.map((fam) => {
+        const list = MANUAL_FORCES.filter((f) => f.family === fam.key);
+        return (
+          <>
+            <h3>
+              {fam.label} <span style="color:var(--text-4)">({list.length})</span>
+            </h3>
+            <dl class="api-table">
+              {list.map((f) => (
+                <div class="api-row" id={`force-${f.token}`}>
+                  <dt class="k">
+                    <i class={`fg fg-${f.token}`} style={`--fc:${f.color}`} />
+                    <code>{f.token}</code>
+                    <PlatformSupport dimension="force-tokens" symbol={f.token} />
+                  </dt>
+                  <dd class="d">
+                    {cap(f.desc)}.
+                    <span class="rc-meta">
+                      {f.attrs.length ? (
+                        f.attrs.map((a) => <span class="chip">data-{a}</span>)
+                      ) : (
+                        <span class="chip">box-sized — no params</span>
+                      )}
+                    </span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </>
+        );
+      })
+    }
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="feedback">Feedback channels — what the field writes back</h2>
+    <p>
+      Reciprocity has two halves. Bodies bend the field through <code>data-*</code>; the field bends them back
+      through <strong>feedback channels</strong> — a plain-data record the engine produces for every opted-in
+      body, every frame. The record is identical on all three planes. Only the <em>delivery</em> differs, and
+      that difference is the single most important thing to know before porting a design:
+    </p>
+    <table class="matrix">
+      <thead>
+        <tr><th>Plane</th><th>How the channels reach you</th><th>Channels</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>JS</b></td><td>{feedbackDim.idiom?.js}</td><td><code>{feedbackDim.counts.js}</code></td></tr>
+        <tr><td><b>Swift</b></td><td>{feedbackDim.idiom?.swift}</td><td><code>{feedbackDim.counts.swift}</code></td></tr>
+        <tr><td><b>Kotlin</b></td><td>{feedbackDim.idiom?.kotlin}</td><td><code>{feedbackDim.counts.kotlin}</code></td></tr>
+      </tbody>
+    </table>
+    <p>
+      On the web the channels arrive as CSS custom properties on the element itself, so a reaction is written in
+      CSS and never touches JavaScript. On Swift and Kotlin there is no CSS to write into, so the same record
+      arrives as a value — a closure parameter or a registry entry — and you drive the view from it.
+    </p>
+    <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: feedbackCss }]} />
+
+    <h3>The channels</h3>
+    <dl class="api-table">
+      {
+        feedbackDim.union.map((ch) => {
+          const vars = CHANNEL_VARS[ch]!;
+          const primary = writebackBy.get(vars[0]!)!;
+          return (
+            <div class="api-row" id={`channel-${ch}`}>
+              <dt class="k">
+                <code>{ch}</code>
+                <span class="ty">CSS <b>{vars.join(' · ')}</b></span>
+                <PlatformSupport dimension="feedback-channels" symbol={ch} />
+              </dt>
+              <dd class="d">{primary.desc}</dd>
+            </div>
+          );
+        })
+      }
+    </dl>
+    <div class="callout">
+      <b>Two channels the web adds on top.</b> <code>--field-density</code> is a second custom property carrying
+      the <em>same</em> value as <code>--d</code> (they are written in one sink call and never disagree — see the
+      canonical <a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/feedback-channels.md">feedback-channels</a> note),
+      and <code>--mass</code> is a <b>retired</b> name: no engine path writes it any more — only the
+      <code>lintFeedbackEngineOwned</code> rule still reserves it so an old stylesheet that
+      <em>sets</em> it is flagged. Style off <code>--load</code>.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="conditions">Conditional gates — <code>data-when</code></h2>
+    <p>
+      Gate any force on a condition; it acts only while the condition holds. The selective gates are evaluated
+      per <em>particle</em>, so one body can pull only the fast matter passing it. Full parity: all
+      {conditionDim.union.length} gates exist on all three planes, resolved from the same built-in registry.
+    </p>
+    <dl class="api-table">
+      {
+        CONDITIONS.filter((c) => c.id).map((c) => (
+          <div class="api-row" id={`when-${c.id}`}>
+            <dt class="k">
+              <code>{c.id}</code>
+              <span class="ty">{c.selective ? 'per particle' : 'per body'}</span>
+              <PlatformSupport dimension="conditions" symbol={c.id} />
+            </dt>
+            <dd class="d">{cap(c.desc)}.</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p>
+      An empty gate (the default) always passes, and an <em>unknown</em> gate name also passes — a typo weakens
+      nothing silently, it just stops gating. Author your own with the condition registry (see
+      <a href="/docs/api/catalog">the catalog</a>).
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="formations">Global formations</h2>
+    <p>
+      A formation is a bias applied to every <em>free</em> particle at once — the whole-field weather, orthogonal
+      to what any individual body does. Set it declaratively with <code>&lt;field-root formation&gt;</code> or live
+      with <code>setFormation</code>; the engine eases between presets so transitions glide rather than snap. Full
+      parity across the planes.
+    </p>
+    <dl class="api-table">
+      {
+        FORMATIONS.map((f) => (
+          <div class="api-row" id={`formation-${f.id}`}>
+            <dt class="k">
+              <code>{f.id}</code>
+              <span class="ty">{f.cue}</span>
+              <PlatformSupport dimension="formations" symbol={f.id} />
+            </dt>
+            <dd class="d">
+              drift <code>{f.preset.driftX}</code> · wander <code>{f.preset.wander}</code> · orbit{' '}
+              <code>{f.preset.orbit}</code> · spread <code>{f.preset.spread}</code> · converge{' '}
+              <code>{f.preset.conv}</code>
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="render">Render modes — the underlay</h2>
+    <p>
+      The render mode is how the field <em>draws</em>, set declaratively as <code>&lt;field-root render&gt;</code> (or
+      the <code>render</code> option, or <code>setRender</code> live). It changes nothing about the physics.
+    </p>
+    <p>
+      This is the one part of the declarative surface where a capability can go missing in two different
+      places, so each entry carries <strong>two</strong> rows. <b>Accepted</b> is whether the plane's engine
+      takes the mode at all; <b>Drawn</b> is whether that plane's declarative host actually paints it. They are
+      not the same question — the Kotlin core accepts <code>{kotlinHostRenderGap.join(', ')}</code>, which the
+      Compose <code>FieldView</code> has no draw path for: exactly the way a multi-hue palette was once accepted
+      and then collapsed to a single accent by an Android host.
+    </p>
+    <dl class="api-table">
+      {
+        RENDER_MODES.map((m) => (
+          <div class="api-row" id={`render-${m.name}`}>
+            <dt class="k">
+              <code>{m.name}</code>
+              <span class="ty">accepted</span>
+              <PlatformSupport dimension="render-modes" symbol={m.name} />
+              {m.name !== 'none' && (
+                <>
+                  <span class="ty">drawn by the host</span>
+                  <PlatformSupport dimension="render-host-modes" symbol={m.name} />
+                </>
+              )}
+            </dt>
+            <dd class="d">{m.desc}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p>
+      Compose additionally draws a <code>glow</code> mode that neither JS nor Swift has — the ports are not
+      strictly a subset of the web.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="overlay">Overlay readings — the diagnostics surface</h2>
+    <p>
+      Readings are drawn in <em>front</em> of content on a second canvas, and they are additive: pass one, or a
+      space-separated stack in <code>&lt;field-root overlay&gt;</code>, and they compose. All
+      {overlayDim.union.length} readings are declared on all three planes.
+      <b> On the web, an overlay is a silent no-op unless the field was created with an
+      <code>overlayCanvas</code></b> — <code>&lt;field-root&gt;</code> manages that canvas for you; a bare
+      <code>createField</code> does not.
+    </p>
+    <dl class="api-table">
+      {
+        OVERLAY_MODES.map((m) => (
+          <div class="api-row" id={`overlay-${m.name}`}>
+            <dt class="k">
+              <code>{m.name}</code>
+              <PlatformSupport dimension="overlay-modes" symbol={m.name} />
+            </dt>
+            <dd class="d">{m.desc}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="elements">The custom elements</h2>
+    <p>
+      Two elements ship. <code>&lt;field-root&gt;</code> is the page field — it mirrors every
+      <code>createField</code> option as a kebab-case attribute, and setting one after mount calls the matching
+      setter on the live handle, so markup and runtime control are the same surface.
+      <code>&lt;field-cell&gt;</code> is something else entirely: a standalone, in-frame poster that renders
+      <em>one</em> force with its own small particle pool, its own budget and its own in-view gating. A page can
+      carry dozens without them sharing or starving one pool. Both are web-only by construction.
+    </p>
+
+    <h3><code>&lt;field-root&gt;</code></h3>
+    <dl class="api-table">
+      {
+        FIELD_ROOT_ATTRS.map((a) => (
+          <div class="api-row" id={`field-root-${a.name}`}>
+            <dt class="k">
+              <code>{a.name}</code>
+              <span class="ty">option <b>{a.option}</b></span>
+            </dt>
+            <dd class="d">{a.desc}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <h3><code>&lt;field-cell&gt;</code></h3>
+    <dl class="api-table">
+      {
+        FIELD_CELL_ATTRS.map((a) => (
+          <div class="api-row" id={`field-cell-${a.name}`}>
+            <dt class="k">
+              <code>{a.name}</code>
+              <span class="ty">
+                {a.type}
+                {a.def ? <> · <b>default {a.def}</b></> : null}
+              </span>
+            </dt>
+            <dd class="d">{a.desc}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/api/forces', label: 'Force cards (law, glyph, live cell)' },
+      { href: '/docs/api/parity', label: 'Platform parity matrix' },
+      { href: '/docs/api/options', label: 'createField & options' },
+      { href: '/docs/authoring', label: 'Authoring across surfaces' },
+      { href: '/docs/guides/swift', label: 'Swift guide' },
+      { href: '/docs/guides/kotlin', label: 'Kotlin guide' },
+    ]}
+  />
+</DocsLayout>
+
+<style>
+  .matrix {
+    width: 100%;
+    margin: 1rem 0 0;
+    font-size: 0.88rem;
+  }
+  .matrix th,
+  .matrix td {
+    text-align: left;
+    padding: 0.45rem 0.7rem 0.45rem 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  .matrix th {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    font-weight: 400;
+  }
+  .docs-sec h3 {
+    margin-top: 1.8rem;
+  }
+  .api-row .k .fg {
+    width: 14px;
+    height: 14px;
+    vertical-align: -2px;
+    margin-right: 0.35rem;
+  }
+  .api-row .d .rc-meta {
+    display: block;
+    margin-top: 0.4rem;
+  }
+</style>

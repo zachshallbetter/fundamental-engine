@@ -49,7 +49,7 @@ Written on every element carrying `[data-feedback]`, every frame:
 | `--field-density` | 0 → 1 | The namespaced twin of `--d` — **the same value**, written in the same sink call. Consistent, not legacy; read either (see the density note above). |
 | `--field-heatmap-density` | 0 → 1 | The heatmap ambient density *under* this body — where matter pools around it globally, distinct from the body's own `--d`. Only present when the heatmap overlay is active. |
 | `--load` | 0 → 1 | A sink body's accretion fill fraction. 0 = empty, 1 = saturated. Written when the body has `data-absorb`. |
-| `--mass` | 0 → 1 | Back-compat alias of `--load`. Prefer `--load`. |
+| `--mass` | — | **Retired.** A former alias of `--load`; **no engine path writes it any more** (neither `defaultFeedbackSink` in core nor `makeFeedbackSink` in the platform runtime — both write `--load` only). `var(--mass)` therefore reads its CSS fallback, never a live value. The name is still reserved in `ENGINE_OWNED_FEEDBACK_VARS` so a *binding* that sets it is linted. Style off `--load`. |
 | `--lit` | 0 → 1 | Spillover-lit density when a saturated neighbouring sink bleeds density across a boundary (causality). |
 | `--entropy` | 0 → 1 | Local disorder — velocity-direction dispersion, gated by agitation. Distinct from the platform-inferred `--field-entropy` pattern lane. |
 | `--coherence` | 0 → 1 | Local order (= 1 − entropy; velocity alignment). Numeric value — not the `--coherence` palette colour on `:root`. |
@@ -228,18 +228,55 @@ a pattern can no longer clobber the live density value with a host attribute def
 ---
 
 **Two writers, one var — linted.** The engine-written vars (`--d` / `--field-density` /
-`--field-heatmap-density` / `--load` / `--mass` / `--lit` / `--entropy` / `--coherence` /
-`--temperature`) have exactly one writer. A feedback *binding* that routes any state key onto one of
+`--field-heatmap-density` / `--load` / `--lit` / `--entropy` / `--coherence` / `--temperature` — plus
+the retired `--mass`, kept in the set so an old binding to it is still caught) have exactly one writer. A feedback *binding* that routes any state key onto one of
 them (`platform.feedback.bind(el, { density: '--field-density' })`) is a second writer, and the
 bound state value shadows the engine's live reading — the `--field-density`-reads-0-while-`--d`-is-live
 collision, from a route `ENGINE_OWNED_METRICS` does not cover. The `feedback-var-engine-owned`
 platform lint (`lintFeedbackEngineOwned`, run by `lintPlatform()`) flags every such binding; the fix
 is to bind a `--field-<metric>` lane of your own. The set is exported as `ENGINE_OWNED_FEEDBACK_VARS`.
 
-## 8. Related documents
+## 8. The same channels on Swift and Kotlin
+
+This document is written in CSS because the web *delivers* feedback as CSS custom properties. The
+**channels themselves are not a web concept.** The engine produces one plain-data record per opted-in
+body per frame — `FeedbackChannels` — and every plane produces the *same seven fields*:
+
+| Channel | Web CSS variable(s) | Swift | Kotlin |
+|---|---|---|---|
+| `density` | `--d` + `--field-density` | ✓ | ✓ |
+| `heatmapDensity` | `--field-heatmap-density` | ✓ | ✓ |
+| `load` | `--load` | ✓ | ✓ |
+| `lit` | `--lit` | ✓ | ✓ |
+| `entropy` | `--entropy` | ✓ | ✓ |
+| `coherence` | `--coherence` | ✓ | ✓ |
+| `temperature` | `--temperature` | ✓ | ✓ |
+
+Sources: `packages/core/src/engine/types.ts` (`FeedbackChannels`),
+`swift/Sources/FundamentalCore/Engine/FieldHandle.swift`,
+`android/fundamental-platform/.../Registries.kt`. The set is generated into the
+`feedback-channels` dimension of `data/parity-matrix.json` and rendered as support rows on
+[`/docs/api/declarative`](https://fundamental-engine.com/docs/api/declarative); `pnpm check:docs`
+fails if a plane gains or loses one.
+
+**What differs is DELIVERY, and it is the thing to know before porting a design:**
+
+| Plane | How the channels reach you |
+|---|---|
+| **JS / DOM** | CSS custom properties written onto the element (`defaultFeedbackSink`), or your own `feedbackSink`. A reaction is written in CSS and never touches JavaScript. |
+| **Swift** | The `onFeedback: (FeedbackChannels) -> Void` closure — on `BodySpec`, and directly on the `.fieldBody(…)` SwiftUI modifier — or a `FeedbackSink`. |
+| **Kotlin** | A `FeedbackSink` / the `StateRegistry` on the platform layer. **`Modifier.fieldBody` carries no per-body callback and `BodySpec` has no `onFeedback` field** — this is a real gap, not an idiom difference: Compose has no per-body feedback seam today. |
+
+The practical consequence: a web design that leans on "the engine writes, my CSS reads" has no
+one-line Compose equivalent. Route the Kotlin side through the platform `FeedbackSink` and drive
+your own state from it.
+
+## 9. Related documents
 
 - `docs/canonical/invisible-fields.md` — the invisible-fields pattern: the two-field architecture,
   data-hot + data-active engagement, relationship edges, provenance chips.
 - `docs/canonical/platform-architecture.md` — the six-phase scheduler and six registries.
 - `docs/engine-reference/forces-system.md` §19 — the write phase specification.
 - `apps/site/src/lib/docs-api.ts` → `WRITEBACK[]` — the live enumeration of all feedback vars.
+- `/docs/api/declarative` — the declarative authoring reference; the channels with generated
+  per-platform support rows, alongside the rest of the markup surface.

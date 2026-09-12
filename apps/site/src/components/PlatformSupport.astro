@@ -1,0 +1,86 @@
+---
+// A per-platform support row — `JS ✓ · Swift ✓ · Kotlin ✗` — for ONE capability, rendered from
+// data/parity-matrix.json (docs-refactor §5, Phase 2 #997).
+//
+// The three booleans are NEVER hand-typed here or at any call site: they are read out of the
+// generator's live plane sets. `pnpm check:docs` regenerates the matrix in-memory and fails if the
+// committed artifact drifted from the ports, so a row on a docs page cannot outlive the code it
+// describes. A symbol this component cannot find in its dimension's union THROWS at build time
+// rather than rendering a silent, meaningless "not supported" — the same anti-drift discipline
+// /docs/api/parity applies to its ORDERED_METHODS list.
+//
+// Idiom differences are EQUIVALENTS, not gaps: the matrix canonicalizes each plane's spelling to one
+// concept id (`data-body` → `tokens`, `angleDeg` → `angle`, `onFeedback` → `feedback`) before
+// comparing, so `.fieldBody(tokens:)` counts as support for the same capability `data-body` provides.
+// What survives that collapse is a real capability delta.
+import parityData from '../../../../data/parity-matrix.json';
+
+interface Props {
+  /** the parity-matrix dimension id, e.g. 'declarative-body' | 'force-tokens' | 'feedback-channels'. */
+  dimension: string;
+  /** the canonical symbol within that dimension (the concept id, not a plane's local spelling). */
+  symbol: string;
+  /** optional short note rendered after the chips — why a gap exists, or how a plane spells it. */
+  note?: string;
+}
+const { dimension, symbol, note } = Astro.props;
+
+interface Dim {
+  id: string;
+  label: string;
+  planes: { js: string[]; swift: string[]; kotlin: string[] };
+}
+const dim = (parityData.dimensions as Dim[]).find((d) => d.id === dimension);
+if (!dim) {
+  throw new Error(
+    `PlatformSupport: no dimension '${dimension}' in data/parity-matrix.json. ` +
+      `Available: ${(parityData.dimensions as Dim[]).map((d) => d.id).join(', ')}. ` +
+      'Run `pnpm gen:parity-matrix`.',
+  );
+}
+
+const support = {
+  js: dim.planes.js.includes(symbol),
+  swift: dim.planes.swift.includes(symbol),
+  kotlin: dim.planes.kotlin.includes(symbol),
+};
+
+// A symbol on no plane at all is a stale doc entry, not a "gap on every platform" — fail the build
+// so the page cannot quietly describe a capability the engine no longer has.
+if (!support.js && !support.swift && !support.kotlin) {
+  throw new Error(
+    `PlatformSupport: '${symbol}' is not in the '${dimension}' dimension on ANY plane. ` +
+      'Either the capability was removed from the engine (delete the doc entry) or the symbol is ' +
+      'misspelled (it must be the matrix CONCEPT id, not a plane-local name). ' +
+      'Run `pnpm gen:parity-matrix` and check data/parity-matrix.json.',
+  );
+}
+
+const PLANES = [
+  { key: 'js' as const, label: 'JS' },
+  { key: 'swift' as const, label: 'Swift' },
+  { key: 'kotlin' as const, label: 'Kotlin' },
+];
+---
+
+<span class="parity-chips" role="group" aria-label={`Platform support for ${symbol}`}>
+  {
+    PLANES.map((p) => (
+      <span
+        class={`parity-chip ${support[p.key] ? 'parity-yes' : 'parity-no'}`}
+        title={`${p.label}: ${support[p.key] ? 'supported' : 'not supported'} (${dim.label})`}
+      >
+        {p.label} {support[p.key] ? '✓' : '—'}
+      </span>
+    ))
+  }
+  {note && <span class="parity-inline-note">{note}</span>}
+</span>
+
+<style>
+  .parity-inline-note {
+    font-size: 0.68rem;
+    color: var(--text-4);
+    margin-left: 0.4rem;
+  }
+</style>

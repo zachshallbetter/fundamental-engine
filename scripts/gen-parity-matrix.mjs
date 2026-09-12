@@ -53,6 +53,50 @@ function blockAfter(src, header) {
   return endRel < 0 ? rest : rest.slice(0, endRel);
 }
 
+/** Slice a source from `header` to the matching close of the parenthesis it opens — for a Kotlin
+ *  primary constructor (`class BodySpec(` … `\n)`) or a multi-line Swift/Kotlin function signature,
+ *  neither of which ends at a column-0 `}`. Depth-counted so a nested `(` in a default value
+ *  (`rect: () -> Box`) does not close the block early. */
+function parenBlockAfter(src, header) {
+  const at = src.indexOf(header);
+  if (at < 0) return '';
+  const open = src.indexOf('(', at);
+  if (open < 0) return '';
+  let depth = 0;
+  for (let i = open; i < src.length; i++) {
+    if (src[i] === '(') depth++;
+    else if (src[i] === ')') {
+      depth--;
+      if (depth === 0) return src.slice(open + 1, i);
+    }
+  }
+  return '';
+}
+
+/** Parameter/property names in a Swift or Kotlin signature block — every `name:` at paren depth 0,
+ *  so a closure parameter's own label (`(_ view: AnyObject, …)`) is not mistaken for a parameter. */
+function paramNames(block) {
+  const set = new Set();
+  let depth = 0;
+  let token = '';
+  for (let i = 0; i < block.length; i++) {
+    const c = block[i];
+    if (c === '(' || c === '[' || c === '<') depth++;
+    else if (c === ')' || c === ']' || c === '>') depth--;
+    else if (depth === 0 && c === ':') {
+      const m = token.match(/([A-Za-z_]\w*)\s*$/);
+      if (m) set.add(m[1]);
+      token = '';
+      continue;
+    } else if (depth === 0 && (c === ',' || c === '\n')) {
+      token = '';
+      continue;
+    }
+    if (depth === 0) token += c;
+  }
+  return set;
+}
+
 const sortedArr = (set) => [...set].sort();
 
 /** Canonicalize a render/overlay mode id to kebab-case so pure idiom differences (`fieldLines` on
@@ -92,12 +136,173 @@ function jsForceTokens() {
   return set;
 }
 
-/** RenderMode string-union members from passport.ts (`| 'dots'`). */
+/** The UNDERLAY render vocabulary — the string union `FieldHandle.setRender(mode:)` accepts, which is
+ *  also what `FieldOptions.render` and `<field-root render>` take. This is the set the Swift/Kotlin
+ *  `RenderMode` enums mirror, so it is the only JS set they can honestly be compared against.
+ *
+ *  NOT `passport.ts`'s `RenderMode` union, which this extractor used to read (fixed in Phase 2): that
+ *  is the visualization TAXONOMY vocabulary — it carries `field-lines` and `heatmap` (an OVERLAY
+ *  reading and `setHeatmap`, neither accepted by `setRender`) and omits the five modes JS actually
+ *  gained since (`flow`, `knockout`, `redshift`, `blackbody`, `depth`). Comparing it to the ports'
+ *  host enums both invented two JS render modes that do not exist and HID the real five-mode gap. */
 function jsRenderModes() {
   const set = new Set();
-  const start = jsPassport.indexOf('export type RenderMode');
-  const block = jsPassport.slice(start, jsPassport.indexOf(';', start));
+  const at = jsTypes.indexOf('  setRender(');
+  if (at < 0) throw new Error('gen:parity-matrix: could not find FieldHandle.setRender in core/types.ts');
+  // the union ends at the signature's `): void;` — scope to that, not to the next column-0 `}`.
+  const block = jsTypes.slice(at, jsTypes.indexOf('): void;', at));
   for (const m of block.matchAll(/'([a-z][\w-]*)'/g)) set.add(m[1]);
+  return set;
+}
+
+// ── the DECLARATIVE authoring surface (Phase 2, #997) ────────────────────────────────────────────
+//
+// The body contract is the surface most authors touch, and it is the one the three planes express
+// most differently: a DOM attribute scan on JS, a SwiftUI view modifier on Swift, a Compose modifier
+// on Kotlin. Those are IDIOM differences — so each plane's raw parameter name is canonicalized to one
+// shared CONCEPT id (`data-body` → `tokens`, `angleDeg` → `angle`, `tint` → `color`,
+// `onFeedback` → `feedback`) exactly the way `kebab()` already collapses `fieldLines`/`field-lines`.
+// What survives the collapse is a genuine capability delta: Compose's `Modifier.fieldBody` really
+// does take no feedback callback, and `authority` really is JS-only.
+
+/** Raw per-plane spelling → the shared concept id. Naming-lane collapse only; never a support claim. */
+const BODY_CONCEPT_ALIASES = {
+  body: 'tokens',                 // JS: `data-body` carries the token list
+  'angle-deg': 'angle',           // Kotlin: `angleDeg`
+  tint: 'color',                  // Kotlin: `tint`
+  'on-feedback': 'feedback',      // JS/Swift: `onFeedback` callback == the feedback opt-in
+  'field-role': 'role',           // JS: `data-field-role`
+  'field-boundary': 'boundary',   // JS: `data-field-boundary` (engine-set ownership marker)
+};
+const bodyConcept = (raw) => {
+  const k = kebab(raw);
+  return BODY_CONCEPT_ALIASES[k] ?? k;
+};
+const bodyConceptSet = (names) => new Set([...names].map(bodyConcept));
+
+/** Body attribute suffixes (after `data-`) the DOM scanner recognizes — the same four parser paths the
+ *  check:docs gate reads, so the matrix and the coverage gate can never disagree about the JS set. */
+function jsBodyAttrs() {
+  const set = new Set();
+  const src = read('packages/core/src/engine/scanner.ts');
+  for (const m of src.matchAll(/a\.(?:get|has)\('([\w-]+)'\)/g)) set.add(m[1]);
+  for (const m of src.matchAll(/num\('([\w-]+)',/g)) set.add(m[1]);
+  for (const m of src.matchAll(/getAttribute\('data-([\w-]+)'\)/g)) set.add(m[1]);
+  for (const m of src.matchAll(/\[data-([\w-]+)\]/g)) set.add(m[1]);
+  if (src.includes('dataset.color')) set.add('color');
+  return set;
+}
+
+/** Fields of the programmatic `BodySpec` on each plane — `rect` (the position source) is dropped: it is
+ *  the host seam every plane must have, not an authoring capability. */
+function jsBodySpec() {
+  const set = new Set();
+  for (const m of blockAfter(jsTypes, 'export interface BodySpec').matchAll(/\n\s{2}([a-zA-Z]\w*)\??:/g)) set.add(m[1]);
+  set.delete('rect');
+  return set;
+}
+function swiftBodySpec() {
+  const set = new Set();
+  for (const m of blockAfter(swiftHandleSrc, 'public struct BodySpec').matchAll(/\bpublic\s+var\s+([a-zA-Z]\w*)\s*:/g)) set.add(m[1]);
+  set.delete('rect');
+  return set;
+}
+function kotlinBodySpec() {
+  const set = paramNames(parenBlockAfter(ktHandleSrc, 'class BodySpec'));
+  set.delete('rect');
+  return set;
+}
+
+/** The DECLARATIVE host's body-attachment surface on each plane: SwiftUI `.fieldBody(...)` and
+ *  Compose `Modifier.fieldBody(...)`. (JS's is the DOM scan — `jsBodyAttrs()` above.) */
+function swiftDeclarativeBody() {
+  return paramNames(parenBlockAfter(swiftUiViewSrc, 'func fieldBody('));
+}
+function kotlinDeclarativeBody() {
+  return paramNames(parenBlockAfter(ktComposeViewSrc, 'fun Modifier.fieldBody('));
+}
+
+/** Per-body feedback CHANNELS — the plain-data record every plane produces each frame. The DELIVERY
+ *  differs (CSS custom properties · `onFeedback` closure · `FeedbackSink`/`StateRegistry`); the record
+ *  itself is the capability, so it is what this dimension compares. */
+function jsFeedbackChannels() {
+  const set = new Set();
+  for (const m of blockAfter(jsTypes, 'export interface FeedbackChannels').matchAll(/\n\s{2}([a-zA-Z]\w*)\??:/g)) set.add(m[1]);
+  return set;
+}
+function swiftFeedbackChannels() {
+  const set = new Set();
+  for (const m of blockAfter(swiftHandleSrc, 'public struct FeedbackChannels').matchAll(/\bpublic\s+var\s+([a-zA-Z]\w*)\s*:/g)) set.add(m[1]);
+  return set;
+}
+function kotlinFeedbackChannels() {
+  return paramNames(parenBlockAfter(ktRegistriesSrc, 'data class FeedbackChannels'));
+}
+
+/** The render modes each plane's DECLARATIVE HOST actually DRAWS — the layer a capability can be lost
+ *  at without any engine symbol going missing. This is the render-surface analogue of the palette
+ *  dimension (#1091): the Kotlin CORE declares a `RenderMode` enum of seven, but the Compose host that
+ *  paints the canvas declares its own four-case enum, so a `metaballs` field renders as nothing there.
+ *  JS has no separate host renderer (the engine owns the underlay draw), so its host set IS the
+ *  `setRender` vocabulary. */
+function jsRenderHostModes() {
+  const set = new Set(jsRenderModes());
+  set.delete('none');
+  return set;
+}
+function swiftRenderHostModes() {
+  const set = new Set();
+  const src = readIf('swift/Sources/FundamentalVanilla/CoreGraphicsRenderer.swift');
+  const at = src.indexOf('switch frame.mode');
+  for (const m of src.slice(at, src.indexOf('\n            }', at)).matchAll(/case\s+\.([a-zA-Z]\w*)\s*:/g)) set.add(m[1]);
+  set.delete('none_');
+  return set;
+}
+function kotlinRenderHostModes() {
+  // the COMPOSE host's own enum, not the core runtime's — the four cases its `Canvas` actually paints.
+  const set = new Set();
+  const block = blockAfter(ktComposeViewSrc, 'enum class RenderMode');
+  for (const m of block.matchAll(/\n\s{4}([A-Z][A-Z0-9_]*)\s*,?\s*$/gm)) set.add(m[1]);
+  return set;
+}
+
+/** `data-when` gate ids — the built-in condition registry on each plane. */
+function jsConditions() {
+  const set = new Set();
+  const block = blockAfter(read('packages/core/src/engine/conditions.ts'), 'export const conditions');
+  for (const m of block.matchAll(/\n\s{2}([a-z]\w*):/g)) set.add(m[1]);
+  return set;
+}
+function swiftConditions() {
+  const set = new Set();
+  const block = blockAfter(readIf('swift/Sources/FundamentalCore/Engine/Conditions.swift'), 'public func builtinConditions');
+  for (const m of block.matchAll(/"([a-z]\w*)":/g)) set.add(m[1]);
+  return set;
+}
+function kotlinConditions() {
+  const set = new Set();
+  const src = readIf('android/fundamental-core/src/main/kotlin/com/fundamental/core/engine/Conditions.kt');
+  const at = src.indexOf('fun builtinConditions');
+  for (const m of src.slice(at).matchAll(/"([a-z]\w*)"\s+to\b/g)) set.add(m[1]);
+  return set;
+}
+
+/** Global formation preset ids (`setFormation` / `<field-root formation>`). */
+function jsFormations() {
+  const set = new Set();
+  const src = read('packages/core/src/config/forces.config.ts');
+  const at = src.indexOf('export const FORMATIONS');
+  for (const m of src.slice(at, src.indexOf('] as const;', at)).matchAll(/\bid:\s*'([a-z]\w*)'/g)) set.add(m[1]);
+  return set;
+}
+function swiftFormations() {
+  const set = new Set();
+  for (const m of readIf('swift/Sources/FundamentalCore/Engine/Formations.swift').matchAll(/FormationDef\(id:\s*"([a-z]\w*)"/g)) set.add(m[1]);
+  return set;
+}
+function kotlinFormations() {
+  const set = new Set();
+  for (const m of readIf('android/fundamental-core/src/main/kotlin/com/fundamental/core/engine/Formations.kt').matchAll(/FormationDef\(\s*"([a-z]\w*)"/g)) set.add(m[1]);
   return set;
 }
 
@@ -226,6 +431,9 @@ const swiftUiViewSrc = readIf('swift/Sources/FundamentalSwiftUI/FieldView.swift'
 const swiftVanillaSrc = readIf('swift/Sources/FundamentalVanilla/FieldField.swift');
 const ktComposeViewSrc = readIf('android/fundamental-compose/src/main/kotlin/com/fundamental/compose/FieldView.kt');
 const ktAndroidViewSrc = readIf('android/fundamental-android/src/main/kotlin/com/fundamental/android/FieldFieldView.kt');
+// FeedbackChannels / FeedbackSink / OverlayMode live in the Kotlin PLATFORM module — the core port of
+// Swift's FieldHandle.swift does not carry them yet (see that file's own TODO(parity)).
+const ktRegistriesSrc = readIf('android/fundamental-platform/src/main/kotlin/com/fundamental/platform/Registries.kt');
 
 function jsPalette() {
   const set = new Set();
@@ -265,11 +473,15 @@ function goldenForces() {
 /** A capability dimension enumerated on each plane. `union` is every symbol seen on any plane; each
  *  plane lists which it supports, plus the count. A symbol present on JS but absent on Kotlin is a
  *  documented gap; the docs render the per-plane sets into a support row. */
-function dimension(id, label, js, swift, kotlin) {
+function dimension(id, label, js, swift, kotlin, idiom) {
   const union = sortedArr(new Set([...js, ...swift, ...kotlin]));
   return {
     id,
     label,
+    // How each plane SPELLS this capability (DOM scan vs `.fieldBody()` vs `Modifier.fieldBody`).
+    // Descriptive only — a label the docs render beside the row; never a support claim. The ✓/✗ below
+    // is always computed from the extracted symbol sets.
+    ...(idiom ? { idiom } : {}),
     union,
     counts: { js: js.size, swift: swift.size, kotlin: kotlin.size },
     planes: {
@@ -299,6 +511,80 @@ export async function buildParityMatrix() {
     // colour is a capability too (#1091): the multi-hue palette at the option, declarative-host, and
     // imperative-host layers — the layer #1090 fell through.
     dimension('palette', 'Palette / colour (option · declarative host · imperative host)', jsPalette(), swiftPalette(), kotlinPalette()),
+
+    // ── the declarative authoring surface (Phase 2, #997) ────────────────────────────────────────
+    dimension(
+      'declarative-body',
+      'Declarative body contract (the parameters an author sets on the element itself)',
+      bodyConceptSet(jsBodyAttrs()),
+      bodyConceptSet(swiftDeclarativeBody()),
+      bodyConceptSet(kotlinDeclarativeBody()),
+      {
+        js: '`data-*` attributes on any element, found by the DOM scan',
+        swift: 'the SwiftUI `.fieldBody(tokens:…)` view modifier',
+        kotlin: 'the Compose `Modifier.fieldBody(tokens, …)` modifier',
+      },
+    ),
+    dimension(
+      'body-spec',
+      'Programmatic body spec (`addBody`) — the same contract for a body with no backing element',
+      bodyConceptSet(jsBodySpec()),
+      bodyConceptSet(swiftBodySpec()),
+      bodyConceptSet(kotlinBodySpec()),
+      {
+        js: '`BodySpec` object literal',
+        swift: '`BodySpec` struct',
+        kotlin: '`BodySpec` class',
+      },
+    ),
+    dimension(
+      'feedback-channels',
+      'Feedback channels — the per-body readings the field writes back each frame',
+      jsFeedbackChannels(),
+      swiftFeedbackChannels(),
+      kotlinFeedbackChannels(),
+      {
+        js: 'CSS custom properties on the element (`--d`, `--load`, …), or a `feedbackSink`',
+        swift: 'the `onFeedback: (FeedbackChannels) -> Void` closure, or a `FeedbackSink`',
+        kotlin: 'a `FeedbackSink` / the `StateRegistry` (no per-body callback on `Modifier.fieldBody`)',
+      },
+    ),
+    dimension(
+      'render-host-modes',
+      'Render modes the declarative HOST draws (the layer a mode can be silently lost at)',
+      kebabSet(jsRenderHostModes()),
+      kebabSet(swiftRenderHostModes()),
+      kebabSet(kotlinRenderHostModes()),
+      {
+        js: 'the engine owns the underlay draw — no separate host renderer',
+        swift: '`CoreGraphicsRenderer.draw(in:)` (Metal hybrid for dots/trails/links)',
+        kotlin: 'the Compose `FieldView` `Canvas`, driven by its OWN four-case `RenderMode`',
+      },
+    ),
+    dimension(
+      'conditions',
+      'Conditional gates (`data-when`) — the built-in condition registry',
+      jsConditions(),
+      swiftConditions(),
+      kotlinConditions(),
+      {
+        js: '`data-when="fast"`',
+        swift: '`Body.when`, resolved against `builtinConditions()`',
+        kotlin: '`Body.when`, resolved against `builtinConditions()`',
+      },
+    ),
+    dimension(
+      'formations',
+      'Global formation presets (`setFormation` / `<field-root formation>`)',
+      jsFormations(),
+      swiftFormations(),
+      kotlinFormations(),
+      {
+        js: '`<field-root formation="wells">` or `field.setFormation(\'wells\')`',
+        swift: '`FORMATIONS` / `formation(named:)`',
+        kotlin: '`FORMATIONS` / `formation(named)`',
+      },
+    ),
   ];
 
   const golden = goldenForces();

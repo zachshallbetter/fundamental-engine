@@ -17,6 +17,14 @@
  *   4. force tokens          (engine: forces/{index,natural,extended}.ts · docs: atoms.json forces)
  *   5. body attrs            (engine: core/scanner.ts        · docs: ATTRS[])
  *   6. field-root attrs      (engine: elements/custom-elements.json     · docs: FIELD_ROOT_ATTRS[])
+ *   7. render modes          (engine: FieldHandle.setRender  · docs: RENDER_MODES[])
+ *   8. overlay readings      (engine: core/types.ts OverlayMode         · docs: OVERLAY_MODES[])
+ *   9. field-cell attrs      (engine: elements/custom-elements.json     · docs: FIELD_CELL_ATTRS[])
+ *
+ * Surfaces 7-9 were added by docs-refactor Phase 2 (#997): the declarative authoring vocabulary was
+ * the half of the surface the gate did not yet hold. The render/overlay tables in docs-api.ts were
+ * hand-kept and ungated (the render table was missing `none`, the overlay table `off`), and the
+ * SECOND custom element, `<field-cell>`, was documented nowhere on the site at all.
  *
  * It also asserts the cross-platform PARITY MATRIX (data/parity-matrix.json, §5) is current: it
  * regenerates the JS·Swift·Kotlin support matrix in-memory (via gen-parity-matrix.mjs) and fails if
@@ -106,6 +114,28 @@ function engineBodyAttrs() {
   return set;
 }
 
+/** The underlay render vocabulary `FieldHandle.setRender(mode:)` accepts — the same union
+ *  `FieldOptions.render` and `<field-root render>` take. Scoped to the signature's `): void;` so a
+ *  later string union in types.ts cannot leak in. */
+function engineRenderModes() {
+  const set = new Set();
+  const at = typesSrc.indexOf('  setRender(');
+  if (at < 0) throw new Error('check:docs: could not find FieldHandle.setRender in core/types.ts');
+  const block = typesSrc.slice(at, typesSrc.indexOf('): void;', at));
+  for (const m of block.matchAll(/'([a-z][\w-]*)'/g)) set.add(m[1]);
+  return set;
+}
+
+/** The overlay READING vocabulary — the `OverlayMode` string union in core/types.ts. */
+function engineOverlayModes() {
+  const set = new Set();
+  const start = typesSrc.indexOf('export type OverlayMode');
+  if (start < 0) throw new Error('check:docs: could not find OverlayMode in core/types.ts');
+  const block = typesSrc.slice(start, typesSrc.indexOf(';', start));
+  for (const m of block.matchAll(/'([a-zA-Z][\w-]*)'/g)) set.add(m[1]);
+  return set;
+}
+
 /** Observed attributes on a CEM-declared custom element. */
 function cemAttrs(tagName) {
   const set = new Set();
@@ -190,6 +220,22 @@ const surfaces = [
     name: '<field-root> attrs',
     truth: cemAttrs('field-root'),
     docs: docElementAttrs('FIELD_ROOT_ATTRS'),
+  },
+  // the declarative authoring vocabulary (Phase 2, #997)
+  {
+    name: 'render modes (setRender / render)',
+    truth: engineRenderModes(),
+    docs: docRowNames('RENDER_MODES', 'name'),
+  },
+  {
+    name: 'overlay readings (setOverlay / overlay)',
+    truth: engineOverlayModes(),
+    docs: docRowNames('OVERLAY_MODES', 'name'),
+  },
+  {
+    name: '<field-cell> attrs',
+    truth: cemAttrs('field-cell'),
+    docs: docElementAttrs('FIELD_CELL_ATTRS'),
   },
 ];
 
