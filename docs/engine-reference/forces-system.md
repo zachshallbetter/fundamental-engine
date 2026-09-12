@@ -626,7 +626,7 @@ and `ds-interactions.js`):
 | `setAttention(on)` | Toggle conserved attention (§2.4) — one finite strength budget. |
 | `setCausality(on)` | Toggle cross-boundary causality (Concept 4) — density spills to neighbours. |
 | `setHeatmap(on)` | Toggle the density heatmap layer (H1). |
-| `setRender(mode)` | Switch the underlay render mode (§20.6): `dots` · `trails` · `links` · `metaballs` · `voronoi` · `streamlines` · `flow` (a composite — `dots` + `streamlines`) · `knockout` · `redshift` · `blackbody` · `depth` · `none` (the signals-only mode — never draws; see §13.7). |
+| `setRender(mode)` | Switch the underlay render mode (§20.6): `dots` · `trails` · `links` · `metaballs` · `voronoi` · `streamlines` · `flow` (a composite — `dots` + `streamlines`) · `knockout` · `redshift` · `blackbody` · `depth` · `none` (the signals-only mode — draws no matter; see §13.7). |
 | `setOverlay(mode)` | Render a field-structure visualization on the overlay surface: `off` · `streamlines` · `force-vectors` · `field-lines`. |
 | `setSeparation(strength)` | Particle-to-particle short-range repulsion strength (`0..1`, default `0`) — keeps free matter from clumping. Mirrors `FieldOptions.separation` and the `separation` attribute on `<field-root>`. |
 | `setWaveCenter(center)` | Set the center the `circular` Currents orbit (§24.1). Resolved live in three modes: a body token tracked each frame (e.g. `star`/`vortex`), a custom `{ x, y }` coordinate (or a `() => { x, y }` provider), or `null` to fall back to the viewport center. |
@@ -686,7 +686,7 @@ read-only access to engine state that would otherwise require a reference to int
 | Method | Description |
 |---|---|
 | `setVisible(on)` | Element-level visibility hint. `setVisible(false)` skips **all** draw work each frame — the underlay render and the overlay surface, usually the dominant frame cost — while the simulation and its feedback signals stay live: `scrollV()`, `--d`, `--load`, and capture events keep flowing. |
-| `render: 'none'` / `setRender('none')` | The same skip, made **structural**: a named render mode in which the engine never draws at all. The simulation, feedback writes, events, sinks, and engagement are unchanged and live — the field exists purely as signals. |
+| `render: 'none'` / `setRender('none')` | The same skip, made **structural**: a named render mode in which the engine never draws **matter**. The simulation, feedback writes, events, sinks, and engagement are unchanged and live — the field exists purely as signals. A declared overlay **reading** still draws, on its own surface (see the amendment below). |
 
 Distinct from the **tab-level** pause: the host's `visibilitychange` already stops the loop
 entirely when the tab is backgrounded; `setVisible` is for a canvas that is hidden or offscreen
@@ -703,8 +703,9 @@ the drawing machinery stays ready), `render: 'none'` is the *structural* contrac
 typographic (invisible) placement. A field **created** with `createField(canvas, { render:
 'none' })` guarantees, from construction:
 
-- **No canvas context.** `getContext('2d')` is never called — on the main canvas or the overlay
-  canvas. (Consequently the mode never throws the "2D canvas context unavailable" error.)
+- **No canvas context.** `getContext('2d')` is never called on the main canvas. (Consequently the
+  mode never throws the "2D canvas context unavailable" error.) A context is acquired for the
+  *overlay* canvas only if a reading is actually declared — see the amendment below.
 - **No backing store.** `resize()` never assigns `canvas.width`/`canvas.height`; the backing
   store stays 0×0 — no pixel-buffer allocation. The simulation's `W`/`H` still track the
   viewport exactly as in every other mode, so the physics space is unchanged.
@@ -715,9 +716,42 @@ typographic (invisible) placement. A field **created** with `createField(canvas,
   signal, not a drawing.)
 - **Signals stay live.** `--d`, `--load`, `--lit`, `field:captured`/`field:released`,
   `field:lit`/`field:dim`, `data-on` event bindings, `scrollV()`, engagement (`data-hot`),
-  element movers/docking — the full pipeline runs every frame. Neither the underlay `render()`
-  nor the overlay `renderOverlay()` is ever invoked (`setOverlay` is accepted but draws nothing
-  while the mode is `'none'`).
+  element movers/docking — the full pipeline runs every frame. The underlay `render()` is never
+  invoked.
+
+**Amended (Field Surfaces, [#732](https://github.com/zachshallbetter/fundamental-engine/issues/732) — Q-3).**
+This section used to add a fifth clause: *"neither the underlay `render()` nor the overlay
+`renderOverlay()` is ever invoked (`setOverlay` is accepted but draws nothing while the mode is
+`'none'`)"*. **That clause is withdrawn, and the engine now matches this text rather than that one.**
+
+The guarantee `render: 'none'` makes is about **matter**. What #297 and #538 promise — and what the
+invisible-fields pattern is built on — is that a field can simulate, measure and feed back without
+painting particles, and without paying for a pixel buffer it never uses. A **reading** is not matter:
+it is a diagnostic drawn on a *different*, host-owned canvas that the signals-only field never
+allocated in the first place. The old clause tied the two together because one `if` in the frame loop
+happened to guard both surfaces — an implementation detail that had hardened into a written promise.
+It also made the most-wanted Field Surfaces case silently impossible: readings over content that the
+engine does not paint (a data table, a light card), with `render: 'none'` being the default since
+#538. So the two surfaces are now gated separately:
+
+| | underlay (matter) | overlay (readings) |
+|---|---|---|
+| needs a drawing `render` mode | **yes** — `'none'` draws nothing | no |
+| acquires a context on the main canvas | yes | never |
+| acquires a context on the overlay canvas | — | only when a reading is declared |
+| honours `dprCap` / quality tier | yes | yes |
+| honours `setVisible(false)` and the reduced-motion cadence | yes | yes |
+
+**Nothing changes for a field that declares no reading**, which is every field that has not asked for
+one: `overlay` defaults to `'off'`, no surface is provisioned, no context is acquired, and the
+no-allocation guarantee above holds exactly as written. Declaring a reading is opt-in, and the cost
+is the reading's own surface — never the matter surface.
+
+**Plane status.** JS and Swift gate the two surfaces separately as described. Kotlin's app hosts draw
+no readings at all today (the Compose `FieldView` paints matter only; only the JVM lab draws
+readings, through its own enum), so there is no gate there to relax — vocabulary parity on
+`overlay-modes` is unaffected either way. See
+[`docs/design/field-surfaces-program.md`](../design/field-surfaces-program.md) §8.
 
 Runtime transitions via `setRender`:
 

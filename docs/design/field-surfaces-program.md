@@ -1,6 +1,7 @@
 # Field Surfaces — the program
 
-**Status: PROPOSED.** Nothing in this document is built. It is the design for the
+**Status: IN BUILD.** Lane S0 has landed (the core surface fixes **C-24** / **C-25** and the
+**Q-3** decision — see §6.2); everything else in this document is still design. It is the design for the
 five open Field Surfaces tickets — [#672](https://github.com/zachshallbetter/fundamental-engine/issues/672)
 `inline` placement, [#673](https://github.com/zachshallbetter/fundamental-engine/issues/673)
 `framed` placement, [#674](https://github.com/zachshallbetter/fundamental-engine/issues/674)
@@ -110,7 +111,7 @@ Two facts constrain every option:
 | Gate | What it actually checks | Relevance here |
 |---|---|---|
 | `check:api` | removals only (`scripts/check-api-surface.mjs`) | additive work passes |
-| `check:docs` (`DOCS_GATE_ENFORCE=1`) | HANDLE, OPTIONS, feedback vars, force tokens, body attrs, **FIELD_ROOT_ATTRS** | **`OVERLAY_MODES` is *not* a gated surface** — a missing row silently drops the catalog/tour button with green CI (**C-18**) |
+| `check:docs` (`DOCS_GATE_ENFORCE=1`) | HANDLE, OPTIONS, feedback vars, force tokens, body attrs, **FIELD_ROOT_ATTRS**, RENDER_MODES, **OVERLAY_MODES**, FIELD_CELL_ATTRS, handle properties, EVENTS, AGENT_CAPABILITIES, SNAPSHOT_PROFILES, BUDGETS, BODY_HANDLE | ~~`OVERLAY_MODES` is *not* a gated surface~~ — **this was already stale when written** (**C-18**): `scripts/check-docs.mjs` carries an `overlay readings (setOverlay / overlay)` surface whose truth is `engineOverlayModes()`. A new reading with no `OVERLAY_MODES` row fails the gate today. Verified in lane S0 |
 | `check:cem` | regen + `git diff --exit-code` on `packages/elements/custom-elements.json` | any `<field-root>` attr/JSDoc/member change |
 | `check:atoms` | regen `apps/site/src/data/atoms.json` + diff | readings are not atoms — expect **no diff**; it must stay green, not go green |
 | `gen:parity-matrix` | JS union · Swift `case` lines · Kotlin `NAME("id")` → `data/parity-matrix.json`; staleness fails `check:docs` | every new reading, on all three planes or as an honest gap |
@@ -417,9 +418,11 @@ in §3.4. Everything below survives into the chosen design.
 - **C-17** One vocabulary source (`OVERLAY_MODE_LIST`) must be checked in **both** directions — `satisfies`
   proves only list ⊆ union — and must also feed `recipes/compile.ts`'s `OVERLAY_READINGS` and the
   `<field-root>` `KNOWN` filter.
-- **C-18** `OVERLAY_MODES` is not a `check:docs` surface, yet the catalog and engine-tour pages generate
-  one button per row: a new reading with no row silently loses its button, and a row whose reading
-  paints nothing is a wallpaper-rule failure. Add the surface to the gate in the same PR.
+- **C-18** ~~`OVERLAY_MODES` is not a `check:docs` surface~~ — **withdrawn as stale** (verified in S0).
+  It *is* one: `scripts/check-docs.mjs` declares the `overlay readings (setOverlay / overlay)` surface
+  against `engineOverlayModes()`, so a new reading with no `OVERLAY_MODES` row already fails
+  `DOCS_GATE_ENFORCE=1`. R0 inherits one real job from this entry, not two: the catalog/tour button
+  still comes from the row, and a row whose reading paints nothing is still a wallpaper-rule failure.
 - **C-19 · C-20 · C-21** `potential` normalisation aliasing (use the analytic depth), the lattice's
   short final column, and the allocation churn of `sampleScalarGrid`/`contourSegments`.
 - **C-22 · C-23** `prediction`/`causality` must sample through the engine's `forceAt`, not
@@ -437,11 +440,13 @@ in §3.4. Everything below survives into the chosen design.
 
 **Engine / surface plumbing**
 
-- **C-24** `ensureOverlaySurface()` calls the provider **before** the `ctx` check — a signals-only
-  field with a provider creates a canvas it can never draw to.
-- **C-25** The lazy sizing path uses the raw host DPR, ignoring `dprCap` and the quality tier's ceiling,
+- **C-24** ~~`ensureOverlaySurface()` calls the provider **before** the `ctx` check — a signals-only
+  field with a provider creates a canvas it can never draw to.~~ **Closed in S0**, by the **Q-3**
+  decision rather than by a guard: the canvas is no longer one it can never draw to.
+- **C-25** ~~The lazy sizing path uses the raw host DPR, ignoring `dprCap` and the quality tier's ceiling,
   until the next `resize()`; on a DPR-3 phone that is 2.25× the underlay's pixels on a full-viewport
-  mix-blend layer.
+  mix-blend layer.~~ **Closed in S0**: one `effectiveDpr()` definition, used by `sizeSurfaces` and the
+  lazy path alike.
 
 **Accessibility, reduced motion, gates**
 
@@ -475,7 +480,7 @@ in §3.4. Everything below survives into the chosen design.
 |---|---|---|---|
 | **Q-1** | What is the **declarative door** to inline/framed? `<field-root bounds-selector>` (named in #540's build plan, never built), a new `<field-inline>` element, or imperative-only? | `<field-root>` is a fixed viewport singleton; without a door, #672/#673 — the #784 adoption unlock — ship as JS only, and the primary a11y-hardened host gets none of the program | build `bounds-selector` on `<field-root>` (honours #540, one door, `check:cem`-visible) rather than a second element |
 | **Q-2** | Is **`framed` a separate contained field that claims its bodies** (#980), or a window onto the page field? | decides whether #673 is documentation over #672's mechanism or needs the rejected `framedBackend` seam | contained field; keep the wrapping-backend as a recorded escape hatch |
-| **Q-3** | Do we ever **relax the `render:'none'` overlay gate** (readings without matter)? | §13.7/#297 states the opposite as a guarantee; without a relaxation `#784`'s "readings over a data table" is undeliverable, and every inline card pays a full matter engine | separate ticket, all three planes, after this program |
+| **Q-3** ✅ | Do we ever **relax the `render:'none'` overlay gate** (readings without matter)? | §13.7/#297 states the opposite as a guarantee; without a relaxation `#784`'s "readings over a data table" is undeliverable, and every inline card pays a full matter engine | ~~separate ticket, after this program~~ — **DECIDED in lane S0: yes.** The guarantee is about *matter*; the coupling to the overlay was one shared `if`. §13.7 is amended on the record (not quietly contradicted), and the two surfaces now gate separately on JS and Swift. Kotlin draws no readings in its app hosts, so it has no gate to relax |
 | **Q-4** | **Generic `contours`** (#674's second ask): a token, an exported factory, or a factory **plus** a way to activate registered names declaratively? | a `registerOverlay` name can be registered but never enabled — `setOverlay` is typed to the closed union and `<field-root>` filters unknown tokens | factory **plus** a `custom:<name>` passthrough on the attribute and an `OverlayInput` widening; otherwise #674 cannot honestly close |
 | **Q-5** | **`potential` semantics**: token-aware (skip bodies with no field-bearing token, sign by polarity) or fixed gravity wells with a documented caveat? Is `kind` an option? | a token-blind reading draws a `repel` body as a sink — it defines rather than reveals | token-aware, matching `forceAt`/`fieldline-seeds`; defer `kind` |
 | **Q-6** | **`causality` on the ports**: leave the honest js-only gap (matrix becomes 12/11/11), or hold the reading until the ports have a per-force accumulator? | neither port keeps attribution; a `break` arm would be a hollow green | ship JS-only with the gap and a parity note — but see **Q-7** on where the note can live |
@@ -504,7 +509,7 @@ lanes below serialise where they share files (**C-37**).
 
 | PR | Content | Gates that must be green |
 |---|---|---|
-| **S0** `fix(core)` | the lazy overlay surface honours `dprCap` + tier DPR (**C-25**); the provider is not called when there is no `ctx` (**C-24**) | `check:api`, core unit + `option-seams` (#676 pins), CHANGELOG |
+| **S0** `fix(core,swift)` ✅ **landed** | the lazy overlay surface honours `dprCap` + tier DPR (**C-25**); the two surfaces gate separately so a reading no longer dies with the underlay (**Q-3**, which closes **C-24** outright); §13.7 amended on the record | `check:api`, core unit + `option-seams` (#676 pins), Swift build + tests, CHANGELOG |
 | **S1** `feat(dom)` | placement variant of `createOverlaySurface` (**Q-10**): `placement`/`container`, provider-shaped `provide()`, `setActive(input)` gating, `isolation:isolate` promotion (**C-3**), markers (**C-8**), `hostForPlacement()`; extend `lintCompositingPerf` to contained surfaces (**C-9**); a real container test harness (**C-38**) | `check:api`, dom unit, `check:links`, CHANGELOG |
 | **S2** `feat(dom)` | `containerHost` visibility gating — IntersectionObserver → `setVisible` (**C-4**) | dom unit, e2e unchanged, CHANGELOG |
 | **S3** `feat(vanilla,dom)` — **#672** | inline auto-wiring on `FieldField`/`createField` when `bounds` is set; teardown ownership (**C-10**); scroll behaviour (**C-5**); ownership rescan (**C-6**); the content-layering contract + a worked light-card example (**C-1**, **C-2**, **C-7**); taxonomy Planned-note edit | `check:api`, `DOCS_GATE_ENFORCE=1 check:docs`, `check:links`, `check:atoms` (no diff), vanilla/dom unit, `home.spec.ts`, CHANGELOG |

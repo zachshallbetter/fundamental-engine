@@ -818,9 +818,11 @@ export interface FieldOptions {
    *  than to black. Purely additive — the default is unchanged. */
   background?: 'opaque' | 'transparent';
   /** render mode (§20.6): 'none' (the DEFAULT since #538 — the signals-only engine,
-   *  §13.7 / #297: the full simulation + feedback pipeline runs, but no canvas context
-   *  is acquired, no backing store is sized, and nothing is ever drawn — the field
-   *  exists purely as signals: `--d`, `--load`, `--lit`, capture events, `scrollV()`).
+   *  §13.7 / #297: the full simulation + feedback pipeline runs, but no context is acquired
+   *  for this canvas, no backing store is sized, and no MATTER is ever drawn — the field
+   *  exists purely as signals: `--d`, `--load`, `--lit`, capture events, `scrollV()`. It does
+   *  not suppress an overlay READING, which draws on its own host-owned surface — see
+   *  `overlay`; a field declaring no reading draws nothing at all, as before).
    *  Opt into a drawing surface explicitly: 'dots' (the particle surface), 'trails'
    *  (light-painting), 'links' (constellation), 'metaballs' (a liquid iso-surface, not
    *  dots), 'streamlines' (draw the force field itself — diagnostic, REPLACES the dots),
@@ -939,10 +941,12 @@ export interface FieldOptions {
   dprCap?: number;
   /**
    * Field Surfaces (overlay placement): a caller-provided canvas for the OVERLAY surface, drawn in
-   * front of page content. Core sizes its backing store (matching the main canvas dpr) and draws the
-   * `overlay` mode onto it each frame; the caller owns the element and its CSS placement (fixed,
-   * full-viewport, `pointer-events:none`, above content / below nav). Keeps core DOM-free — the host
-   * provides the canvas, core only draws. Default unset → no overlay surface.
+   * front of page content. Core sizes its backing store (matching the main canvas dpr, under the same
+   * `dprCap` / quality-tier ceilings) and draws the `overlay` mode onto it each frame; the caller owns
+   * the element and its CSS placement (fixed, full-viewport, `pointer-events:none`, above content /
+   * below nav). Keeps core DOM-free — the host provides the canvas, core only draws. Default unset →
+   * no overlay surface. Works under `render: 'none'`: the reading is a separate surface, so a
+   * signals-only field can carry one (§13.7 as amended by Field Surfaces).
    */
   overlayCanvas?: HTMLCanvasElement;
   /**
@@ -1702,8 +1706,8 @@ export interface FieldHandle {
   forAgent(opts: AgentViewOptions): AgentFieldView;
   /**
    * Switch the underlay render mode (§20.6) live — the surface behind content. `'none'` is the
-   * signals-only mode (§13.7 / #297): drawing stops from the next frame while the simulation and
-   * its signals stay live. Switching TO `'none'` at runtime keeps an already-acquired context and
+   * signals-only mode (§13.7 / #297): matter stops being drawn from the next frame while the
+   * simulation, its signals and any declared overlay reading stay live. Switching TO `'none'` at runtime keeps an already-acquired context and
    * backing store (the no-allocation guarantee belongs to fields CREATED with `render: 'none'`);
    * switching FROM `'none'` acquires the context lazily and sizes the backing store at that moment.
    */
@@ -1725,8 +1729,10 @@ export interface FieldHandle {
   /**
    * Render field READINGS on the OVERLAY surface — in front of page content (Field Surfaces). Pairs
    * with `setRender` (the underlay); set both for an immersive look. No-op unless the field was created
-   * with an `overlayCanvas`. Accepts one reading or an additive stack (drawn in order); `'off'` (or an
-   * empty stack) clears the overlay surface.
+   * with an `overlayCanvas` / `overlayCanvasProvider` (or an injected `overlayBackend`). Accepts one
+   * reading or an additive stack (drawn in order); `'off'` (or an empty stack) clears the overlay
+   * surface. Independent of the underlay mode: a reading draws even while `render` is `'none'`
+   * (§13.7 as amended by Field Surfaces) — the signals-only guarantee is about matter, not readings.
    */
   setOverlay(mode: OverlayInput): void;
   /** wire glowing connector lines between a set, or clear with null (§10). */

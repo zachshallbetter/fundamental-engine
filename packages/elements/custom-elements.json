@@ -566,7 +566,7 @@
               "type": {
                 "text": "| 'dots'\n    | 'trails'\n    | 'links'\n    | 'metaballs'\n    | 'voronoi'\n    | 'streamlines'\n    | 'flow'\n    | 'knockout'\n    | 'redshift'\n    | 'blackbody'\n    | 'depth'\n    | 'none'"
               },
-              "description": "render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,\nnever draw (#297). Set `render=\"dots\"` (or another drawing mode) to get a visible surface.",
+              "description": "render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,\nnever draw MATTER (#297). Set `render=\"dots\"` (or another drawing mode) to get a visible underlay;\nan `overlay` reading draws on its own front surface regardless of this mode.",
               "readonly": true
             },
             {
@@ -2238,7 +2238,7 @@
               "type": {
                 "text": "| 'dots'\n    | 'trails'\n    | 'links'\n    | 'metaballs'\n    | 'voronoi'\n    | 'streamlines'\n    | 'flow'\n    | 'knockout'\n    | 'redshift'\n    | 'blackbody'\n    | 'depth'\n    | 'none'"
               },
-              "description": "render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,\nnever draw (#297). Set `render=\"dots\"` (or another drawing mode) to get a visible surface.",
+              "description": "render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,\nnever draw MATTER (#297). Set `render=\"dots\"` (or another drawing mode) to get a visible underlay;\nan `overlay` reading draws on its own front surface regardless of this mode.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
