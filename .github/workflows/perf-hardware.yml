@@ -56,6 +56,18 @@ jobs:
         with:
           persist-credentials: false
 
+      # A measurement host with a broken GPU is not a code regression, and the two must never look alike
+      # in the log. This fails first, loudly, with the remediation — before anything is built or measured.
+      # (2026-09-12: an unattended nvidia-driver-580-server upgrade left userspace at 580.178.04 against a
+      # running 580.173.02 kernel module; every EGL context fell back to Mesa llvmpipe and the sweep's
+      # software-rasterizer guard refused to record. The host needed a reboot, not a code fix.)
+      - name: Preflight · the GPU is real and usable
+        run: |
+          if ! nvidia-smi --query-gpu=name,driver_version --format=csv,noheader; then
+            echo "::error title=titan-gpu host::nvidia-smi failed — the measurement host's GPU is unusable, so these numbers would be a software rasterizer's, not the engine's. This is a HOST problem, not a code regression. Most likely a driver upgrade landed without a module reload (check /proc/driver/nvidia/version against libnvidia-ml.so.*); the host needs a reboot. Re-run this job once nvidia-smi answers."
+            exit 1
+          fi
+
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
