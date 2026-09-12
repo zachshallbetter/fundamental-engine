@@ -7,15 +7,89 @@ import simd
 //
 // Instead of the matter, measure the *forces themselves*. At a probe point we measure the
 // net push a still test particle would feel — so the invisible field a layout creates
-// becomes visible. `forceAt` is pure and mirrors the integrator's body-force loop (same
-// range cull), minus the per-particle modifier pass — a faithful-enough probe.
+// becomes visible. `forceAt` mirrors the integrator's body-force loop (same range cull),
+// minus the per-particle modifier pass — a faithful-enough probe.
+//
+// PURITY (#1162, the Swift half of JS #1155). A probe is an INSTRUMENT, not matter: it may read
+// the field and must never write to it. That contract used to be incidental rather than structural
+// — the loop ran each body's real `apply()` against the CALLER'S LIVE ENV, so `sink` advanced a
+// real body's accretion budget and could fire the live `supernova` from a drawing, `diffuse` /
+// `memory` wore the real scalar grids, `wall` threw sparks into the live field, and every sample
+// advanced the simulation's seeded rng (so the same point read a different vector depending on what
+// had been drawn before it). Now every sample runs under its own ``makeProbeEnv(mirroring:)``,
+// whose writing services are inert.
+//
+// Swift's exposure was WORSE than the JS engine's, not merely equal. JS shares one module-level
+// probe particle whose `cap` was never cleared, so after the first sample inside any sink's
+// `absorbR` that body's own `if (p.cap || …) return` guard short-circuited for the life of the
+// process: the body was over-accreted exactly ONCE, self-limiting by accident. Swift builds a
+// FRESH `Particle` per call (below), so `p.cap` is always nil and that guard never fires — every
+// probe point inside `absorbR` accreted, on every sample of every frame. A 12-frame streamlines
+// walk over one capacity-4 sink accreted 420 times and fired `supernova` 417 times.
+//
+// An inert env alone cannot close it: `sink` writes `b.accreted` DIRECTLY, through no service at
+// all. Hence the ``Env/isProbe`` marker the probe env carries and `sink` checks. One writer, one
+// reader. The drawn vectors are unchanged for every non-mutating force — `sink` contributes no
+// velocity either way — so the cross-plane conformance golden is byte-identical.
+
+/// The probe's own noise seed (the golden-ratio constant JS's `streamlines.ts` uses). Reseeded at
+/// the top of every sample, so a stochastic force (`jet`'s nozzle cone, `thermal`'s Langevin kick,
+/// `morph`'s jitter) reads the same at the same point however many samples came before it — and a
+/// seeded run a host is recording is never advanced by drawing a diagnostic.
+let PROBE_SEED: UInt32 = 0x9e37_79b9
+
+/// A read-through, write-DROPPING view of a live scalar grid: `diffuse` / `memory` still read the
+/// real field (an honest diagnostic reading), but their deposits never wear it.
+final class ProbeGrid: ScalarGrid {
+    private let live: any ScalarGrid
+    init(_ live: any ScalarGrid) { self.live = live }
+    func sample(at p: Vec3) -> Float { live.sample(at: p) }
+    func gradient(at p: Vec3) -> Vec3 { live.gradient(at: p) }
+    func deposit(at p: Vec3, amount: Float) {} // a reading never wears the field
+}
+
+/// The env one probe sample runs under. Its per-frame SCALARS mirror the caller's live env (so the
+/// reading is of the field as it is right now); every service that WRITES is inert —
+/// `spark`/`supernova`/`spawn` keep `Env`'s no-op defaults, grids drop their deposits, `rng` is the
+/// probe's own freshly seeded stream. `isProbe` tells a force that writes engine state outside the
+/// probe particle (today only `sink`'s accretion) that this pass is a reading, not a capture.
+///
+/// Built per sample rather than cached in a module-level singleton as the JS port does: this target
+/// is compiled under strict concurrency and holds no global mutable state, and `forceAt` already
+/// allocates a fresh `Particle` per call.
+func makeProbeEnv(mirroring env: Env) -> Env {
+    let pe = Env()
+    // read-only per-frame state, mirrored so the reading is current. `form` is a struct — copied,
+    // never aliased, so no force can write through it back into the live env.
+    pe.form = env.form
+    pe.volume = env.volume
+    pe.t = env.t
+    pe.frameN = env.frameN
+    pe.dt = env.dt
+    pe.c = env.c
+    pe.G = env.G
+    pe.scrollV = env.scrollV
+    pe.integrator = env.integrator
+    pe.fieldAt = env.fieldAt // a pure read (netField over the live bodies)
+    pe.isProbe = true
+    pe.rng = seededRng(PROBE_SEED)
+    pe.neighbors = { [live = env] p, r in live.neighbors(p, r) }
+    pe.grid = { [live = env] name in ProbeGrid(live.grid(name)) }
+    // spark / supernova / spawn are left at `Env`'s defaults, which are already no-ops — the live
+    // services are never handed to a probe pass.
+    return pe
+}
 
 /// Net force a zero-velocity test particle would feel at a point — the field vector.
 /// A force that defines a `field()` (its visual/structure field) contributes that instead
 /// of its `apply`, so velocity- and charge-dependent forces (magnetism, charge) appear
 /// here even though they no-op on a still, neutral probe.
+///
+/// READ-ONLY: `env` supplies the per-frame reading only — the forces run against a probe env, so
+/// this never writes to the simulation (#1162).
 public func forceAt(bodies: [Body], forces: ForceRegistry, env: Env, at point: Vec3) -> Vec3 {
     let probe = Particle(position: point)
+    let pe = makeProbeEnv(mirroring: env)
     var fieldSum = Vec3.zero // field() contributions, accumulated apart from the apply probe
     for b in bodies {
         if !b.isVisible || b.tokens.isEmpty { continue }
@@ -26,14 +100,14 @@ public func forceAt(bodies: [Body], forces: ForceRegistry, env: Env, at point: V
         let d2 = simd_length_squared(delta)
         if b.range > 0 && d2 >= b.range * b.range * 2.56 { continue } // same cull as the integrator
         let d = sqrt(d2)
-        env.vector = delta
-        env.dist = d < 1 ? 1 : d
+        pe.vector = delta
+        pe.dist = d < 1 ? 1 : d
         for tok in b.tokens {
             guard let f = forces[tok], !f.hasModify else { continue }
             if let v = f.field(body: b, at: point) {
                 fieldSum += v
             } else {
-                f.apply(body: b, particle: probe, env: env)
+                f.apply(body: b, particle: probe, env: pe)
             }
         }
     }

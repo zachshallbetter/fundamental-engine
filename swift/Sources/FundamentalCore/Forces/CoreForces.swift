@@ -190,7 +190,12 @@ public struct SinkForce: Force {
     public init() {}
 
     public func apply(body b: Body, particle p: Particle, env e: Env) {
-        if p.cap != nil || e.dist >= b.absorbR { return }
+        // A PROBE pass (the streamlines / overlay sampler) is a READING, not a capture: it must
+        // never move a real body's accretion budget or detonate it from a drawing (#1162). An inert
+        // probe env cannot stop this on its own — the write goes straight to the body, through no
+        // service — so the marker is checked here. Capture is the integrator's business, and sink
+        // adds no velocity, so the field a probe reads is unchanged either way.
+        if e.isProbe || p.cap != nil || e.dist >= b.absorbR { return }
         p.cap = b
         b.accreted += 1
         if b.accreted >= b.capacity { e.supernova(b) }

@@ -354,6 +354,17 @@ public final class Env {
     /// half-step average is skipped and the stored acceleration resets. Mirrors the JS `Env.kinTouch`.
     public var kinTouch: Bool = false
 
+    /// INTERNAL (diagnostic samplers, #1162 — the Swift mirror of JS `Env.probe`, #1155): this env
+    /// belongs to a PROBE pass — a render or overlay sampler measuring the field with a fictitious
+    /// test particle, not the integrator moving real matter. Every service that writes is inert on
+    /// such an env (`spark`/`supernova`/`spawn` are no-ops, scalar grids read through but drop their
+    /// deposits) and `rng` is the probe's own reseeded stream, so drawing a diagnostic can never
+    /// perturb the simulation or advance a seeded run. A force that writes ENGINE state *outside the
+    /// probe particle* must skip that write when this is set — `sink`'s accretion (`b.accreted`, and
+    /// the `supernova` at capacity) is the one such write today. Never set on the integrator's live
+    /// env; see ``makeProbeEnv(mirroring:)``.
+    public var isProbe: Bool = false
+
     /// The engine's random source (the JS `Env.rng` / #371 mirror) — forces and the integrator draw
     /// every jitter, emission cone, and Box–Muller uniform from here, so a seeded generator makes a
     /// run reproducible (the determinism seam, #974). Defaults to the platform generator (unseeded =
