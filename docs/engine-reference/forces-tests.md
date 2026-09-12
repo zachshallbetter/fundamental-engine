@@ -227,6 +227,7 @@ catalog by `conformance.test.ts`):
 | `attract repel` | equal attractor + repeller on one body | the two cancel — net Δv ≈ 0 |
 | `attract swirl` | one body, both forces | composes to the **sum** of the parts — an inward pull *and* a tangential swirl (Δv ≈ (0.146, −0.171)) |
 | `attract` + `data-when="fast"` | a fast and a slow particle | the gate lets the **fast** particle through (pulled toward the body) and **blocks** the slow one (left alone) |
+| `attract warp repel` (the `wormhole` preset) | two paired mouths, one virtual body per preset entry | matter falls into mouth A, is **relocated** to mouth B and **thrown clear** of it (not parked on the throat lip); particle count unchanged |
 
 Condition gating runs through the real condition registry (`active`, `fast`, `slow`,
 `hot`, `cool`), so the trajectory reflects the gate frame by frame.
@@ -248,10 +249,10 @@ Condition gating runs through the real condition registry (`active`, `fast`, `sl
 
 ## Coverage
 
-- **36 forces**, each with an experiment (36 `EXPERIMENTS` + 3 `COMPOSITE_EXPERIMENTS`,
-  ~76 invariant/exact checks), driven through the real engine and deterministic across
+- **36 forces**, each with an experiment (36 `EXPERIMENTS` + 4 `COMPOSITE_EXPERIMENTS`,
+  ~79 invariant/exact checks), driven through the real engine and deterministic across
   runs, on top of the golden per-force unit tests and the integrator suite. A **safety
-  sweep** then runs all 39 experiments through global finite/bounded/conserved invariants
+  sweep** then runs all 40 experiments through global finite/bounded/conserved invariants
   (no NaN/Infinity, speed ≤ `c`, bounded heat, stable count — plus the budgeted-source
   bound for the [S] class). Every merge green.
 - **Composition + conditions** are covered, not deferred: `COMPOSITE_EXPERIMENTS` verifies

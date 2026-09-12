@@ -92,6 +92,48 @@ test('expandPreset: virtual bodies inherit the parser defaults', () => {
   }
 });
 
+test('expandPreset: wormhole is the canon asymmetric composition (§20.7/§20.9)', () => {
+  const vb = expandPreset('wormhole');
+  assert.deepEqual(
+    vb.map((b) => b.tokens),
+    [['attract'], ['warp'], ['repel']],
+  );
+  // the well that draws matter in
+  assert.equal(vb[0]!.strength, 0.9);
+  assert.equal(vb[0]!.range, 300);
+  // the throat: `absorb` is the throat radius `warp` reads as absorbR (reused, as blackhole does)
+  assert.equal(vb[1]!.absorbR, 40);
+  assert.equal(vb[1]!.twist, 0);
+  assert.equal(vb[1]!.warpScale, 1);
+  // the exit mouth — gated `hot`, so it acts only on matter `warp` just relocated (heat 0.6)
+  assert.equal(vb[2]!.strength, 6);
+  assert.equal(vb[2]!.range, 200);
+  assert.equal(vb[2]!.when, 'hot');
+});
+
+test('expandPreset: wormhole is INERT with no data-pair — the throat stays unpaired', () => {
+  // no host at all
+  assert.equal(expandPreset('wormhole')[1]!.pair, undefined);
+  // a host that carries no data-pair
+  assert.equal(expandPreset('wormhole', attrs({}))[1]!.pair, undefined);
+});
+
+test('expandPreset: the @pair sentinel inherits the host element\'s data-pair', () => {
+  const vb = expandPreset('wormhole', attrs({ pair: '#mouth-b' }));
+  assert.equal(vb[1]!.pair, '#mouth-b');
+  // only the warp body is paired — the well and the exit mouth are not
+  assert.equal(vb[0]!.pair, undefined);
+  assert.equal(vb[2]!.pair, undefined);
+});
+
+test('expandPreset: a preset entry never inherits unrelated host attrs', () => {
+  // the host's own strength/range must NOT leak into the virtual bodies — the whole point
+  // of the preset layer is that each virtual body carries its own parameters.
+  const vb = expandPreset('wormhole', attrs({ pair: '#b', strength: '99', range: '7' }));
+  assert.equal(vb[0]!.strength, 0.9);
+  assert.equal(vb[0]!.range, 300);
+});
+
 test('expandPreset: an unknown preset contributes no bodies', () => {
   assert.deepEqual(expandPreset('not-a-preset'), []);
   assert.deepEqual(expandPreset(''), []);

@@ -983,7 +983,7 @@ engine and the caps matrix against it.
 > This section is the **formal spec** (token, class, formula, defaults) for the extended
 > vocabulary, and the **forces** are now **built**: every force below ships in the engine —
 > the relocation atom `warp` included ([A · paired], conformance-tested, traced on the home
-> manual) — except the `wormhole` preset that composes it (still spec-only);
+> manual), and the `wormhole` preset that composes it now ships too;
 > a few forward items in §20.6 (render modes) and §20.10 (transmutation atoms) are spec-only
 > too and are marked inline. Rationale, "unique result," and
 > sequencing live in `docs/forces-possibilities.md`. The foundational pass the classes
@@ -1051,9 +1051,9 @@ aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were dro
 >
 > - **`pheromone` shipped as the token `diffuse`** (deposit + steer up a diffusing grid);
 >   its wave sibling is **`propagate`** (`∂²φ/∂t² = c²∇²φ`). Both are class [C].
-> - **`warp` shipped; `wormhole` did not.** The relocation atom is built
+> - **`warp` and `wormhole` both ship.** The relocation atom is built
 >   (`packages/core/src/forces/extended.ts`, [A · paired], conformance-tested, traced on
->   the home manual); the `wormhole` preset that composes it remains spec-only, and the
+>   the home manual), and the `wormhole` preset that composes it is registered (§20.9); the
 >   rest of the cosmology set is composed from existing tokens (`blackhole`, `whitehole`)
 >   or the conserved sink→release event (`supernova`).
 > - **`spawn` [S] and `fountain`** shipped as written (a budgeted source + its preset).
@@ -1528,8 +1528,8 @@ the horizon (`sink`) independently of the well (`attract`). The fix — now buil
 thin **preset layer** (`config/presets.ts` → `scanner.ts`) that expands one element into
 several **co-located virtual bodies**, each a primitive with its *own* attrs, all bound to
 the same rect. The force loop is unchanged — it already iterates `bodies × tokens` (§4);
-the scanner just emits more bodies. Shipped presets: `blackhole`, `whitehole`, `star`,
-`quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
+the scanner just emits more bodies. Shipped presets: `blackhole`, `whitehole`, `wormhole`,
+`star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
 
 ```js
 // authoring:  <a data-preset="blackhole"> …  (or data-preset="wormhole" data-pair="#b">)
@@ -1544,9 +1544,10 @@ window.__presets = {
     { body:'repel',   strength:1.4, range:340 },           // emission horizon
     { body:'stream',  strength:0.6, range:300, angle:0 },  // optional directed eject
   ],
-  wormhole: [                                              // mouth A; data-pair → mouth B
+  wormhole: [                                              // either mouth; data-pair → its partner
     { body:'attract', strength:0.9, range:300 },           // draw matter into the throat
-    { body:'warp',    throat:40,   pair:'@pair', twist:0, scale:1 },  // relocate A→B (conserved)
+    { body:'warp',    absorb:40,   pair:'@pair', twist:0, scale:1 },  // relocate A→B (conserved)
+    { body:'repel',   strength:6,  range:200, when:'hot' },// the exit mouth: throw arrivals clear
   ],
   supernova: [                                             // one-shot; fire on trigger/saturation
     { body:'spawn',   create:120,  strength:5, range:320, oneshot:true, remnant:'tether' },
@@ -1575,7 +1576,7 @@ window.__presets = {
 |---|---|---|
 | `blackhole` | `attract` + `swirl` + `sink` + `lens` | none |
 | `whitehole` | `repel` + `stream` | none |
-| `wormhole` | `attract` + **`warp`** (×2 mouths, paired) | `warp` |
+| `wormhole` | `attract` + **`warp`** + `repel` (×2 mouths, paired) | none |
 | `supernova` | **`spawn`** (one-shot) + remnant swap | `spawn` |
 | `fountain` | **`spawn`** (continuous) | `spawn` |
 | *pulsar* | `gravity`(spin) + `resonate` + `spotlight` | none |

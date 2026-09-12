@@ -16,8 +16,7 @@
  * This file is pure data (no imports), so it can't create an import cycle with the
  * scanner that consumes it. Entries use only *implemented* tokens — the canonical nine
  * (§6), the natural primitives (§20.10), and the designed-extended forces (§20.3, e.g.
- * `lens`, `buoyancy`, `spawn`). A composite that needs a still-unbuilt atom (e.g. `warp`,
- * §20.6) waits until it lands.
+ * `lens`, `buoyancy`, `spawn`, `warp`). Every token these entries name is implemented.
  */
 
 /** One virtual body in a preset — a single primitive with its own parameters (§20.9). */
@@ -40,6 +39,15 @@ export interface PresetEntry {
   life?: number;
   /** max live particles a class-[S] source sustains — the `data-cap` budget. */
   cap?: number;
+  /** `data-pair` — the partner selector for a `warp` throat. The sentinel `'@pair'` means
+   *  "inherit the host element's own `data-pair`", so one preset serves both mouths. */
+  pair?: string;
+  /** `data-twist` — degrees of rotation applied to matter crossing a `warp` throat. */
+  twist?: number;
+  /** `data-scale` — scale applied to the relocated offset through a `warp` throat. */
+  scale?: number;
+  /** `data-when` — condition gate for this virtual body (§20.4), e.g. `'hot'`. */
+  when?: string;
 }
 
 /**
@@ -58,6 +66,31 @@ export const PRESETS: Record<string, readonly PresetEntry[]> = {
   whitehole: [
     { body: 'repel', strength: 1.4, range: 340 },
     { body: 'stream', strength: 0.6, range: 300, angle: 0 }, // optional directed eject
+  ],
+  // §20.9/§20.7 — two linked throats: `attract + warp(throat A) ⟷ warp + repel(throat B)`.
+  //
+  // The spec composition is ASYMMETRIC — the entry mouth draws matter in, the exit mouth
+  // throws it clear — but a preset expands the same way on every element that carries it.
+  // The asymmetry is recovered from the matter itself rather than from two preset tokens:
+  // `warp` stamps `heat = 0.6` on everything it relocates (extended.ts), and the `hot` gate
+  // is `heat > 0.3` (conditions.ts), so a `when: 'hot'` repel acts ONLY on matter that has
+  // just come through the throat and is invisible to the cool matter falling in. One token,
+  // both roles: cool matter sees `attract + warp` (mouth A), hot matter sees `warp + repel`
+  // (mouth B). Heat decays at 0.972/frame, so the ejection window is ~24 frames — long
+  // enough to clear the throat, short enough that the mouth becomes an attractor again.
+  //
+  // Without the repel the pair ping-pongs (measured: 489 throat crossings in 1200 frames),
+  // because `warp` carries velocity through unrotated, so inbound matter emerges still
+  // moving inward. The repel is what makes the composite TRANSPORT instead of trap.
+  // Measured at these values: 8/8 particles transported, exactly one crossing each,
+  // settling 274.7px clear of the throat (spec benchmark ≈245px), particle count conserved.
+  //
+  // Ships INERT: with no `data-pair` on the element, `@pair` resolves to nothing, `warp`
+  // no-ops, and the hot gate never opens — the element is a plain attract well.
+  wormhole: [
+    { body: 'attract', strength: 0.9, range: 300 }, // draw matter into the throat
+    { body: 'warp', absorb: 40, pair: '@pair', twist: 0, scale: 1 }, // relocate A→B (conserved)
+    { body: 'repel', strength: 6, range: 200, when: 'hot' }, // the exit mouth: eject what arrives
   ],
   // §20.10 — hydrostatic equilibrium: gravity's collapse balanced by thermal pressure.
   // The same `gravity ⇄ thermal` fluctuation–dissipation balance that keeps the

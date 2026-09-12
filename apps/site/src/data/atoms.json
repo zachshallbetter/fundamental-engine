@@ -1,6 +1,6 @@
 {
   "generated": "pnpm gen:atoms",
-  "count": 133,
+  "count": 134,
   "atoms": [
     {
       "kind": "force",
@@ -1877,6 +1877,18 @@
       "data": {
         "name": "whitehole",
         "desc": "an emission horizon that throws matter out"
+      }
+    },
+    {
+      "kind": "preset",
+      "id": "preset:wormhole",
+      "label": "wormhole",
+      "color": "#fbbf24",
+      "href": "/docs/api/presets#preset-wormhole",
+      "weight": 0.25,
+      "data": {
+        "name": "wormhole",
+        "desc": "two linked throats — matter entering one is relocated to its pair and thrown clear"
       }
     },
     {

@@ -36,7 +36,7 @@ const atoms = [
       intent: r.intent, naturalField: r.naturalField, tier: r.tier, primitives: r.primitives,
     }),
   ),
-  // 8 presets.
+  // 9 presets.
   ...MANUAL_PRESETS.map((p) =>
     atom("preset", `preset:${p.token ?? p.name}`, p.label || p.name, KIND_COLOR.preset, `/docs/api/presets#preset-${p.name}`, {
       name: p.token ?? p.name, desc: p.desc, bodies: p.bodies?.length,
