@@ -587,11 +587,11 @@ const sourceLd = {
   /* P3 new-section layouts — calm + list-based; the full art-direction pass is P4. */
   .lp-verbs { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; gap: 0; }
   .lp-verbs li { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1rem; align-items: baseline; padding: 0.85rem 0; border-top: 1px solid color-mix(in oklch, currentColor 10%, transparent); }
-  .lp-verbs li b { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92rem; letter-spacing: 0.02em; }
+  .lp-verbs li b { font-family: var(--mono); font-size: 0.92rem; letter-spacing: 0.02em; }
   .lp-verbs li span { opacity: 0.82; line-height: 1.55; }
   .lp-explore-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.75rem; margin-top: 1.5rem; }
-  .lp-explore-grid a { display: block; padding: 1rem 1.1rem; border: 1px solid color-mix(in oklch, currentColor 12%, transparent); border-radius: 0.85rem; text-decoration: none; transition: border-color 0.15s ease; }
-  .lp-explore-grid a:hover { border-color: color-mix(in oklch, currentColor 30%, transparent); }
+  .lp-explore-grid a { display: block; padding: 1rem 1.1rem; border: 1px solid color-mix(in oklch, currentColor 12%, transparent); border-radius: var(--r-md); text-decoration: none; transition: border-color 0.15s ease; }
+  .lp-explore-grid a:hover { border-color: color-mix(in oklch, var(--state-signal) 55%, transparent); }
   .lp-explore-grid a b { display: block; margin-bottom: 0.2rem; }
   .lp-explore-grid a span { display: block; opacity: 0.7; font-size: 0.9rem; line-height: 1.45; }
   @media (max-width: 640px) { .lp-verbs li { grid-template-columns: 1fr; gap: 0.15rem; } }
@@ -599,34 +599,42 @@ const sourceLd = {
   /* Shipped work — the same card grammar as lp-explore-grid, with the door named in mono so the
      "four doors, one core" claim is legible at a glance rather than only in prose. */
   .lp-shipped-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(16.5rem, 1fr)); gap: 0.75rem; margin-top: 1.5rem; }
-  .lp-ship { display: block; padding: 1.1rem 1.2rem; border: 1px solid color-mix(in oklch, currentColor 12%, transparent); border-radius: 0.85rem; text-decoration: none; transition: border-color 0.15s ease; }
-  .lp-ship:hover { border-color: color-mix(in oklch, var(--cat, currentColor) 45%, transparent); }
+  .lp-ship { display: block; padding: 1.1rem 1.2rem; border: 1px solid color-mix(in oklch, currentColor 12%, transparent); border-radius: var(--r-md); text-decoration: none; transition: border-color 0.15s ease; }
+  /* #914 D2 — a hover is a state, not a force: the static chrome response takes the state
+     accent. The card's data-color still tints its matter in the field, where hue means force. */
+  .lp-ship:hover { border-color: color-mix(in oklch, var(--state-signal) 55%, transparent); }
   .lp-ship b { display: block; margin-bottom: 0.3rem; font-size: 1.02rem; }
   .lp-ship span { display: block; opacity: 0.72; font-size: 0.9rem; line-height: 1.5; }
   .lp-ship code { display: inline-block; margin-top: 0.7rem; font-size: 0.76rem; letter-spacing: 0.01em; opacity: 0.6; }
 
   /* P4 — the "field reading" motif: a live, calm read-out of this page's own field. */
+  /* The readout type mode (#914 D5). These rules asked for var(--font-mono) — a token this
+     site does not define (it is --mono) — so the page's "monospace readout" mode has been
+     falling through to the generic ui-monospace fallback rather than Martian Mono. Naming the
+     real token is what makes the third type mode actually distinct on this page. */
   .field-readout {
     display: flex; flex-wrap: wrap; gap: 0.35rem 1.6rem; margin-top: 2.4rem;
-    font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.72rem; letter-spacing: 0.01em;
+    font-family: var(--mono); font-size: var(--label-size); letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
   }
   .field-readout .fr { display: inline-flex; gap: 0.45rem; align-items: baseline; padding: 0.3rem 0; }
-  .field-readout .fr b { color: var(--text-3, #8a8a99); font-weight: 400; letter-spacing: 0.05em; }
-  .field-readout .fr i { font-style: normal; color: var(--accent, #4da3ff); font-variant-numeric: tabular-nums; }
+  .field-readout .fr b { color: var(--text-3, #8a8a99); font-weight: 400; letter-spacing: var(--label-track); }
+  /* a live reading of the field — readout is exactly the signal accent's job (#914 D2) */
+  .field-readout .fr i { font-style: normal; color: var(--state-signal); font-variant-numeric: tabular-nums; }
   .field-readout .fr-static i { color: var(--text-2, #b0b0bd); }
 
   /* Trust · live field.query() readout — reads as an inspectable console panel. */
   .lp-inspect { margin: 2rem 0 0; }
   .lp-inspect figcaption {
-    font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.68rem;
-    letter-spacing: 0.02em; color: var(--text-3, #8a8a99); margin: 0 0 0.5rem;
+    font-family: var(--mono); font-size: var(--label-size);
+    letter-spacing: var(--label-track); color: var(--text-3, #8a8a99); margin: 0 0 0.5rem;
   }
-  .lp-inspect .lp-inspect-tag { color: var(--accent, #4da3ff); }
+  .lp-inspect .lp-inspect-tag { color: var(--state-signal); }
   .lp-inspect-json {
     margin: 0; max-height: 15.5rem; overflow: auto;
     background: rgba(6, 9, 16, 0.66); border: 1px solid var(--line, rgba(255, 255, 255, 0.09));
-    border-radius: 12px; padding: 0.9rem 1.1rem;
-    font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.72rem; line-height: 1.55;
+    border-radius: var(--r-md); padding: 0.9rem 1.1rem;
+    font-family: var(--mono); font-size: 0.72rem; line-height: 1.55;
     color: var(--text-2, #b0b0bd); font-variant-numeric: tabular-nums; white-space: pre;
   }
 
