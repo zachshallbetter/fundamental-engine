@@ -38,6 +38,21 @@
   --accent-soft: rgba(77, 163, 255, 0.13);
   --coherence: #ffce6b;
 
+  /* State accents — the chrome's two-hue palette (#914 D2).
+     The split is BY LAYER, not by rule: inside the field and its readings, hue means
+     WHICH FORCE (the six per-force data-color / --cat hues); in the page's chrome and
+     type, hue means WHICH STATE. Both stay inside canon §5's "hue = categorical
+     meaning" — each layer's hue indexes a category, they are just different taxonomies.
+     What canon forbids, and what this does NOT do, is ramp hue continuously off a scalar
+     reading; degree still rides saturation / tone / alpha.
+       --state-signal    → signal, query, readout, navigation. The cyan/electric-blue half.
+       --state-attention → attention, energy, state change. The warm coral/amber half.
+     Both are deliberately LESS saturated than the six force hues, so the chrome reads
+     calmer than the field it frames (D1: restraint for the chrome, liveliness for the
+     field), and both sit above 9:1 against --bg-page (the old #4da3ff link ink was 6.6:1). */
+  --state-signal: #7cc7de;
+  --state-attention: #e8a07c;
+
   /* status */
   --ok: #5fd0a8;
   --warn: #ffce6b;
@@ -49,9 +64,17 @@
   --text-3: var(--ink-500);
   --text-4: var(--ink-400);
 
-  /* type */
+  /* type — the three modes, and only three (#914 D5).
+     --body is RETIRED: it was a second name for the body face that exactly one rule in the
+     whole site ever used (the docs search input, now font-family: inherit). Body copy is
+     the inherited default, set once on `body` in Base.astro — a mode nobody has to opt into
+     needs no token. --display is the editorial display mode and is now a mode of its own:
+     `body` no longer consumes it, which is what had collapsed display and body into one
+     visible face. --mono is the readout mode.
+     OPEN (#914 D5): --display still RESOLVES to Bricolage Grotesque. Pointing it at a
+     distinct editorial face needs a font binary added to apps/site/public/fonts — see the
+     PR; the split above is the prerequisite, so that swap is now a one-line change here. */
   --display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
-  --body: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
   --mono: 'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* tracking */

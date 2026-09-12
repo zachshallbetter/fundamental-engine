@@ -62,6 +62,15 @@ html[data-field='on'] .hero-antimass:hover {
   }
 }
 
+/* One label grammar for the chrome (#914 D1). The page was running five micro-label sizes
+   (0.6 / 0.66 / 0.68 / 0.72rem) and five trackings (0.06 / 0.12 / 0.14 / 0.16 / 0.2em) for
+   labels doing the same job. An instrument's labels are one size and one tracking. */
+.lp,
+.manual-shell {
+  --label-size: 0.66rem;
+  --label-track: 0.12em;
+}
+
 /* shared landing section rhythm */
 .lp {
   position: relative;
@@ -141,8 +150,8 @@ html[data-field='on'] .hero-antimass:hover {
 .wf-legend {
   margin: 0.8rem 0 0;
   font-family: var(--mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.06em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--text-4);
   text-align: center;
@@ -183,7 +192,9 @@ html[data-field='on'] .hero-antimass:hover {
 }
 .lp h2 em {
   font-style: normal;
-  color: var(--accent);
+  /* emphasis in a heading is the chrome saying "this is the charged word" — a state,
+     so it takes the attention accent rather than the field's attract hue (#914 D2). */
+  color: var(--state-attention);
 }
 .lp .lp-lede {
   margin: 1.2rem 0 0;
@@ -194,7 +205,7 @@ html[data-field='on'] .hero-antimass:hover {
   font-weight: 300;
 }
 .lp .lp-lede a {
-  color: var(--accent);
+  color: var(--state-signal);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -222,7 +233,7 @@ html[data-field='on'] .hero-antimass:hover {
 }
 .lp .install::before {
   content: '$';
-  color: var(--accent);
+  color: var(--state-signal);
   opacity: 0.7;
 }
 .lp .install::after {
@@ -233,11 +244,12 @@ html[data-field='on'] .hero-antimass:hover {
   color: var(--text-4);
 }
 .lp .install:hover {
-  border-color: var(--accent);
+  border-color: var(--state-attention);
 }
 .lp .install.copied::after {
   content: 'copied ✓';
-  color: var(--accent);
+  /* a state change, which is precisely what the warm accent is for (#914 D2) */
+  color: var(--state-attention);
 }
 
 /* install block — a 'start here' hero accretion card spanning the row, then a 3-up of surface cards.
@@ -265,20 +277,18 @@ html[data-field='on'] .hero-antimass:hover {
   align-items: flex-start;
   gap: 0.7rem;
   padding: 1.2rem 1.3rem 1.3rem;
-  /* frosted glass over the live field: the warped grid + swarm blur softly behind each card instead of
-     slicing through it, and the pane tints toward the card's accent as matter gathers (--field-density). */
-  background: color-mix(in srgb, var(--bg-card) 70%, transparent);
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  /* #914 D4 — an INSTRUMENT card: thin border, state chip, tabular figures, nothing more.
+     The frosted-glass pane (backdrop-filter blur + saturate) and the drop shadow are gone.
+     Glass and glow are fill-rate cost on a page whose own argument is that fill-rate — not
+     particle count — is the real budget, and RC-7's perf gate now measures exactly that;
+     #914 also names glassmorphism as the grammar to stop speaking. The border stays the
+     live silent-contract CONSUMER: it leans to the card's force hue with local field
+     density, so the card still READS the field — it just no longer paints one. */
+  background: var(--bg-card);
   border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-md);
-  /* the silent-contract CONSUMER: the border leans to the tag colour with local field density */
+  border-radius: var(--r-md);
   border-color: color-mix(in srgb, var(--cat, var(--accent)) calc(16% + var(--field-density) * 60%), var(--line));
-  transition:
-    border-color 0.35s var(--ease),
-    box-shadow 0.35s var(--ease),
-    transform 0.35s var(--ease);
+  transition: border-color 0.35s var(--ease);
 }
 /* a top hairline in the tag colour, brightening as matter pools against the card.
    Starts near-invisible (0.12) so the density response is dramatic rather than a
@@ -292,15 +302,11 @@ html[data-field='on'] .hero-antimass:hover {
   opacity: calc(0.12 + var(--field-density) * 0.88);
   transition: opacity 0.4s var(--ease);
 }
+/* #914 D4 — the hover lift and its shadow go with the glass; the card answers engagement
+   through its border instead. That is a response every visitor gets identically, whatever
+   their motion preference, so the reduced-motion exception this rule used to need is gone. */
 .lp-pkg:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-/* reduced motion removes motion, not meaning: the hover lift goes, the shadow response stays */
-@media (prefers-reduced-motion: reduce) {
-  .lp-pkg:hover {
-    transform: none;
-  }
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--line));
 }
 .lp-pkg > * {
   position: relative;
@@ -313,38 +319,37 @@ html[data-field='on'] .hero-antimass:hover {
 .lp-pkg--hero {
   grid-column: 1 / -1;
   padding: 1.5rem 1.6rem 1.6rem;
-  box-shadow:
-    var(--shadow-lg),
-    0 0 calc(var(--load) * 48px) calc(var(--load) * -6px)
-      color-mix(in srgb, var(--cat, var(--accent)) calc(var(--load) * 55%), transparent);
-  transition:
-    border-color 0.35s var(--ease),
-    box-shadow 0.4s var(--ease),
-    transform 0.35s var(--ease);
+  transition: border-color 0.35s var(--ease);
 }
+/* #914 D4 — the accretion glow becomes a METER. --load (the sink fill the engine writes onto
+   this data-feedback body every frame) is still consumed and still legible, but as a flat fill
+   rising from the base of the card: an instrument reading its own vessel, not a bloom. Keeping
+   a --load consumer here also keeps the card clear of the silent-contract lint. */
 .lp-pkg--hero::before {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: auto 0 0 0;
+  height: calc(var(--load) * 100%);
+  max-height: 100%;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(
-    0deg,
-    color-mix(in srgb, var(--cat) calc(var(--load) * 40%), transparent),
-    transparent 70%
-  );
-  transition: background 0.4s var(--ease);
+  background: color-mix(in srgb, var(--cat, var(--accent)) 9%, transparent);
+  border-top: 1px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--load) * 45%), transparent);
 }
 
+/* the state chip (#914 D2/D4). "Start here" is a state the chrome is reporting, not a force,
+   so it takes the attention accent instead of the card's per-force hue — and it is squared off,
+   because the pill is the SaaS grammar #914 asks this page to drop. */
 .lp-pkg-tag {
   font-family: var(--mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
-  color: var(--cat, var(--accent));
+  color: var(--state-attention);
   padding: 0.22rem 0.55rem;
-  border: 1px solid color-mix(in srgb, var(--cat) 40%, var(--line));
-  border-radius: var(--r-pill);
+  border: 1px solid color-mix(in srgb, var(--state-attention) 40%, var(--line));
+  border-radius: var(--r-sm);
 }
 .lp-pkg-desc {
   font-size: 0.86rem;
@@ -385,7 +390,7 @@ html[data-field='on'] .hero-antimass:hover {
   color: var(--text-2);
 }
 .lp-note a {
-  color: var(--accent);
+  color: var(--state-signal);
   text-decoration: none;
 }
 .lp-note a:hover {
@@ -408,8 +413,8 @@ html[data-field='on'] .hero-antimass:hover {
   align-items: baseline;
   padding: 0.7rem 0.9rem 0.6rem;
   font-family: var(--mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--text-4);
   border-bottom: 1px solid var(--line);
@@ -450,9 +455,10 @@ html[data-field='on'] .hero-antimass:hover {
 }
 .lp-ask .lp-meta {
   font-family: var(--mono);
-  font-size: 0.66rem;
+  font-size: var(--label-size);
   color: var(--text-4);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums; /* #914 D4 — figures in an instrument are tabular */
 }
 /* Reduced motion freezes the integrator (env.dt = 0), so matter never gathers and the live
    reading honestly sits near zero — hold the authored urgency instead. The hierarchy stays
@@ -495,7 +501,7 @@ html[data-field='on'] .hero-antimass:hover {
   color: var(--text-4);
 }
 .lp-flow .lp-arrow {
-  color: var(--accent);
+  color: var(--state-signal);
   opacity: 0.7;
 }
 .lp-model figcaption {
@@ -510,8 +516,9 @@ html[data-field='on'] .hero-antimass:hover {
   margin: 2.4rem 0 0;
   padding: clamp(1.6rem, 4vw, 2.4rem);
   border: 1px solid var(--line-2);
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(77, 163, 255, 0.06), rgba(255, 255, 255, 0.015));
+  /* #914 D4 — a bordered panel, not a tinted gradient slab */
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--state-signal) 3%, transparent);
 }
 .lp-elim h3 {
   margin: 0;
@@ -540,7 +547,7 @@ html[data-field='on'] .hero-antimass:hover {
   line-height: 1.5;
   color: var(--text-3);
   padding-left: 1rem;
-  border-left: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--state-signal) 55%, transparent);
 }
 .lp-elim li b {
   color: var(--text);
@@ -552,7 +559,7 @@ html[data-field='on'] .hero-antimass:hover {
   color: var(--text-2);
 }
 .lp-elim li a {
-  color: var(--accent);
+  color: var(--state-signal);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -587,7 +594,7 @@ html[data-field='on'] .hero-antimass:hover {
   margin-bottom: 0.2rem;
 }
 .lp-calib li a {
-  color: var(--accent);
+  color: var(--state-signal);
   text-decoration: none;
 }
 .lp-calib li a:hover {

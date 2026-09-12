@@ -147,7 +147,18 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
     <!-- the CSS gradient is color ambiance; the live <field-root> renders the
          particle field over it, reacting to [data-body] elements on the page.
          transition:persist keeps the engine running across client-side navigation —
-         the field is one continuous medium, never reset between pages. -->
+         the field is one continuous medium, never reset between pages.
+
+         resting-motion="flow" (#914 D3) is the resting-liveliness floor: the DECLARED
+         primitive from #1110, replacing the interim site-level ambient-swirl body this
+         layout used to carry (#1051–#1053). `flow` is a divergence-free curl (stream
+         function psi = sin(kx+phi)·sin(ky−phi), one eddy ~400px) with a slow phase drift,
+         so the resting field keeps circulating instead of settling into its attract wells
+         and freezing — the #909 de-stuff regression the interim swirl was patching. It
+         draws NOTHING (the field measures it as --temperature) and scales with dt, so
+         under prefers-reduced-motion (dt = 0) it contributes exactly nothing: no extra
+         guard needed, the same reduced-motion posture the swirl body had.
+         Canon: wallpaper-rule.md, "Resting liveliness is declared, not painted." -->
     <div class="field" aria-hidden="true" transition:persist></div>
     <field-root
       render="dots"
@@ -157,26 +168,12 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
       accent="#4da3ff"
       density="3.6"
       waves="false"
+      resting-motion="flow"
       data-nav-flow="off"
       data-nav-grid="off"
       data-nav-heatmap="off"
       transition:persist
     ></field-root>
-    <!-- Ambient resting energy (#liveliness): an invisible, viewport-scale swirl body so the
-         resting field keeps circulating instead of settling into the attract wells and freezing.
-         Draws nothing (swirl is a force, not a render layer — no visible waves); low strength so it
-         reads as gentle drift, not a vortex. Matter circulates through the page's content bodies,
-         so it stays alive AND keeps interacting with them. Reduced-motion freezes the integrator
-         (dt=0), so this contributes no motion for users who opt out — no extra guard needed. -->
-    <div
-      class="field-ambient"
-      aria-hidden="true"
-      data-body="swirl"
-      data-strength="0.32"
-      data-range="1500"
-      data-spin="1"
-      style="position: fixed; left: 50%; top: 45%; width: 2px; height: 2px; pointer-events: none; opacity: 0"
-    ></div>
     <script is:inline>
       // Reduced motion: the carrier-wave renderer advances its geometry from wall-clock time even
       // when particle motion is frozen (the engine sets env.dt = 0 under prefers-reduced-motion), so
@@ -255,7 +252,12 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
       body {
         background: var(--bg);
         color: var(--text);
-        font-family: var(--display);
+        /* #914 D5 — body copy names the body face directly. This rule used to read
+           var(--display), which is WHY the two type modes had collapsed: the "display"
+           token was the whole site's text face, so it could never be a display mode.
+           Body copy is the inherited default and needs no token of its own (the retired
+           --body); --display is now free to become a real editorial mode. */
+        font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
         letter-spacing: -0.015em;
         -webkit-font-smoothing: antialiased;
         text-rendering: optimizeLegibility;
@@ -348,18 +350,15 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
         outline-offset: 2px;
       }
 
-      @keyframes focus-glow {
-        0%, 100% {
-          box-shadow: 0 0 4px rgba(77, 163, 255, 0.2);
-        }
-        50% {
-          box-shadow: 0 0 12px rgba(77, 163, 255, 0.6);
-        }
-      }
-
-      /* Keyboard accessibility: apply the focus-glow pulse to active focus states */
+      /* Keyboard accessibility — a STATIC focus ring (#914 D1).
+         This was a `focus-glow 2s infinite` pulse, which was chrome motion of exactly the
+         "ambient sparkle" kind #914 rules out, contradicted the page's own claim that
+         "nothing on this page is animated", and — unlike every other animation in this
+         layout — was never gated on prefers-reduced-motion, so it kept pulsing for users
+         who had asked for no motion. The indicator is now a steady ring: same visibility,
+         no animation, identical under any motion preference. */
       :focus-visible {
-        animation: focus-glow 2s infinite ease-in-out;
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--state-signal) 40%, transparent);
       }
 
       /* Nav links (SiteNav .sn-dest a, .sn-mark) */

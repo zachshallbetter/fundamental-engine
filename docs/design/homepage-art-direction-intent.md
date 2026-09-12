@@ -211,7 +211,8 @@ satisfy the bullet on the homepage, for two reasons stated in the PR itself:
 > 4 and it is a one-attribute follow-up once the option is in.
 
 So the homepage still runs the **interim** ambient-swirl hack from #1051, and the swap is an
-outstanding one-attribute change gated on a visual review. And #1110 addresses only *idle* motion —
+outstanding one-attribute change gated on a visual review. *[Superseded 2026-09-12: the swap
+shipped — the page now declares `resting-motion="flow"` and the interim body is gone. §6.]* And #1110 addresses only *idle* motion —
 #914's motion bullet also covers state-change, attention, and readout motion, which nothing has
 touched.
 
@@ -228,6 +229,10 @@ underlying *goal* — "instrument, not toy" — through copy rather than styling
 
 Stated as either/or so they can be answered in one pass.
 
+> **Five of the seven were answered on 2026-09-12** and are implemented in the art-direction
+> pass; **D6 and D7 remain open**. The either/or framing below is preserved exactly as it was
+> written — the answer is recorded under each, and §6 is the implementation record.
+
 **D1 — Is "calm instrument" still the target, given #1051 and #1086?**
 &nbsp;&nbsp;**(a)** Yes — restraint stands; #1051's liveliness additions get re-examined against it.
 &nbsp;&nbsp;**(b)** No — #1051's "live, dense, force-varied" posture is the current direction, and
@@ -235,6 +240,9 @@ Stated as either/or so they can be answered in one pass.
 &nbsp;&nbsp;**(c)** Both, split by layer: the *drawn field* stays lively; the *CSS/type/chrome*
 goes calm.
 *Why it must be answered first: D2–D6 are downstream of it.*
+&nbsp;&nbsp;→ **ANSWERED: (c), split by layer.** The page's type, ink, labels and chrome get the
+calm-instrument treatment; the field keeps the livelier posture. Both #914 and #1051 were right
+about different layers, which is why the record could not choose between them.
 
 **D2 — Palette: two accents, or the per-force categorical palette?**
 &nbsp;&nbsp;**(a)** #914 as written — two accents (warm = attention/energy, cyan = signal/readout),
@@ -242,12 +250,18 @@ hue reserved for state; the six `data-color` force hues get reduced or demoted t
 &nbsp;&nbsp;**(b)** Ratify what shipped — hue means *which force* (canon §5's "hue = categorical
 meaning"), state rides saturation/tone/alpha; #914's palette bullet is struck.
 &nbsp;&nbsp;**(c)** Two accents for page chrome, force hues only inside field-proof blocks.
+&nbsp;&nbsp;→ **ANSWERED: (c).** Hue means *which force* inside the field and its readings, and
+*which state* in the chrome. Both layers still spend hue on a CATEGORY, so canon §5 ("hue =
+categorical meaning") holds in both — what it forbids, and what this does not do, is ramp hue
+continuously off a scalar reading. Degree still rides saturation / tone / alpha.
 
 **D3 — Homepage resting motion: swap to `resting-motion` now, or not?**
 &nbsp;&nbsp;**(a)** Swap `Base.astro`'s interim ambient-swirl body for `resting-motion="thermal"`.
 &nbsp;&nbsp;**(b)** Swap for `resting-motion="flow"` (divergence-free curl, never settles).
 &nbsp;&nbsp;**(c)** Leave the interim swirl until the rest of the art direction is decided.
 *Independent of D1–D2; it is a one-attribute change plus a by-eye review, per #1110.*
+&nbsp;&nbsp;→ **ANSWERED: (b), `resting-motion="flow"`.** The divergence-free curl, which never
+settles. The interim ambient-swirl body from #1051 is removed in the same change.
 
 **D4 — Instrument cards: build the treatment, or drop the bullet?**
 &nbsp;&nbsp;**(a)** Build it — thin borders, soft inner glow, coordinate-grid texture — accepting
@@ -255,6 +269,9 @@ that glow and texture are fill cost and must be profiled on real hardware, not h
 &nbsp;&nbsp;**(b)** Build a cheap subset — thin borders and metric chips only, no glow, no texture.
 &nbsp;&nbsp;**(c)** Drop it; #913's readout chips plus #1086's artifact-led `#shipped` section
 already carry the "instrument" reading.
+&nbsp;&nbsp;→ **ANSWERED: (b), the cheap subset — borders and chips, no glow and no grid.**
+Glow and grid texture are fill-rate cost on a page whose own argument is that fill-rate is the
+real budget, and RC-7's perf gate now measures exactly that.
 
 **D5 — Type: make `--display` and `--body` distinct, or collapse the ask?**
 &nbsp;&nbsp;Both tokens currently resolve to Bricolage Grotesque, so the site has two visible type
@@ -265,14 +282,17 @@ load).
 font load).
 &nbsp;&nbsp;**(c)** Collapse the ask — two modes (Bricolage + Martian Mono) is the intended system;
 drop `--body` as a redundant alias.
+&nbsp;&nbsp;→ **ANSWERED: (a) plus (c)'s disposal — give `--display` its own face, and retire
+`--body`.** Implemented *structurally* but **not yet visually**: see §6, which records why the
+face itself is still outstanding.
 
-**D6 — Scope: is #914 one issue or several?**
+**D6 — Scope: is #914 one issue or several?** — **OPEN.**
 &nbsp;&nbsp;**(a)** Keep it whole and do a single reviewed pass.
 &nbsp;&nbsp;**(b)** Split into palette (D2), motion swap (D3), card treatment (D4) and type (D5),
 close #914 as the umbrella.
 &nbsp;&nbsp;**(c)** Close #914 as overtaken by #913 + #1086 + #1110, and re-file only what survives.
 
-**D7 — Does the art-direction brief still exist anywhere?**
+**D7 — Does the art-direction brief still exist anywhere?** — **OPEN.**
 &nbsp;&nbsp;**(a)** Yes — it can be recovered and pasted into the repo, at which point this
 reconstruction should be replaced by the real thing.
 &nbsp;&nbsp;**(b)** No — this memo plus the decisions above become the record, and #914's body is
@@ -338,3 +358,57 @@ Stated plainly, because the value of this memo is that it does not fill gaps wit
 8. **No cross-references to #914 exist.** Its GitHub timeline contains only two events — added to
    project #24, and a status change. No issue or PR links to it; it links to none. There is no
    hidden discussion thread I failed to find; there simply is none.
+
+
+---
+
+## 6. What was decided, and what shipped
+
+Added 2026-09-12, when five of the seven decisions were answered. §§1–5 above are left exactly as
+written — they are the reconstruction, and rewriting them would falsify the record they exist to be.
+
+### Implemented
+
+**D1 — restraint for the chrome, liveliness for the field.** The split is applied as a working
+rule rather than a slogan: *an element whose colour or weight is driven by a live field reading
+keeps the field's grammar; static chrome takes the calm treatment.* That is what decides each case
+below, and it is why the re-bodied verbs, hosts and pipeline steps from #1053 keep their `--d`-driven
+force wash while the cards, labels and links around them go quiet.
+
+**D2 — two state accents for the chrome.** `--state-signal` (`#7cc7de`, signal/query/readout/
+navigation) and `--state-attention` (`#e8a07c`, attention/energy/state change) join `ds-tokens.css`.
+Both are deliberately less saturated than the six force hues, so the chrome reads calmer than the
+field it frames; both clear 9:1 against `--bg-page` (the `#4da3ff` link ink they replace was 6.6:1).
+The six `data-color` force hues are untouched **in the field** — `data-color` still tints matter, and
+every `--cat` that a live reading drives still carries its force hue.
+
+**D3 — `resting-motion="flow"`.** `<field-root>` in `Base.astro` declares it; the interim
+ambient-swirl `<div>` is deleted. Verified by measurement, not assertion — see the PR.
+
+**D4 — instrument cards: borders and chips, no glow, no grid.** The install cards lose
+`backdrop-filter` glass, `--shadow-md/lg`, and the hover lift; the hero card's `--load` accretion
+glow becomes a flat fill **meter**. The card border remains the live `--field-density` consumer, so
+the cards still *read* the field without *painting* one — and keeping that consumer is also what
+keeps them clear of the silent-contract lint. Figures are tabular.
+
+**D5 — partially.** The structural half is done and is the half that actually separates the modes:
+`body` no longer takes its face from `var(--display)` (that single rule is *why* display and body had
+collapsed — the "display" token was the whole site's text face, so it could never be a display mode),
+and `--body` is retired along with its one usage in the entire site (the docs search input,
+`docs.css`, now `font-family: inherit` — form controls do not inherit the page face on their own).
+The homepage's readout rules also now name the real `--mono` token: they had asked for
+`var(--font-mono)`, which this site does not define, so the "monospace readout" mode had been
+falling through to a generic fallback rather than Martian Mono.
+
+### Still open
+
+- **D5's display face.** `--display` still *resolves* to Bricolage Grotesque, so the pass is
+  structural, not visual. Choosing the editorial face is a maintainer decision with a hard
+  constraint attached: the hero word `.hero-mass` expresses its live field reading through
+  `font-variation-settings: 'wght' … 'opsz' …`, so a display face that is not a variable font with
+  those axes would silently flatten the hero's `--d` response. The site self-hosts its faces
+  (`apps/site/public/fonts/` + `fonts.css`), and adding one means committing a font binary. With
+  the split above in place, the swap is now a one-line change to `--display`.
+- **D6 — scope**, and **D7 — whether the brief exists.** Unanswered, and deliberately untouched.
+- The memo's largest evidence gap stands: the art-direction brief this work executes is not in the
+  repository, and only the one sentence quoted in #913 survives (§5.1).

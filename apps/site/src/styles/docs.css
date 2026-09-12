@@ -1009,7 +1009,8 @@ dialog.docs-search::backdrop {
 .docs-search input[type='search'] {
   flex: 1;
   min-width: 0;
-  font-family: var(--body);
+  font-family: inherit; /* #914 D5 — was var(--body), the token's only usage site-wide.
+     `inherit` and not a bare removal: form controls do not inherit the page face by default. */
   font-size: 1rem;
   color: var(--text);
   background: none;
