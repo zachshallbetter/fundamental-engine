@@ -16,6 +16,10 @@ Three projects share one webServer (see `playwright.config.ts`):
   gesture arbitration (touch-action latching, scroll claiming, pointercancel) is what
   gets tested.
 
+`lab.spec.ts` covers the Lab detector at `/lab` (engine-neutral, no canvas pixels): boot,
+the per-force scenario-tag strip (a tag click sets up a known scenario; `#force;tag=<id>`
+share links restore it; forces without curated scenarios show no strip).
+
 The suite runs against the **built** site (`astro preview` serves `dist/`), so build first:
 
 ```sh

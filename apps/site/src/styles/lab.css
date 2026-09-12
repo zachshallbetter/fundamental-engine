@@ -98,6 +98,14 @@ body:has(.lab) { align-items: flex-start; }
 .tbtn.on { border-color: var(--fc); color: var(--fc); }
 .frame-readout { margin-left: auto; font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--text-3); font-variant-numeric: tabular-nums; }
 
+/* scenario tags — curated set-ups per force, one click each (mirrors the Tune quick-pick bands) */
+.lab-tags { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
+.tags-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-4); }
+.tags-strip { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.lab-tags .tag { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.04em; padding: 0.22rem 0.55rem; border-radius: 5px; border: 1px solid var(--line-2); background: transparent; color: var(--text-3); cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
+.lab-tags .tag:hover { color: var(--text); border-color: color-mix(in srgb, var(--fc) 45%, transparent); }
+.lab-tags .tag.on { color: var(--fc); border-color: color-mix(in srgb, var(--fc) 55%, transparent); background: color-mix(in srgb, var(--fc) 10%, transparent); }
+
 /* sweep panel */
 .lab-info { border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-card); overflow: hidden; }
 .lab-info .info-col { padding: 0.95rem 1.05rem; }
