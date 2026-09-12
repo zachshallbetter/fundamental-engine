@@ -23,16 +23,20 @@
 //! reproduces every `dv`. See `tests/golden_conformance.rs`.
 //!
 //! # Status
-//! Milestone 1 — the six deterministic canonical forces (attract, repel, swirl, stream, tether,
-//! viscosity) pass the shared golden. The full 36-force catalog, integrator/store, spatial hash,
-//! snapshot/query, and the CMS-facing reading layer (scores/clusters/relations) follow.
+//! Experimental. 28 of the 36-force catalog (the canonical nine, natural, extended, neighbour, and
+//! modifier forces), [`step`], [`FieldStore`], the spatial hash, and the seeded [`Rng`] have landed;
+//! the six deterministic canonical forces pass the shared golden. The remaining forces, snapshot /
+//! query, and the CMS-facing reading layer (scores / clusters / relations) follow under epic #1036.
+//! Versioned in lockstep with the fleet — [`FIELD_VERSION`] is the crate version.
 
 pub mod config;
 pub mod engine;
 pub mod forces;
 pub mod math;
 pub mod record;
+pub mod version;
 
 pub use engine::{step, Body, Effect, Env, FieldStore, Force, Formation, Particle, Registry};
 pub use math::Vec3;
 pub use record::Rng;
+pub use version::FIELD_VERSION;

@@ -53,6 +53,15 @@ pnpm -r build && pnpm test && pnpm check:dist && pnpm check:api   # gate
 pnpm --filter "./packages/*" publish --access public --no-git-checks --otp=<code>
 ```
 
+## The Rust plane (crates.io)
+
+`rust/crates/fundamental-core` publishes to crates.io as `fundamental-core`, at the same version as the
+npm packages, through the **dispatch-only, dry-run-by-default**
+[`.github/workflows/crates-io.yml`](.github/workflows/crates-io.yml) — never from a tag push and never
+from a laptop. It needs a maintainer-created `CARGO_REGISTRY_TOKEN` repository secret. The policy,
+the dispatch commands, and the immutability rule (yank, never re-upload) are in
+[`RELEASING.md`](RELEASING.md) § "The Rust plane (crates.io)".
+
 ## Versioning
 
 All seven published packages are versioned together (currently `0.10.1`). Bump them as one:
