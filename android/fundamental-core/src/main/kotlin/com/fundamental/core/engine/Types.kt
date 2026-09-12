@@ -317,6 +317,20 @@ class Env {
     var kinTouch: Boolean = false
 
     /**
+     * INTERNAL (diagnostic samplers, #1172 — the Kotlin mirror of Swift `Env.isProbe` / JS `Env.probe`,
+     * #1155): this env belongs to a PROBE pass — a render or overlay sampler measuring the field with a
+     * fictitious test particle, not the integrator moving real matter. Every service that writes is
+     * inert on such an env ([spark]/[supernova]/[spawn] keep their no-op defaults, [grid] hands back a
+     * `NoopGrid`) and [rng] is the probe's own per-sample reseeded stream, so drawing a diagnostic can
+     * never perturb the simulation or advance a seeded run. A force that writes ENGINE state *outside
+     * the probe particle* must skip that write when this is set — `sink`'s accretion (`body.accreted`,
+     * and the `supernova` at capacity) is the one such write today, and it goes through no service an
+     * inert env could stub. Never set on the integrator's live env; see
+     * [com.fundamental.core.engine.makeProbeEnv].
+     */
+    var isProbe: Boolean = false
+
+    /**
      * The engine's random source (the JS `Env.rng` / #371 mirror) — forces and the integrator draw
      * every jitter, emission cone, and Box–Muller uniform from here, so a seeded generator makes a
      * run reproducible (the determinism seam, #974). Defaults to the platform generator (unseeded =
