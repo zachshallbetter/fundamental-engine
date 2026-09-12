@@ -135,6 +135,14 @@ class BodySpec(
      * by identity rather than the returned handle. Omitted ⇒ the engine derives a synthetic `body-N`.
      */
     val identity: FieldBodyIdentity? = null,
+    /**
+     * `warp` twist in DEGREES (JS `data-twist`, which the scanner converts to radians): the rotation
+     * applied to matter — and to the momentum it carries — as it crosses the throat. Null ⇒ no twist.
+     * The pairing itself is supplied once both bodies exist, through [BodyHandle.pairWith].
+     */
+    val twistDeg: Float? = null,
+    /** `warp` exit scale (JS `data-scale`): scales the emergence offset at the paired throat. Null ⇒ 1. */
+    val warpScale: Float? = null,
     val rect: () -> Box,
 )
 
@@ -167,6 +175,26 @@ class BodyHandle internal constructor(
         val n = body.accreted
         body.accreted = 0f
         return n
+    }
+
+    /**
+     * Pair this body with [other] as a `warp` throat (§22.3 relocate): matter entering this body's
+     * throat is relocated to [other]'s live centre. Pass null to unpair, which closes the wormhole on
+     * the next tick.
+     *
+     * The pairing is DIRECTED, exactly as on the other planes — JS resolves one `data-pair` selector
+     * per body and Swift assigns one `pairBody` per body — so a two-way wormhole is two calls:
+     * `a.pairWith(b); b.pairWith(a)`. This mirrors Swift, where the CONSUMER assigns `pairBody`
+     * (`FieldLabKit/Scenes.swift`), rather than JS, whose DOM-selector resolution has no meaning on a
+     * platform with no DOM. The controller reads the pairing each tick into the engine's
+     * `warpTarget`/`warpHas`; removing either body severs it.
+     */
+    fun pairWith(other: BodyHandle?) {
+        body.pairBody = other?.body
+        if (other == null) { // close it now rather than leaving a tick of stale relocation
+            body.warpHas = false
+            body.warpTarget = null
+        }
     }
 
     fun remove() = controller.removeBody(body)
@@ -325,6 +353,10 @@ class FieldHandle(val controller: FieldController) {
         body.feedback = true // programmatic bodies measure density (§8) — Swift addBody parity (feedback: true)
         body.tint = spec.tint
         body.identity = spec.identity // supplied identity overrides derivation (JS #884)
+        // `warp` throat shape (§22.3). Degrees in, radians on the Body — the JS scanner's
+        // `num('twist', 0) * PI / 180`, and the same convention as `angleDeg` above.
+        spec.twistDeg?.let { body.twist = Math.toRadians(it.toDouble()).toFloat() }
+        body.warpScale = spec.warpScale
         body.rect = spec.rect
         body.box = spec.rect()
         controller.addBody(body, spec.data)

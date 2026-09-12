@@ -1692,13 +1692,14 @@
         "drain",
         "identity",
         "load",
+        "pair-with",
         "remove",
         "set"
       ],
       "counts": {
         "js": 4,
         "swift": 5,
-        "kotlin": 6
+        "kotlin": 7
       },
       "planes": {
         "js": [
@@ -1719,6 +1720,7 @@
           "drain",
           "identity",
           "load",
+          "pair-with",
           "remove",
           "set"
         ]
@@ -1752,6 +1754,12 @@
           "symbol": "load",
           "js": false,
           "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "pair-with",
+          "js": false,
+          "swift": false,
           "kotlin": true
         },
         {
@@ -2766,14 +2774,16 @@
         "identity",
         "potential",
         "range",
+        "scale",
         "spin",
         "strength",
-        "tokens"
+        "tokens",
+        "twist"
       ],
       "counts": {
         "js": 11,
         "swift": 9,
-        "kotlin": 8
+        "kotlin": 10
       },
       "planes": {
         "js": [
@@ -2806,9 +2816,11 @@
           "data",
           "identity",
           "range",
+          "scale",
           "spin",
           "strength",
-          "tokens"
+          "tokens",
+          "twist"
         ]
       },
       "support": [
@@ -2861,6 +2873,12 @@
           "kotlin": true
         },
         {
+          "symbol": "scale",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
           "symbol": "spin",
           "js": true,
           "swift": true,
@@ -2876,6 +2894,12 @@
           "symbol": "tokens",
           "js": true,
           "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "twist",
+          "js": false,
+          "swift": false,
           "kotlin": true
         }
       ]

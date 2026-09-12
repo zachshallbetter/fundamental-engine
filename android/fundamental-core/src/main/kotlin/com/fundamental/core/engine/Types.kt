@@ -172,9 +172,25 @@ class Body(
     var emitAcc: Float? = null
 
     // ── warp / wormhole pairing, resolved each scan (§22.3) ──────────────────────────
+    /**
+     * The paired throat this wormhole relocates matter to. SUPPLIED by the consumer (Swift's
+     * `Body.pairBody`, assigned by FieldLabKit's scene builder; the Kotlin consumer path is
+     * [com.fundamental.core.runtime.BodyHandle.pairWith]). The controller READS it each tick into
+     * [warpTarget]/[warpHas] — see `FieldController.resolveWarpPairs`. Null ⇒ not a wormhole, and
+     * `warp` no-ops.
+     *
+     * Deliberately a STRONG reference, unlike Swift's `weak var`: Kotlin has no weak property and the
+     * severance this needs is behavioural, not just memory hygiene — a removed partner must CLOSE the
+     * wormhole, not leave it relocating matter to a ghost (JS does this with its `isConnected` check).
+     * `FieldController.removeBody` clears every inbound pairing, which is both the severance and the
+     * release.
+     */
+    var pairBody: Body? = null
     var warpHas: Boolean = false
     var warpTarget: Vec3? = null
+    /** Rotation in RADIANS applied to matter crossing the throat (`data-twist`, authored in degrees). */
     var twist: Float? = null
+    /** Scale applied to the relocated local offset (`data-scale`); null = 1. */
     var warpScale: Float? = null
 
     /**
