@@ -1,0 +1,443 @@
+{
+  "generated": "scripts/perf/write-fact-sheet.mjs",
+  "sourcedFrom": "docs/planning/fundamental-perf-fact-sheet.md",
+  "measuredAt": "2026-09-12",
+  "rule": "see the header of scripts/perf/write-fact-sheet.mjs",
+  "compute": {
+    "machines": [
+      "Intel(R) Core(TM) i7-5930K CPU @ 3.50GHz · Node v22.23.2 · linux/x64",
+      "Apple M1 Pro · Node v25.4.0 · darwin/arm64"
+    ],
+    "frameMs": [
+      {
+        "density": 1,
+        "measuredMedianMs": 0.623,
+        "maxMedianMs": 0.935
+      },
+      {
+        "density": 2,
+        "measuredMedianMs": 0.145,
+        "maxMedianMs": 0.217
+      },
+      {
+        "density": 3,
+        "measuredMedianMs": 0.224,
+        "maxMedianMs": 0.336
+      },
+      {
+        "density": 4,
+        "measuredMedianMs": 0.311,
+        "maxMedianMs": 0.467
+      }
+    ],
+    "accumulatorOverheadMaxPct": 28.63,
+    "queryGlobalMaxMs": 0.031,
+    "snapshotMaxMs": 0.022
+  },
+  "gpu": {
+    "titan-dpr1": {
+      "machine": "ANGLE (NVIDIA Corporation, NVIDIA GeForce GTX TITAN X/PCIe/SSE2, OpenGL ES 3.2) · dpr 1 · 1600x813 · Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36",
+      "sweep": [
+        {
+          "render": "dots",
+          "dprCap": 1,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "dots",
+          "dprCap": 1,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "dots",
+          "dprCap": 1,
+          "density": 64,
+          "measuredFpsMed": 20,
+          "measuredMsMed": 49.9,
+          "maxMsMed": 79.84
+        },
+        {
+          "render": "dots",
+          "dprCap": 2,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "dots",
+          "dprCap": 2,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "dots",
+          "dprCap": 2,
+          "density": 64,
+          "measuredFpsMed": 20,
+          "measuredMsMed": 49.9,
+          "maxMsMed": 79.84
+        },
+        {
+          "render": "trails",
+          "dprCap": 1,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "trails",
+          "dprCap": 1,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "trails",
+          "dprCap": 1,
+          "density": 64,
+          "measuredFpsMed": 20,
+          "measuredMsMed": 49.9,
+          "maxMsMed": 79.84
+        },
+        {
+          "render": "trails",
+          "dprCap": 2,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "trails",
+          "dprCap": 2,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "trails",
+          "dprCap": 2,
+          "density": 64,
+          "measuredFpsMed": 20,
+          "measuredMsMed": 49.9,
+          "maxMsMed": 79.84
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 1,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 1,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 1,
+          "density": 64,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 2,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 2,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 2,
+          "density": 64,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        }
+      ],
+      "compositing": [
+        {
+          "overlay": "off",
+          "dprCap": 1,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "overlay": "off",
+          "dprCap": 2,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "overlay": "grid",
+          "dprCap": 1,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "overlay": "grid",
+          "dprCap": 2,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        }
+      ],
+      "pages": {
+        "/": {
+          "maxMsMed": 26.72,
+          "maxMsP95": 35.28,
+          "measuredLongTasks": 3,
+          "maxTbtMs": 58.8,
+          "maxHeapMB": 15.99
+        },
+        "/eli5": {
+          "maxMsMed": 26.72,
+          "maxMsP95": 35.28,
+          "measuredLongTasks": 16,
+          "maxTbtMs": 181.6,
+          "maxHeapMB": 14.88
+        },
+        "/docs/patterns": {
+          "maxMsMed": 26.72,
+          "maxMsP95": 35.28,
+          "measuredLongTasks": 1,
+          "maxTbtMs": 70.6,
+          "maxHeapMB": 13.17
+        }
+      }
+    },
+    "titan-dpr2": {
+      "machine": "ANGLE (NVIDIA Corporation, NVIDIA GeForce GTX TITAN X/PCIe/SSE2, OpenGL ES 3.2) · dpr 2 · 1600x813 · Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36",
+      "sweep": [
+        {
+          "render": "dots",
+          "dprCap": 1,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "dots",
+          "dprCap": 1,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "dots",
+          "dprCap": 1,
+          "density": 64,
+          "measuredFpsMed": 30,
+          "measuredMsMed": 33.4,
+          "maxMsMed": 53.44
+        },
+        {
+          "render": "dots",
+          "dprCap": 2,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "dots",
+          "dprCap": 2,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "dots",
+          "dprCap": 2,
+          "density": 64,
+          "measuredFpsMed": 30,
+          "measuredMsMed": 33.3,
+          "maxMsMed": 53.28
+        },
+        {
+          "render": "trails",
+          "dprCap": 1,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "trails",
+          "dprCap": 1,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "trails",
+          "dprCap": 1,
+          "density": 64,
+          "measuredFpsMed": 30,
+          "measuredMsMed": 33.3,
+          "maxMsMed": 53.28
+        },
+        {
+          "render": "trails",
+          "dprCap": 2,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "trails",
+          "dprCap": 2,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "trails",
+          "dprCap": 2,
+          "density": 64,
+          "measuredFpsMed": 30,
+          "measuredMsMed": 33.3,
+          "maxMsMed": 53.28
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 1,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 1,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 1,
+          "density": 64,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 2,
+          "density": 4,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 2,
+          "density": 16,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "render": "streamlines",
+          "dprCap": 2,
+          "density": 64,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        }
+      ],
+      "compositing": [
+        {
+          "overlay": "off",
+          "dprCap": 1,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "overlay": "off",
+          "dprCap": 2,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "overlay": "grid",
+          "dprCap": 1,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        },
+        {
+          "overlay": "grid",
+          "dprCap": 2,
+          "measuredFpsMed": 60,
+          "measuredMsMed": 16.7,
+          "maxMsMed": 26.72
+        }
+      ],
+      "pages": {
+        "/": {
+          "maxMsMed": 26.72,
+          "maxMsP95": 35.28,
+          "measuredLongTasks": 12,
+          "maxTbtMs": 104,
+          "maxHeapMB": 16.2
+        },
+        "/eli5": {
+          "maxMsMed": 26.72,
+          "maxMsP95": 35.28,
+          "measuredLongTasks": 5,
+          "maxTbtMs": 120.2,
+          "maxHeapMB": 14.63
+        },
+        "/docs/patterns": {
+          "maxMsMed": 26.72,
+          "maxMsP95": 35.28,
+          "measuredLongTasks": 1,
+          "maxTbtMs": 67,
+          "maxHeapMB": 14.65
+        }
+      }
+    }
+  }
+}

@@ -93,6 +93,17 @@ accidental breakage, not a freeze; the surface evolves pre-1.0 and additions nev
   conformance golden. Not a required check on `main`. Never publishes.
 - **`crates-io.yml`** — **dispatch-only, dry-run by default**: the Rust plane's publish path to
   crates.io. Never runs on a push, tag, or PR. See "The Rust plane (crates.io)" below.
+- **`perf-hardware.yml`** — the RC-7 performance gate, on the **self-hosted `titan-gpu` runner**
+  (a GTX TITAN X box; hardware WebGL through ANGLE-over-EGL in headless Chrome). On PRs and pushes
+  that touch the engine, the site, or the perf scripts it runs the Node compute bench and the
+  `/perf-bench` GPU sweep at DPR 1 and 2 plus 20 s on three real pages, then
+  `scripts/perf/check-budgets.mjs` fails the job if any number breaches
+  `docs/planning/perf-budgets.json`. The budgets are *generated* from the measured
+  `docs/planning/fundamental-perf-fact-sheet.md` (`scripts/perf/write-fact-sheet.mjs`) — to move one,
+  re-measure (`workflow_dispatch`, download the `perf-measurements-*` artifact) and commit the
+  regenerated pair; never edit the budgets by hand. Its `conclusion-perf` job is **not yet a required
+  check** — promote it once a few runs on the runner have shown it stable; a runner outage must not
+  block unrelated merges.
 
 Every workflow ends in a `conclusion` job that passes only if **every** dependency job
 succeeded — a skipped job can never satisfy a required check. Branch protection on `main`

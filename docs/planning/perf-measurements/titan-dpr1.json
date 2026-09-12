@@ -1,0 +1,283 @@
+{
+  "label": "titan-dpr1",
+  "measuredAt": "2026-09-12T03:50:17.703Z",
+  "site": "http://127.0.0.1:4399",
+  "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36",
+  "dpr": 1,
+  "viewport": "1600x813",
+  "gpu": "ANGLE (NVIDIA Corporation, NVIDIA GeForce GTX TITAN X/PCIe/SSE2, OpenGL ES 3.2)",
+  "gpuFeatures": {
+    "2d_canvas": "enabled",
+    "direct_rendering_display_compositor": "disabled_off_ok",
+    "gpu_compositing": "enabled",
+    "multiple_raster_threads": "enabled_on",
+    "opengl": "enabled_on",
+    "rasterization": "enabled_force",
+    "raw_draw": "disabled_off_ok",
+    "skia_graphite": "disabled_off",
+    "trees_in_viz": "disabled_off",
+    "video_decode": "enabled",
+    "video_encode": "disabled_software",
+    "vulkan": "disabled_off",
+    "webgl": "enabled",
+    "webgpu": "enabled",
+    "webgpu_on_vk_via_gl_interop": "enabled",
+    "webnn": "disabled_off"
+  },
+  "sweep": [
+    {
+      "render": "dots",
+      "dprCap": 1,
+      "density": 4,
+      "particles": 520,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "dots",
+      "dprCap": 1,
+      "density": 16,
+      "particles": 2080,
+      "fpsMed": 60,
+      "fpsP5": 30,
+      "msMed": 16.7
+    },
+    {
+      "render": "dots",
+      "dprCap": 1,
+      "density": 64,
+      "particles": 8320,
+      "fpsMed": 20,
+      "fpsP5": 15,
+      "msMed": 49.9
+    },
+    {
+      "render": "dots",
+      "dprCap": 2,
+      "density": 4,
+      "particles": 520,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "dots",
+      "dprCap": 2,
+      "density": 16,
+      "particles": 2080,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "dots",
+      "dprCap": 2,
+      "density": 64,
+      "particles": 8320,
+      "fpsMed": 20,
+      "fpsP5": 15,
+      "msMed": 49.9
+    },
+    {
+      "render": "trails",
+      "dprCap": 1,
+      "density": 4,
+      "particles": 520,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "trails",
+      "dprCap": 1,
+      "density": 16,
+      "particles": 2080,
+      "fpsMed": 60,
+      "fpsP5": 30,
+      "msMed": 16.7
+    },
+    {
+      "render": "trails",
+      "dprCap": 1,
+      "density": 64,
+      "particles": 8320,
+      "fpsMed": 20,
+      "fpsP5": 15,
+      "msMed": 49.9
+    },
+    {
+      "render": "trails",
+      "dprCap": 2,
+      "density": 4,
+      "particles": 520,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "trails",
+      "dprCap": 2,
+      "density": 16,
+      "particles": 2080,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "trails",
+      "dprCap": 2,
+      "density": 64,
+      "particles": 8320,
+      "fpsMed": 20,
+      "fpsP5": 20,
+      "msMed": 49.9
+    },
+    {
+      "render": "streamlines",
+      "dprCap": 1,
+      "density": 4,
+      "particles": 520,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "streamlines",
+      "dprCap": 1,
+      "density": 16,
+      "particles": 2080,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "streamlines",
+      "dprCap": 1,
+      "density": 64,
+      "particles": 8320,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "streamlines",
+      "dprCap": 2,
+      "density": 4,
+      "particles": 520,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "streamlines",
+      "dprCap": 2,
+      "density": 16,
+      "particles": 2080,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "streamlines",
+      "dprCap": 2,
+      "density": 64,
+      "particles": 8320,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    }
+  ],
+  "compositing": [
+    {
+      "overlay": "off",
+      "dprCap": 1,
+      "particles": 312,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "overlay": "off",
+      "dprCap": 2,
+      "particles": 312,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "overlay": "grid",
+      "dprCap": 1,
+      "particles": 312,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "overlay": "grid",
+      "dprCap": 2,
+      "particles": 312,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    }
+  ],
+  "pages": {
+    "/": {
+      "seconds": 20,
+      "frames": 1178,
+      "msMed": 16.69999999999891,
+      "msP95": 16.799999999999272,
+      "msP99": 33.30000000000109,
+      "fpsMed": 59.880239520962,
+      "dropped": 21,
+      "loafCount": 3,
+      "loafMaxMs": 53.19999980926514,
+      "tbtMs": 4.399999618530273,
+      "heapStartMB": 15.530471801757812,
+      "heapEndMB": 7.988224983215332,
+      "particles": 468,
+      "heapEndRawMB": 17.80892562866211
+    },
+    "/eli5": {
+      "seconds": 20,
+      "frames": 1178,
+      "msMed": 16.69999999999891,
+      "msP95": 16.799999999999272,
+      "msP99": 33.399999999999636,
+      "fpsMed": 59.880239520962,
+      "dropped": 20,
+      "loafCount": 16,
+      "loafMaxMs": 59.700000286102295,
+      "tbtMs": 65.80000019073486,
+      "heapStartMB": 10.847153663635254,
+      "heapEndMB": 6.880645751953125,
+      "particles": 468,
+      "heapEndRawMB": 21.63765811920166
+    },
+    "/docs/patterns": {
+      "seconds": 20,
+      "frames": 1177,
+      "msMed": 16.69999999999891,
+      "msP95": 16.799999999999272,
+      "msP99": 33.39999999999782,
+      "fpsMed": 59.880239520962,
+      "dropped": 24,
+      "loafCount": 1,
+      "loafMaxMs": 60.30000019073486,
+      "tbtMs": 10.300000190734863,
+      "heapStartMB": 17.6740140914917,
+      "heapEndMB": 5.1687164306640625,
+      "particles": 468,
+      "heapEndRawMB": 24.864338874816895
+    }
+  },
+  "gpuDevices": [
+    "4318:6082",
+    "4318:6082",
+    "4318:6082"
+  ],
+  "hardware": true,
+  "sweepStatus": "Done — 18 configs. DPR 1, 1600×813.",
+  "compositingStatus": "Compositing done — 4 configs. DPR 1, 1600×813."
+}

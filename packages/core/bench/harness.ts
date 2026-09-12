@@ -8,7 +8,7 @@
 // The fps/fill-rate/DPR/mix-blend numbers that actually gate the homepage live on real GPU hardware and
 // are intentionally NOT measured here — Node software-rasterizes and would mislead. See performance.md.
 
-import type { FieldHost } from '../src/core/host.ts';
+import type { FieldHost } from '../src/engine/host.ts';
 
 /** A seeded LCG — deterministic pseudo-randomness for laying out bench particles/bodies. */
 export function lcg(seed = 0x2545f491): () => number {
