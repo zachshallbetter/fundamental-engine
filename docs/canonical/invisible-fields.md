@@ -24,7 +24,15 @@
 The definition document says the field is a **substrate, not wallpaper**. An invisible field is
 that claim taken literally: the engine runs, bodies participate, matter flows — and **nothing is
 drawn**. Stated plainly: **a field can render nothing, contain no particles, and still be complete —
-if it has bodies, relationships, metrics, queryable state, and projections or feedback, it is a field.** The only output is the feedback the platform writes back to the DOM (CSS variables,
+if it has bodies, relationships, metrics, queryable state, and projections or feedback, it is a field.**
+
+> **The claim is about matter, not readings.** An invisible field paints no particles; that is the
+> whole of it. It may still carry an overlay **reading** — a diagnostic drawn on its own front
+> surface — without ceasing to be one, because a reading represents the field rather than being it
+> (`agent-consumption-model.md`). Until the Field Surfaces amendment to
+> [forces-system.md §13.7](../engine-reference/forces-system.md), `render: 'none'` suppressed both
+> surfaces; it now suppresses only the matter one. A field that declares no reading — the default —
+> is unchanged: nothing is drawn anywhere. The only output is the feedback the platform writes back to the DOM (CSS variables,
 thresholded events), and the only render surface is the page's own type and ink, styled by CSS
 that reads those variables.
 
