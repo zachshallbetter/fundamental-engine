@@ -21,6 +21,13 @@ import SeeAlso from '../../../components/SeeAlso.astro';
     </p>
   </header>
 
+  <div class="callout">
+    <b>These utilities wrap the handle.</b> The surface they wrap — <code>createField</code> and its
+    options, every <code>FieldHandle</code> member, the sampling and observable reads, and the event bus —
+    is consolidated on the <a href="/docs/api/imperative">imperative API reference</a>, with a generated
+    <b>JS · Swift · Kotlin</b> support row on every entry. Everything on this page is web-only.
+  </div>
+
   <nav class="on-this-page" aria-label="On this page">
     <ul>
       <li><a href="#withFlip">withFlip</a></li>
@@ -423,6 +430,7 @@ for (let i = 0; i &lt; 10; i++) host.tick();</code></pre>
   </section>
 
   <SeeAlso links={[
+    { href: '/docs/api/imperative', label: 'Imperative reference (with platform rows)' },
     { href: '/docs/api/handle', label: 'FieldHandle reference' },
     { href: '/docs/api/parity', label: 'Platform parity matrix' },
     { href: '/docs/authoring', label: 'Authoring guide' },

@@ -12,11 +12,23 @@
 The `FieldHandle` interface is the engine's public API contract. Every platform that ships a field
 runtime implements it; the live page tracks which callable methods exist on each platform.
 
-**Sources of truth:**
+**Callable methods are only one dimension.** `data/parity-matrix.json` carries the whole generated
+set — handle methods *and* handle properties, field configuration, the declarative body contract, the
+body spec and body handle, forces, render/overlay/host-render modes, palette, feedback channels,
+conditions, formations, events, agent capabilities, snapshot profiles and policy budgets. Per-entry
+support rows for the declarative half render on
+[`/docs/api/declarative`](https://fundamental-engine.com/docs/api/declarative) and for the imperative
+half on [`/docs/api/imperative`](https://fundamental-engine.com/docs/api/imperative). **Methods and
+properties are separate dimensions on purpose** (#998): comparing one plane's properties against
+another plane's methods invented gaps for `policy` and `projections`, which all three planes have.
+
+**Sources of truth** (these are the files `scripts/gen-parity-matrix.mjs` actually parses):
 - **Methods:** `packages/core/src/engine/types.ts` — the `FieldHandle` interface.
 - **Three.js:** `packages/three/src/layer.ts` — `FieldLayer` delegates the full surface to the wrapped handle.
-- **Swift:** `swift/Sources/FundamentalVanilla/FieldEngine.swift`.
-- **Kotlin:** `android/fundamental-core/src/main/kotlin/com/fundamental/core/engine/FieldHandle.kt`.
+- **Swift:** `swift/Sources/FundamentalCore/Engine/FieldHandle.swift` — the `public protocol FieldHandle`
+  (`FundamentalVanilla/FieldEngine.swift` is the concrete host that conforms to it).
+- **Kotlin:** `android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/FieldHandle.kt`
+  (the path was recorded as `…/core/engine/FieldHandle.kt` here; that file does not exist — corrected #998).
 
 ## Two different "parity" claims — keep them separate
 

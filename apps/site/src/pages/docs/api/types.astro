@@ -91,6 +91,13 @@ interface FieldPlatform {
     </p>
   </header>
 
+  <div class="callout">
+    <b>What each type is FOR</b>, with a generated <b>JS · Swift · Kotlin</b> support row per member, is
+    on the <a href="/docs/api/imperative">imperative API reference</a> — the handle, the body handle, the
+    policy and budget shapes, the agent capability grants and the snapshot profiles. This page stays the
+    type-shape lookup.
+  </div>
+
   <section class="docs-sec">
     <h2>Force</h2>
     <p>The contract every force implements. <code>apply</code> nudges one particle given one body and the shared env.</p>
@@ -138,6 +145,7 @@ interface FieldPlatform {
 
   <SeeAlso
     links={[
+      { href: '/docs/api/imperative', label: 'Imperative reference (with platform rows)' },
       { href: '/docs/api/options', label: 'createField & options' },
       { href: '/docs/api/handle', label: 'FieldHandle' },
       { href: '/docs/api/forces', label: 'Forces' },

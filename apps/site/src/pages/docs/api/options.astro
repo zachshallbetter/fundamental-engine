@@ -48,6 +48,14 @@ createField(canvas, { mass: true });`;
     </p>
   </header>
 
+  <div class="callout">
+    <b>Looking for the whole code surface?</b> The
+    <a href="/docs/api/imperative">imperative API reference</a> consolidates this table with the
+    <code>FieldHandle</code>, the sampling and observable reads, the agent view, policy and budgets and
+    the event bus — and gives every entry a generated <b>JS · Swift · Kotlin</b> support row, so you can
+    see which planes can configure a given option at all. This page stays as the flat option lookup.
+  </div>
+
   <section class="docs-sec">
     <h2>Signature</h2>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: sig }]} />
@@ -108,6 +116,7 @@ createField(canvas, { mass: true });`;
 
   <SeeAlso
     links={[
+      { href: '/docs/api/imperative', label: 'Imperative reference (with platform rows)' },
       { href: '/docs/api/handle', label: 'FieldHandle' },
       { href: '/docs/api/attributes', label: 'data-* attributes' },
       { href: '/docs/api/types', label: 'Types' },
