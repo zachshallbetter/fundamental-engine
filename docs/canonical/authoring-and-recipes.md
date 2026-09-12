@@ -102,8 +102,8 @@ through the same platform registries.
 | `data-render` | render layers |
 | `data-feedback` | enable DOM write-back |
 | `data-field-source` | source field for transport |
-| `data-scope` | local/global participation |
-| `data-field` | explicit field target |
+| `data-scope` | shadow hosts only — component-side vocabulary forwarded as `scope` on the registration detail (`"nearest"` / `"global"`); the engine does not read it from light-DOM bodies ([shadow-dom.md §18](../engine-reference/shadow-dom.md#18-field-scopes)) |
+| `data-field` | shadow hosts only — forwarded as `field`, the explicit field target / portal (`"root"`, a selector, or an element); not read from light-DOM bodies ([shadow-dom.md §19](../engine-reference/shadow-dom.md#19-field-portals)) |
 | `data-strength` | force intensity |
 | `data-range` | effective radius |
 | `data-when` | activation condition |

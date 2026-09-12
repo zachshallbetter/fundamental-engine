@@ -3932,6 +3932,13 @@
               "type": {
                 "text": "RegisterBodyDetail | undefined"
               }
+            },
+            {
+              "name": "root",
+              "optional": true,
+              "type": {
+                "text": "ParentNode"
+              }
             }
           ],
           "description": "Register a shadow-DOM host for measurement from a `register-body` event detail (D4). The host's\ncustom `getRect` (for closed roots / inner cores) flows straight into MeasurementRegistry's rect\noverride. Pure given the sink + detail. `syncBodies`' `if (!has)` guard means it won't clobber a\nhost registered here, so the two discovery paths coexist (the legacy engine still drives the\nbody's simulation; the platform owns its geometry)."
