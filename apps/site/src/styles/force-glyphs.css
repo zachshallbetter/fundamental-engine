@@ -59,197 +59,31 @@
 .fg-fieldflow{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M3 10 C10 10 14 4 21 4%22%2F%3E%3Cpath d%3D%22M3 16 C10 16 14 10 20 10%22%2F%3E%3Cpath d%3D%22M16.8 7.6 L20 10 L16.8 12.4%22%2F%3E%3C%2Fsvg%3E")}
 .fg-warp{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%226.5%22 cy%3D%2212%22 r%3D%222.8%22%2F%3E%3Ccircle cx%3D%2217.5%22 cy%3D%2212%22 r%3D%222.8%22%2F%3E%3Cpath d%3D%22M9.3 9.8 C13 7 13 7 14.7 9.8%22%2F%3E%3Cpath d%3D%22M9.3 14.2 C13 17 13 17 14.7 14.2%22%2F%3E%3C%2Fsvg%3E")}
 
-/* ── presets — CSS-shape composites (.fgp) ─────────────────────────────────── */
+/* ── presets — SVG line-icons (.fgp), the same idiom as the 36 forces above ────
+ * These were composites of two CSS pseudo-elements, which can only draw rings, bars
+ * and border-radius curves. Beside the force icons on the same pages they read as a
+ * cruder, unrelated family — and two boxes cannot express a spiral, a cloud or a jet.
+ * They are now masked SVG on the same 24x24 grid at the same stroke weight, so the
+ * two sets are one language. Line art also has no blur to remove.
+ */
 .fgp {
   --fc: currentColor;
   width: 14px;
   height: 14px;
-  position: relative;
   display: inline-block;
   flex: none;
-  color: var(--fc);
   vertical-align: middle;
-}
-.fgp::before,
-.fgp::after {
-  content: '';
-  position: absolute;
+  background-color: var(--fc);
+  -webkit-mask: var(--fgp-i) center / contain no-repeat;
+  mask: var(--fgp-i) center / contain no-repeat;
 }
 
-/* ── presets (§20.9) — cosmic composites ───────────────────────────────────── */
-
-/* blackhole — a dark core ringed by an accretion disk */
-.fgp-blackhole::before {
-  inset: 3.5px;
-  border-radius: 50%;
-  background: #05060a;
-  box-shadow: 0 0 0 1.5px currentColor;
-}
-.fgp-blackhole::after {
-  inset: 0.5px;
-  border-radius: 50%;
-  border: 1px solid currentColor;
-  opacity: 0.5;
-}
-
-/* whitehole — an emission core throwing rings outward */
-.fgp-whitehole::before {
-  left: 50%;
-  top: 50%;
-  width: 4px;
-  height: 4px;
-  margin: -2px 0 0 -2px;
-  border-radius: 50%;
-  background: currentColor;
-}
-.fgp-whitehole::after {
-  inset: 0.5px;
-  border-radius: 50%;
-  border: 1px dotted currentColor;
-}
-
-/* star — a glowing core with cross rays */
-.fgp-star::before {
-  inset: 4px;
-  border-radius: 50%;
-  background: currentColor;
-}
-.fgp-star::after {
-  left: 50%;
-  top: 50%;
-  width: 13px;
-  height: 13px;
-  transform: translate(-50%, -50%);
-  background:
-    linear-gradient(currentColor, currentColor) center / 13px 1px no-repeat,
-    linear-gradient(currentColor, currentColor) center / 1px 13px no-repeat;
-  opacity: 0.6;
-}
-
-/* quasar — a black hole with polar jets */
-.fgp-quasar::before {
-  left: 50%;
-  top: 1px;
-  bottom: 1px;
-  width: 1.6px;
-  margin-left: -0.8px;
-  background: currentColor;
-}
-.fgp-quasar::after {
-  inset: 4px;
-  border-radius: 50%;
-  background: #05060a;
-  box-shadow: 0 0 0 1.5px currentColor;
-}
-
-/* galaxy — a spiral disk */
-.fgp-galaxy::before {
-  inset: 1px;
-  border-radius: 50%;
-  border: 1.3px solid transparent;
-  border-top-color: currentColor;
-  border-bottom-color: currentColor;
-  transform: rotate(28deg);
-}
-.fgp-galaxy::after {
-  left: 50%;
-  top: 50%;
-  width: 3.4px;
-  height: 3.4px;
-  margin: -1.7px 0 0 -1.7px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-/* nebula — a soft glowing cloud */
-.fgp-nebula::before {
-  left: 1.5px;
-  top: 7px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-  box-shadow:
-    3.5px -1.2px 0 -0.6px currentColor,
-    6.5px 0.4px 0 -1.1px currentColor;
-  opacity: 0.9;
-}
-.fgp-nebula::after {
-  left: 3px;
-  top: 2px;
-  width: 7px;
-  height: 5.5px;
-  background:
-    linear-gradient(currentColor, currentColor) 0 1.5px / 1.2px 4px no-repeat,
-    linear-gradient(currentColor, currentColor) 3px 0 / 1.2px 5.5px no-repeat,
-    linear-gradient(currentColor, currentColor) 5.8px 2.2px / 1.2px 3.3px no-repeat;
-  transform: skewX(-14deg);
-  opacity: 0.75;
-}
-
-/* tornado — a funnel */
-.fgp-tornado::before {
-  left: 50%;
-  top: 1.5px;
-  transform: translateX(-50%);
-  border-top: 9px solid currentColor;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  opacity: 0.85;
-}
-.fgp-tornado::after {
-  left: 50%;
-  top: 2px;
-  width: 8px;
-  height: 2px;
-  margin-left: -4px;
-  border-radius: 50%;
-  border-top: 1.4px solid currentColor;
-}
-
-
-/* wormhole — two throats joined by a bridge */
-.fgp-wormhole::before {
-  left: 0.5px;
-  top: 50%;
-  width: 5px;
-  height: 5px;
-  margin-top: -2.5px;
-  border-radius: 50%;
-  border: 1.4px solid currentColor;
-}
-.fgp-wormhole::after {
-  right: 0.5px;
-  top: 50%;
-  width: 5px;
-  height: 5px;
-  margin-top: -2.5px;
-  border-radius: 50%;
-  border: 1.4px solid currentColor;
-  box-shadow: -4.5px 0 0 -2.2px currentColor;
-}
-
-/* fountain — a jet fanning up over the dish it falls back into */
-.fgp-fountain::before {
-  left: 50%;
-  top: 1.5px;
-  width: 9px;
-  height: 6.5px;
-  margin-left: -4.5px;
-  background:
-    linear-gradient(currentColor, currentColor) 0 2.5px / 1.3px 4px no-repeat,
-    linear-gradient(currentColor, currentColor) 3.85px 0 / 1.3px 6.5px no-repeat,
-    linear-gradient(currentColor, currentColor) 7.7px 2.5px / 1.3px 4px no-repeat;
-  opacity: 0.9;
-}
-.fgp-fountain::after {
-  left: 50%;
-  bottom: 1.5px;
-  width: 12px;
-  height: 3px;
-  margin-left: -6px;
-  border-radius: 0 0 6px 6px;
-  border-bottom: 1.4px solid currentColor;
-  border-left: 1.4px solid currentColor;
-  border-right: 1.4px solid currentColor;
-}
+.fgp-blackhole{--fgp-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cellipse cx%3D%2212%22 cy%3D%2212%22 rx%3D%229.3%22 ry%3D%223.5%22 transform%3D%22rotate%28-18 12 12%29%22%2F%3E%3Ccircle cx%3D%2212%22 cy%3D%2212%22 r%3D%223.5%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3C%2Fsvg%3E")}
+.fgp-whitehole{--fgp-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%2212%22 cy%3D%2212%22 r%3D%222.9%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Cpath d%3D%22M12 5.4v2.3M12 16.3v2.3M5.4 12h2.3M16.3 12h2.3M7.6 7.6l1.6 1.6M14.8 14.8l1.6 1.6M16.4 7.6l-1.6 1.6M9.2 14.8l-1.6 1.6%22%2F%3E%3C%2Fsvg%3E")}
+.fgp-wormhole{--fgp-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cellipse cx%3D%225.6%22 cy%3D%2212%22 rx%3D%222.5%22 ry%3D%224.6%22%2F%3E%3Cellipse cx%3D%2218.4%22 cy%3D%2212%22 rx%3D%222.5%22 ry%3D%224.6%22%2F%3E%3Cpath d%3D%22M5.6 7.4Q12 10.2 18.4 7.4M5.6 16.6Q12 13.8 18.4 16.6%22%2F%3E%3C%2Fsvg%3E")}
+.fgp-star{--fgp-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%2212%22 cy%3D%2212%22 r%3D%224.2%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Cpath d%3D%22M12 3.4v2.6M12 18v2.6M3.4 12h2.6M18 12h2.6M6.2 6.2l1.9 1.9M15.9 15.9l1.9 1.9M17.8 6.2l-1.9 1.9M8.1 15.9l-1.9 1.9%22%2F%3E%3C%2Fsvg%3E")}
+.fgp-quasar{--fgp-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cellipse cx%3D%2212%22 cy%3D%2212%22 rx%3D%228.4%22 ry%3D%223.1%22%2F%3E%3Ccircle cx%3D%2212%22 cy%3D%2212%22 r%3D%222.5%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Cpath d%3D%22M12 8.9V3.2M12 15.1v5.7M10.3 5L12 3.2 13.7 5M10.3 19l1.7 1.8 1.7-1.8%22%2F%3E%3C%2Fsvg%3E")}
+.fgp-galaxy{--fgp-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%2212%22 cy%3D%2212%22 r%3D%221.9%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Cpath d%3D%22M13.4 10.2c2.6-1.3 5.6.3 5.9 3.2.3 3.2-2.7 5.8-6.3 5.5%22%2F%3E%3Cpath d%3D%22M10.6 13.8c-2.6 1.3-5.6-.3-5.9-3.2-.3-3.2 2.7-5.8 6.3-5.5%22%2F%3E%3C%2Fsvg%3E")}
+.fgp-nebula{--fgp-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M7.8 18.3a3.5 3.5 0 0 1-.5-6.9 4.6 4.6 0 0 1 8.6-1.3 3.7 3.7 0 0 1 1 7.3z%22%2F%3E%3Cpath d%3D%22M9.8 8.2c.8-1.1.5-2.3-.3-3.2M14.6 7.6c.8-1.1.5-2.3-.3-3.2%22%2F%3E%3C%2Fsvg%3E")}
+.fgp-tornado{--fgp-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M4.6 6h14.8M6.6 9.6h10.8M8.8 13.2h6.4M10.6 16.8h2.8%22%2F%3E%3Cpath d%3D%22M12 16.8v3.6%22%2F%3E%3C%2Fsvg%3E")}
+.fgp-fountain{--fgp-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M5.4 16.4c1.6 2.6 11.6 2.6 13.2 0%22%2F%3E%3Cpath d%3D%22M12 16.4V8.6%22%2F%3E%3Cpath d%3D%22M12 8.6c0-3.6 3.6-4.2 4.9-1.4M12 8.6c0-3.6-3.6-4.2-4.9-1.4%22%2F%3E%3C%2Fsvg%3E")}
