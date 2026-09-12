@@ -535,6 +535,25 @@ export interface Env {
 export type IntegratorMode = 'legacy' | 'fixed' | 'velocity-verlet';
 
 /**
+ * The resting-motion floor's mode: `thermal` is the `thermal` force's Langevin kick applied field-wide
+ * (the honest wander, drawn through the injected `rng` so a seeded run reproduces); `flow` is a gentle
+ * divergence-free curl with a slow phase drift (it circulates matter without ever compressing it).
+ */
+export type RestingMotionMode = 'thermal' | 'flow';
+
+/**
+ * The resting-motion floor (DECLARED, default OFF). Signals-first defaults leave a DRAWN field settling
+ * into its wells and freezing when idle; this is the global alternative to painting waves: a small
+ * per-particle impulse the field MEASURES as `--temperature`, with nothing drawn. Reduced motion freezes
+ * the integrator (`dt = 0`), so it contributes exactly nothing for opted-out users.
+ */
+export interface RestingMotion {
+  mode: RestingMotionMode;
+  /** multiplier on the floor's impulse (default `1`; `0` is equivalent to off). */
+  strength?: number;
+}
+
+/**
  * A single force's contribution to one agent in one step, in one channel (substrate doc 04).
  * The unit the diagnostics (`causality`/`prediction`), Field Query, and Causal Replay consume:
  * "this matter moved 0.42 in linear x because of `attract`."
@@ -747,6 +766,11 @@ export interface FieldOptions {
    *  second-order velocity-Verlet scheme (higher positional accuracy; trajectories differ by
    *  design). See {@link Env.integrator}. */
   integrator?: IntegratorMode;
+  /**
+   * The resting-motion floor (declared, default OFF): `{ mode: 'thermal' | 'flow', strength? }` — honest
+   * idle motion for a drawn field with nothing painted; see {@link RestingMotion}. Construction-time.
+   */
+  restingMotion?: RestingMotion;
   /** draw the background Currents (§24); default **false** (opt-in, #979 — the signals-first
    *  companion to `render: 'none'`). A bare field has no carrier waves; set true for the ambient
    *  resting structure + the bound shimmer reservoir. */

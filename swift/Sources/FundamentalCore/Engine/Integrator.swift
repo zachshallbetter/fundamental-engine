@@ -50,11 +50,13 @@ public struct StepInput {
     public var waveStyle: WaveStyle
     public var waveCenter: Vec3?
     public var separation: Float
+    /// The resting-motion floor (declared, default OFF) — mirrors the JS `StepInput.restingMotion`.
+    public var restingMotion: RestingMotion?
 
     public init(store: FieldStore, bodies: [Body], env: Env, forces: ForceRegistry,
                 conditions: ConditionRegistry = [:], waves: [Wave]? = nil,
                 waveStyle: WaveStyle = .linear, waveCenter: Vec3? = nil,
-                separation: Float = 0.0) {
+                separation: Float = 0.0, restingMotion: RestingMotion? = nil) {
         self.store = store
         self.bodies = bodies
         self.env = env
@@ -64,6 +66,7 @@ public struct StepInput {
         self.waveStyle = waveStyle
         self.waveCenter = waveCenter
         self.separation = separation
+        self.restingMotion = restingMotion
     }
 }
 
@@ -114,6 +117,18 @@ private func resetDensity(_ bodies: [Body]) {
         b.count = 0
         if b.thermo != nil { b.thermo = Body.Thermo() }
     }
+}
+
+/// One eddy cell of the resting `.flow` field spans ≈ 400px — mirrors the JS `RESTING_FLOW_K`.
+public let RESTING_FLOW_K: Float = (2 * .pi) / 400
+
+/// The resting-motion floor's `.flow` field at (x, y): the curl of the stream function
+/// ψ = sin(kx + φ)·sin(ky − φ), i.e. v = (∂ψ/∂y, −∂ψ/∂x) with k folded into the caller's gain — divergence-
+/// free BY CONSTRUCTION, so it circulates matter without compressing it. Unit-amplitude; pure. Mirrors JS.
+public func restingFlow(x: Float, y: Float, phase: Float) -> (x: Float, y: Float) {
+    let ax = x * RESTING_FLOW_K + phase
+    let ay = y * RESTING_FLOW_K - phase
+    return (sin(ax) * cos(ay), -cos(ax) * sin(ay))
 }
 
 public func step(_ input: StepInput) {
@@ -417,6 +432,29 @@ public func step(_ input: StepInput) {
                     + cos(p.position.y * 0.0034 - env.t * 0.15)) * .pi
             p.velocity.x += cos(cn) * 0.013 * form.wander
             p.velocity.y += sin(cn) * 0.013 * form.wander
+        }
+
+        // the resting-motion floor (DECLARED, default OFF) — the JS integrator mirror: `.thermal` is a seeded
+        // Langevin kick (Box–Muller, variance ∝ dt), `.flow` a divergence-free curl (restingFlow) with a slow
+        // phase drift; both scale with dt, so reduced motion (dt = 0) contributes nothing. Same constants.
+        if let resting = input.restingMotion, resting.strength > 0 {
+            if resting.mode == .thermal {
+                let sigma = 0.06 * resting.strength * dt.squareRoot()
+                let r1 = env.rng(); let u1: Float = r1 == 0 ? 1e-9 : r1
+                let mag = sigma * (-2 * log(u1)).squareRoot()
+                let ang = 2 * Float.pi * env.rng()
+                p.velocity.x += mag * cos(ang)
+                p.velocity.y += mag * sin(ang)
+                if D > 0 {
+                    let r2 = env.rng(); let u2: Float = r2 == 0 ? 1e-9 : r2
+                    p.velocity.z += sigma * (-2 * log(u2)).squareRoot() * cos(2 * Float.pi * env.rng())
+                }
+            } else {
+                let gain = 0.02 * resting.strength * dt
+                let f = restingFlow(x: p.position.x, y: p.position.y, phase: env.t * 0.15)
+                p.velocity.x += f.x * gain
+                p.velocity.y += f.y * gain
+            }
         }
 
         p.heat *= heatDecay

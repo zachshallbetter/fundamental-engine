@@ -58,6 +58,7 @@ export function FieldField({
   causality,
   heatmap,
   dprCap,
+  restingMotion,
   separation,
   rng,
   now,
@@ -87,7 +88,7 @@ export function FieldField({
     const field = createBrowserField(canvas, {
       accent, density, depth, integrator, waves, waveStyle, waveCenter, background, render,
       overlay, overlayCanvas: overlayCanvasRef.current ?? undefined, overlayBackend,
-      mass, palette, attention, causality, heatmap, dprCap, separation,
+      mass, palette, attention, causality, heatmap, dprCap, separation, restingMotion,
       rng, now, feedbackSink,
     });
     onReadyRef.current?.(field);
@@ -100,7 +101,7 @@ export function FieldField({
     // re-create only when a declarative engine option actually changes. The determinism/feedback
     // seams (rng/now/feedbackSink/overlayBackend) are config-set-once — forwarded above, but kept
     // out of the dep list so an inline value passed each render doesn't thrash the field.
-  }, [accent, density, depth, integrator, waves, waveStyle, waveCenter, background, render, overlay, mass, palette, attention, causality, heatmap, dprCap, separation]);
+  }, [accent, density, depth, integrator, waves, waveStyle, waveCenter, background, render, overlay, mass, palette, attention, causality, heatmap, dprCap, separation, restingMotion]);
 
   return (
     <canvas ref={canvasRef} aria-hidden="true" className={className} style={{ ...FIXED, ...style }} />

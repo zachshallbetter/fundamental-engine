@@ -60,6 +60,12 @@ The rule extends beyond pixels — these are its enforced consequences:
   read it (#982; the inverse of the silent-contract gap — CSS that *pretends* to be
   field-driven is wallpaper even when the values look plausible). Data-backed examples declare
   their provenance ([invisible-fields.md](invisible-fields.md)).
+- **Resting liveliness is declared, not painted.** A drawn field with signals-first defaults settles
+  into its wells and freezes when idle. The remedy is not a decorative wave layer but the
+  **resting-motion floor** (`FieldOptions.restingMotion` / `<field-root resting-motion>`): default off,
+  opt-in, a small per-particle impulse — `thermal` (a seeded Langevin kick) or `flow` (a
+  divergence-free curl) — that the field *measures* as `--temperature`, with nothing drawn and nothing
+  under reduced motion (`dt = 0`). Mirrored on every plane.
 - **The resting state of every plane is the same:** nothing painted, nothing imposed,
   everything readable. `render` defaults `'none'`; ambient wave behavior is controlled as
   an explicit surface policy (not as an implicit truth claim), and parity is pinned by tests.

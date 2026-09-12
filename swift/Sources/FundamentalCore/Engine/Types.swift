@@ -297,6 +297,22 @@ public final class NoopGrid: ScalarGrid {
 /// force pass and the velocity takes the half-step average — see the integrator header for the
 /// exact math and the documented approximations. Opt-in only: at the defaults the engine is
 /// byte-identical to the pre-mode port. Raw values mirror the JS tokens.
+/// The resting-motion floor's mode — mirrors JS `RestingMotionMode`.
+public enum RestingMotionMode: String, Sendable { case thermal, flow }
+
+/// The resting-motion floor (DECLARED, default OFF) — mirrors JS `FieldOptions.restingMotion`. Signals-first
+/// defaults leave a DRAWN field settling into its wells and freezing when idle; this is the global alternative
+/// to painting waves: a small per-particle impulse the field MEASURES as temperature, with nothing drawn.
+/// `.thermal` is the `thermal` force's Langevin kick applied field-wide (Box–Muller through `Env.rng`, so a
+/// seeded run reproduces); `.flow` a divergence-free curl with a slow phase drift. Both scale with dt, so
+/// reduced motion (dt = 0) contributes nothing.
+public struct RestingMotion: Sendable {
+    public var mode: RestingMotionMode
+    /// multiplier on the floor's impulse (default 1; 0 is equivalent to off).
+    public var strength: Float
+    public init(mode: RestingMotionMode, strength: Float = 1) { self.mode = mode; self.strength = strength }
+}
+
 public enum IntegratorMode: String, Sendable {
     case legacy
     case fixed

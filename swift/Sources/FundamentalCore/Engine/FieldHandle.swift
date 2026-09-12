@@ -122,6 +122,8 @@ public struct FieldOptions {
     /// The integration scheme (doc 04 §Step 3 / #659) — mirrors JS `FieldOptions.integrator`. Opt-in:
     /// `.legacy` (the default) is the shipped engine, byte-identical. See ``IntegratorMode``.
     public var integrator: IntegratorMode
+    /// The resting-motion floor (declared, default OFF) — mirrors JS `FieldOptions.restingMotion`. See ``RestingMotion``.
+    public var restingMotion: RestingMotion?
     /// The random source for ALL engine randomness — particle seeding, spawn scatter, jitter, spark
     /// counts + directions, release angles (the JS `FieldOptions.rng` / #371 mirror — the determinism
     /// seam, #974). `nil` (the default) = the platform generator, today's nondeterministic behavior;
@@ -154,6 +156,7 @@ public struct FieldOptions {
         identify: ((AnyObject) -> FieldBodyIdentity?)? = nil,
         policy: FieldPolicy? = nil,
         integrator: IntegratorMode = .legacy,
+        restingMotion: RestingMotion? = nil,
         rng: (() -> Float)? = nil
     ) {
         self.accent = accent
@@ -170,6 +173,7 @@ public struct FieldOptions {
         self.overlay = overlay
         self.ambientOrbit = ambientOrbit
         self.ambientWander = ambientWander
+        self.restingMotion = restingMotion
         self.particleShape = particleShape
         self.particleSize = particleSize
         self.particleGlow = particleGlow

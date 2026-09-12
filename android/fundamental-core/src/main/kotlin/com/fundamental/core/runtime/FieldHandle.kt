@@ -9,6 +9,7 @@ import com.fundamental.core.engine.FieldHost
 import com.fundamental.core.engine.FieldPolicy
 import com.fundamental.core.engine.IntegratorMode
 import com.fundamental.core.engine.Particle
+import com.fundamental.core.engine.RestingMotion
 import com.fundamental.core.engine.ScalarGrid
 import com.fundamental.core.engine.WaveStyle
 import com.fundamental.core.engine.energyReport
@@ -859,8 +860,10 @@ fun createField(
      * [IntegratorMode.LEGACY] (the default) is the shipped engine, byte-identical.
      */
     integrator: IntegratorMode = IntegratorMode.LEGACY,
+    /** The resting-motion floor (the JS `FieldOptions.restingMotion`); null (default) = off. */
+    restingMotion: RestingMotion? = null,
 ): FieldHandle = FieldHandle(
-    FieldController(width, height, depth, particleCount, seed, integrator).also {
+    FieldController(width, height, depth, particleCount, seed, integrator, restingMotion = restingMotion).also {
         it.identify = identify
         it.setPolicy(policy)
     },
@@ -881,9 +884,11 @@ fun createField(
     policy: FieldPolicy = FieldPolicy.UNBOUNDED,
     /** The integration scheme (the JS `FieldOptions.integrator`); LEGACY (default) = the shipped engine. */
     integrator: IntegratorMode = IntegratorMode.LEGACY,
+    /** The resting-motion floor (the JS `FieldOptions.restingMotion`); null (default) = off. */
+    restingMotion: RestingMotion? = null,
 ): FieldHandle {
     val volume = host.volume
-    val controller = FieldController(volume.width, volume.height, volume.depth, particleCount, seed, integrator).also {
+    val controller = FieldController(volume.width, volume.height, volume.depth, particleCount, seed, integrator, restingMotion = restingMotion).also {
         it.identify = identify
         it.setPolicy(policy)
     }

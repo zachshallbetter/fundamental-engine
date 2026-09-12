@@ -1,4 +1,4 @@
-import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
+import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RestingMotion, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -46,6 +46,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {string} background - Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate.
  * @attr {number} depth - Optional z-volume (default `0`, the flat field). `> 0` opens a shallow depth the matter drifts through, projected as a size/alpha recession. Construction-time — changing it rebuilds.
  * @attr {string} integrator - Integration scheme (substrate doc 04 §Step 3): `fixed` opts into the frame-rate-independent integrator, `velocity-verlet` into the second-order Verlet scheme (#659); anything else (incl. absent) is the default `legacy`. Construction-time — changing it rebuilds.
+ * @attr {string} resting-motion - The resting-motion floor (declared, default OFF): `thermal` (a field-wide seeded Langevin kick) or `flow` (a divergence-free curl), optionally followed by a strength multiplier (`"flow 0.5"`, default `1`) — honest idle motion for a drawn field with nothing painted, measured as `--temperature`, and nothing under reduced motion. Absent = off. Construction-time — changing it rebuilds.
  * @attr {number} grid-warp - Distortion multiplier for the `grid` overlay's lattice (default `1`, the calibrated amount). `2`–`3` exaggerates the deformation; `0` flattens it. Only affects the `grid` overlay mode.
  * @attr {number} grid-intensity - Stroke opacity ∈ [0,1] for the `grid` overlay lines (default `0.16`, the faint diagnostic). Raise it (≈`0.5`) to make the warped lattice a visual centerpiece. Only affects the `grid` overlay mode.
  */
@@ -111,6 +112,7 @@ export class FieldField extends HTMLElementBase {
     { key: 'ambientOrbit', attr: 'ambient-orbit', read: (el) => el.ambientOrbit },
     { key: 'ambientWander', attr: 'ambient-wander', read: (el) => el.ambientWander },
     { key: 'integrator', attr: 'integrator', read: (el) => el.integrator },
+    { key: 'restingMotion', attr: 'resting-motion', read: (el) => el.restingMotion },
   ];
 
   // Literal (not computed) so the CEM analyzer can enumerate it; the test keeps it in sync with OPTIONS.
@@ -139,6 +141,7 @@ export class FieldField extends HTMLElementBase {
     'ambient-orbit',
     'ambient-wander',
     'integrator',
+    'resting-motion',
     'background',
     'formation',
   ];
@@ -329,6 +332,16 @@ export class FieldField extends HTMLElementBase {
   get integrator(): IntegratorMode | undefined {
     const v = this.getAttribute('integrator');
     return v === 'fixed' || v === 'velocity-verlet' ? v : undefined;
+  }
+  /** `resting-motion` — the resting-motion floor (declared, default OFF): `thermal` | `flow`, optionally
+   *  followed by a strength multiplier (`"flow 0.5"`); undefined (off) if absent or unrecognised. */
+  get restingMotion(): RestingMotion | undefined {
+    const raw = this.getAttribute('resting-motion');
+    if (!raw) return undefined;
+    const [mode, s] = raw.trim().split(/\s+/);
+    if (mode !== 'thermal' && mode !== 'flow') return undefined;
+    const strength = s === undefined ? NaN : Number(s);
+    return Number.isFinite(strength) && strength >= 0 ? { mode, strength } : { mode };
   }
   /** `theme` — ambient palette preset (`warm` (default) | `cool` | `mono`); undefined if absent (#529). */
   get theme(): string | undefined {

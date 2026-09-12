@@ -386,7 +386,8 @@ final class HeadlessFieldHost: FieldHost {
     var volume: FieldVolume { FieldVolume(width: 375, height: 812, depth: depth) }
     var scrollY: Float { 0 }
     var scrollHeight: Float { 0 }
-    var prefersReducedMotion: Bool { false }
+    /// settable so a test can drive the accessibility clamp (env.dt = 0) — see RestingMotionTests.
+    var prefersReducedMotion: Bool = false
     /// Presentation state — set by tests, delivered via `fireVisibility()` (#605).
     var hidden = false
     var isHidden: Bool { hidden }
