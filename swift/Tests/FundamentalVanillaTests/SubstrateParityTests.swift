@@ -132,6 +132,65 @@ struct SubstrateParityTests {
         field.destroy()
     }
 
+    // MARK: - #1160 the two gates that were declared but never consulted
+
+    @Test("read:snapshots gates the capture surface — withheld, snapshot() is closed, not emptied")
+    func agentSnapshotCapabilityGate() {
+        let field = FieldField(host: HeadlessFieldHost())
+        _ = field.addBody(BodySpec(tokens: ["attract"], rect: { Box(center: Vec3(40, 40, 0), halfExtents: Vec3(5, 5, 0)) }))
+        field.scan()
+
+        // DENY: every other read cap granted, `read:snapshots` deliberately withheld.
+        let denied = field.forAgent(AgentViewOptions(capabilities: [.metrics, .relationships, .influences, .bodyData, .projections, .diagnostics]))
+        #expect(denied.snapshot(nil) == nil) // closed, not an empty capture
+        #expect(denied.particleCount() == field.particleCount()) // shape is still the base grant
+
+        // GRANT: the capture surface opens, and actually captures.
+        let granted = field.forAgent(AgentViewOptions(capabilities: [.snapshots]))
+        let snap = granted.snapshot(nil)
+        #expect(snap != nil)
+        #expect(snap?.bodies.isEmpty == false)
+
+        // An EMPTY grant is the most-restricted view: no capture at all.
+        #expect(field.forAgent(AgentViewOptions(capabilities: [])).snapshot(nil) == nil)
+        field.destroy()
+    }
+
+    @Test("read:diagnostics gates the raw particle lane of a capture (tighten-only)")
+    func agentDiagnosticsCapabilityGate() {
+        // The scoping half is pure, so it is asserted directly — the port's FieldSnapshot has no particle
+        // lane yet, so this gate is wired at the option boundary and becomes observable when that lane lands.
+        let asked = FieldSnapshotOptions(includeParticles: true, includeRelationships: true,
+                                         includeData: true, includeInfluences: true, profile: .debug)
+
+        // DENY: no diagnostics cap → the raw pool is forced off even though `debug` + the explicit flag ask.
+        let denied = scopeSnapshotOptions(asked, capabilities: [.snapshots])
+        #expect(denied.includeParticles == false)
+        #expect(denied.includeData == false)        // per-lane caps tighten alongside it
+        #expect(denied.includeRelationships == false)
+
+        // GRANT: the lane is permitted to pass through (the profile/flags still decide).
+        let granted = scopeSnapshotOptions(asked, capabilities: [.snapshots, .diagnostics])
+        #expect(granted.includeParticles == true)
+
+        // Permission is not a request: the cap alone does not switch the heavy lane on.
+        #expect(scopeSnapshotOptions(nil, capabilities: [.snapshots, .diagnostics]).includeParticles == nil)
+    }
+
+    @Test("a closed agentRead budget still pins a GRANTED capture to the most-restricted profile")
+    func agentSnapshotBudgetClosed() {
+        let field = FieldField(host: HeadlessFieldHost())
+        _ = field.addBody(BodySpec(tokens: ["attract"], rect: { Box(center: Vec3(40, 40, 0), halfExtents: Vec3(5, 5, 0)) }))
+        field.scan()
+        field.setPolicy(FieldPolicy(budgets: FieldBudgets(agentRead: 0)))
+        let view = field.forAgent(AgentViewOptions(capabilities: [.snapshots, .bodyData, .relationships]))
+        let snap = view.snapshot(nil)
+        #expect(snap != nil)                                   // granted, so the surface exists
+        #expect(snap?.relationships.isEmpty == true)           // but pinned to the public profile
+        #expect(snap?.bodies.allSatisfy { $0.data == nil } == true)
+        field.destroy()
+    }
+
     // MARK: - #816 sample() force-probe
 
     @Test("sample() reports the net force toward a nearby attractor and ~zero far away")

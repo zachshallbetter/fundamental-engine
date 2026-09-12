@@ -29,8 +29,8 @@
 >
 > **The scoped read surface — `field.forAgent({ capabilities, redactions? })`.** A Software Agent should
 > read the field through a **capability-scoped, read-only facade**, not the raw handle. `forAgent` returns
-> an `AgentFieldView` that exposes *only* scoped `query()` / `snapshot()` (and `replay()` when
-> `read:replay` is granted) and carries **no** mutation methods at all — the "agent-readable is not
+> an `AgentFieldView` that exposes *only* a scoped `query()` (plus `snapshot()` when `read:snapshots` is
+> granted and `replay()` when `read:replay` is granted) and carries **no** mutation methods at all — the "agent-readable is not
 > agent-writable" rule made structural. Capabilities (`read:metrics`, `read:relationships`,
 > `read:influences`, `read:body-data`, `read:projections`, `read:replay`, …) are an allow-list that
 > *tightens* every reading; `redactions` strip dotted paths (`body.data`, `host.user`); and snapshot

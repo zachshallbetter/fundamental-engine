@@ -162,9 +162,10 @@ agent-writable**. This surface enforces it mechanically.
 ### `field.forAgent({ capabilities, redactions? }): AgentFieldView`
 
 `forAgent` derives a **read-only facade** over the same live field, scoped to a set of capabilities. The
-facade exposes **only** scoped `query()` / `snapshot()` (and `replay()` **only** when `read:replay` is
-granted). It has **no** mutation methods — no `applyForce`, no `addBody`, no `setPolicy` — and that is
-enforced by the facade's *shape*, not a runtime check: there is nothing on it to call.
+facade exposes **only** a scoped `query()` (the always-available live read), plus `snapshot()` **only** when
+`read:snapshots` is granted and `replay()` **only** when `read:replay` is granted. It has **no** mutation
+methods — no `applyForce`, no `addBody`, no `setPolicy` — and that is enforced by the facade's *shape*, not
+a runtime check: there is nothing on it to call.
 
 ```ts
 type AgentCapability =
@@ -176,7 +177,7 @@ interface AgentFieldView {
   readonly capabilities: readonly AgentCapability[];
   readonly redactions: readonly string[];
   query(q?: FieldQuery): FieldQueryResult;
-  snapshot(opts?: FieldSnapshotOptions): FieldSnapshot;
+  snapshot?(opts?: FieldSnapshotOptions): FieldSnapshot;                          // only when read:snapshots
   replay?(a: FieldSnapshot, b: FieldSnapshot, opts?: ReplayOptions): CausalReplay; // only when read:replay
 }
 ```
@@ -184,8 +185,18 @@ interface AgentFieldView {
 **Capabilities are an allow-list — they tighten, never widen.** A dimension the caps don't grant is
 stripped from every reading: no `read:influences` → `influences` empty; no `read:relationships` →
 `relationships` empty; no `read:projections` → `projections` empty; no `read:body-data` → each body's
-opaque `data` is withheld **even if** a profile or `includeData` asked for it. Base identity (ids + shape)
-is always readable — an agent must at minimum be able to name what it sees.
+opaque `data` is withheld **even if** a profile or `includeData` asked for it; no `read:diagnostics` → the
+raw particle pool is withheld **even under `profile: 'debug'`**. Base identity (ids + shape) is always
+readable — an agent must at minimum be able to name what it sees.
+
+**Two kinds of gate — lanes vs surfaces.** Most capabilities gate a *lane within a reading*: withheld, the
+lane comes back empty and the call still succeeds. `read:snapshots` and `read:replay` gate a *surface*:
+withheld, **the method is not on the facade at all** (`undefined`), so the shape reflects the grant. The
+capture is closed rather than emptied deliberately — an empty capture is indistinguishable from an empty
+field, and a silent reading that merely *looks* permissive is the failure a capability system exists to
+prevent. `query()` always remains, so a denied agent is barred from the portable, serializable artifact,
+never blinded. On the Swift and Kotlin ports, where a protocol/class member cannot vanish, the same gate
+returns `nil` / `null`.
 
 **`redactions?: string[]`** are dotted paths stripped from every reading **after** capability scoping:
 `'body.data'` (per-body), `'metrics.temperature'` (a metric key), `'host.user'`, or a bare top-level key.

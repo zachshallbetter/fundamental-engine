@@ -632,10 +632,11 @@ body.remove();`;
       <code>redactions</code> strip dotted paths, and nothing can widen past the field's policy.
     </p>
     <p>
-      Two capabilities are <strong>shape gates</strong> rather than redactions: without
-      <code>read:replay</code> the view has no <code>replay</code> at all, and without
-      <code>read:focus</code> it has no <code>focusState</code>. <code>query</code> and
-      <code>snapshot</code> are always present and are scoped from the inside instead.
+      Three capabilities are <strong>shape gates</strong> rather than redactions: without
+      <code>read:snapshots</code> the view has no <code>snapshot</code>, without
+      <code>read:replay</code> no <code>replay</code>, and without <code>read:focus</code> no
+      <code>focusState</code>. <code>query</code> is always present and is scoped from the inside
+      instead — a denied agent is barred from the capture, never blinded.
     </p>
     <CodeTabs variants={[{ label: 'forAgent', lang: 'ts', code: readingAgent }]} />
     <dl class="api-table">
@@ -652,14 +653,13 @@ body.remove();`;
         ))
       }
     </dl>
-    <div class="callout callout--warn">
-      <b>Two of these are declared, not wired.</b> <code>read:snapshots</code> and
-      <code>read:diagnostics</code> are part of the <code>AgentCapability</code> contract on all three
-      planes, but <code>forAgent</code> does not consult either one — <code>view.snapshot()</code> is
-      present and scoped whether or not <code>read:snapshots</code> was granted. Withholding them is not
-      a control today. The status on each row above is read off the implementation, not assumed, and the
-      other seven do gate what they say they gate.
-    </div>
+    <p>
+      <b>All nine are wired.</b> <code>read:snapshots</code> and <code>read:diagnostics</code> were part
+      of the <code>AgentCapability</code> contract on all three planes while <code>forAgent</code>
+      consulted neither, so withholding them granted access anyway; #1160 wired both, and each plane now
+      carries a test asserting the <em>deny</em> direction. The status on each row above is read off the
+      implementation, not assumed.
+    </p>
     {capGaps.length > 0 && (
       <p>
         <b>The one gap.</b> {capGaps.length === 1 ? 'One capability is' : `${capGaps.length} capabilities are`} JS-only

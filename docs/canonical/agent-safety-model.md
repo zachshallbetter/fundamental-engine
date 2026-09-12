@@ -20,7 +20,8 @@ Three invariants are load-bearing. Everything else is a mechanism that upholds o
 
 **1. Agent-readable does NOT imply agent-writable.**
 `field.forAgent({ capabilities, redactions })` returns a **read-only** `AgentFieldView`: it exposes
-only scoped `query()` / `snapshot()` (and `replay()` only when `read:replay` is granted). There is no
+only a scoped `query()` (plus `snapshot()` only when `read:snapshots` is granted, and `replay()` only when
+`read:replay` is granted — a withheld surface capability leaves the method off the facade entirely). There is no
 `applyForce`, no `addBody`, no `setPolicy` — not blocked by a runtime check, but absent from the
 facade's *shape*. Its `capabilities` and `redactions` are returned frozen, and `field.policy` hands
 back a frozen clone, so a holder of a view (or of the policy) can inspect the rules but cannot mutate

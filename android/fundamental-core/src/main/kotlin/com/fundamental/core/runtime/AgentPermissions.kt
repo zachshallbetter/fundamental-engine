@@ -18,11 +18,43 @@ enum class AgentCapability(val token: String) {
     READ_METRICS("read:metrics"),
     READ_RELATIONSHIPS("read:relationships"),
     READ_INFLUENCES("read:influences"),
+    /**
+     * Gates the CAPTURE surface: [AgentFieldView.snapshot] returns null unless this is granted. Withholding
+     * it CLOSES the call rather than emptying it — an empty capture is indistinguishable from an empty
+     * field. The always-available readings (ids + shape) are unaffected. Mirrors the JS gate, where the
+     * member is absent from the facade entirely.
+     */
     READ_SNAPSHOTS("read:snapshots"),
     READ_BODY_DATA("read:body-data"),
     READ_PROJECTIONS("read:projections"),
+    /**
+     * Gates the DIAGNOSTIC lane of a capture — the raw particle pool (`includeParticles`), the engine's own
+     * internal state rather than a modelled reading of bodies / relationships / metrics. Without it
+     * `includeParticles` is forced off even under [SnapshotProfile.DEBUG] (tightens, never widens).
+     */
     READ_DIAGNOSTICS("read:diagnostics"),
     READ_REPLAY("read:replay"),
+}
+
+/**
+ * Tighten a caller's [FieldSnapshotOptions] to what a capability grant allows — the shared,
+ * side-effect-free half of the agent view's `snapshot()` gate (mirrors the JS `scopeSnapshot` scoping block
+ * and the Swift `scopeSnapshotOptions`). TIGHTEN-ONLY: every branch can turn an inclusion OFF and none can
+ * turn one on, so this can never widen a capture past what the caller asked for. Note it does NOT consult
+ * [AgentCapability.READ_SNAPSHOTS] — that gate decides whether a capture may be taken at all, and is
+ * applied by the view before it ever reaches here.
+ */
+fun scopeSnapshotOptions(
+    opts: FieldSnapshotOptions?,
+    capabilities: Set<AgentCapability>,
+): FieldSnapshotOptions {
+    val o = opts ?: FieldSnapshotOptions()
+    return o.copy(
+        includeRelationships = if (capabilities.contains(AgentCapability.READ_RELATIONSHIPS)) o.includeRelationships else false,
+        includeData = if (capabilities.contains(AgentCapability.READ_BODY_DATA)) o.includeData else false,
+        includeInfluences = if (capabilities.contains(AgentCapability.READ_INFLUENCES)) o.includeInfluences else false,
+        includeParticles = if (capabilities.contains(AgentCapability.READ_DIAGNOSTICS)) o.includeParticles else false,
+    )
 }
 
 /**
@@ -150,6 +182,27 @@ class AgentFieldView internal constructor(
             if (!redacted("metrics.particleCount")) put("particleCount", handle.particleCount().toFloat())
             if (!redacted("metrics.kinetic")) put("kinetic", handle.energy().kinetic)
         }
+    }
+
+    /**
+     * A capability-scoped, portable [FieldSnapshot] — the CAPTURE surface, gated by
+     * [AgentCapability.READ_SNAPSHOTS]. Returns null when that capability is NOT granted: the call is
+     * closed, not emptied, because an empty capture reads exactly like an empty field and a
+     * silently-permissive reading is the failure this gate exists to stop. JS expresses the same gate by
+     * omitting the member from the facade; a Kotlin class member cannot vanish, so null is the idiomatic
+     * mirror — the same shape [influenceAt] already uses.
+     *
+     * When granted, the per-lane caps still tighten what the capture contains (no `read:body-data` → no
+     * opaque body `data`; no `read:diagnostics` → no raw particle pool), and a closed `agentRead` budget
+     * pins the whole capture to the most-restricted profile, mirroring JS.
+     */
+    fun snapshot(opts: FieldSnapshotOptions? = null): FieldSnapshot? {
+        if (!has(AgentCapability.READ_SNAPSHOTS)) return null
+        val agentRead = handle.controller.policy.budgets?.agentRead
+        if (agentRead != null && agentRead <= 0f) {
+            return handle.snapshot(FieldSnapshotOptions(profile = SnapshotProfile.PUBLIC))
+        }
+        return handle.snapshot(scopeSnapshotOptions(opts, capabilities))
     }
 }
 
