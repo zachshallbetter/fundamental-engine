@@ -14,6 +14,7 @@ import { createFieldPlatform, QualityGovernor, type FieldPlatform } from '@funda
 import type { FieldHandle } from '@fundamental-engine/core';
 import {
   bodyElements,
+  fieldAdopts,
   REGISTER_BODY,
   UNREGISTER_BODY,
   type FeedbackSink,
@@ -54,8 +55,18 @@ export function syncBodies(sink: MeasureSink, root: ParentNode): number {
  * host registered here, so the two discovery paths coexist (the legacy engine still drives the
  * body's simulation; the platform owns its geometry).
  */
-export function registerShadowBody(sink: MeasureSink, detail: RegisterBodyDetail | undefined): void {
-  if (detail?.element) sink.register(detail.element, { role: 'shadow-body', getRect: detail.getRect });
+export function registerShadowBody(
+  sink: MeasureSink,
+  detail: RegisterBodyDetail | undefined,
+  root?: ParentNode,
+): void {
+  if (!detail?.element) return;
+  // scoped participation (shadow-dom.md §17–§19): when the runtime's scan root is known, a host that
+  // opted into `scope: 'nearest'` / an explicit `field` target is measured only by the field that owns
+  // it — the same rule the engine's ShadowRegistry applies, so measurement never drifts from
+  // simulation. A detail without those keys (the default) registers exactly as before.
+  if (root !== undefined && !fieldAdopts(detail, root)) return;
+  sink.register(detail.element, { role: 'shadow-body', getRect: detail.getRect });
 }
 
 /** Unregister a shadow-DOM host from measurement on its `unregister-body` event (D4). Pure. */
@@ -177,7 +188,7 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
   // on the document catches the composed events that bubble out of any shadow tree.
   const doc = root.ownerDocument ?? (typeof document !== 'undefined' ? document : null);
   const detailOf = (e: Event): RegisterBodyDetail | undefined => (e as CustomEvent<RegisterBodyDetail>).detail;
-  const onRegister = (e: Event): void => registerShadowBody(platform.measure, detailOf(e));
+  const onRegister = (e: Event): void => registerShadowBody(platform.measure, detailOf(e), root);
   const onUnregister = (e: Event): void => unregisterShadowBody(platform.measure, detailOf(e));
   const wired: Array<[string, EventListener]> = [];
   if (doc) {

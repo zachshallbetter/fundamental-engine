@@ -32,7 +32,7 @@
   "dimensions": [
     {
       "id": "field-handle-methods",
-      "label": "FieldHandle methods",
+      "label": "FieldHandle methods (callable members)",
       "union": [
         "addAgent",
         "addBody",
@@ -56,11 +56,8 @@
         "forAgent",
         "grid",
         "on",
-        "overlayRegistry",
         "particleCount",
         "pause",
-        "policy",
-        "projections",
         "query",
         "readEdges",
         "readParticleChannels",
@@ -101,7 +98,7 @@
       ],
       "counts": {
         "js": 52,
-        "swift": 56,
+        "swift": 53,
         "kotlin": 59
       },
       "planes": {
@@ -176,11 +173,8 @@
           "forAgent",
           "grid",
           "on",
-          "overlayRegistry",
           "particleCount",
           "pause",
-          "policy",
-          "projections",
           "query",
           "readEdges",
           "readParticleChannels",
@@ -413,12 +407,6 @@
           "kotlin": true
         },
         {
-          "symbol": "overlayRegistry",
-          "js": false,
-          "swift": true,
-          "kotlin": false
-        },
-        {
           "symbol": "particleCount",
           "js": true,
           "swift": true,
@@ -429,18 +417,6 @@
           "js": false,
           "swift": true,
           "kotlin": true
-        },
-        {
-          "symbol": "policy",
-          "js": false,
-          "swift": true,
-          "kotlin": false
-        },
-        {
-          "symbol": "projections",
-          "js": false,
-          "swift": true,
-          "kotlin": false
         },
         {
           "symbol": "query",
@@ -668,7 +644,12 @@
     },
     {
       "id": "field-options",
-      "label": "Field options (JS/Swift struct; Kotlin uses setters)",
+      "label": "Field configuration — what a plane can set, at construction or live",
+      "idiom": {
+        "js": "the `FieldOptions` object (plus the handle’s `setX(…)` setters)",
+        "swift": "the `FieldOptions` struct (plus the protocol’s `setX(_:)` requirements)",
+        "kotlin": "`createField(host, …)` arguments plus the handle’s `setX(…)` setters"
+      },
       "union": [
         "accent",
         "ambientOrbit",
@@ -682,6 +663,7 @@
         "dprCap",
         "feedbackSink",
         "firstClassMass",
+        "formation",
         "gradientCool",
         "gradientWarm",
         "gridIntensity",
@@ -689,6 +671,7 @@
         "heatCenter",
         "heatmap",
         "heatmapFade",
+        "height",
         "host",
         "identify",
         "integrator",
@@ -699,6 +682,7 @@
         "overlayCanvas",
         "overlayCanvasProvider",
         "palette",
+        "particleCount",
         "particleGlow",
         "particleShape",
         "particleSize",
@@ -709,17 +693,20 @@
         "render",
         "restingMotion",
         "rng",
+        "seed",
         "separation",
         "theme",
+        "visible",
         "waveBaseline",
         "waveCenter",
         "waveStyle",
-        "waves"
+        "waves",
+        "width"
       ],
       "counts": {
-        "js": 40,
-        "swift": 27,
-        "kotlin": 0
+        "js": 43,
+        "swift": 30,
+        "kotlin": 24
       },
       "planes": {
         "js": [
@@ -734,6 +721,7 @@
           "depthFocal",
           "dprCap",
           "feedbackSink",
+          "formation",
           "gradientCool",
           "gradientWarm",
           "gridIntensity",
@@ -752,6 +740,7 @@
           "overlayCanvasProvider",
           "palette",
           "policy",
+          "qualityTier",
           "reaction",
           "redshiftObserver",
           "render",
@@ -759,6 +748,7 @@
           "rng",
           "separation",
           "theme",
+          "visible",
           "waveBaseline",
           "waveCenter",
           "waveStyle",
@@ -775,7 +765,9 @@
           "dprCap",
           "feedbackSink",
           "firstClassMass",
+          "formation",
           "heatmap",
+          "host",
           "identify",
           "integrator",
           "overlay",
@@ -789,18 +781,44 @@
           "restingMotion",
           "rng",
           "separation",
+          "visible",
           "waveCenter",
           "waveStyle",
           "waves"
         ],
-        "kotlin": []
+        "kotlin": [
+          "accent",
+          "attention",
+          "background",
+          "causality",
+          "depth",
+          "dprCap",
+          "formation",
+          "heatmap",
+          "height",
+          "host",
+          "identify",
+          "overlay",
+          "palette",
+          "particleCount",
+          "policy",
+          "qualityTier",
+          "render",
+          "seed",
+          "separation",
+          "visible",
+          "waveCenter",
+          "waveStyle",
+          "waves",
+          "width"
+        ]
       },
       "support": [
         {
           "symbol": "accent",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "ambientOrbit",
@@ -818,19 +836,19 @@
           "symbol": "attention",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "background",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "causality",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "density",
@@ -842,7 +860,7 @@
           "symbol": "depth",
           "js": true,
           "swift": false,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "depthFocal",
@@ -854,7 +872,7 @@
           "symbol": "dprCap",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "feedbackSink",
@@ -867,6 +885,12 @@
           "js": false,
           "swift": true,
           "kotlin": false
+        },
+        {
+          "symbol": "formation",
+          "js": true,
+          "swift": true,
+          "kotlin": true
         },
         {
           "symbol": "gradientCool",
@@ -902,7 +926,7 @@
           "symbol": "heatmap",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "heatmapFade",
@@ -911,16 +935,22 @@
           "kotlin": false
         },
         {
+          "symbol": "height",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
           "symbol": "host",
           "js": true,
-          "swift": false,
-          "kotlin": false
+          "swift": true,
+          "kotlin": true
         },
         {
           "symbol": "identify",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "integrator",
@@ -944,7 +974,7 @@
           "symbol": "overlay",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "overlayBackend",
@@ -968,7 +998,13 @@
           "symbol": "palette",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
+        },
+        {
+          "symbol": "particleCount",
+          "js": false,
+          "swift": false,
+          "kotlin": true
         },
         {
           "symbol": "particleGlow",
@@ -992,13 +1028,13 @@
           "symbol": "policy",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "qualityTier",
-          "js": false,
+          "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "reaction",
@@ -1016,7 +1052,7 @@
           "symbol": "render",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "restingMotion",
@@ -1031,16 +1067,28 @@
           "kotlin": false
         },
         {
+          "symbol": "seed",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
           "symbol": "separation",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "theme",
           "js": true,
           "swift": false,
           "kotlin": false
+        },
+        {
+          "symbol": "visible",
+          "js": true,
+          "swift": true,
+          "kotlin": true
         },
         {
           "symbol": "waveBaseline",
@@ -1052,19 +1100,671 @@
           "symbol": "waveCenter",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "waveStyle",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "waves",
           "js": true,
           "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "width",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        }
+      ]
+    },
+    {
+      "id": "field-handle-properties",
+      "label": "FieldHandle properties (the non-callable members of the handle)",
+      "idiom": {
+        "js": "`readonly x: T` on the `FieldHandle` interface",
+        "swift": "`var x: T { get }` on the `public protocol FieldHandle`",
+        "kotlin": "`val x: T` on the `FieldHandle` class — a getter for nearly every setter"
+      },
+      "union": [
+        "accent",
+        "background",
+        "dprCap",
+        "focusedParticle",
+        "guarantees",
+        "isVisible",
+        "overlayInput",
+        "overlayRegistry",
+        "palette",
+        "policy",
+        "projections",
+        "qualityTier",
+        "renderMode",
+        "separation",
+        "threadLinks",
+        "version",
+        "waveCenter",
+        "waveStyle"
+      ],
+      "counts": {
+        "js": 4,
+        "swift": 3,
+        "kotlin": 16
+      },
+      "planes": {
+        "js": [
+          "guarantees",
+          "policy",
+          "projections",
+          "version"
+        ],
+        "swift": [
+          "overlayRegistry",
+          "policy",
+          "projections"
+        ],
+        "kotlin": [
+          "accent",
+          "background",
+          "dprCap",
+          "focusedParticle",
+          "isVisible",
+          "overlayInput",
+          "overlayRegistry",
+          "palette",
+          "policy",
+          "projections",
+          "qualityTier",
+          "renderMode",
+          "separation",
+          "threadLinks",
+          "waveCenter",
+          "waveStyle"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "accent",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "background",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "dprCap",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "focusedParticle",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "guarantees",
+          "js": true,
+          "swift": false,
           "kotlin": false
+        },
+        {
+          "symbol": "isVisible",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "overlayInput",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "overlayRegistry",
+          "js": false,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "palette",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "policy",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "projections",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "qualityTier",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "renderMode",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "separation",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "threadLinks",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "version",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "waveCenter",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "waveStyle",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        }
+      ]
+    },
+    {
+      "id": "field-events",
+      "label": "Discrete events on the `on(...)` bus",
+      "idiom": {
+        "js": "`field.on('captured', cb)` → an unsubscribe fn",
+        "swift": "`field.on(.captured) { … }` → a `Subscription`",
+        "kotlin": "`field.on(FieldEvent.CAPTURED) { … }` → a `Subscription`"
+      },
+      "union": [
+        "body-add",
+        "body-remove",
+        "captured",
+        "enter",
+        "exit",
+        "focus",
+        "met",
+        "released",
+        "tick"
+      ],
+      "counts": {
+        "js": 6,
+        "swift": 5,
+        "kotlin": 5
+      },
+      "planes": {
+        "js": [
+          "captured",
+          "enter",
+          "exit",
+          "focus",
+          "met",
+          "released"
+        ],
+        "swift": [
+          "body-add",
+          "body-remove",
+          "captured",
+          "released",
+          "tick"
+        ],
+        "kotlin": [
+          "body-add",
+          "body-remove",
+          "captured",
+          "released",
+          "tick"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "body-add",
+          "js": false,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "body-remove",
+          "js": false,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "captured",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "enter",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "exit",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "focus",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "met",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "released",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "tick",
+          "js": false,
+          "swift": true,
+          "kotlin": true
+        }
+      ]
+    },
+    {
+      "id": "agent-capabilities",
+      "label": "Agent-view capability grants (`forAgent`) — the read allow-list",
+      "idiom": {
+        "js": "`forAgent({ capabilities: ['read:metrics'] })`",
+        "swift": "`forAgent(AgentViewOptions(capabilities: [.metrics]))`",
+        "kotlin": "`forAgent(setOf(AgentCapability.READ_METRICS))`"
+      },
+      "union": [
+        "read:body-data",
+        "read:diagnostics",
+        "read:focus",
+        "read:influences",
+        "read:metrics",
+        "read:projections",
+        "read:relationships",
+        "read:replay",
+        "read:snapshots"
+      ],
+      "counts": {
+        "js": 9,
+        "swift": 8,
+        "kotlin": 8
+      },
+      "planes": {
+        "js": [
+          "read:body-data",
+          "read:diagnostics",
+          "read:focus",
+          "read:influences",
+          "read:metrics",
+          "read:projections",
+          "read:relationships",
+          "read:replay",
+          "read:snapshots"
+        ],
+        "swift": [
+          "read:body-data",
+          "read:diagnostics",
+          "read:influences",
+          "read:metrics",
+          "read:projections",
+          "read:relationships",
+          "read:replay",
+          "read:snapshots"
+        ],
+        "kotlin": [
+          "read:body-data",
+          "read:diagnostics",
+          "read:influences",
+          "read:metrics",
+          "read:projections",
+          "read:relationships",
+          "read:replay",
+          "read:snapshots"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "read:body-data",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "read:diagnostics",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "read:focus",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "read:influences",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "read:metrics",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "read:projections",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "read:relationships",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "read:replay",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "read:snapshots",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        }
+      ]
+    },
+    {
+      "id": "snapshot-profiles",
+      "label": "Snapshot inclusion profiles (`snapshot({ profile })`)",
+      "union": [
+        "agent",
+        "bug-report",
+        "debug",
+        "public"
+      ],
+      "counts": {
+        "js": 4,
+        "swift": 4,
+        "kotlin": 4
+      },
+      "planes": {
+        "js": [
+          "agent",
+          "bug-report",
+          "debug",
+          "public"
+        ],
+        "swift": [
+          "agent",
+          "bug-report",
+          "debug",
+          "public"
+        ],
+        "kotlin": [
+          "agent",
+          "bug-report",
+          "debug",
+          "public"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "agent",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "bug-report",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "debug",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "public",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        }
+      ]
+    },
+    {
+      "id": "field-budgets",
+      "label": "Policy budgets (`FieldPolicy.budgets`) — the consumable-resource caps",
+      "union": [
+        "accessibility",
+        "agentRead",
+        "attention",
+        "force",
+        "motion",
+        "privacy",
+        "render",
+        "thermal"
+      ],
+      "counts": {
+        "js": 8,
+        "swift": 8,
+        "kotlin": 8
+      },
+      "planes": {
+        "js": [
+          "accessibility",
+          "agentRead",
+          "attention",
+          "force",
+          "motion",
+          "privacy",
+          "render",
+          "thermal"
+        ],
+        "swift": [
+          "accessibility",
+          "agentRead",
+          "attention",
+          "force",
+          "motion",
+          "privacy",
+          "render",
+          "thermal"
+        ],
+        "kotlin": [
+          "accessibility",
+          "agentRead",
+          "attention",
+          "force",
+          "motion",
+          "privacy",
+          "render",
+          "thermal"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "accessibility",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "agentRead",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "attention",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "force",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "motion",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "privacy",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "render",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "thermal",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        }
+      ]
+    },
+    {
+      "id": "body-handle",
+      "label": "Body handle (`addBody(…)` → the live handle) members",
+      "idiom": {
+        "js": "`{ data, channels, set(), remove() }`",
+        "swift": "`BodyHandle` struct — `data`, `set`, `remove`, `load`, `drain`",
+        "kotlin": "`BodyHandle` class — `data`, `set`, `remove`, `identity`, `load`, `drain`"
+      },
+      "union": [
+        "channels",
+        "data",
+        "drain",
+        "identity",
+        "load",
+        "remove",
+        "set"
+      ],
+      "counts": {
+        "js": 4,
+        "swift": 5,
+        "kotlin": 6
+      },
+      "planes": {
+        "js": [
+          "channels",
+          "data",
+          "remove",
+          "set"
+        ],
+        "swift": [
+          "data",
+          "drain",
+          "load",
+          "remove",
+          "set"
+        ],
+        "kotlin": [
+          "data",
+          "drain",
+          "identity",
+          "load",
+          "remove",
+          "set"
+        ]
+      },
+      "support": [
+        {
+          "symbol": "channels",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "data",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "drain",
+          "js": false,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "identity",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
+          "symbol": "load",
+          "js": false,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "remove",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "set",
+          "js": true,
+          "swift": true,
+          "kotlin": true
         }
       ]
     },

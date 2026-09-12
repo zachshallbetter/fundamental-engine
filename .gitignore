@@ -74,3 +74,6 @@ CLAUDE.md
 AGENTS.md
 .agents/
 apps/llms-full-fe.txt
+
+# RC-7 gate output on the runner (scripts/perf, perf-hardware.yml); committed measurements live in docs/planning/perf-measurements/
+/perf/

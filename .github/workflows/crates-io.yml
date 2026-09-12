@@ -1,0 +1,157 @@
+name: crates.io
+
+# The Rust plane's publish path — fundamental-core → crates.io. DISPATCH-ONLY and DRY-RUN BY DEFAULT.
+#
+# Nothing here runs on push, tag, or PR. A maintainer dispatches it by hand, after the npm / Swift /
+# Kotlin release for the same tag is out (RELEASING.md § "The Rust plane (crates.io)"):
+#
+#   gh workflow run crates-io.yml -f tag=vX.Y.Z                    # rehearsal (dry_run=true, the default)
+#   gh workflow run crates-io.yml -f tag=vX.Y.Z -f dry_run=false   # the real publish — ONLY after a green rehearsal
+#
+# Structure (each job is a hard gate on the next):
+#   gate        — the rust.yml gate (build + test, incl. the shared cross-plane golden), then the
+#                 lockstep check: the tag, the crate version ([workspace.package].version), the Rust
+#                 FIELD_VERSION constant, and packages/core/package.json must all agree. Then
+#                 `cargo package --list` (what the tarball would contain) and `cargo publish --dry-run`
+#                 (package + verify-build, no upload). A publish NEVER starts if any of this fails.
+#   publish     — `cargo publish`. Skipped unless dry_run=false. Runs in the `crates-io` environment
+#                 so a required reviewer can be attached to it on GitHub. crates.io versions are
+#                 immutable: a version that has been uploaded can only be yanked, never replaced, so
+#                 re-running this job for a version already on the registry fails by design (never
+#                 re-tag; `cargo yank` and cut the next patch).
+#   conclusion  — asserts the gate succeeded and the publish either succeeded or was skipped BECAUSE
+#                 this was a dry run (a skipped publish on dry_run=false is a failure).
+#
+# Prerequisites (one-time, maintainer): a repository secret `CARGO_REGISTRY_TOKEN` — a crates.io API
+# token owned by the maintainer's crates.io account (GitHub login), scoped `publish-new` +
+# `publish-update`, crate pattern `fundamental-*`. The first publish of a name claims it for that
+# account. Follow-up once the crate exists: switch to crates.io Trusted Publishing (OIDC, no
+# long-lived secret) — see docs/planning/rust-publishing-decision.md.
+#
+# Adding this file was a policy change (RELEASING.md "Changing these gates is a policy change") and
+# rode its own PR that said so (#1047).
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag the crate must match (must already exist AND contain rust/ — the plane landed after v0.10.1, so the first publishable tag is the next fleet release)'
+        required: true
+      dry_run:
+        description: 'Rehearse only (package + verify, NO upload). Set to false only for the real publish.'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crates-io
+  cancel-in-progress: false # never cancel a publish mid-run
+
+env:
+  RELEASE_TAG: ${{ inputs.tag }}
+
+jobs:
+  gate:
+    name: rust gate + tag↔version lockstep + dry run
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag }}
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      # The rust.yml gate, verbatim — never publish a tree that fails it.
+      - name: Build
+        run: cargo build --locked --workspace
+      - name: Test (incl. the shared cross-plane golden + the version lockstep guard)
+        run: cargo test --locked --workspace
+      - name: Example runs
+        run: cargo run --locked --example ranking -p fundamental-core
+
+      # The version-desync gate: tag == crate version == Rust FIELD_VERSION == the canonical
+      # packages/core/package.json version. The four planes are versioned in lockstep; a crate
+      # published out of step with the npm/Swift/Kotlin release is the partial-release class.
+      - name: Verify tag matches the crate, FIELD_VERSION, and packages/core
+        run: |
+          VERSION="${RELEASE_TAG#v}"
+          CRATE=$(cargo metadata --no-deps --locked --format-version 1 \
+            | jq -r '.packages[] | select(.name == "fundamental-core") | .version')
+          CONST=$(sed -nE 's/^pub const FIELD_VERSION: &str = "([^"]+)";$/\1/p' crates/fundamental-core/src/version.rs)
+          NPM=$(jq -r .version ../packages/core/package.json)
+          echo "tag=$VERSION crate=$CRATE FIELD_VERSION=$CONST packages/core=$NPM"
+          FAIL=0
+          [ "$CRATE" = "$VERSION" ] || { echo "::error::fundamental-core is $CRATE but the tag is $RELEASE_TAG — bump [workspace.package].version in rust/Cargo.toml with the release."; FAIL=1; }
+          [ "$CONST" = "$VERSION" ] || { echo "::error::Rust FIELD_VERSION is $CONST but the tag is $RELEASE_TAG — update rust/crates/fundamental-core/src/version.rs."; FAIL=1; }
+          [ "$NPM" = "$VERSION" ]   || { echo "::error::packages/core is $NPM but the tag is $RELEASE_TAG — the Rust plane publishes only at the fleet version."; FAIL=1; }
+          exit $FAIL
+
+      - name: What the tarball would contain
+        run: cargo package --list --locked -p fundamental-core
+
+      # package + verify-build in target/package, no upload. This is the whole path minus the write.
+      - name: cargo publish --dry-run
+        run: cargo publish --dry-run --locked -p fundamental-core
+
+  publish:
+    name: publish (crates.io)
+    needs: gate
+    if: ${{ inputs.dry_run == false }}
+    runs-on: ubuntu-latest
+    environment: crates-io
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag }}
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Require the registry token
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          if [ -z "$CARGO_REGISTRY_TOKEN" ]; then
+            echo "::error::CARGO_REGISTRY_TOKEN is not set — create a crates.io API token (publish-new + publish-update, crates fundamental-*) and add it as a repository secret. See RELEASING.md."
+            exit 1
+          fi
+
+      - name: cargo publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish --locked -p fundamental-core
+
+  conclusion:
+    name: conclusion-crates-io
+    needs: [gate, publish]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gate succeeded; publish succeeded or was skipped only because dry_run=true
+        env:
+          NEEDS: ${{ toJson(needs) }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          jq -C <<< "$NEEDS"
+          GATE=$(jq -r .gate.result <<< "$NEEDS")
+          PUB=$(jq -r .publish.result <<< "$NEEDS")
+          [ "$GATE" = "success" ] || { echo "::error::gate: $GATE"; exit 1; }
+          if [ "$DRY_RUN" = "true" ]; then
+            [ "$PUB" = "skipped" ] || { echo "::error::dry run but publish was $PUB"; exit 1; }
+            echo "dry run — rehearsal green, nothing uploaded"
+          else
+            [ "$PUB" = "success" ] || { echo "::error::publish: $PUB"; exit 1; }
+          fi

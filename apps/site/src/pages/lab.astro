@@ -253,6 +253,20 @@ const FILTER_COLOR: Record<string, string> = {
             <button type="button" id="report" class="xbtn">≡ Copy report</button>
             <button type="button" id="resetParams" class="xbtn">⟲ Defaults</button>
           </div>
+          <!-- saved configs (#694) — snapshot the current force + overrides with a tag and a note -->
+          <div class="saved" id="saved">
+            <p class="panel-title">Saved configs <span class="saved-count" id="savedCount"></span></p>
+            <div class="saved-form">
+              <div class="bands" id="cfgTags" role="radiogroup" aria-label="Tag">
+                <button type="button" class="band on" role="radio" aria-checked="true" data-cfg-tag="good">good</button>
+                <button type="button" class="band" role="radio" aria-checked="false" data-cfg-tag="bad">bad</button>
+                <button type="button" class="band" role="radio" aria-checked="false" data-cfg-tag="edge">edge</button>
+              </div>
+              <input class="saved-note" id="cfgNote" type="text" maxlength="200" placeholder="note (optional)" aria-label="Note" autocomplete="off">
+              <button type="button" id="cfgSave" class="xbtn">✎ Save config</button>
+            </div>
+            <ul class="saved-list" id="savedList" aria-live="polite"></ul>
+          </div>
           <p class="scenario-note" id="note"></p>
         </div>
       </aside>
@@ -262,6 +276,7 @@ const FILTER_COLOR: Record<string, string> = {
 
   <script>
     import { EXPERIMENTS, runScenario, allForces, forceAt, MANUAL_FORCES } from '@fundamental-engine/core';
+    import { createLabConfigs, pickConfig, summarize, isConfigTag, type ConfigTag } from '../lib/lab-configs.ts';
 
     type Any = Record<string, any>;
     const forces = allForces();
@@ -269,6 +284,8 @@ const FILTER_COLOR: Record<string, string> = {
     for (const e of EXPERIMENTS as unknown as Any[]) byForce[e.scenario.force] = e;
     const META: Any = {};
     for (const f of MANUAL_FORCES as unknown as Any[]) META[f.token] = f;
+    // saved configs (#694) — the `fui:lab-configs` slot, one per module load
+    const savedConfigs = createLabConfigs();
 
     const $ = (id: string) => document.getElementById(id);
     const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -832,7 +849,7 @@ const FILTER_COLOR: Record<string, string> = {
       }
 
       // ── tune panel ──
-      const esc = (t: string) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const esc = (t: string) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       // The ordered list of knobs for the current force: catalog `attrs` (strength/range/
       // spin/angle) → box/absorbR when the body has them → the injected particle vx/vy/count.
       // Driven by data, so every force gets exactly the controls that matter — no per-force table.
@@ -1070,6 +1087,53 @@ const FILTER_COLOR: Record<string, string> = {
         navigator.clipboard?.writeText(lines.join('\n')); flash('Report copied');
       }
 
+      // ── saved configs (#694) ──
+      // Save the current force + the shareable overrides (pickConfig mirrors buildHash: never the
+      // free-run `frames`) with a tag and a note; the list is rebuilt from the store on every
+      // change, so another tab's writes show up on the next render.
+      let cfgTag: ConfigTag = 'good';
+      const ago = (ts: number) => {
+        const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+        if (s < 60) return 'just now';
+        if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+        if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+        return `${Math.floor(s / 86400)}d ago`;
+      };
+      function renderSaved() {
+        const list = $('savedList'); if (!list) return;
+        const items = savedConfigs.list();
+        const count = $('savedCount'); if (count) count.textContent = items.length ? String(items.length) : '';
+        if (!items.length) { list.innerHTML = '<li class="saved-empty">No saved configs yet.</li>'; return; }
+        list.innerHTML = items.map((c) => `<li class="saved-item" data-cfg-id="${esc(c.id)}" data-cfg-tag="${esc(c.tag)}" data-cfg-force="${esc(c.force)}">
+            <div class="row1"><span class="tag">${esc(c.tag)}</span><span class="force">${esc(META[c.force]?.label ?? c.force)}</span><span class="when">${esc(ago(c.savedAt))}</span></div>
+            <div class="sum">${esc(summarize(c))}</div>
+            ${c.note ? `<div class="note">${esc(c.note)}</div>` : ''}
+            <div class="acts"><button type="button" class="xbtn" data-cfg-load="${esc(c.id)}">↺ Load</button><button type="button" class="xbtn" data-cfg-del="${esc(c.id)}">✕ Delete</button></div>
+          </li>`).join('');
+      }
+      function saveCurrentConfig() {
+        if (!calibrated()) return;
+        const note = $('cfgNote') as HTMLInputElement | null;
+        savedConfigs.save({ force: cur, tag: cfgTag, note: note?.value ?? '', overrides: pickConfig(overrides) });
+        if (note) note.value = '';
+        renderSaved();
+        flash('Config saved');
+      }
+      function loadSavedConfig(id: string) {
+        const cfg = savedConfigs.list().find((c) => c.id === id); if (!cfg) return;
+        if (!byForce[cfg.force]) { flash('Unknown force'); return; }
+        stopPlay();
+        overrides = clone(cfg.overrides);
+        selectForce(cfg.force, true); // keeps overrides, but resets the preset select to default…
+        if (Object.keys(cfg.overrides).length) setPreset('custom'); // …so mark the loaded state custom
+        showTab('tune');
+        flash('Config loaded');
+      }
+      function deleteSavedConfig(id: string) {
+        if (savedConfigs.remove(id)) flash('Config deleted');
+        renderSaved();
+      }
+
       // ── wiring ──
       function initBrowserToggle() {
         const seg = document.querySelector('.lab-picker .seg-toggle');
@@ -1106,6 +1170,23 @@ const FILTER_COLOR: Record<string, string> = {
         $('share')?.addEventListener('click', () => { location.hash = buildHash(); navigator.clipboard?.writeText(location.href); flash('Link copied'); }, { signal: _ac.signal });
         const presetSel = $('preset') as HTMLSelectElement | null;
         if (presetSel) { presetSel.innerHTML = PRESETS.map((p) => `<option value="${p.id}">${p.label}</option>`).join(''); presetSel.addEventListener('change', () => applyPreset(presetSel.value), { signal: _ac.signal }); }
+
+        // saved configs (#694)
+        $('cfgTags')?.addEventListener('click', (e) => {
+          const btn = (e.target as HTMLElement).closest('button[data-cfg-tag]') as HTMLElement | null; if (!btn) return;
+          const t = btn.dataset.cfgTag; if (!isConfigTag(t)) return;
+          cfgTag = t;
+          $('cfgTags')!.querySelectorAll('button[data-cfg-tag]').forEach((b) => { const on = b === btn; b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); });
+        }, { signal: _ac.signal });
+        $('cfgSave')?.addEventListener('click', saveCurrentConfig, { signal: _ac.signal });
+        $('cfgNote')?.addEventListener('keydown', (e: Any) => { if (e.key === 'Enter') { e.preventDefault(); saveCurrentConfig(); } }, { signal: _ac.signal });
+        // the rows are re-rendered with innerHTML, so load/delete are delegated to the list
+        $('savedList')?.addEventListener('click', (e) => {
+          const t = e.target as HTMLElement;
+          const load = t.closest('[data-cfg-load]') as HTMLElement | null; if (load) { loadSavedConfig(load.dataset.cfgLoad!); return; }
+          const del = t.closest('[data-cfg-del]') as HTMLElement | null; if (del) deleteSavedConfig(del.dataset.cfgDel!);
+        }, { signal: _ac.signal });
+        renderSaved();
 
         const help = $('help'), legend = $('legend');
         help?.addEventListener('click', () => { const open = legend!.hidden; legend!.hidden = !open; help!.classList.toggle('on', open); help!.setAttribute('aria-expanded', String(open)); help!.textContent = open ? '×' : '?'; }, { signal: _ac.signal });

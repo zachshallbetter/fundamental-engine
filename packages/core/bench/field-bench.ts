@@ -8,18 +8,39 @@
 //   3. Read-API cost — query() (global + point) and snapshot() (with/without influences).
 //   4. Body-measure cadence — proves bodies are re-measured every 6th frame (cost concentrates there).
 
-import { createField } from '../src/core/field.ts';
-import { FieldStore } from '../src/core/field-store.ts';
-import { step, makeAccumulator } from '../src/core/integrator.ts';
+import { writeFileSync } from 'node:fs';
+import { cpus } from 'node:os';
+import { createField } from '../src/engine/field.ts';
+import { FieldStore } from '../src/engine/field-store.ts';
+import { step, makeAccumulator } from '../src/engine/integrator.ts';
 import { attract, swirl } from '../src/forces/index.ts';
-import type { Body, Env, Particle, Force } from '../src/core/types.ts';
+import type { Body, Env, Particle, Force } from '../src/engine/types.ts';
 import { lcg, tickHost, timeIt, table, ms } from './harness.ts';
+
+// BENCH_JSON=<path>: also write the raw numbers as JSON — the compute half of the RC-7 fact sheet and
+// the input of scripts/perf/check-budgets.mjs (the tables above stay the human-readable form).
+const JSON_OUT: {
+  frameScaling: { density: number; particles: number; medianMs: number; p95Ms: number; usPer1k: number }[];
+  accumulator: { offMedianMs: number; onMedianMs: number } | null;
+  accumulatorOverheadPct: number | null;
+  readApi: { bodies: number; particles: number; queryGlobalMs: number; queryPointMs: number; snapshotMs: number; snapshotInfluencesMs: number } | null;
+  measureCadence: { spreadPct: number; bucketMedianMs: number[] } | null;
+} = { frameScaling: [], accumulator: null, accumulatorOverheadPct: null, readApi: null, measureCadence: null };
 
 const rng = lcg();
 
 // ── 1. Full-frame cost vs particle count ───────────────────────────────────────────────────────────
 function frameScaling(): string {
   const rows: string[][] = [];
+  // JIT warm-up: the first field measured otherwise pays V8's compile + inline-cache cost (0.66 ms vs
+  // 0.18 ms for the next density on the same machine) and the density-1 row becomes a JIT number.
+  {
+    const { host, tick } = tickHost(1440, 900, 1);
+    const warm = createField(undefined as never, { host, render: 'none', density: 2 });
+    for (let i = 0; i < 4; i++) { const x = rng() * 1440, y = rng() * 900; warm.addBody({ tokens: ['attract'], strength: 1.5, range: 360, rect: () => ({ left: x, top: y, width: 48, height: 48 }) }); }
+    for (let i = 0; i < 120; i++) tick();
+    warm.destroy?.();
+  }
   for (const density of [1, 2, 3, 4]) {
     const { host, tick } = tickHost(1440, 900, 1);
     const field = createField(undefined as never, { host, render: 'none', density });
@@ -33,6 +54,7 @@ function frameScaling(): string {
     const stat = timeIt(() => tick(), 240);
     const perK = count ? (stat.median / count) * 1000 : 0;
     rows.push([String(density), String(count), ms(stat.median), ms(stat.p95), ms(perK)]);
+    JSON_OUT.frameScaling.push({ density, particles: count, medianMs: stat.median, p95Ms: stat.p95, usPer1k: perK });
     field.destroy?.();
   }
   return table(['density', 'particles', 'frame ms (med)', 'p95 ms', 'µs/1k particles'], rows);
@@ -69,6 +91,8 @@ function accumulatorOverhead(): string {
   const a = timeIt(stepOff, 200);
   const b = timeIt(stepOn, 200);
   const overhead = ((b.median - a.median) / a.median) * 100;
+  JSON_OUT.accumulator = { offMedianMs: a.median, onMedianMs: b.median };
+  JSON_OUT.accumulatorOverheadPct = overhead;
   return table(['mode', 'step ms (med)', 'p95 ms', 'particles'], [
     ['accum off (default)', ms(a.median), ms(a.p95), '4000'],
     ['accum on (capture)', ms(b.median), ms(b.p95), '4000'],
@@ -86,11 +110,16 @@ function readApiCost(): string {
   }
   for (let i = 0; i < 40; i++) tick();
   const count = field.particleCount();
+  const queryGlobalMs = timeIt(() => field.query(), 500).median;
+  const queryPointMs = timeIt(() => field.query({ at: { x: 720, y: 450 }, include: ['bodies', 'influences'] }), 500).median;
+  const snapshotMs = timeIt(() => field.snapshot(), 300).median;
+  const snapshotInfluencesMs = timeIt(() => field.snapshot({ includeInfluences: true }), 300).median;
+  JSON_OUT.readApi = { bodies: 24, particles: count, queryGlobalMs, queryPointMs, snapshotMs, snapshotInfluencesMs };
   const rows = [
-    ['query() global', ms(timeIt(() => field.query(), 500).median)],
-    ['query({ at: point })', ms(timeIt(() => field.query({ at: { x: 720, y: 450 }, include: ['bodies', 'influences'] }), 500).median)],
-    ['snapshot()', ms(timeIt(() => field.snapshot(), 300).median)],
-    ['snapshot({ includeInfluences })', ms(timeIt(() => field.snapshot({ includeInfluences: true }), 300).median)],
+    ['query() global', ms(queryGlobalMs)],
+    ['query({ at: point })', ms(queryPointMs)],
+    ['snapshot()', ms(snapshotMs)],
+    ['snapshot({ includeInfluences })', ms(snapshotInfluencesMs)],
   ];
   field.destroy?.();
   return `24 bodies · ${count} particles\n` + table(['call', 'ms (med)'], rows);
@@ -116,6 +145,7 @@ function measureCadence(): string {
   const medians = buckets.map(med);
   const spread = ((Math.max(...medians) - Math.min(...medians)) / Math.min(...medians)) * 100;
   const rows = buckets.map((b, i) => [`frame ≡ ${i} (mod 6)`, ms(med(b))]);
+  JSON_OUT.measureCadence = { spreadPct: spread, bucketMedianMs: medians };
   field.destroy?.();
   // Finding: bodies re-measure every 6th frame, but the cost is amortized BELOW the per-frame particle
   // work — the buckets stay flat (spread is noise), so the cadence does its job: no per-6th-frame jank.
@@ -131,6 +161,12 @@ function main(): void {
   console.log('3. READ-API COST (query / snapshot)\n' + readApiCost() + '\n');
   console.log('4. BODY-MEASURE CADENCE (re-measure every 6th frame)\n' + measureCadence() + '\n');
   console.log('Note: fill-rate / fps / DPR / mix-blend are GPU-bound and measured on hardware, not here.\n');
+  const out = process.env.BENCH_JSON;
+  if (out) {
+    const cpu = cpus()[0]?.model ?? 'unknown';
+    writeFileSync(out, JSON.stringify({ measuredAt: new Date().toISOString(), node, platform: process.platform, arch: process.arch, cpu, ...JSON_OUT }, null, 2) + '\n');
+    console.log(`wrote ${out}`);
+  }
 }
 
 main();

@@ -287,3 +287,26 @@ The pure `:fundamental-core` builds on any JDK (JVM-17 bytecode); the host modul
 build-tools 34.0.0, AGP 8.7, Kotlin 2.1, Compose BOM 2024.12. The committed Gradle wrapper is 8.13.
 CI (`.github/workflows/android.yml`, JDK 17 + Android SDK) runs the core conformance test and assembles
 the host modules; it re-runs whenever the shared golden changes.
+
+## Publishing
+
+The two library modules publish as `com.fundamental:fundamental-core` (plain jar) and
+`com.fundamental:fundamental-compose` (AAR), each with `-sources` and `-javadoc` jars and a full POM.
+The version is **never typed**: CI passes `-PreleaseVersion=<tag without the v>` on a release tag; a
+local build with no property is `0.0.0-SNAPSHOT`.
+
+| target | status | how |
+|---|---|---|
+| **GitHub Packages** | live | the `publish` job in `.github/workflows/android.yml` on a `v*` tag → `./gradlew :fundamental-core:publish :fundamental-compose:publish`. Consumers need a read token (`android/gpr.key`) even though the packages are public — the friction #1092 exists to remove. |
+| **Maven Central** (Sonatype Central Portal) | prepared, not yet live | `gradle/maven-central.gradle.kts` (POM metadata, in-memory GPG signing, a local staging repo) + the root `centralBundle` / `centralUpload` / `centralStatus` tasks, and the **dispatch-only, dry-run-by-default** `.github/workflows/maven-central.yml`. Needs the maintainer's one-time account, namespace verification and secrets — see [PUBLISHING.md](../PUBLISHING.md#kotlin-android-artifacts). |
+
+```sh
+./gradlew :fundamental-core:publishToMavenLocal -PreleaseVersion=X.Y.Z   # what a consumer resolves, into ~/.m2
+./gradlew centralBundle -PreleaseVersion=X.Y.Z                            # stage + sign + zip; prints the manifest. NO network
+./gradlew centralUpload -PreleaseVersion=X.Y.Z                            # the only task that talks to central.sonatype.com
+```
+
+Signing is opt-in through the environment — `SIGNING_KEY` (the ASCII-armored private key), `SIGNING_PASSWORD`,
+optional `SIGNING_KEY_ID` — never a file in the repo. With no key the build stages **unsigned** artifacts (fine
+for a rehearsal) and `centralUpload` refuses them; it also refuses a `-SNAPSHOT` version. The GitHub Packages
+publication is the same `MavenPublication`, so the two targets can never carry different bytes.

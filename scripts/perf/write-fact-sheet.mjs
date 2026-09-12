@@ -1,0 +1,87 @@
+#!/usr/bin/env node
+/**
+ * Generate the RC-7 fact sheet AND the budgets it sources, from measurement JSON:
+ *
+ *   node scripts/perf/write-fact-sheet.mjs --compute perf/compute-titan.json [--compute perf/compute-mac.json]
+ *        --gpu perf/titan-dpr1.json --gpu perf/titan-dpr2.json
+ *        --sheet docs/planning/fundamental-perf-fact-sheet.md --budgets docs/planning/perf-budgets.json
+ *
+ * Budget derivation (the gate spec's §0.4 rule — sourced from the measured artifact, never invented):
+ *   compute   frame ms (median) per density  ≤ worst-machine measured × 1.5, min +0.05 ms (Node timing jitter on a shared host)
+ *             accumulator overhead            ≤ max(measured + 10, 25) %
+ *             query()/snapshot()              ≤ measured × 2        (sub-millisecond values are noisy)
+ *   fill-rate frame ms (median) per sweep row ≤ measured × 1.6   (headless rAF quantizes to 16.7/33/50 ms: a 60→30 fps
+ *                                                                  drop fails; the stress rows at 30 fps may breathe to 20)
+ *   pages     frame ms median / p95           ≤ measured × 1.6 / × 2.1  (vsync quantization: 16.7 → 33 → 50 ms)
+ *             long tasks (≥ 50 ms) in 20 s    recorded, NOT gated — the count varied 3→16 run to run on the shared
+ *                                             host; Total Blocking Time carries the blocking signal
+ *             Total Blocking Time             ≤ measured × 2 + 50 ms
+ *             JS heap after 20 s (post-GC)    ≤ max(measured × 1.5, measured + 8 MB)
+ * The compute budgets take the WORST value per metric across the compute machines given (the gate runs on the self-hosted
+ * titan-gpu runner, so give its numbers first). Re-run this after a deliberate performance change and
+ * commit both files together — a budget only moves with a new measurement.
+ */
+import { readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const argv = process.argv.slice(2);
+const opt = (name) => { const out = []; for (let i = 0; i < argv.length; i++) if (argv[i] === `--${name}`) out.push(argv[++i]); return out; };
+const computes = opt('compute').map((f) => ({ file: f, ...JSON.parse(readFileSync(resolve(f), 'utf8')) }));
+const gpus = opt('gpu').map((f) => ({ file: f, ...JSON.parse(readFileSync(resolve(f), 'utf8')) }));
+const sheetPath = opt('sheet')[0] ?? 'docs/planning/fundamental-perf-fact-sheet.md';
+const budgetsPath = opt('budgets')[0] ?? 'docs/planning/perf-budgets.json';
+if (!computes.length && !gpus.length) { console.error('nothing to write: pass --compute and/or --gpu files'); process.exit(2); }
+
+const r2 = (x) => Math.round(x * 100) / 100;
+const f = (x, d = 2) => (x == null ? '—' : Number(x).toFixed(d));
+const today = (computes[0]?.measuredAt ?? gpus[0]?.measuredAt ?? new Date().toISOString()).slice(0, 10);
+
+// ── budgets ─────────────────────────────────────────────────────────────────────────────────────
+// Compute budgets take, per metric, the WORST value across every compute machine given (×1.5 / ×2 headroom),
+// with small absolute floors so a sub-0.01 ms reading can't round into an unpassable budget.
+const worst = (pick) => computes.reduce((m, c) => Math.max(m, pick(c) ?? 0), 0);
+const r3 = (x) => Math.round(x * 1000) / 1000;
+const budgets = { generated: 'scripts/perf/write-fact-sheet.mjs', sourcedFrom: sheetPath, measuredAt: today, rule: 'see the header of scripts/perf/write-fact-sheet.mjs', compute: null, gpu: {} };
+if (computes.length) {
+  const densities = [...new Set(computes.flatMap((c) => c.frameScaling.map((r) => r.density)))].sort((a, b) => a - b);
+  budgets.compute = {
+    machines: computes.map((c) => `${c.cpu} · Node ${c.node} · ${c.platform}/${c.arch}`),
+    frameMs: densities.map((d) => { const m = worst((c) => c.frameScaling.find((r) => r.density === d)?.medianMs); return { density: d, measuredMedianMs: r3(m), maxMedianMs: r3(Math.max(m * 1.5, m + 0.05)) }; }),
+    accumulatorOverheadMaxPct: r2(Math.max(worst((c) => c.accumulatorOverheadPct) + 10, 25)),
+    queryGlobalMaxMs: r3(Math.max(worst((c) => c.readApi?.queryGlobalMs) * 2, 0.02)),
+    snapshotMaxMs: r3(Math.max(worst((c) => c.readApi?.snapshotMs) * 2, 0.02)),
+  };
+}
+for (const g of gpus) {
+  budgets.gpu[g.label] = {
+    machine: `${g.gpu} · dpr ${g.dpr} · ${g.viewport} · ${g.ua}`,
+    sweep: g.sweep.map((r) => ({ render: r.render, dprCap: r.dprCap, density: r.density, measuredFpsMed: r.fpsMed, measuredMsMed: r.msMed, maxMsMed: r2(r.msMed * 1.6) })),
+    compositing: (g.compositing ?? []).map((r) => ({ overlay: r.overlay, dprCap: r.dprCap, measuredFpsMed: r.fpsMed, measuredMsMed: r.msMed, maxMsMed: r2(r.msMed * 1.6) })),
+    pages: Object.fromEntries(Object.entries(g.pages ?? {}).map(([path, p]) => [path, { maxMsMed: r2(p.msMed * 1.6), maxMsP95: r2(p.msP95 * 2.1), measuredLongTasks: p.loafCount, maxTbtMs: r2(p.tbtMs * 2 + 50), maxHeapMB: r2(Math.max((p.heapEndMB ?? 0) * 1.5, (p.heapEndMB ?? 0) + 8)) }])),
+  };
+}
+writeFileSync(resolve(budgetsPath), JSON.stringify(budgets, null, 2) + '\n');
+
+// ── the sheet ────────────────────────────────────────────────────────────────────────────────────
+const lines = [];
+lines.push(`# Fundamental — performance fact sheet`, ``, `> **Status: measured artifact (${today}).** The single source the RC-7 performance budgets derive from`, `> (\`docs/planning/perf-budgets.json\`, generated by \`scripts/perf/write-fact-sheet.mjs\` from the JSON below —`, `> never edited by hand). Gate: \`.github/workflows/perf-hardware.yml\` on the self-hosted \`titan-gpu\` runner;`, `> checker: \`scripts/perf/check-budgets.mjs\`. Re-measure with \`workflow_dispatch\` and commit the regenerated pair.`, ``);
+lines.push(`## Machines`, ``, `| role | machine |`, `|---|---|`);
+for (const c of computes) lines.push(`| compute (Node bench) | ${c.cpu} · Node ${c.node} · ${c.platform}/${c.arch} · \`${c.file}\` |`);
+for (const g of gpus) lines.push(`| fill-rate + pages (${g.label}) | ${g.gpu} · Chrome ${g.ua.match(/Chrome\/([\d.]+)/)?.[1] ?? '?'} · dpr ${g.dpr} · ${g.viewport} · \`${g.file}\` |`);
+lines.push(``, `The GPU machine runs headless Chrome (\`--headless=new\`) with ANGLE over the NVIDIA EGL driver — hardware WebGL and`, `GPU rasterization with no X display; the renderer string above is read back from WebGL each run, and the sweep`, `refuses to record numbers from a software rasterizer (SwiftShader), so a fallback can never silently pass. Headless Chrome paces \`requestAnimationFrame\` at 60 Hz, so`, `fps medians saturate at ~60; the \`frame ms\` columns and the DPR 2 rows carry the fill-rate signal.`, ``);
+for (const c of computes) {
+  lines.push(`## Compute — ${c.cpu} (Node ${c.node})`, ``, `Algorithmic cost only (\`packages/core/bench\`): no GPU, no compositor. Medians of per-iteration wall-clock after warmup.`, ``, `| density | particles | frame ms (med) | p95 ms | µs / 1k particles |`, `|---|---|---|---|---|`);
+  for (const r of c.frameScaling) lines.push(`| ${r.density} | ${r.particles} | ${f(r.medianMs, 3)} | ${f(r.p95Ms, 3)} | ${f(r.usPer1k, 2)} |`);
+  lines.push(``, `| accumulator | step ms (med) |`, `|---|---|`, `| off (default) | ${f(c.accumulator?.offMedianMs, 3)} |`, `| on (capture) | ${f(c.accumulator?.onMedianMs, 3)} |`, `| overhead | ${f(c.accumulatorOverheadPct, 1)} % |`, ``, `| read API (24 bodies · ${c.readApi?.particles} particles) | ms (med) |`, `|---|---|`, `| query() global | ${f(c.readApi?.queryGlobalMs, 4)} |`, `| query({ at: point }) | ${f(c.readApi?.queryPointMs, 4)} |`, `| snapshot() | ${f(c.readApi?.snapshotMs, 4)} |`, `| snapshot({ includeInfluences }) | ${f(c.readApi?.snapshotInfluencesMs, 4)} |`, ``, `Body-measure cadence: bucket spread ${f(c.measureCadence?.spreadPct, 1)} % across the six frame phases (flat = no per-6th-frame jank).`, ``);
+}
+for (const g of gpus) {
+  lines.push(`## Fill-rate — ${g.label} (${g.gpu}, dpr ${g.dpr}, ${g.viewport})`, ``, `\`/perf-bench\` sweep: render mode × \`dprCap\` × density, ~2 s per config, real rAF deltas. ${g.sweepStatus ?? ''}`, ``, `| render | dprCap | density | particles | fps (med) | fps p5 | frame ms (med) |`, `|---|---|---|---|---|---|---|`);
+  for (const r of g.sweep) lines.push(`| ${r.render} | ${r.dprCap} | ${r.density} | ${r.particles} | ${f(r.fpsMed, 0)} | ${f(r.fpsP5, 0)} | ${f(r.msMed)} |`);
+  if (g.compositing?.length) { lines.push(``, `Compositing (\`<field-root>\` dots + a mix-blend overlay at the homepage density):`, ``, `| overlay | dprCap | particles | fps (med) | fps p5 | frame ms (med) |`, `|---|---|---|---|---|---|`); for (const r of g.compositing) lines.push(`| ${r.overlay} | ${r.dprCap} | ${r.particles} | ${f(r.fpsMed, 0)} | ${f(r.fpsP5, 0)} | ${f(r.msMed)} |`); }
+  lines.push(``, `### Real pages — 20 s each, after boot`, ``, `| page | particles | frame ms med | p95 | p99 | dropped (>25 ms) | long tasks ≥ 50 ms | max ms | TBT ms | heap start MB | heap end MB |`, `|---|---|---|---|---|---|---|---|---|---|---|`);
+  for (const [path, p] of Object.entries(g.pages ?? {})) lines.push(`| \`${path}\` | ${p.particles ?? '—'} | ${f(p.msMed)} | ${f(p.msP95)} | ${f(p.msP99)} | ${p.dropped} | ${p.loafCount} | ${f(p.loafMaxMs, 0)} | ${f(p.tbtMs, 0)} | ${f(p.heapStartMB, 1)} | ${f(p.heapEndMB, 1)} |`);
+  lines.push(``);
+}
+lines.push(`## How the budgets are derived`, ``, `Every budget in \`perf-budgets.json\` is a measured value from this sheet times a stated headroom:`, ``, `| measurement | budget rule |`, `|---|---|`, `| compute frame ms (median), per density | ≤ worst measured × 1.5 (min +0.05 ms) across the compute machines above |`, `| accumulator overhead | ≤ max(measured + 10, 25) % |`, `| query() / snapshot() | ≤ measured × 2 |`, `| fill-rate frame ms (median), per sweep row | ≤ measured × 1.6 — headless rAF quantizes to 16.7 / 33 / 50 ms, so a 60→30 fps drop fails while a 30 fps stress row may breathe to 20 |`, `| page frame ms median / p95 | ≤ measured × 1.6 / × 2.1 — same quantization: a dropped-vsync median fails, a p95 that breathes one step does not |`, `| page long tasks (≥ 50 ms frames) in 20 s | recorded, not gated — the count varied 3→16 between runs on the shared host; TBT (below) carries the blocking signal |`, `| page Total Blocking Time | ≤ measured × 2 + 50 ms |`, `| page JS heap after 20 s (after a forced GC) | ≤ max(measured × 1.5, measured + 8 MB) |`, ``, `A budget moves only with a new measurement: re-run the gate by hand (\`workflow_dispatch\`), download the`, `\`perf-measurements-*\` artifact, run \`write-fact-sheet.mjs\` on it, and commit the regenerated sheet and budgets`, `together. Never edit the budgets file directly (gate spec §0.4).`, ``);
+writeFileSync(resolve(sheetPath), lines.join('\n'));
+console.log(`wrote ${sheetPath} and ${budgetsPath} (${computes.length} compute, ${gpus.length} gpu inputs)`);

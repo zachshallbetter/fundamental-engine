@@ -1,5 +1,12 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+
+// docs-refactor Phase 3 (#998): the "44/44 FieldHandle methods — full parity" line this page used to
+// carry was FALSE and had been for months — `pnpm gen:parity-matrix` reads the ports directly and has
+// never agreed with it. The counts below are read out of that generated artifact so the claim cannot
+// drift again. Do not retype a number here.
+import parityData from '../../../../../data/parity-matrix.json';
+const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'field-handle-methods')!;
 ---
 
 <DocsLayout
@@ -57,14 +64,19 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
       directory.
     </p>
     <div class="callout">
-      <b>Parity — full API surface, still preview.</b> Both are ports, and the web plane moved first
-      historically — but all three native ports now ship the <strong>full 44-method
-      <code>FieldHandle</code> surface (44/44/44; Three.js, Swift, Kotlin)</strong> as of June 2026
-      (#822 / #823 / #824), and the shared physics-conformance golden is green across planes. The field
-      channels (<code>addField</code> / <code>sampleField</code>), the core force set, and the
-      interactive scenes are all there. API parity is not production-readiness, though — treat the native
-      plane as a fast-moving preview (see Status below). For the method-by-method breakdown see the
-      <a href="/docs/api/parity">parity matrix</a>.
+      <b>Parity — broad, not complete, and still preview.</b> Both are ports, and the web plane moved
+      first historically. The big catch-up landed in June 2026 (#822 / #823 / #824) and the shared
+      physics-conformance golden is green across planes — the field channels
+      (<code>addField</code> / <code>sampleField</code>), the core force set and the interactive scenes
+      are all there. But the handle is <strong>not</strong> at full parity, and the divergence runs both
+      ways: of the {handleDim.union.length} callable members any plane declares, JS has
+      <strong>{handleDim.counts.js}</strong>, Swift <strong>{handleDim.counts.swift}</strong> and Kotlin
+      <strong>{handleDim.counts.kotlin}</strong> — the ports carry loop-control methods the web does not
+      expose, and the web carries the focus/attention substrate the ports have not taken. (These numbers
+      are generated from the port sources, not typed here.) API parity is not production-readiness
+      either — treat the native plane as a fast-moving preview (see Status below). For the
+      member-by-member breakdown see the <a href="/docs/api/parity">parity matrix</a> and the
+      <a href="/docs/api/imperative">imperative API reference</a>.
     </div>
     <p>
       <b>Get it:</b> the notarized <code>.dmg</code> download is coming; until then, build it from source —

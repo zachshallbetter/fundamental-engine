@@ -54,12 +54,15 @@ accidental breakage, not a freeze; the surface evolves pre-1.0 and additions nev
    The path filter targets exactly the seven publishable packages — no private app is bumped, so
    there is nothing to revert. Confirm the set with
    `pnpm --filter "./packages/*" exec node -e "const p=require('./package.json');console.log(p.name,p.private?'private':'PUBLISHED')"`.
-4. **Bump `FIELD_VERSION` on all three planes** — the constant is hand-maintained per plane, and a
+4. **Bump `FIELD_VERSION` on all four planes** — the constant is hand-maintained per plane, and a
    lockstep test on each fails CI if it drifts from `packages/core/package.json`:
    - JS: `packages/core/src/version.ts` (guard: `version.test.ts`)
    - Swift: `swift/Sources/FundamentalCore/Engine/FieldSnapshot.swift` (guard: `VersionLockstepTests`)
    - Kotlin: `android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/FieldSnapshot.kt`
      (guard: `VersionLockstepTests`)
+   - Rust: `rust/crates/fundamental-core/src/version.rs` **and** `[workspace.package].version` in
+     `rust/Cargo.toml`, then `cargo build` in `rust/` to refresh `Cargo.lock` (guard:
+     `tests/version_lockstep.rs`; `rust.yml` runs `--locked`, so a stale lock fails CI)
 5. **Commit, tag, push the tag** — pushing the tag triggers the release workflow:
    ```sh
    git commit -am "release: vX.Y.Z"
@@ -86,10 +89,59 @@ accidental breakage, not a freeze; the surface evolves pre-1.0 and additions nev
 - **`api-surface.yml`** — on PRs touching the packages, posts the protected-surface delta
   (base vs. head of `scripts/api-surface.data.mjs`) as a PR comment. Visibility only; the
   blocker is `check:api` in `ci.yml`.
+- **`rust.yml`** — build + test the Rust plane (`rust/`) on changes under it or to the shared
+  conformance golden. Not a required check on `main`. Never publishes.
+- **`crates-io.yml`** — **dispatch-only, dry-run by default**: the Rust plane's publish path to
+  crates.io. Never runs on a push, tag, or PR. See "The Rust plane (crates.io)" below.
+- **`perf-hardware.yml`** — the RC-7 performance gate, on the **self-hosted `titan-gpu` runner**
+  (a GTX TITAN X box; hardware WebGL through ANGLE-over-EGL in headless Chrome). On PRs and pushes
+  that touch the engine, the site, or the perf scripts it runs the Node compute bench and the
+  `/perf-bench` GPU sweep at DPR 1 and 2 plus 20 s on three real pages, then
+  `scripts/perf/check-budgets.mjs` fails the job if any number breaches
+  `docs/planning/perf-budgets.json`. The budgets are *generated* from the measured
+  `docs/planning/fundamental-perf-fact-sheet.md` (`scripts/perf/write-fact-sheet.mjs`) — to move one,
+  re-measure (`workflow_dispatch`, download the `perf-measurements-*` artifact) and commit the
+  regenerated pair; never edit the budgets by hand. Its `conclusion-perf` job is **not yet a required
+  check** — promote it once a few runs on the runner have shown it stable; a runner outage must not
+  block unrelated merges.
 
 Every workflow ends in a `conclusion` job that passes only if **every** dependency job
 succeeded — a skipped job can never satisfy a required check. Branch protection on `main`
 requires `conclusion` and `conclusion-pr`, with no admin bypass.
+
+## The Rust plane (crates.io)
+
+The Rust plane (`rust/`) publishes to [crates.io](https://crates.io) as **`fundamental-core`** — the
+crates.io spelling of `@fundamental-engine/core` (crates.io has no scopes, so the crate name carries
+the layer; later layers follow as `fundamental-platform`, …). The decision and its reasoning are in
+[`docs/planning/rust-publishing-decision.md`](docs/planning/rust-publishing-decision.md).
+
+- **Lockstep, no separate version line.** Crate `x.y.z` *is* engine `x.y.z`: `[workspace.package].version`
+  in `rust/Cargo.toml` = the Rust `FIELD_VERSION` (`rust/crates/fundamental-core/src/version.rs`) =
+  `packages/core/package.json`. `tests/version_lockstep.rs` fails the suite if they drift; step 4 above
+  bumps all four planes together. The crate ships under the fleet's `vX.Y.Z` tag — there is **no Rust
+  tag**.
+- **Dispatch-only, dry-run by default.** `.github/workflows/crates-io.yml` never runs on a push, tag,
+  or PR. After the npm / Swift / Kotlin release for a tag is out, the maintainer rehearses, then
+  publishes:
+  ```sh
+  gh workflow run crates-io.yml -f tag=vX.Y.Z                    # rehearsal: gate + package + publish --dry-run, no upload
+  gh workflow run crates-io.yml -f tag=vX.Y.Z -f dry_run=false   # the real publish — only after a green rehearsal
+  ```
+  The gate is `rust.yml`'s build + test, then tag == crate == `FIELD_VERSION` == `packages/core`,
+  `cargo package --list`, `cargo publish --dry-run`. The `publish` job runs in the `crates-io` GitHub
+  environment (attach a required reviewer there if wanted).
+- **Requirements (maintainer-created, never committed):** a repository secret **`CARGO_REGISTRY_TOKEN`**
+  — a crates.io API token on the maintainer's own crates.io account, scoped `publish-new` +
+  `publish-update`, crate pattern `fundamental-*`. The first publish of a name claims it for that
+  account. Once the crate exists, switch to crates.io **Trusted Publishing** (GitHub OIDC, no stored
+  secret — the crates.io analogue of npm provenance) as a follow-up policy PR.
+- **crates.io versions are immutable.** A published version can be `cargo yank`ed, never replaced or
+  re-uploaded — a bad Rust release is a yank plus the next fleet patch, and a publish re-run for a
+  version already on the registry fails by design. Never re-tag.
+- **Never `cargo publish` from a laptop.** Same rule as npm; there is no documented Rust fallback.
+- **Adding `crates-io.yml` was a policy change** under the rule below, and rode its own PR (#1047)
+  that said so. Promoting it to a `v*` trigger later is another one.
 
 ## Release safety — the human rules
 

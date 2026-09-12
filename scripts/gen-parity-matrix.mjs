@@ -22,6 +22,18 @@
  *               layers (#1091) — colour was the one dimension the matrix never tracked, which is how
  *               the Compose single-accent collapse (#1090) reached an app before any gate.
  *
+ * TWO EXTRACTION BUGS FIXED IN PHASE 3 (#998), both of the same class Phase 2 found in the render
+ * vocabulary — a plane's column was produced by something other than that plane's real surface:
+ *   1. `field-handle-methods` compared APPLES TO ORANGES. The Swift extractor swept up the protocol's
+ *      `var` requirements alongside its `func`s; the JS and Kotlin ones took callables only. So
+ *      `policy`, `projections` and `overlayRegistry` — members ALL THREE planes have — rendered as
+ *      Swift-only, inventing two gaps on the exact dimension the imperative reference documents.
+ *      Methods are now callables on every plane, and the property surface is its own dimension.
+ *   2. `field-options` claimed KOTLIN SUPPORTS NOTHING. Its plane set was a literal `new Set()` — a
+ *      hand-written support claim, which is the one thing this generator exists to prevent. Kotlin
+ *      configures at `createField(host, …)` and through the handle's setters; that surface is now
+ *      extracted and collapsed onto the option names the same way `data-body` collapses to `tokens`.
+ *
  * A capability that is an IDIOM difference (DOM scan vs `.fieldBody()` vs `Modifier.fieldBody`) is an
  * equivalent, not a gap; a capability genuinely absent (a method missing from a port's handle) is a
  * gap. The matrix records, per capability row, the raw support set on each plane so downstream (the
@@ -110,10 +122,22 @@ const kebabSet = (set) => new Set([...set].map(kebab));
 const jsTypes = read('packages/core/src/engine/types.ts');
 const jsPassport = read('packages/core/src/contracts/passport.ts');
 
+/** CALLABLE members of the JS `FieldHandle` — `name(` / `name<`. Properties are a separate dimension
+ *  (see {@link jsHandleProperties}); mixing the two is what made this dimension incomparable before
+ *  Phase 3 (the Swift extractor collected `var`s, the JS and Kotlin ones did not — see the header). */
 function jsHandleMethods() {
   const set = new Set();
   const block = blockAfter(jsTypes, 'export interface FieldHandle');
   for (const m of block.matchAll(/\n\s{2}([a-zA-Z][\w]*)\s*[(<]/g)) set.add(m[1]);
+  return set;
+}
+
+/** NON-callable members of the JS `FieldHandle` — `readonly name: T` / `name: T` on the interface.
+ *  Four today: `version`, `guarantees`, `policy`, `projections`. */
+function jsHandleProperties() {
+  const set = new Set();
+  const block = blockAfter(jsTypes, 'export interface FieldHandle');
+  for (const m of block.matchAll(/\n\s{2}(?:readonly\s+)?([a-zA-Z][\w]*)\s*:/g)) set.add(m[1]);
   return set;
 }
 
@@ -342,11 +366,20 @@ const swiftForceFiles = [
   'swift/Sources/FundamentalCore/Forces/ExtendedForces.swift',
 ];
 
+/** CALLABLE requirements of the `public protocol FieldHandle` — `func name(` only.
+ *  (Until Phase 3 this also swept up the protocol's `var` requirements, so `policy`, `projections` and
+ *  `overlayRegistry` sat in the METHOD set on Swift and nowhere else — see {@link swiftHandleProperties}.) */
 function swiftHandleMethods() {
   const set = new Set();
   const block = blockAfter(swiftHandleSrc, 'public protocol FieldHandle');
-  // `func name(` methods and `var name` computed properties on the protocol.
   for (const m of block.matchAll(/\bfunc\s+([a-zA-Z]\w*)\s*[(<]/g)) set.add(m[1]);
+  return set;
+}
+
+/** NON-callable requirements of the Swift protocol — `var name: T { get }`. */
+function swiftHandleProperties() {
+  const set = new Set();
+  const block = blockAfter(swiftHandleSrc, 'public protocol FieldHandle');
   for (const m of block.matchAll(/\bvar\s+([a-zA-Z]\w*)\s*:/g)) set.add(m[1]);
   return set;
 }
@@ -375,7 +408,9 @@ function swiftEnumCases(src, enumName) {
     const m = line.match(/^\s*case\s+(.+)$/);
     if (!m) continue;
     for (const raw of m[1].split(',')) {
-      const name = raw.trim().replace(/\(.*$/, '').replace(/_+$/, '').trim();
+      // drop an associated-value list `(…)` AND a raw-value assignment `= "bug-report"`, then the
+      // trailing underscore Swift uses to escape a keyword case (`public_`).
+      const name = raw.trim().replace(/\(.*$/, '').replace(/=.*$/, '').trim().replace(/_+$/, '').trim();
       if (name && /^[a-zA-Z]/.test(name)) set.add(name);
     }
   }
@@ -402,6 +437,17 @@ function kotlinHandleMethods() {
   return set;
 }
 
+/** NON-callable public members of the Kotlin `FieldHandle` — top-level `val`/`var` on the class body
+ *  (4-space indent), excluding the `private`/`internal` backing fields. Kotlin is the read-back-richest
+ *  plane here: it exposes a getter for nearly every setter (`accent`, `renderMode`, `qualityTier`, …)
+ *  where JS and Swift are write-only. That is a real, if minor, capability delta and the row says so. */
+function kotlinHandleProperties() {
+  const set = new Set();
+  const block = blockAfter(ktHandleSrc, 'class FieldHandle');
+  for (const m of block.matchAll(/\n {4}(?:@\w+\s+)*(?:val|var)\s+([a-zA-Z]\w*)\s*:/g)) set.add(m[1]);
+  return set;
+}
+
 function kotlinForceTokens() {
   const set = new Set();
   // `override val token = "attract"` — the per-force declaration in the Kotlin catalogs.
@@ -416,6 +462,155 @@ function kotlinEnumCases(src, enumName) {
   const set = new Set();
   const block = blockAfter(src, `enum class ${enumName}`);
   for (const m of block.matchAll(/\b([A-Z][A-Z0-9_]*)\s*\(\s*"([a-z][\w-]*)"/g)) set.add(m[2]);
+  return set;
+}
+
+/** Entry names of a BARE Kotlin enum (no constructor): `enum class FieldEvent { TICK, BODY_ADD }`.
+ *  SCREAMING_SNAKE has no lower→upper transition for `kebab()` to split on, so the snake case is
+ *  lowered to kebab HERE — that is what makes Kotlin's `BODY_ADD`, Swift's `bodyAdd` and a JS
+ *  `body-add` collapse to one concept instead of reading as three separate capabilities. */
+function kotlinBareEnumEntries(src, enumName) {
+  const set = new Set();
+  const at = src.indexOf(`enum class ${enumName}`);
+  if (at < 0) return set;
+  const open = src.indexOf('{', at);
+  const close = src.indexOf('}', open);
+  if (open < 0 || close < 0) return set;
+  for (const raw of src.slice(open + 1, close).split(',')) {
+    const name = raw.trim();
+    if (/^[A-Z][A-Z0-9_]*$/.test(name)) set.add(name.toLowerCase().replace(/_/g, '-'));
+  }
+  return set;
+}
+
+/** `setAccent` → `accent`: the SETTER lane of a configuration name, collapsed onto the name itself.
+ *  A constructor field and a live setter are two idioms for ONE capability — "can this plane
+ *  configure X" — so this is the same naming-lane collapse `data-body` → `tokens` already uses. It is
+ *  applied to ALL THREE planes so the resulting column comparison stays symmetric. */
+const settersToNames = (methods) => {
+  const set = new Set();
+  for (const m of methods) {
+    const hit = /^set([A-Z]\w*)$/.exec(m);
+    if (hit) set.add(hit[1].charAt(0).toLowerCase() + hit[1].slice(1));
+  }
+  return set;
+};
+
+/** Kotlin's CONSTRUCTION-time vocabulary — the `createField(…)` parameters of both overloads. The
+ *  plane has no `FieldOptions` struct, so this plus its setters (above) is its configuration surface.
+ *
+ *  Until Phase 3 this plane's column was a HAND-WRITTEN `new Set()` ("Kotlin uses setters"), which
+ *  rendered as *supports nothing* on every option row — a support claim nobody had checked and that
+ *  was simply false: `createField(host, …)` takes `seed` / `identify` / `policy` / `integrator` /
+ *  `restingMotion` at construction, and the handle carries a setter for most of the rest. */
+function kotlinCreateFieldParams() {
+  const set = new Set();
+  for (let at = ktHandleSrc.indexOf('fun createField('); at >= 0; at = ktHandleSrc.indexOf('fun createField(', at + 1)) {
+    for (const p of paramNames(parenBlockAfter(ktHandleSrc.slice(at), 'fun createField('))) set.add(p);
+  }
+  return set;
+}
+
+const jsConfiguration = () => new Set([...jsOptions(), ...settersToNames(jsHandleMethods())]);
+const swiftConfiguration = () => {
+  const set = new Set([...swiftOptions(), ...settersToNames(swiftHandleMethods())]);
+  // Swift keeps the HOST seam out of `FieldOptions` and takes it as its own constructor argument
+  // (`FieldField(host:options:)`), the way Kotlin takes it on `createField`. Same capability, another
+  // idiom — probe for it rather than letting a struct-only read report a gap that does not exist.
+  if (/\binit\(host:\s*any FieldHost/.test(swiftVanillaSrc)) set.add('host');
+  return set;
+};
+const kotlinConfiguration = () => new Set([...kotlinCreateFieldParams(), ...settersToNames(kotlinHandleMethods())]);
+
+// ── the imperative/observable surface (Phase 3, #998) ───────────────────────────────────────────
+//
+// The half of the engine you reach from CODE rather than markup: the event bus, the agent-view
+// capability grant, the snapshot profiles, the policy budgets, and the body handle. Each is a small
+// closed vocabulary on all three planes, so each is extracted the same way the declarative ones are.
+
+/** Discrete event ids on the `on(...)` bus. JS keys a map; the ports use an enum, so the ids are
+ *  kebabed (`bodyAdd` / `BODY_ADD` → `body-add`) before comparing. The divergence here runs BOTH
+ *  ways: the ports carry lifecycle events (`tick`, `body-add`, `body-remove`) JS does not expose on
+ *  this bus, and JS carries the proximity trio + `focus` the ports have not ported. */
+function jsFieldEvents() {
+  const set = new Set();
+  const block = blockAfter(read('packages/core/src/engine/events.ts'), 'export interface FieldEventMap');
+  for (const m of block.matchAll(/\n\s{2}([a-zA-Z]\w*)\s*:/g)) set.add(m[1]);
+  return set;
+}
+const swiftFieldEvents = () => swiftEnumCases(swiftHandleSrc, 'FieldEvent');
+const kotlinFieldEvents = () => kotlinBareEnumEntries(ktHandleSrc, 'FieldEvent');
+
+/** `AgentCapability` grants for `forAgent` — the `read:*` tokens. Every plane spells the TOKEN
+ *  literally (JS as the union member, Swift as the enum's raw value, Kotlin as the entry's `token`),
+ *  so the token itself is the concept id and no aliasing is needed. */
+const readTokens = (src, from) => {
+  const set = new Set();
+  const at = from ? src.indexOf(from) : 0;
+  if (at < 0) return set;
+  const rest = src.slice(at);
+  const block = from ? rest.slice(0, rest.search(/\n\}/) + 1) : rest;
+  for (const m of block.matchAll(/'read:([\w-]+)'|"read:([\w-]+)"/g)) set.add(`read:${m[1] ?? m[2]}`);
+  return set;
+};
+const jsAgentCapabilities = () => readTokens(jsTypes, 'export type AgentCapability');
+const swiftAgentCapabilities = () => readTokens(readIf('swift/Sources/FundamentalCore/Engine/AgentPermissions.swift'));
+const kotlinAgentCapabilities = () =>
+  readTokens(readIf('android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/AgentPermissions.kt'));
+
+/** `SnapshotProfile` ids. Kebabed so Swift's `bugReport`/`public_` and Kotlin's `BUG_REPORT`/`PUBLIC`
+ *  collapse onto the JS `'bug-report'` / `'public'` strings. */
+function jsSnapshotProfiles() {
+  const set = new Set();
+  const at = jsTypes.indexOf('export type SnapshotProfile');
+  if (at < 0) return set;
+  for (const m of jsTypes.slice(at, jsTypes.indexOf(';', at)).matchAll(/'([a-z][\w-]*)'/g)) set.add(m[1]);
+  return set;
+}
+const swiftSnapshotProfiles = () =>
+  swiftEnumCases(readIf('swift/Sources/FundamentalCore/Engine/AgentPermissions.swift'), 'SnapshotProfile');
+const kotlinSnapshotProfiles = () =>
+  kotlinBareEnumEntries(readIf('android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/AgentPermissions.kt'), 'SnapshotProfile');
+
+/** `FieldBudgets` lanes — the consumable-resource caps a `FieldPolicy` carries. */
+function jsBudgets() {
+  const set = new Set();
+  for (const m of blockAfter(jsTypes, 'export interface FieldBudgets').matchAll(/\n\s{2}([a-zA-Z]\w*)\??:/g)) set.add(m[1]);
+  return set;
+}
+function swiftBudgets() {
+  const set = new Set();
+  const src = readIf('swift/Sources/FundamentalCore/Engine/FieldPolicy.swift');
+  for (const m of blockAfter(src, 'public struct FieldBudgets').matchAll(/\bpublic\s+var\s+([a-zA-Z]\w*)\s*:/g)) set.add(m[1]);
+  return set;
+}
+function kotlinBudgets() {
+  const src = readIf('android/fundamental-core/src/main/kotlin/com/fundamental/core/engine/Policy.kt');
+  return paramNames(parenBlockAfter(src, 'data class FieldBudgets'));
+}
+
+/** `BodyHandle` members — what `addBody` hands back. The naming lane collapses Kotlin's `angleDeg`/
+ *  `tint` the same way the body-spec dimension does; the position-source seam (`bodyRef`) is dropped
+ *  for the same reason `rect` is dropped there (a host seam, not an authoring capability). */
+function jsBodyHandle() {
+  const set = new Set();
+  for (const m of blockAfter(jsTypes, 'export interface BodyHandle').matchAll(/\n\s{2}(?:readonly\s+)?([a-zA-Z]\w*)\s*[(:]/g)) set.add(m[1]);
+  return set;
+}
+function swiftBodyHandle() {
+  const set = new Set();
+  const block = blockAfter(swiftHandleSrc, 'public struct BodyHandle');
+  for (const m of block.matchAll(/\bpublic\s+(?:let|var)\s+([a-zA-Z]\w*)\s*:/g)) set.add(m[1]);
+  for (const m of block.matchAll(/\bpublic\s+func\s+([a-zA-Z]\w*)\s*\(/g)) set.add(m[1]);
+  set.delete('bodyRef');
+  return set;
+}
+function kotlinBodyHandle() {
+  const set = new Set();
+  const at = ktHandleSrc.indexOf('class BodyHandle');
+  const block = ktHandleSrc.slice(at, ktHandleSrc.indexOf('\n}', at));
+  for (const m of block.matchAll(/\n\s*(?!.*\b(?:private|internal)\b)(?:val|var)\s+([a-zA-Z]\w*)\s*:/g)) set.add(m[1]);
+  for (const m of block.matchAll(/\n\s*(?:@\w+\s+)*(?!private|internal)fun\s+([a-zA-Z]\w*)\s*\(/g)) set.add(m[1]);
   return set;
 }
 
@@ -511,10 +706,86 @@ function dimension(id, label, js, swift, kotlin, idiom) {
 
 export async function buildParityMatrix() {
   const dims = [
-    dimension('field-handle-methods', 'FieldHandle methods', jsHandleMethods(), swiftHandleMethods(), kotlinHandleMethods()),
-    // Kotlin has no FieldOptions struct — it configures via FieldHandle/FieldController setters, so
-    // its column is intentionally empty here (a documented idiom difference, not a missing capability).
-    dimension('field-options', 'Field options (JS/Swift struct; Kotlin uses setters)', jsOptions(), swiftOptions(), new Set()),
+    dimension('field-handle-methods', 'FieldHandle methods (callable members)', jsHandleMethods(), swiftHandleMethods(), kotlinHandleMethods()),
+    // Kotlin has no FieldOptions struct — it configures at `createField(...)` and through the handle's
+    // setters. That idiom is collapsed mechanically (see kotlinOptions), so the column is EXTRACTED
+    // rather than hand-declared empty, which is what it was until Phase 3 (#998).
+    dimension(
+      'field-options',
+      'Field configuration — what a plane can set, at construction or live',
+      jsConfiguration(),
+      swiftConfiguration(),
+      kotlinConfiguration(),
+      {
+        js: 'the `FieldOptions` object (plus the handle’s `setX(…)` setters)',
+        swift: 'the `FieldOptions` struct (plus the protocol’s `setX(_:)` requirements)',
+        kotlin: '`createField(host, …)` arguments plus the handle’s `setX(…)` setters',
+      },
+    ),
+
+    // ── the imperative / observable surface (Phase 3, #998) ──────────────────────────────────────
+    dimension(
+      'field-handle-properties',
+      'FieldHandle properties (the non-callable members of the handle)',
+      jsHandleProperties(),
+      swiftHandleProperties(),
+      kotlinHandleProperties(),
+      {
+        js: '`readonly x: T` on the `FieldHandle` interface',
+        swift: '`var x: T { get }` on the `public protocol FieldHandle`',
+        kotlin: '`val x: T` on the `FieldHandle` class — a getter for nearly every setter',
+      },
+    ),
+    dimension(
+      'field-events',
+      'Discrete events on the `on(...)` bus',
+      kebabSet(jsFieldEvents()),
+      kebabSet(swiftFieldEvents()),
+      kebabSet(kotlinFieldEvents()),
+      {
+        js: '`field.on(\'captured\', cb)` → an unsubscribe fn',
+        swift: '`field.on(.captured) { … }` → a `Subscription`',
+        kotlin: '`field.on(FieldEvent.CAPTURED) { … }` → a `Subscription`',
+      },
+    ),
+    dimension(
+      'agent-capabilities',
+      'Agent-view capability grants (`forAgent`) — the read allow-list',
+      jsAgentCapabilities(),
+      swiftAgentCapabilities(),
+      kotlinAgentCapabilities(),
+      {
+        js: '`forAgent({ capabilities: [\'read:metrics\'] })`',
+        swift: '`forAgent(AgentViewOptions(capabilities: [.metrics]))`',
+        kotlin: '`forAgent(setOf(AgentCapability.READ_METRICS))`',
+      },
+    ),
+    dimension(
+      'snapshot-profiles',
+      'Snapshot inclusion profiles (`snapshot({ profile })`)',
+      kebabSet(jsSnapshotProfiles()),
+      kebabSet(swiftSnapshotProfiles()),
+      kebabSet(kotlinSnapshotProfiles()),
+    ),
+    dimension(
+      'field-budgets',
+      'Policy budgets (`FieldPolicy.budgets`) — the consumable-resource caps',
+      jsBudgets(),
+      swiftBudgets(),
+      kotlinBudgets(),
+    ),
+    dimension(
+      'body-handle',
+      'Body handle (`addBody(…)` → the live handle) members',
+      bodyConceptSet(jsBodyHandle()),
+      bodyConceptSet(swiftBodyHandle()),
+      bodyConceptSet(kotlinBodyHandle()),
+      {
+        js: '`{ data, channels, set(), remove() }`',
+        swift: '`BodyHandle` struct — `data`, `set`, `remove`, `load`, `drain`',
+        kotlin: '`BodyHandle` class — `data`, `set`, `remove`, `identity`, `load`, `drain`',
+      },
+    ),
     dimension('force-tokens', 'Force tokens', jsForceTokens(), swiftForceTokens(), kotlinForceTokens()),
     dimension('render-modes', 'Render modes', kebabSet(jsRenderModes()), kebabSet(swiftRenderModes()), kebabSet(kotlinRenderModes())),
     dimension('overlay-modes', 'Overlay readings', kebabSet(jsOverlayModes()), kebabSet(swiftOverlayModes()), kebabSet(kotlinOverlayModes())),

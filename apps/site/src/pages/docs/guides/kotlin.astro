@@ -2,6 +2,14 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
+// docs-refactor Phase 3 (#998): the "44/44 FieldHandle methods — full parity" line this page used to
+// carry was FALSE and had been for months — `pnpm gen:parity-matrix` reads the ports directly and has
+// never agreed with it. The counts below are read out of that generated artifact so the claim cannot
+// drift again. Do not retype a number here.
+import parityData from '../../../../../../data/parity-matrix.json';
+const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'field-handle-methods')!;
+
+
 const localDep = `// settings.gradle.kts — depend on the modules from source.
 // Preview: nothing is published to Maven Central yet, so include the repo's
 // android/ build as a composite (a maven coordinate door comes later).
@@ -62,9 +70,12 @@ field.burst(tap.x, tap.y)             // a CGPoint analogue from a MotionEvent
   </header>
 
   <div class="callout">
-    <b>Status: 44/44.</b> The Kotlin port is conformance-checked against the JS engine (the same 36-force
-    golden the Swift port runs) and ships all 44 FieldHandle methods as of
-    <a href="https://github.com/zachshallbetter/fundamental-engine/pull/823">#823</a>. See
+    <b>Status: broad, not complete.</b> The Kotlin port is conformance-checked against the JS engine
+    (the same 36-force golden the Swift port runs) and ships
+    <strong>{handleDim.counts.kotlin}</strong> of the {handleDim.union.length} callable
+    <code>FieldHandle</code> members any plane declares, against JS's
+    <strong>{handleDim.counts.js}</strong> — generated from the port source, not typed here. The big
+    catch-up landed in <a href="https://github.com/zachshallbetter/fundamental-engine/pull/823">#823</a>. See
     <a href="/docs/implementations">Implementations</a> for the full surface-by-surface status,
     and <a href="#parity">Parity</a> below for platform-specific notes.
   </div>
@@ -129,13 +140,16 @@ field.burst(tap.x, tap.y)             // a CGPoint analogue from a MotionEvent
   <section class="docs-sec" id="parity">
     <h2>Parity</h2>
     <p>
-      The Kotlin port ships <strong>44/44 FieldHandle methods</strong> — full parity with the JS engine
-      as of <a href="https://github.com/zachshallbetter/fundamental-engine/pull/823">#823</a>.
-      The core force set, the scheduler and registries, formations, the <code>FieldHandle</code> public
-      API (relationship edges included), and all six advanced methods (<code>addAgent</code>,
-      <code>sample</code>, <code>on</code>, <code>readParticleIds</code>,
-      <code>readParticleChannels</code>, <code>registerOverlay</code>) are implemented and pass the
-      cross-plane conformance gate.
+      The Kotlin port ships <strong>{handleDim.counts.kotlin}</strong> callable
+      <code>FieldHandle</code> members against the JS engine's {handleDim.counts.js} — the widest of the
+      three, because it adds the host-feed methods a Compose/View host needs (<code>attach</code>,
+      <code>tick</code>, <code>feedScrollV</code>, <code>feedReducedMotion</code>, <code>pause</code>,
+      <code>resume</code>) on top of the shared surface. It is still missing the focus/attention
+      substrate (<code>focus</code> / <code>focusState</code>), a batched follow-up. The core force set,
+      the scheduler and registries, formations, the <code>FieldHandle</code> public API (relationship
+      edges included), and all six advanced methods (<code>addAgent</code>, <code>sample</code>,
+      <code>on</code>, <code>readParticleIds</code>, <code>readParticleChannels</code>,
+      <code>registerOverlay</code>) are implemented and pass the cross-plane conformance gate.
     </p>
     <p>
       The full method-by-method breakdown is on the <a href="/docs/api/parity">parity matrix page</a>.

@@ -1,0 +1,61 @@
+{
+  "measuredAt": "2026-09-11T22:26:07.989Z",
+  "node": "v25.4.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M1 Pro",
+  "frameScaling": [
+    {
+      "density": 1,
+      "particles": 130,
+      "medianMs": 0.10945799999990413,
+      "p95Ms": 1.0057919999999285,
+      "usPer1k": 0.8419846153838779
+    },
+    {
+      "density": 2,
+      "particles": 260,
+      "medianMs": 0.1445419999997739,
+      "p95Ms": 1.0257919999999103,
+      "usPer1k": 0.5559307692298997
+    },
+    {
+      "density": 3,
+      "particles": 390,
+      "medianMs": 0.160082999999986,
+      "p95Ms": 1.7324169999999413,
+      "usPer1k": 0.41046923076919484
+    },
+    {
+      "density": 4,
+      "particles": 520,
+      "medianMs": 0.2724169999999049,
+      "p95Ms": 1.0637500000000273,
+      "usPer1k": 0.5238788461536632
+    }
+  ],
+  "accumulator": {
+    "offMedianMs": 2.809125000000222,
+    "onMedianMs": 2.8246249999997417
+  },
+  "accumulatorOverheadPct": 0.5517732389807702,
+  "readApi": {
+    "bodies": 24,
+    "particles": 260,
+    "queryGlobalMs": 0.0030419999998230196,
+    "queryPointMs": 0.0022910000002411834,
+    "snapshotMs": 0.002708999999867956,
+    "snapshotInfluencesMs": 0.010582999999769527
+  },
+  "measureCadence": {
+    "spreadPct": 6.974896163798169,
+    "bucketMedianMs": [
+      1.0620410000001357,
+      1.0760000000000218,
+      1.0155420000000959,
+      1.0863749999998618,
+      1.0667499999999563,
+      1.0612499999997453
+    ]
+  }
+}
