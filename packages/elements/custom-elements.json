@@ -80,6 +80,70 @@
     },
     {
       "kind": "javascript-module",
+      "path": "src/continuity.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "CONTINUITY_STORAGE_KEY",
+          "type": {
+            "text": "string"
+          },
+          "default": "'fe:continuity'",
+          "description": "The one sessionStorage key continuity uses — path-agnostic on purpose (see the module doc)."
+        },
+        {
+          "kind": "function",
+          "name": "installSessionContinuity",
+          "return": {
+            "type": {
+              "text": "SessionContinuity"
+            }
+          },
+          "parameters": [
+            {
+              "name": "field",
+              "type": {
+                "text": "Pick<FieldHandle, 'readParticles' | 'particleCount' | 'restoreParticles'>"
+              }
+            },
+            {
+              "name": "win",
+              "type": {
+                "text": "ContinuityWindow | undefined"
+              }
+            },
+            {
+              "name": "opts",
+              "default": "{}",
+              "type": {
+                "text": "SessionContinuityOptions"
+              }
+            }
+          ],
+          "description": "Wire session continuity onto a live field: consume + restore any stored pool once, then capture the\npool on every non-bfcache `pagehide`. Returns the teardown (and the restored count). A no-op — the\nsame `NOOP` result — wherever the platform lacks the pieces."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "CONTINUITY_STORAGE_KEY",
+          "declaration": {
+            "name": "CONTINUITY_STORAGE_KEY",
+            "module": "src/continuity.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "installSessionContinuity",
+          "declaration": {
+            "name": "installSessionContinuity",
+            "module": "src/continuity.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "src/field-cell.ts",
       "declarations": [
         {
@@ -509,6 +573,15 @@
             },
             {
               "kind": "field",
+              "name": "sessionContinuity",
+              "type": {
+                "text": "SessionContinuity | undefined"
+              },
+              "privacy": "private",
+              "description": "the live cross-document continuity seam (#679) — installed only while `continuity=\"session\"`."
+            },
+            {
+              "kind": "field",
               "name": "platformRuntime",
               "type": {
                 "text": "PlatformRuntime | undefined"
@@ -765,6 +838,15 @@
                 "text": "string | undefined"
               },
               "description": "`formation` — the global formation (§7), applied live; undefined if absent. Unlike the other\nattributes this is post-construction (set via `setFormation`), but it round-trips: the attribute\ndrives the field and `setFormation` reflects back to it (#541).",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "continuity",
+              "type": {
+                "text": "'session' | undefined"
+              },
+              "description": "`continuity` — cross-document continuity (#679). `'session'` (the value `session`, or the bare\nattribute) carries the particle pool across a hard navigation via `sessionStorage`; undefined\n(absent, `off`, `false`) is the default: every hard navigation boots a fresh pool. An element\nconcern, not a `FieldOption` — see `continuity.ts`.",
               "readonly": true
             },
             {
@@ -1377,6 +1459,37 @@
             },
             {
               "kind": "method",
+              "name": "restoreParticles",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "buf",
+                  "type": {
+                    "text": "Float32Array"
+                  }
+                },
+                {
+                  "name": "n",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "opts",
+                  "optional": true,
+                  "type": {
+                    "text": "RestoreParticlesOptions"
+                  }
+                }
+              ],
+              "description": "write a captured readParticles buffer back onto the live pool in place (cross-document continuity, #679)."
+            },
+            {
+              "kind": "method",
               "name": "energy",
               "return": {
                 "type": {
@@ -1651,6 +1764,17 @@
             },
             {
               "kind": "method",
+              "name": "syncContinuity",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "(Re)install the cross-document continuity seam (#679) to match the `continuity` attribute: tear\ndown any prior listener, then — only with `continuity=\"session\"` and a live field — consume/restore\na stored pool once and arm the `pagehide` capture. Idempotent; a no-op without a window (SSR) or\nwithout `sessionStorage` (blocked / private mode). The window is the element's own document's,\nso a field inside an iframe captures/restores against its own session."
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -1746,6 +1870,9 @@
             },
             {
               "name": "formation"
+            },
+            {
+              "name": "continuity"
             }
           ],
           "superclass": {
@@ -1961,6 +2088,13 @@
                 "name": "FieldField",
                 "module": "src/index.ts"
               }
+            },
+            {
+              "name": "continuity",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
             }
           ],
           "members": [
@@ -2067,6 +2201,19 @@
               "privacy": "private",
               "default": "false",
               "description": "SSR pre-registration queue bookkeeping: true while this element counts as a live field, so a\nrebuild (start() after a destroy) does not double-count the active-field tally (#683).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "sessionContinuity",
+              "type": {
+                "text": "SessionContinuity | undefined"
+              },
+              "privacy": "private",
+              "description": "the live cross-document continuity seam (#679) — installed only while `continuity=\"session\"`.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2442,6 +2589,19 @@
                 "text": "string | undefined"
               },
               "description": "`formation` — the global formation (§7), applied live; undefined if absent. Unlike the other\nattributes this is post-construction (set via `setFormation`), but it round-trips: the attribute\ndrives the field and `setFormation` reflects back to it (#541).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "continuity",
+              "type": {
+                "text": "'session' | undefined"
+              },
+              "description": "`continuity` — cross-document continuity (#679). `'session'` (the value `session`, or the bare\nattribute) carries the particle pool across a hard navigation via `sessionStorage`; undefined\n(absent, `off`, `false`) is the default: every hard navigation boots a fresh pool. An element\nconcern, not a `FieldOption` — see `continuity.ts`.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -3190,6 +3350,41 @@
             },
             {
               "kind": "method",
+              "name": "restoreParticles",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "buf",
+                  "type": {
+                    "text": "Float32Array"
+                  }
+                },
+                {
+                  "name": "n",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "opts",
+                  "optional": true,
+                  "type": {
+                    "text": "RestoreParticlesOptions"
+                  }
+                }
+              ],
+              "description": "write a captured readParticles buffer back onto the live pool in place (cross-document continuity, #679).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
               "name": "energy",
               "return": {
                 "type": {
@@ -3524,6 +3719,21 @@
             },
             {
               "kind": "method",
+              "name": "syncContinuity",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "(Re)install the cross-document continuity seam (#679) to match the `continuity` attribute: tear\ndown any prior listener, then — only with `continuity=\"session\"` and a live field — consume/restore\na stored pool once and arm the `pagehide` capture. Idempotent; a no-op without a window (SSR) or\nwithout `sessionStorage` (blocked / private mode). The window is the element's own document's,\nso a field inside an iframe captures/restores against its own session.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -3643,6 +3853,54 @@
           "declaration": {
             "name": "*",
             "module": "src/mount.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "installSessionContinuity",
+          "declaration": {
+            "name": "installSessionContinuity",
+            "module": "./continuity.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "CONTINUITY_STORAGE_KEY",
+          "declaration": {
+            "name": "CONTINUITY_STORAGE_KEY",
+            "module": "./continuity.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "SessionContinuity",
+          "declaration": {
+            "name": "SessionContinuity",
+            "module": "./continuity.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "SessionContinuityOptions",
+          "declaration": {
+            "name": "SessionContinuityOptions",
+            "module": "./continuity.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "ContinuityWindow",
+          "declaration": {
+            "name": "ContinuityWindow",
+            "module": "./continuity.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "ContinuityStorage",
+          "declaration": {
+            "name": "ContinuityStorage",
+            "module": "./continuity.ts"
           }
         },
         {

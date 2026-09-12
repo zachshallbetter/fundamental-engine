@@ -36,7 +36,9 @@ test('option-attrs-observed: every forwarded option attr is in observedAttribute
 // SPECIAL_ATTRS are observed but intentionally have no OPTIONS row: they are wired directly (accent is applied
 // in start() / setAccent; formation is a post-boot command, not a construction option). accent / overlayCanvas /
 // feedbackSink live outside OPTIONS by design.
-const SPECIAL_ATTRS = new Set(['accent', 'formation']);
+// continuity is an ELEMENT concern (#679): it wires the sessionStorage/pagehide seam around the engine and is
+// deliberately not a FieldOption (core imports zero DOM), so it has no OPTIONS row either.
+const SPECIAL_ATTRS = new Set(['accent', 'formation', 'continuity']);
 
 test('every observed (non-special) attribute has an OPTIONS row (reverse drift guard)', () => {
   const optionAttrs = new Set(OPTIONS.map((o) => o.attr));

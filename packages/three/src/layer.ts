@@ -18,7 +18,7 @@
  */
 
 import { createField, resolvePalette } from '@fundamental-engine/core';
-import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, EdgeHandle, EdgeView, FieldChannelHandle, FieldQuery, FieldQueryResult, FieldSnapshot, FieldSnapshotOptions, FieldDiff, CausalReplay, ReplayOptions, ProjectionRegistry } from '@fundamental-engine/core';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, RestoreParticlesOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, EdgeHandle, EdgeView, FieldChannelHandle, FieldQuery, FieldQueryResult, FieldSnapshot, FieldSnapshotOptions, FieldDiff, CausalReplay, ReplayOptions, ProjectionRegistry } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
@@ -287,6 +287,10 @@ export class FieldLayer implements FieldHandle {
   /** copy each live particle's stable id into a Uint32Array, parallel to readParticles. */
   readParticleIds(out: Uint32Array): number {
     return this.field.readParticleIds(out);
+  }
+  /** write a captured readParticles buffer back onto the live pool in place (cross-document continuity, #679). */
+  restoreParticles(buf: Float32Array, n: number, opts?: RestoreParticlesOptions): number {
+    return this.field.restoreParticles(buf, n, opts);
   }
   /** read multiple named channels from live particles into caller-owned buffers (column-wise). */
   readParticleChannels(channels: readonly string[], out: readonly Float32Array[]): number {

@@ -59,6 +59,9 @@ export * from './engine/render-backend.ts';
 // DOM door's default). Non-DOM hosts pass their own FeedbackSink instead.
 export { cssFeedbackSink } from './engine/feedback-sink.ts';
 export * from './engine/field.ts';
+// cross-document continuity (#679): the pure encode/decode of the particle pool in the readParticles
+// wire format; the sessionStorage/pagehide seam lives in @fundamental-engine/elements (<field-root continuity>).
+export * from './engine/continuity.ts';
 export * from './forces/index.ts';
 // physics conformance — the Lab-as-detector framework (shared by tests + the Lab UI)
 export * from './conformance/types.ts';

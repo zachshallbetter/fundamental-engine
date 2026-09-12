@@ -1,7 +1,8 @@
-import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RestingMotion, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
+import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RestingMotion, type IntegratorMode, type RestoreParticlesOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
+import { installSessionContinuity, type SessionContinuity } from './continuity.ts';
 import {
   installPreRegistrationQueue,
   flushPreRegistrationQueue,
@@ -49,6 +50,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {string} resting-motion - The resting-motion floor (declared, default OFF): `thermal` (a field-wide seeded Langevin kick) or `flow` (a divergence-free curl), optionally followed by a strength multiplier (`"flow 0.5"`, default `1`) — honest idle motion for a drawn field with nothing painted, measured as `--temperature`, and nothing under reduced motion. Absent = off. Construction-time — changing it rebuilds.
  * @attr {number} grid-warp - Distortion multiplier for the `grid` overlay's lattice (default `1`, the calibrated amount). `2`–`3` exaggerates the deformation; `0` flattens it. Only affects the `grid` overlay mode.
  * @attr {number} grid-intensity - Stroke opacity ∈ [0,1] for the `grid` overlay lines (default `0.16`, the faint diagnostic). Raise it (≈`0.5`) to make the warped lattice a visual centerpiece. Only affects the `grid` overlay mode.
+ * @attr {string} continuity - Cross-document continuity (#679), OPT-IN: `session` serializes the particle pool (the `readParticles` wire format, versioned, ≤ 64 KiB) to `sessionStorage` on a non-bfcache `pagehide` — a reload, an external link, cross-document back/forward — and restores it ONCE into the next document's fresh pool (the key is consumed). Absent (the default) = every hard navigation boots a fresh pool, exactly as before. Same-document (client-router) navigation never fires `pagehide` and is unaffected; reduced motion restores positions with no motion added; every platform piece is feature-detected (no `window` / `sessionStorage` → no-op). Not a `createField` option — the seam lives on the element.
  */
 
 /** A no-op scalar grid returned by `grid()` before the element's field has started. */
@@ -144,6 +146,7 @@ export class FieldField extends HTMLElementBase {
     'resting-motion',
     'background',
     'formation',
+    'continuity',
   ];
 
   private readonly canvas: HTMLCanvasElement;
@@ -159,6 +162,8 @@ export class FieldField extends HTMLElementBase {
   /** SSR pre-registration queue bookkeeping: true while this element counts as a live field, so a
    *  rebuild (start() after a destroy) does not double-count the active-field tally (#683). */
   private fieldActiveMarked = false;
+  /** the live cross-document continuity seam (#679) — installed only while `continuity="session"`. */
+  private sessionContinuity?: SessionContinuity;
   /** experimental platform runtime (Phase D); present only when the flag is on. */
   platformRuntime?: PlatformRuntime;
 
@@ -381,6 +386,14 @@ export class FieldField extends HTMLElementBase {
   get formation(): string | undefined {
     return this.getAttribute('formation') ?? undefined;
   }
+  /** `continuity` — cross-document continuity (#679). `'session'` (the value `session`, or the bare
+   *  attribute) carries the particle pool across a hard navigation via `sessionStorage`; undefined
+   *  (absent, `off`, `false`) is the default: every hard navigation boots a fresh pool. An element
+   *  concern, not a `FieldOption` — see `continuity.ts`. */
+  get continuity(): 'session' | undefined {
+    const v = this.getAttribute('continuity');
+    return v === 'session' || v === '' ? 'session' : undefined;
+  }
 
   // ── the FieldHandle surface, proxied onto the element (§13) ────────────────
   /** the live `FieldHandle` this element drives, or `undefined` before mount / after teardown (#542).
@@ -559,6 +572,10 @@ export class FieldField extends HTMLElementBase {
   readParticleIds(out: Uint32Array): number {
     return this.field?.readParticleIds(out) ?? 0;
   }
+  /** write a captured readParticles buffer back onto the live pool in place (cross-document continuity, #679). */
+  restoreParticles(buf: Float32Array, n: number, opts?: RestoreParticlesOptions): number {
+    return this.field?.restoreParticles(buf, n, opts) ?? 0;
+  }
   /** kinetic/thermal/total energy snapshot for the current frame. */
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field?.energy() ?? { kinetic: 0, thermal: 0, total: 0, count: 0 };
@@ -660,6 +677,9 @@ export class FieldField extends HTMLElementBase {
     this.overlayCanvas = undefined;
     this.platformRuntime?.destroy();
     this.platformRuntime = undefined;
+    // cross-document continuity (#679): drop the pagehide listener; nothing is written on unmount.
+    this.sessionContinuity?.teardown();
+    this.sessionContinuity = undefined;
   }
 
   /**
@@ -707,6 +727,9 @@ export class FieldField extends HTMLElementBase {
       case 'formation':
         if (this.formation) this.field.setFormation(this.formation);
         break;
+      case 'continuity': // an element seam around the engine, (un)installed in place — never a rebuild
+        this.syncContinuity();
+        break;
       default: // density / waves / mass are construction-time → rebuild
         this.field.destroy();
         this.start();
@@ -733,6 +756,21 @@ export class FieldField extends HTMLElementBase {
     document.body.appendChild(oc);
     this.overlayCanvas = oc;
     return oc;
+  }
+
+  /**
+   * (Re)install the cross-document continuity seam (#679) to match the `continuity` attribute: tear
+   * down any prior listener, then — only with `continuity="session"` and a live field — consume/restore
+   * a stored pool once and arm the `pagehide` capture. Idempotent; a no-op without a window (SSR) or
+   * without `sessionStorage` (blocked / private mode). The window is the element's own document's,
+   * so a field inside an iframe captures/restores against its own session.
+   */
+  private syncContinuity(): void {
+    this.sessionContinuity?.teardown();
+    this.sessionContinuity = undefined;
+    if (!this.field || this.continuity !== 'session') return;
+    const win = this.ownerDocument?.defaultView ?? (typeof window !== 'undefined' ? window : undefined);
+    this.sessionContinuity = installSessionContinuity(this.field, win ?? undefined);
   }
 
   /** (re)create the engine on the canvas, reading the current attributes. */
@@ -775,6 +813,10 @@ export class FieldField extends HTMLElementBase {
     // a rebuild (density/waves/mass change) starts a fresh engine that defaults to visible —
     // re-apply the last observed element visibility so a hidden field stays draw-skipped.
     if (!this.fieldVisible) this.field.setVisible(false);
+    // cross-document continuity (#679): AFTER the fresh pool is built — a stored pool (if the attribute
+    // opts in and one exists) is restored in place onto it, and the pagehide capture is armed. Absent
+    // attribute → nothing installed, the boot is exactly as before.
+    this.syncContinuity();
     // take the overlay canvas out of the compositing tree unless a reading is actually active.
     syncOverlaySurface(this.overlayCanvas, this.overlay);
     // SSR pre-registration queue (§31.10): the field's body-event listeners are now wired (via the
@@ -828,6 +870,10 @@ declare global {
 export * from './field-cell.ts';
 export * from './cell-force.ts';
 export * from './mount.ts';
+// cross-document continuity (#679): the sessionStorage/pagehide seam `<field-root continuity="session">`
+// installs — exported so a custom embedding can wire the same round trip around its own handle.
+export { installSessionContinuity, CONTINUITY_STORAGE_KEY } from './continuity.ts';
+export type { SessionContinuity, SessionContinuityOptions, ContinuityWindow, ContinuityStorage } from './continuity.ts';
 // shadow-DOM participation: the helper a custom element uses to join the field without
 // repeating registration-event boilerplate (docs/engine-reference/shadow-dom.md §31.1).
 export {

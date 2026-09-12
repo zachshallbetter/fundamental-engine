@@ -200,6 +200,8 @@ const AGENT_WITHHELD = new Set<string>([
   // mutators: matter / bodies / edges / flow / threads
   'threads', 'burst', 'flowTo', 'clearFlow', 'seed', 'addAgent', 'addBody', 'addEdge',
   'addField', 'registerOverlay',
+  // restoreParticles is a pool WRITE (cross-document continuity, #679) — never on the read-only view
+  'restoreParticles',
   // point / particle / grid readers (raw substrate, not the scoped agent reading)
   'readEdges', 'atomAt', 'focusAt', 'clearFocus', 'sampleField', 'particleCount', 'readParticles',
   'readParticleIds', 'readParticleChannels', 'energy', 'sample', 'sampleScalar', 'sampleGradient',

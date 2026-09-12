@@ -3358,6 +3358,36 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
       return w;
     },
+    restoreParticles: (buf, n, opts) => {
+      // Cross-document continuity (#679): the inverse of readParticles, applied IN PLACE onto the pool
+      // build() already spawned — same pool order, same agent skip, so row i lands where readParticles
+      // wrote it. No rng draw, no rebuild: the default path's draw order is untouched, and a field
+      // that never calls this is byte-identical to one that predates it. z is written only in a
+      // depth > 0 field (the flat field never materializes depth); positions rescale from the capture
+      // space and clamp into this one; velocities are not on the wire and stay as built.
+      const ps = store.particles;
+      const cap = Math.min(Math.max(0, Math.floor(n)), Math.floor(buf.length / 5));
+      const fw = opts?.fromWidth;
+      const fh = opts?.fromHeight;
+      const sx = fw != null && fw > 0 && W > 0 ? W / fw : 1;
+      const sy = fh != null && fh > 0 && H > 0 ? H / fh : 1;
+      let r = 0;
+      for (let i = 0; i < ps.length && r < cap; i++) {
+        const p = ps[i]!;
+        if (p.report !== undefined) continue; // agents are not on the wire (readParticles skips them)
+        const o = r * 5;
+        const x = buf[o]! * sx;
+        const y = buf[o + 1]! * sy;
+        p.x = W > 0 ? clamp(x, 0, W) : x;
+        p.y = H > 0 ? clamp(y, 0, H) : y;
+        if (cfg.depth > 0) p.z = clamp(buf[o + 2]!, 0, cfg.depth);
+        p.heat = clamp(buf[o + 3]!, 0, 1);
+        const size = buf[o + 4]!;
+        if (size > 0) p.size = size;
+        r++;
+      }
+      return r;
+    },
     readParticleChannels: (channels, out) => {
       const ps = store.particles;
       let written = 0;

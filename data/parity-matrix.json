@@ -70,6 +70,7 @@
         "removeOverlay",
         "replay",
         "rescan",
+        "restoreParticles",
         "resume",
         "sample",
         "sampleField",
@@ -100,7 +101,7 @@
         "tick"
       ],
       "counts": {
-        "js": 52,
+        "js": 53,
         "swift": 56,
         "kotlin": 59
       },
@@ -133,6 +134,7 @@
           "registerOverlay",
           "replay",
           "rescan",
+          "restoreParticles",
           "sample",
           "sampleField",
           "sampleGradient",
@@ -495,6 +497,12 @@
           "js": true,
           "swift": true,
           "kotlin": true
+        },
+        {
+          "symbol": "restoreParticles",
+          "js": true,
+          "swift": false,
+          "kotlin": false
         },
         {
           "symbol": "resume",

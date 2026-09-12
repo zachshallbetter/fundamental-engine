@@ -26,6 +26,15 @@ export const PARTICLE_WIRE_VERSION = 0 as const;
  */
 export const PARTICLE_STRIDE = 5 as const;
 
+/** Options for {@link FieldHandle.restoreParticles} (#679). */
+export interface RestoreParticlesOptions {
+  /** the coordinate-space width the buffer was captured in; positions are scaled by `W / fromWidth`.
+   *  Omit (or pass `<= 0`) for no horizontal rescale. */
+  fromWidth?: number;
+  /** the coordinate-space height the buffer was captured in; positions are scaled by `H / fromHeight`. */
+  fromHeight?: number;
+}
+
 export interface Vec2 {
   x: number;
   y: number;
@@ -1899,6 +1908,24 @@ export interface FieldHandle {
    * them (the engine carries the identity, not the payload). Zero-allocation, read-only.
    */
   readParticleIds(out: Uint32Array): number;
+  /**
+   * Cross-document continuity (#679): write a previously captured {@link readParticles} buffer back
+   * onto the LIVE pool, in place. Walks the pool in `readParticles` order with the same agent skip, so
+   * row `i` of `buf` lands on the particle `readParticles` would have written at row `i`; writes `x`,
+   * `y`, `heat`, `size` (and `z`, only in a `depth > 0` field — a flat field stays flat) for
+   * `min(n, floor(buf.length / 5), free particles)` rows and returns the count written. A count
+   * mismatch (a different density, mortal/spawned matter) is tolerated: the overlap is restored, the
+   * rest of the pool keeps its fresh state. `fromWidth` / `fromHeight` rescale positions captured in
+   * a different coordinate space into this field's; positions are clamped into the field.
+   *
+   * OPT-IN and additive: it draws NOTHING from the rng and never rebuilds — the default path
+   * (`build()`'s draw order, the determinism/replay invariants) is untouched; a field that never
+   * calls it is byte-identical to one built before this method existed. Velocities are not part of
+   * the wire format and are left as built. Pair with `encodeParticlePool` / `decodeParticlePool`
+   * (`engine/continuity.ts`) for the serialized form; `<field-root continuity="session">` wires the
+   * pagehide → sessionStorage → next-document round trip.
+   */
+  restoreParticles(buf: Float32Array, n: number, opts?: RestoreParticlesOptions): number;
   /** Read multiple named channels from live particles into caller-owned buffers (column-wise:
    *  all particles' first channel, then second, etc.). Returns the particle count written.
    *  Channels: 'x' | 'y' | 'z' | 'vx' | 'vy' | 'heat' | 'size' | 'm' | 'id' | 'age' | 'charge'.

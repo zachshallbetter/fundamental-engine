@@ -17,7 +17,7 @@
  * ```
  */
 
-import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type EdgeHandle, type EdgeView, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
+import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type RestoreParticlesOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type EdgeHandle, type EdgeView, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
 import { createField } from './create-field.ts';
 import { makeFieldCanvas, makeContainedCanvas, assertBrowser } from './mount.ts';
 
@@ -201,6 +201,10 @@ export class FieldField implements FieldHandle {
   /** copy each live particle's stable id into a Uint32Array, parallel to readParticles. */
   readParticleIds(out: Uint32Array): number {
     return this.field.readParticleIds(out);
+  }
+  /** write a captured readParticles buffer back onto the live pool in place (cross-document continuity, #679). */
+  restoreParticles(buf: Float32Array, n: number, opts?: RestoreParticlesOptions): number {
+    return this.field.restoreParticles(buf, n, opts);
   }
   /** read multiple named channels from live particles into caller-owned buffers (column-wise). */
   readParticleChannels(channels: readonly string[], out: readonly Float32Array[]): number {
