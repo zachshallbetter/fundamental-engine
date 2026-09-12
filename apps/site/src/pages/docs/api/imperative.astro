@@ -1,0 +1,897 @@
+---
+// The IMPERATIVE + OBSERVABLE REFERENCE — docs-refactor Phase 3 (#998), plan §6.4/§8/§5.
+//
+// The other half of the surface from /docs/api/declarative: everything you reach from CODE. One
+// consolidated page for `createField` and its options, the whole `FieldHandle` (every callable and
+// every property), the sampling and observable reads (`sample*` / `query` / `snapshot` / `diff` /
+// `replay` / `projections`), the agent view and its capability grants, policy and budgets, identity,
+// the body handle, and the discrete event bus. Previously this was spread across /docs/api/options,
+// /docs/api/handle, /docs/api/metrics, /docs/api/types and /docs/api/utilities with NO per-platform
+// information anywhere and, on the handle page, a hand-typed "44/44/44 full parity" claim the
+// generated parity matrix has contradicted for months.
+//
+// EVERY support row is rendered by <PlatformSupport> from data/parity-matrix.json — the
+// `pnpm gen:parity-matrix` output that `pnpm check:docs` regenerates and diffs on every CI run.
+// Nothing here hand-types a ✓ or a ✗. The editorial content is the GROUPING and the per-row notes;
+// membership is asserted at build time below, so a new FieldHandle member cannot land without
+// appearing on this page.
+//
+// This page does NOT re-document the declarative surface. Attributes, forces, feedback channels,
+// conditions, formations and the custom elements live on /docs/api/declarative; where the two meet
+// (an option that mirrors an attribute, a channel a body handle exposes) this page links across.
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import ApiStamp from '../../../components/ApiStamp.astro';
+import PlatformSupport from '../../../components/PlatformSupport.astro';
+import {
+  OPTIONS,
+  HANDLE,
+  EVENTS,
+  AGENT_CAPABILITIES,
+  SNAPSHOT_PROFILES,
+  BUDGETS,
+  BODY_HANDLE,
+} from '../../../lib/docs-api.ts';
+import { EXPERIMENTAL } from '../../../../../../scripts/api-surface.data.mjs';
+import parityData from '../../../../../../data/parity-matrix.json';
+
+interface Dim {
+  id: string;
+  label: string;
+  idiom?: { js: string; swift: string; kotlin: string };
+  union: string[];
+  counts: { js: number; swift: number; kotlin: number };
+  planes: { js: string[]; swift: string[]; kotlin: string[] };
+}
+const dims = parityData.dimensions as Dim[];
+const dimBy = (id: string): Dim => {
+  const d = dims.find((x) => x.id === id);
+  if (!d) throw new Error(`docs/api/imperative: no '${id}' dimension in data/parity-matrix.json — run \`pnpm gen:parity-matrix\`.`);
+  return d;
+};
+
+const methodDim = dimBy('field-handle-methods');
+const propDim = dimBy('field-handle-properties');
+const optionDim = dimBy('field-options');
+const eventDim = dimBy('field-events');
+const capDim = dimBy('agent-capabilities');
+const budgetDim = dimBy('field-budgets');
+dimBy('snapshot-profiles'); // presence assertion — rendered per-row by <PlatformSupport>
+dimBy('body-handle'); //     ditto
+
+// ── sig → the matrix's member name ───────────────────────────────────────────────────────────────
+// A HANDLE `sig` is prose-ish on purpose: one row legitimately covers a setter, its read-back
+// property and its option key (`setDprCap(cap) / opt dprCap`). The FIRST alternate is the member the
+// support row describes.
+const memberOf = (sig: string): string =>
+  sig.split('/')[0].trim().replace(/^opt\s+/, '').split('(')[0].trim();
+
+// The three HANDLE rows that document a PROPERTY rather than a callable — they read out of the
+// property dimension instead. (`setPolicy(policy) / policy / opt policy` documents both; its row is
+// a method row, and the property section below carries `policy` on its own.)
+const PROPERTY_SIGS = new Set(['guarantees', 'version (property)', 'projections']);
+
+// Provenance: the same freeze-data lookup /docs/api/handle uses — a member gets an "experimental"
+// stamp when, and only when, scripts/api-surface.data.mjs (the file `pnpm check:api` gates) says so.
+const expItem = (sig: string): string | undefined => {
+  const fn = `${sig.split('(')[0]}()`;
+  return EXPERIMENTAL.find((x: { item: string }) => x.item.includes(fn))?.item;
+};
+
+// ── editorial grouping of the handle ─────────────────────────────────────────────────────────────
+// Order and grouping only, by what you are trying to DO — 55 rows in source order is a wall, not a
+// reference. MEMBERSHIP is asserted against HANDLE below, so this list cannot drift.
+const HANDLE_GROUPS: { title: string; blurb: string; sigs: string[] }[] = [
+  {
+    title: 'The handle itself — lifecycle and provenance',
+    blurb:
+      'What the object is, what it promises, and how to take it down. `destroy()` is not optional in a single-page app: the field owns a rAF loop and window listeners.',
+    sigs: ['guarantees', 'version (property)', 'scan()', 'rescan()', 'setVisible(on)', 'scrollV()', 'destroy()'],
+  },
+  {
+    title: 'Appearance and field shape',
+    blurb:
+      'The live twin of the `<field-root>` attributes — every one of these setters is what the element calls when you change the matching attribute after mount. Markup and runtime control are the same surface.',
+    sigs: [
+      'setAccent(hex)',
+      'setPalette(name | hex[])',
+      'setFormation(name)',
+      'setWaveStyle(style)',
+      'setWaveCenter(center)',
+      'setSeparation(strength)',
+      'setBackground(mode)',
+      'setRender(mode)',
+      'setOverlay(mode | mode[])',
+      'setHeatmap(on)',
+      'threads(list | null)',
+    ],
+  },
+  {
+    title: 'Behaviour, cost and permission',
+    blurb:
+      'The levers that change what the field is allowed to spend. `setDprCap` and `setQualityTier` are the wired performance levers; `setPolicy` is the permission lane — what this host, session or user permits.',
+    sigs: [
+      'setAttention(on)',
+      'setCausality(on)',
+      'setDprCap(cap) / opt dprCap',
+      'setQualityTier(tier)',
+      'setPolicy(policy) / policy / opt policy',
+    ],
+  },
+  {
+    title: 'Driving the field',
+    blurb: 'Push on the simulation directly — a shove, a moving focus, a data binding onto the particles.',
+    sigs: ['burst(x, y, hex?)', 'flowTo(x, y, opts?)', 'clearFlow()', 'seed(atoms)'],
+  },
+  {
+    title: 'Bodies, edges and agents — participation without an element',
+    blurb:
+      'The non-DOM counterpart of the `[data-body]` scan. A Three.js mesh, a native view, a game entity or a headless model joins the field through these.',
+    sigs: ['addBody(spec)', 'addEdge(a, b, opts?)', 'readEdges()', 'addAgent(spec)'],
+  },
+  {
+    title: 'Sampling — what the field is doing at a point',
+    blurb:
+      'Pure, read-only probes in field-pixel space. They work headless and under `render: none`, which is what makes an invisible field useful.',
+    sigs: [
+      'sample(x, y)',
+      'sampleScalar(x, y)',
+      'sampleGradient(x, y)',
+      'grid(name)',
+      'addField(name, sampler)',
+      'sampleField(name, x, y)',
+      'atomAt(x, y)',
+      'focusAt(x, y)',
+      'clearFocus()',
+    ],
+  },
+  {
+    title: 'The swarm read-out',
+    blurb:
+      'Zero-allocation copies of live particle state into caller-owned typed arrays — the seam an alternative renderer draws from without touching the internal pool.',
+    sigs: [
+      'particleCount()',
+      'energy()',
+      'readParticles(out)',
+      'readParticleIds(out)',
+      'readParticleChannels(channels, out)',
+    ],
+  },
+  {
+    title: 'The observable surface — structured, serializable reads',
+    blurb:
+      'Plain data instead of pixels: ask the field a question, capture what it is doing, compare two captures, and narrate the difference. This is the surface a test, a tool or an agent consumes.',
+    sigs: ['query(q?)', 'snapshot(opts?)', 'diff(a, b)', 'replay(a, b, opts?)', 'forAgent(opts)', 'projections'],
+  },
+  {
+    title: 'Focus and attention',
+    blurb: 'The write side and the read side of the shared attention channel — experimental, shipped 0.9.4.',
+    sigs: ['focus(target, input?)', 'focusState(opts?)'],
+  },
+  {
+    title: 'Events and custom overlays',
+    blurb: 'The two extension points: subscribe to occurrences, or publish a named overlay the host can switch in.',
+    sigs: ['on(type, cb)', 'registerOverlay(name, drawFn)'],
+  },
+];
+
+// ── build-time anti-drift assertion ──────────────────────────────────────────────────────────────
+// The grouping above is hand-ordered; its MEMBERSHIP is not allowed to be. `check:docs` already
+// forces every FieldHandle member into HANDLE; this makes the site build FAIL if one of them never
+// reaches this page.
+const handleBySig = new Map(HANDLE.map((m) => [m.sig, m]));
+const groupedSigs = HANDLE_GROUPS.flatMap((g) => g.sigs);
+const missingFromGroups = HANDLE.map((m) => m.sig).filter((s) => !groupedSigs.includes(s));
+const extraInGroups = groupedSigs.filter((s) => !handleBySig.has(s));
+if (missingFromGroups.length || extraInGroups.length) {
+  throw new Error(
+    'docs/api/imperative: HANDLE_GROUPS has drifted from the HANDLE table in lib/docs-api.ts.\n' +
+      (missingFromGroups.length ? `  In HANDLE but not grouped on this page: ${missingFromGroups.join(', ')}\n` : '') +
+      (extraInGroups.length ? `  Grouped on this page but not in HANDLE: ${extraInGroups.join(', ')}\n` : '') +
+      '  Add the member to the right group (or remove it) — do not delete this check.',
+  );
+}
+
+// Every member this page renders a support row for must exist in the matrix dimension it reads from,
+// or the row would be a meaningless "unsupported everywhere". <PlatformSupport> throws on that case;
+// this assertion reports the whole list at once instead of the first failure.
+const unknownMembers = HANDLE.map((m) => ({ sig: m.sig, name: memberOf(m.sig) }))
+  .filter(({ sig, name }) => {
+    const dim = PROPERTY_SIGS.has(sig) ? propDim : methodDim;
+    return !dim.union.includes(name);
+  })
+  .map(({ sig }) => sig);
+if (unknownMembers.length) {
+  throw new Error(
+    `docs/api/imperative: these HANDLE rows name a member no plane declares: ${unknownMembers.join(', ')}.\n` +
+      '  Either the member left the engine (delete the row) or the sig no longer starts with its name.\n' +
+      '  Run `pnpm gen:parity-matrix` and re-check core/engine/types.ts.',
+  );
+}
+
+// ── editorial grouping of the options ────────────────────────────────────────────────────────────
+// Options that belong to a WEB SURFACE package rather than to the core `FieldOptions` type — they
+// have no parity row because they are not an engine capability at all. `bounds` is a
+// `@fundamental-engine/vanilla` / `FieldField` convenience over `containerHost()`.
+const SURFACE_ONLY_OPTIONS = new Set(['bounds']);
+
+const OPTION_GROUPS: { title: string; blurb: string; names: string[] }[] = [
+  {
+    title: 'Where the field lives',
+    blurb:
+      '`createField` throws without a host. `@fundamental-engine/vanilla`, the React component and `<field-root>` all supply one for you — reach for a host directly when you are writing your own surface.',
+    names: ['host', 'bounds'],
+  },
+  {
+    title: 'Matter and motion',
+    blurb: 'How much matter there is, how it moves, and how it comes to rest.',
+    names: ['density', 'depth', 'depthFocal', 'separation', 'mass', 'integrator', 'restingMotion', 'ambientOrbit', 'ambientWander', 'rng', 'now'],
+  },
+  {
+    title: 'Colour and the substrate',
+    blurb: 'What the field is drawn with. The palette lane is tracked as its own parity dimension after a port collapsed it to a single accent (#1090).',
+    names: ['accent', 'palette', 'theme', 'background', 'gradientWarm', 'gradientCool', 'redshiftObserver'],
+  },
+  {
+    title: 'The draw layers',
+    blurb:
+      'What is painted, and onto what. An overlay is a silent no-op without an overlay canvas — the single most common "nothing happened" in the imperative path.',
+    names: ['render', 'overlay', 'overlayCanvas', 'overlayCanvasProvider', 'overlayBackend', 'heatmap', 'heatmapFade', 'heatCenter', 'gridIntensity', 'gridWarp', 'waves', 'waveStyle', 'waveCenter', 'waveBaseline'],
+  },
+  {
+    title: 'The two-way loop',
+    blurb:
+      'Where the field writes its readings back to. The default DOM sink writes CSS custom properties; a `feedbackSink` takes the same readings as plain data, which is how a non-DOM host — or a test — consumes them.',
+    names: ['feedbackSink', 'reaction', 'attention', 'causality'],
+  },
+  {
+    title: 'Cost, identity and permission',
+    blurb: 'The three lanes that are about governance rather than looks.',
+    names: ['dprCap', 'identify', 'policy'],
+  },
+];
+const optionByName = new Map(OPTIONS.map((o) => [o.name, o]));
+const groupedOptionNames = OPTION_GROUPS.flatMap((g) => g.names);
+const missingOptions = OPTIONS.map((o) => o.name).filter((n) => !groupedOptionNames.includes(n));
+const extraOptions = groupedOptionNames.filter((n) => !optionByName.has(n));
+if (missingOptions.length || extraOptions.length) {
+  throw new Error(
+    'docs/api/imperative: OPTION_GROUPS has drifted from the OPTIONS table in lib/docs-api.ts.\n' +
+      (missingOptions.length ? `  In OPTIONS but not grouped on this page: ${missingOptions.join(', ')}\n` : '') +
+      (extraOptions.length ? `  Grouped on this page but not in OPTIONS: ${extraOptions.join(', ')}\n` : ''),
+  );
+}
+
+// ── the honest gap summaries, COMPUTED from the matrix (never counted by hand) ───────────────────
+const portOnlyMethods = methodDim.union.filter((m) => !methodDim.planes.js.includes(m));
+const jsOnlyMethods = methodDim.union.filter(
+  (m) => methodDim.planes.js.includes(m) && !methodDim.planes.swift.includes(m) && !methodDim.planes.kotlin.includes(m),
+);
+const jsOnlyEvents = eventDim.union.filter((e) => eventDim.planes.js.includes(e) && !eventDim.planes.swift.includes(e));
+const portOnlyEvents = eventDim.union.filter((e) => !eventDim.planes.js.includes(e));
+const capGaps = capDim.union.filter((c) => !capDim.planes.swift.includes(c) || !capDim.planes.kotlin.includes(c));
+
+// NOTE for the lists below: they are rendered in the template as a `.map()` of <code> elements, never
+// as a `join('</code>, <code>')` — Astro escapes a string, so joined markup would print the tags.
+
+const createJs = `import { createField } from '@fundamental-engine/core';
+import { browserHost } from '@fundamental-engine/dom';
+
+// core is host-agnostic: it needs a host, and nothing else
+const field = createField({ host: browserHost(), density: 1.2, render: 'dots' });
+
+field.setFormation('wells');
+field.setRender('links');
+field.destroy();          // release the loop + listeners`;
+
+const createSwift = `import FundamentalCore
+
+var opts = FieldOptions()
+opts.density = 1.2
+opts.render = .dots
+
+let field = makeField(host: host, options: opts)
+
+field.setFormation("wells")
+field.setRender(.links)
+field.destroy()`;
+
+const createKotlin = `import com.fundamental.core.runtime.createField
+
+// no FieldOptions struct on this plane: construction args + setters
+val field = createField(host = host, particleCount = 300)
+
+field.setFormation("wells")
+field.setRender(RenderMode.LINKS)
+field.destroy()`;
+
+const readingQuery = `// ask the live field a structured question — plain, serializable data
+const answer = field.query({
+  at: el.getBoundingClientRect(),          // a point, a DOMRect-shaped rect, or omit for the whole field
+  radius: 240,
+  include: ['bodies', 'metrics', 'relationships', 'influences'],
+});
+
+answer.bodies[0].metrics.density;          // what THIS body is gathering
+answer.influences;                         // which force contributed what, at that point`;
+
+const readingSnapshot = `// capture what the field is DOING this frame (not what it looked like)
+const before = field.snapshot({ profile: 'agent' });
+await userDoesSomething();
+const after = field.snapshot({ profile: 'agent' });
+
+// compare the two captures — pure, no live state involved
+const changes = field.diff(before, after);
+
+// and narrate the difference as an ordered chain of causes
+for (const step of field.replay(before, after).steps) {
+  console.log(step.cause, step.description);
+  // "formation  Formation 'wells' activated"
+  // "relationship  Relationship A→B strengthened 0.10→0.40"
+}`;
+
+const readingAgent = `// a read-only, capability-scoped view — agent-readable is NOT agent-writable
+const view = field.forAgent({
+  capabilities: ['read:metrics', 'read:relationships'],
+  redactions: ['body.data'],               // stripped AFTER capability scoping
+});
+
+view.query({ include: ['metrics'] });      // scoped + redacted
+view.snapshot({ profile: 'agent' });       // present, scoped to the grant
+view.replay;                               // undefined — read:replay was not granted (a SHAPE gate)
+view.addBody;                              // undefined — the facade has NO mutators, by shape`;
+
+const readingSample = `// the pure probes — these work headless and under render: 'none'
+field.setHeatmap(true);                             // sampleScalar/sampleGradient need the heatmap grid
+
+const force   = field.sample(x, y);                  // { x, y } — net force a still test particle feels
+const density = field.sampleScalar(x, y);            // 0..1, bilinear, non-degenerate at a source
+const uphill  = field.sampleGradient(x, y);          // { x, y } in 1/px — steepest ascent
+
+// bind your own data to the particles, then identify one under the pointer
+field.seed(records);
+const atom = field.atomAt(e.clientX, e.clientY);     // nearest seeded particle within ~24px, or null`;
+
+const eventsJs = `const off = field.on('captured', ({ body, count }) => {
+  // a sink body reached the rising edge of accretion
+  badge.textContent = String(count);
+});
+
+field.on('met', ({ a, b }) => link(a, b));           // two bodies touched
+off();                                                // unsubscribe`;
+
+const eventsSwift = `let sub = field.on(.captured) { payload in
+    badge.text = String(Int(payload.count))
+}
+sub.cancel()
+
+// the ports also carry lifecycle events the web bus does not expose:
+field.on(.tick) { _ in /* after every simulation frame */ }`;
+
+const eventsKotlin = `val sub = field.on(FieldEvent.CAPTURED) { payload ->
+    badge.text = payload.count.toInt().toString()
+}
+sub.cancel()
+
+field.on(FieldEvent.TICK) { /* after every simulation frame */ }`;
+
+const policyJs = `// what THIS host/session/user permits — distinct from what doctrine allows
+field.setPolicy({
+  allowBodyDataInSnapshots: false,
+  budgets: { motion: 0.4, privacy: 0.2 },
+});
+
+field.policy;                    // a frozen copy of the live policy
+field.setPolicy({});             // REPLACES, not merges — {} clears to the unbounded default`;
+
+const bodyHandleJs = `const body = field.addBody({
+  tokens: 'attract swirl',
+  strength: 0.8,
+  rect: () => mesh.getBoundingBox(),        // the position source, sampled each frame
+  identity: { id: 'file:src/auth.ts' },     // so snapshots/diff/replay can name it
+  data: { path: 'src/auth.ts' },
+  onFeedback: (ch) => (mesh.scale = 1 + ch.density * 0.5),
+});
+
+body.set({ strength: 0.2 });                // live, on the measure cadence — no rescan
+body.channels.density;                      // this body's latest readings, updated in place
+body.remove();`;
+---
+
+<DocsLayout
+  title="Fundamental — the imperative API reference"
+  description="Everything you reach from code, in one place: createField and its options, the whole FieldHandle, the sampling and observable reads (query, snapshot, diff, replay, projections), the capability-scoped agent view, policy and budgets, identity, the body handle and the event bus — each with a generated JS · Swift · Kotlin support row."
+>
+  <header class="docs-hero">
+    <p class="kicker">API reference</p>
+    <h1>The <span class="accent">imperative</span> API reference</h1>
+    <StatusChip label="Shipped · support rows generated · substrate reads experimental" tone="stable" />
+    <p class="lede">
+      The half of Fundamental you reach from code. <code>createField</code> and its {OPTIONS.length} options,
+      the <code>FieldHandle</code> — all {HANDLE.length} entries — the sampling and observable reads, the
+      capability-scoped agent view, policy and budgets, the body handle, and the event bus.
+      <strong>Every entry carries a per-platform support row</strong>, rendered from the generated
+      <a href="/docs/api/parity">parity matrix</a>. What you write in <em>markup</em> lives on the
+      <a href="/docs/api/declarative">declarative reference</a> instead; this page links across rather than
+      repeating it.
+    </p>
+  </header>
+
+  <div class="callout">
+    <b>How to read a support row.</b> <span class="parity-chip parity-yes">JS ✓</span> means the capability
+    exists on that plane — <em>however that plane spells it</em>. An idiom difference is an
+    <strong>equivalent</strong>, not a gap: a setter and a constructor field are collapsed to one capability
+    before comparing, the same way <code>data-body</code> and <code>.fieldBody(tokens:)</code> are on the
+    declarative side. A <span class="parity-chip parity-no">Kotlin —</span> is therefore a <strong>real</strong>
+    gap. Nothing here is hand-typed: the chips are read out of <code>data/parity-matrix.json</code>, which
+    <code>pnpm check:docs</code> regenerates and diffs on every CI run.
+  </div>
+
+  <section class="docs-sec">
+    <h2 id="creating">Creating a field</h2>
+    <p>
+      Every entry point hands back the same handle. <code>@fundamental-engine/core</code> is host-agnostic and
+      needs an explicit host; <code>@fundamental-engine/vanilla</code>, the React <code>FieldField</code> and
+      <code>&lt;field-root&gt;</code> wire <code>browserHost()</code> for you. On
+      <code>&lt;field-root&gt;</code> the handle is <em>proxied onto the element</em>, so the element
+      <strong>is</strong> the handle.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'JS', lang: 'ts', code: createJs },
+        { label: 'Swift', lang: 'swift', code: createSwift },
+        { label: 'Kotlin', lang: 'kotlin', code: createKotlin },
+      ]}
+    />
+    <table class="matrix">
+      <thead>
+        <tr><th>Plane</th><th>How a field is configured</th><th>Configuration lanes at that layer</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>JS</b></td><td>{optionDim.idiom?.js}</td><td><code>{optionDim.counts.js}</code> of {optionDim.union.length}</td></tr>
+        <tr><td><b>Swift</b></td><td>{optionDim.idiom?.swift}</td><td><code>{optionDim.counts.swift}</code> of {optionDim.union.length}</td></tr>
+        <tr><td><b>Kotlin</b></td><td>{optionDim.idiom?.kotlin}</td><td><code>{optionDim.counts.kotlin}</code> of {optionDim.union.length}</td></tr>
+      </tbody>
+    </table>
+    <p>
+      <b>Read that honestly.</b> Kotlin has no options struct at all — it configures at
+      <code>createField(host, …)</code> and through the handle's setters, so its column counts both. That is an
+      idiom difference. What the counts <em>do</em> show is a real spread: the web plane carries the whole
+      visual-tuning vocabulary (the gradient, grid and wave lanes, the overlay-canvas seam) because the engine
+      owns the draw there, while the ports hand drawing to a host and expose the physics knobs instead.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="options"><code>createField</code> — the {OPTIONS.length} options</h2>
+    <p>
+      Each option is also a kebab-case <code>&lt;field-root&gt;</code> attribute; setting the attribute after
+      mount calls the matching setter on the live handle. The support row is for the <strong>capability</strong>
+      — whether that plane can configure it at all, at construction or live.
+    </p>
+    {
+      OPTION_GROUPS.map((g) => (
+        <>
+          <h3>{g.title}</h3>
+          <p>{g.blurb}</p>
+          <dl class="api-table">
+            {g.names.map((name) => {
+              const o = optionByName.get(name)!;
+              return (
+                <div class="api-row" id={`option-${name}`}>
+                  <dt class="k">
+                    <code>{o.name}</code>
+                    <span class="ty">
+                      {o.type} · <b>default {o.def}</b>
+                    </span>
+                    {SURFACE_ONLY_OPTIONS.has(o.name) ? (
+                      <span class="parity-chips">
+                        <span class="parity-chip parity-no" title="a web surface-package option, not a core FieldOptions key">
+                          web surface only
+                        </span>
+                      </span>
+                    ) : (
+                      <PlatformSupport dimension="field-options" symbol={o.name} />
+                    )}
+                  </dt>
+                  <dd class="d">{o.desc}</dd>
+                </div>
+              );
+            })}
+          </dl>
+        </>
+      ))
+    }
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="handle">The <code>FieldHandle</code></h2>
+    <p>
+      {HANDLE.length} entries covering the handle's {methodDim.counts.js} callable members and
+      {propDim.counts.js} properties — one entry documents <code>setPolicy</code> together with the
+      <code>policy</code> it reads back.
+      The handle is <strong>not</strong> at full parity across the planes, and it never was: the JS surface has
+      grown faster than the ports. The numbers below are computed from the ports themselves.
+    </p>
+    <table class="matrix">
+      <thead>
+        <tr><th>Plane</th><th>Callable members</th><th>Properties</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>JS</b></td><td><code>{methodDim.counts.js}</code></td><td><code>{propDim.counts.js}</code></td></tr>
+        <tr><td><b>Swift</b></td><td><code>{methodDim.counts.swift}</code></td><td><code>{propDim.counts.swift}</code></td></tr>
+        <tr><td><b>Kotlin</b></td><td><code>{methodDim.counts.kotlin}</code></td><td><code>{propDim.counts.kotlin}</code></td></tr>
+      </tbody>
+    </table>
+    <p>
+      Those totals are <em>not</em> a ranking: the union is {methodDim.union.length} members and every plane is
+      missing some of it. The divergence runs both ways — see
+      <a href="#reverse-gaps">what the ports have that the web does not</a> below.
+    </p>
+    {
+      HANDLE_GROUPS.map((g) => (
+        <>
+          <h3>{g.title}</h3>
+          <p>{g.blurb}</p>
+          <dl class="api-table">
+            {g.sigs.map((sig) => {
+              const m = handleBySig.get(sig)!;
+              const name = memberOf(sig);
+              const isProp = PROPERTY_SIGS.has(sig);
+              return (
+                <div class="api-row" id={`handle-${name}`}>
+                  <dt class="k">
+                    <code>{m.sig}</code>
+                    {expItem(m.sig) && <ApiStamp item={expItem(m.sig)} />}
+                    <PlatformSupport
+                      dimension={isProp ? 'field-handle-properties' : 'field-handle-methods'}
+                      symbol={name}
+                    />
+                  </dt>
+                  <dd class="d">{m.desc}</dd>
+                </div>
+              );
+            })}
+          </dl>
+        </>
+      ))
+    }
+    <div class="callout">
+      <b>On the element.</b> With <code>&lt;field-root&gt;</code> every one of these is proxied onto the
+      element itself — <code>document.querySelector('field-root').setFormation('wells')</code>. One exception:
+      <code>focus(target)</code> does not shadow <code>HTMLElement.focus()</code>; reach the field's focus
+      through <code>el.handle.focus(id)</code>.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="reading">Reading the field</h2>
+    <p>
+      The field is a source of <em>state</em>, not only of pixels — and the read paths are pure, headless and
+      serializable, so they work under <code>render: 'none'</code> and in a test. There are three of them, at
+      three grains.
+    </p>
+
+    <h3>1 · Probes — the field at a point</h3>
+    <p>
+      Synchronous, allocation-free, no snapshot involved. <code>sampleScalar</code> and
+      <code>sampleGradient</code> read the diffused heatmap grid, so they need
+      <code>heatmap: true</code> and return zero without it — that is the usual cause of a
+      forage-by-gradient agent that will not steer.
+    </p>
+    <CodeTabs variants={[{ label: 'Probes', lang: 'ts', code: readingSample }]} />
+
+    <h3>2 · <code>query()</code> — a structured question about a region</h3>
+    <p>
+      Plain, serializable data about bodies, metrics, relationships and per-force influences, scoped to a point,
+      a rect, or the whole field. <code>at</code> is <code>DOMRect</code>-shaped, so
+      <code>el.getBoundingClientRect()</code> drops straight in.
+    </p>
+    <CodeTabs variants={[{ label: 'query', lang: 'ts', code: readingQuery }]} />
+
+    <h3>3 · <code>snapshot()</code> → <code>diff()</code> → <code>replay()</code> — change over time</h3>
+    <p>
+      A snapshot captures what the field is <em>doing</em> at a frame. <code>diff</code> reports what changed
+      between two captures, by lane; <code>replay</code> turns that diff into an ordered, narrated chain of
+      causes. Both are <strong>pure</strong> — they read the two capture objects and never touch live state, so
+      you can replay captures from another session, or from another machine.
+    </p>
+    <CodeTabs variants={[{ label: 'snapshot / diff / replay', lang: 'ts', code: readingSnapshot }]} />
+
+    <h4>Snapshot profiles</h4>
+    <p>
+      A profile is an inclusion preset. It composes with the explicit <code>include*</code> flags and the
+      privacy budget and always resolves to the <strong>tightest</strong> result: a profile can never widen past
+      what policy or an explicit deny allows.
+    </p>
+    <dl class="api-table">
+      {
+        SNAPSHOT_PROFILES.map((p) => (
+          <div class="api-row" id={`profile-${p.name}`}>
+            <dt class="k">
+              <code>{p.name}</code>
+              <PlatformSupport dimension="snapshot-profiles" symbol={p.name} />
+            </dt>
+            <dd class="d">{p.desc}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p>All four profiles ship on all three planes — this is one of the parts of the substrate that did port whole.</p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="agent">The agent view — <code>forAgent</code></h2>
+    <p>
+      <code>forAgent</code> derives a <strong>read-only</strong> facade over the field. It is not a redacted
+      copy of the handle: it has no mutators <em>by shape</em> — no <code>addBody</code>, no
+      <code>applyForce</code>, no <code>setPolicy</code> — so "agent-readable" can never quietly become
+      "agent-writable". Capabilities are an allow-list applied to every reading, then
+      <code>redactions</code> strip dotted paths, and nothing can widen past the field's policy.
+    </p>
+    <p>
+      Two capabilities are <strong>shape gates</strong> rather than redactions: without
+      <code>read:replay</code> the view has no <code>replay</code> at all, and without
+      <code>read:focus</code> it has no <code>focusState</code>. <code>query</code> and
+      <code>snapshot</code> are always present and are scoped from the inside instead.
+    </p>
+    <CodeTabs variants={[{ label: 'forAgent', lang: 'ts', code: readingAgent }]} />
+    <dl class="api-table">
+      {
+        AGENT_CAPABILITIES.map((c) => (
+          <div class="api-row" id={`cap-${c.name.replace(/[^\w-]+/g, '-')}`}>
+            <dt class="k">
+              <code>{c.name}</code>
+              <span class="ty">{c.status}</span>
+              <PlatformSupport dimension="agent-capabilities" symbol={c.name} />
+            </dt>
+            <dd class="d">{c.desc}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <div class="callout callout--warn">
+      <b>Two of these are declared, not wired.</b> <code>read:snapshots</code> and
+      <code>read:diagnostics</code> are part of the <code>AgentCapability</code> contract on all three
+      planes, but <code>forAgent</code> does not consult either one — <code>view.snapshot()</code> is
+      present and scoped whether or not <code>read:snapshots</code> was granted. Withholding them is not
+      a control today. The status on each row above is read off the implementation, not assumed, and the
+      other seven do gate what they say they gate.
+    </div>
+    {capGaps.length > 0 && (
+      <p>
+        <b>The one gap.</b> {capGaps.length === 1 ? 'One capability is' : `${capGaps.length} capabilities are`} JS-only
+        today — {capGaps.map((c, i) => (<>{i > 0 ? ', ' : ''}<code>{c}</code></>))} — because the focus/attention substrate has not
+        been ported yet. The other {capDim.union.length - capGaps.length} grants exist verbatim, as the same
+        <code>read:*</code> tokens, on all three planes.
+      </p>
+    )}
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="policy">Policy and budgets</h2>
+    <p>
+      <code>FieldPolicy</code> is the <em>permission</em> lane: what this host, session, user or app permits,
+      evaluated live. It is a distinct lane from governance (what doctrine allows, checked statically by the
+      lints). Policy can only <strong>tighten</strong>: reduced-motion always wins, so a policy may lower the
+      motion allowance but never raise it.
+    </p>
+    <CodeTabs variants={[{ label: 'setPolicy', lang: 'ts', code: policyJs }]} />
+    <p>
+      <code>setPolicy</code> <strong>replaces</strong> rather than merges — <code>{'{}'}</code> clears to the
+      unbounded default — and <code>field.policy</code> reads back a frozen copy. All
+      {budgetDim.union.length} budget lanes exist on all three planes; what differs is how many are
+      <em>wired</em> rather than declared, which the rows below state per lane rather than implying.
+    </p>
+    <dl class="api-table">
+      {
+        BUDGETS.map((b) => (
+          <div class="api-row" id={`budget-${b.name}`}>
+            <dt class="k">
+              <code>budgets.{b.name}</code>
+              <span class="ty">{b.status}</span>
+              <PlatformSupport dimension="field-budgets" symbol={b.name} />
+            </dt>
+            <dd class="d">{b.desc}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="identity">Identity — naming a body so a reading can refer to it</h2>
+    <p>
+      Snapshots, <code>diff</code>, <code>replay</code>, the relationship graph and <code>focus()</code> all
+      address bodies <em>by id</em>, not by handle — otherwise a capture could not survive being serialized and
+      read back somewhere else. Identity is therefore first-class rather than derived from the DOM.
+    </p>
+    <dl class="api-table">
+      <div class="api-row" id="identity-spec">
+        <dt class="k">
+          <code>BodySpec.identity</code>
+          <PlatformSupport dimension="body-spec" symbol="identity" />
+        </dt>
+        <dd class="d">
+          A stable id (plus optional namespace / kind / host) supplied when you add the body. Give it the id your
+          own domain already uses — <code>file:src/auth.ts</code>, a row key, a ticket number — and every later
+          reading names the thing you care about.
+        </dd>
+      </div>
+      <div class="api-row" id="identity-identify">
+        <dt class="k">
+          <code>FieldOptions.identify</code>
+          <PlatformSupport dimension="field-options" symbol="identify" />
+        </dt>
+        <dd class="d">
+          The resolver for bodies you did <em>not</em> add by hand — a scanned <code>[data-body]</code> element,
+          a native view. Return an identity for the element and the same id flows through every read path.
+          Return nothing and the engine derives a deterministic <code>body-N</code>.
+        </dd>
+      </div>
+    </dl>
+    <p>
+      Deriving an id is the fallback, not the design: a derived <code>body-3</code> is stable within a session
+      and meaningless across one. Supply an identity for anything you intend to diff, replay, focus or relate.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="body-handle">The body handle</h2>
+    <p>
+      <code>addBody(spec)</code> is the non-DOM half of the body contract — the same physics, the same forces,
+      no element required. The <a href="/docs/api/declarative#programmatic">declarative reference documents the
+      spec</a>; what comes <em>back</em> is documented here.
+    </p>
+    <CodeTabs variants={[{ label: 'addBody', lang: 'ts', code: bodyHandleJs }]} />
+    <dl class="api-table">
+      {
+        BODY_HANDLE.map((b) => (
+          <div class="api-row" id={`body-handle-${b.name}`}>
+            <dt class="k">
+              <code>{b.name}</code>
+              <PlatformSupport dimension="body-handle" symbol={b.name} />
+            </dt>
+            <dd class="d">{b.desc}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p>
+      <b>The ports carry two members the web does not.</b> Swift and Kotlin body handles expose
+      <code>load</code> (a sink's fill ∈ [0,1]) and <code>drain()</code> (take the accretion and reset the
+      body) directly; on the web the same reading arrives through <code>channels.load</code> and the
+      <code>captured</code> / <code>released</code> events instead. Kotlin additionally exposes the body's
+      resolved <code>identity</code> on the handle. Those rows say so above rather than hiding it.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="events">Discrete events</h2>
+    <p>
+      <code>on(type, cb)</code> is the host-agnostic push bus — for reacting to <em>occurrences</em> instead of
+      polling the feedback channels every frame. It returns an unsubscribe function (a
+      <code>Subscription</code> on the ports); subscribing to a type with no active bodies costs nothing.
+      Events are thresholded, debounced, and <strong>coalesced per source per frame</strong>, so a same-frame
+      fill-and-release delivers once.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'JS', lang: 'ts', code: eventsJs },
+        { label: 'Swift', lang: 'swift', code: eventsSwift },
+        { label: 'Kotlin', lang: 'kotlin', code: eventsKotlin },
+      ]}
+    />
+    <dl class="api-table">
+      {
+        EVENTS.map((e) => (
+          <div class="api-row" id={`event-${e.name}`}>
+            <dt class="k">
+              <code>{e.name}</code>
+              <span class="ty">{e.payload}</span>
+              <PlatformSupport dimension="field-events" symbol={e.name} />
+            </dt>
+            <dd class="d">{e.desc}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p>
+      <b>This bus diverges on purpose, and in both directions.</b> The web bus carries
+      {' '}{jsOnlyEvents.map((e, i) => (<>{i > 0 ? ', ' : ''}<code>{e}</code></>))} — the proximity trio and the focus write-back —
+      which the ports have not taken yet. The ports carry {portOnlyEvents.map((e, i) => (<>{i > 0 ? ', ' : ''}<code>{e}</code></>))}:
+      lifecycle events a native host needs because it drives the frame loop itself, and which the web engine
+      handles internally instead of publishing. <code>captured</code> and <code>released</code> are the shared
+      pair, aligned across all three planes in #1020.
+    </p>
+    <div class="callout callout--warn">
+      <b>Renamed.</b> These events were once <code>absorb</code> and <code>release</code>. They are
+      <code>captured</code> and <code>released</code> now, on every plane. If you have a subscriber on the old
+      name it is not firing — <code>on()</code> takes a typed key and an unknown one is simply never delivered.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="reverse-gaps">What each plane has that the others do not</h2>
+    <p>
+      The parity story is usually told as "the ports trail the web". On the handle that is only half true, and
+      the lists below are computed from the port sources rather than asserted.
+    </p>
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k"><code>Web only</code> <span class="ty">{jsOnlyMethods.length} members</span></dt>
+        <dd class="d">
+          {jsOnlyMethods.map((m, i) => (<>{i > 0 ? ', ' : ''}<code>{m}</code></>))} — the focus/attention substrate, whose ports are a
+          batched follow-up.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>Ports only</code> <span class="ty">{portOnlyMethods.length} members</span></dt>
+        <dd class="d">
+          {portOnlyMethods.map((m, i) => (<>{i > 0 ? ', ' : ''}<code>{m}</code></>))} — almost all of it is the seam a native
+          host needs because it drives its own frame loop and owns its own input sources: loop control
+          (<code>pause</code> / <code>resume</code> / <code>tick</code> / <code>attach</code>) and the
+          feed methods (<code>feedScrollV</code>, <code>feedReducedMotion</code>,
+          <code>effectiveMotion</code>). The remainder are idiom differences, not capability gaps:
+          <code>removeOverlay</code> is the disposer <code>registerOverlay</code> already returns on the
+          web, and <code>setWaves</code> is a live setter for what the web takes as the
+          <code>waves</code> option.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>Read-back</code> <span class="ty">Kotlin: {propDim.counts.kotlin} properties</span></dt>
+        <dd class="d">
+          Kotlin exposes a getter for nearly every setter (<code>accent</code>, <code>renderMode</code>,
+          <code>qualityTier</code>, …) where the web and Swift handles are write-only. It does not expose
+          <code>version</code> or <code>guarantees</code>, which the web does.
+        </dd>
+      </div>
+    </dl>
+    <p>
+      For the per-method table across Three.js as well, see the
+      <a href="/docs/api/parity">platform parity matrix</a>; for the honest per-platform story, the
+      <a href="/docs/guides/swift">Swift</a> and <a href="/docs/guides/kotlin">Kotlin</a> guides.
+    </p>
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/api/declarative', label: 'The declarative authoring reference' },
+      { href: '/docs/api/parity', label: 'Platform parity matrix' },
+      { href: '/docs/api/metrics', label: 'Metrics & diagnostics' },
+      { href: '/docs/api/utilities', label: 'Platform utilities' },
+      { href: '/docs/api/types', label: 'Types' },
+      { href: '/docs/api/stability', label: 'API stability' },
+    ]}
+  />
+</DocsLayout>
+
+<style>
+  .matrix {
+    width: 100%;
+    margin: 1rem 0 0;
+    font-size: 0.88rem;
+  }
+  .matrix th,
+  .matrix td {
+    text-align: left;
+    padding: 0.45rem 0.7rem 0.45rem 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  .matrix th {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    font-weight: 400;
+  }
+  .docs-sec h3 {
+    margin-top: 1.8rem;
+  }
+  .docs-sec h4 {
+    margin-top: 1.4rem;
+  }
+</style>

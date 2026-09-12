@@ -127,6 +127,14 @@ const ALL = [...PRIMARY, ...SECONDARY];
     </p>
   </header>
 
+  <div class="callout">
+    <b>The reads these diagnostics sit beside</b> — <code>query</code>, <code>snapshot</code>,
+    <code>diff</code>, <code>replay</code>, the capability-scoped agent view, and the policy budgets that
+    gate them — are consolidated on the
+    <a href="/docs/api/imperative">imperative API reference</a>, each with a generated
+    <b>JS · Swift · Kotlin</b> support row. This page stays the observability and CSS-channel guide.
+  </div>
+
   <section class="docs-sec">
     <h2>How readback works</h2>
     <p>
@@ -192,6 +200,7 @@ const ALL = [...PRIMARY, ...SECONDARY];
   </section>
 
   <SeeAlso links={[
+    { href: '/docs/api/imperative', label: 'Imperative reference (with platform rows)' },
     { href: '/docs/api/attributes', label: 'data-* attributes' },
     { href: '/docs/api/forces', label: 'Forces reference' },
     { href: '/docs/api/handle', label: 'FieldHandle API' },

@@ -20,11 +20,24 @@
  *   7. render modes          (engine: FieldHandle.setRender  · docs: RENDER_MODES[])
  *   8. overlay readings      (engine: core/types.ts OverlayMode         · docs: OVERLAY_MODES[])
  *   9. field-cell attrs      (engine: elements/custom-elements.json     · docs: FIELD_CELL_ATTRS[])
+ *  10. FieldHandle props     (engine: core/types.ts FieldHandle         · docs: HANDLE[])
+ *  11. field events          (engine: core/engine/events.ts            · docs: EVENTS[])
+ *  12. agent capabilities    (engine: core/types.ts AgentCapability    · docs: AGENT_CAPABILITIES[])
+ *  13. snapshot profiles     (engine: core/types.ts SnapshotProfile    · docs: SNAPSHOT_PROFILES[])
+ *  14. policy budgets        (engine: core/types.ts FieldBudgets       · docs: BUDGETS[])
+ *  15. BodyHandle members    (engine: core/types.ts BodyHandle         · docs: BODY_HANDLE[])
  *
  * Surfaces 7-9 were added by docs-refactor Phase 2 (#997): the declarative authoring vocabulary was
  * the half of the surface the gate did not yet hold. The render/overlay tables in docs-api.ts were
  * hand-kept and ungated (the render table was missing `none`, the overlay table `off`), and the
  * SECOND custom element, `<field-cell>`, was documented nowhere on the site at all.
+ *
+ * Surfaces 10-15 were added by docs-refactor Phase 3 (#998) — the IMPERATIVE half. Surface 1 only
+ * ever held the handle's CALLABLE members, so the four `readonly` properties (`version`,
+ * `guarantees`, `policy`, `projections`) could change unchecked; and the event / capability /
+ * profile / budget / body-handle vocabularies were ungated small closed sets, which is exactly how
+ * the FieldHandle page came to document `absorb` and `release` long after the bus was renamed to
+ * `captured` / `released` (#1020). Each is now enumerated from its source of truth.
  *
  * It also asserts the cross-platform PARITY MATRIX (data/parity-matrix.json, §5) is current: it
  * regenerates the JS·Swift·Kotlin support matrix in-memory (via gen-parity-matrix.mjs) and fails if
@@ -45,6 +58,7 @@ const read = (p) => readFileSync(resolve(root, p), 'utf8');
 const typesSrc = read('packages/core/src/engine/types.ts');
 const feedbackSrc = read('packages/core/src/engine/feedback-sink.ts');
 const scannerSrc = read('packages/core/src/engine/scanner.ts');
+const eventsSrc = read('packages/core/src/engine/events.ts');
 const docsApi = read('apps/site/src/lib/docs-api.ts');
 const atomsSrc = (() => { const d = JSON.parse(read('apps/site/src/data/atoms.json')); return Array.isArray(d) ? d : d.atoms ?? []; })();
 const cem = JSON.parse(read('packages/elements/custom-elements.json'));
@@ -66,6 +80,45 @@ function fieldHandleBlock() {
 function engineHandleMethods() {
   const set = new Set();
   for (const m of fieldHandleBlock().matchAll(/\n\s{2}([a-zA-Z][\w]*)\s*[(<]/g)) set.add(m[1]);
+  return set;
+}
+
+/** NON-callable members of the FieldHandle interface — `readonly name: T` / `name: T`. Surface 1
+ *  above matches only `name(` / `name<`, so these four were never gated. */
+function engineHandleProperties() {
+  const set = new Set();
+  for (const m of fieldHandleBlock().matchAll(/\n\s{2}(?:readonly\s+)?([a-zA-Z][\w]*)\s*:/g)) set.add(m[1]);
+  return set;
+}
+
+/** Members of an arbitrary `export interface Name { … }` in core/types.ts — `name:` and `name(`. */
+function engineInterfaceMembers(name) {
+  const start = typesSrc.indexOf(`export interface ${name}`);
+  if (start < 0) throw new Error(`check:docs: could not find \`export interface ${name}\` in core/types.ts`);
+  const rest = typesSrc.slice(start);
+  const block = rest.slice(0, rest.search(/\n\}/));
+  const set = new Set();
+  for (const m of block.matchAll(/\n\s{2}(?:readonly\s+)?([a-zA-Z][\w]*)\??\s*[(:]/g)) set.add(m[1]);
+  return set;
+}
+
+/** Members of a `export type Name = 'a' | 'b'` string union in core/types.ts. */
+function engineStringUnion(name) {
+  const start = typesSrc.indexOf(`export type ${name}`);
+  if (start < 0) throw new Error(`check:docs: could not find \`export type ${name}\` in core/types.ts`);
+  const set = new Set();
+  for (const m of typesSrc.slice(start, typesSrc.indexOf(';', start)).matchAll(/'([\w:-]+)'/g)) set.add(m[1]);
+  return set;
+}
+
+/** Discrete event ids — the keys of `FieldEventMap` in core/engine/events.ts. */
+function engineFieldEvents() {
+  const start = eventsSrc.indexOf('export interface FieldEventMap');
+  if (start < 0) throw new Error('check:docs: could not find FieldEventMap in core/engine/events.ts');
+  const rest = eventsSrc.slice(start);
+  const block = rest.slice(0, rest.search(/\n\}/));
+  const set = new Set();
+  for (const m of block.matchAll(/\n\s{2}([a-zA-Z]\w*)\s*:/g)) set.add(m[1]);
   return set;
 }
 
@@ -183,6 +236,26 @@ function docBodyAttrs() {
   return set;
 }
 
+/** Every member name a HANDLE row documents. A `sig` is prose-ish — `setPolicy(policy) / policy / opt
+ *  policy`, `version (property)` — because one row legitimately covers a setter, its read-back
+ *  property and its option key. Split on ` / `, drop an `opt ` prefix, cut at the arg list, and keep
+ *  what is left if it is an identifier, so all three names in that row count as documented. */
+function docHandleNames() {
+  const start = docsApi.indexOf('export const HANDLE');
+  const block = docsApi.slice(start, docsApi.indexOf('\n];', start));
+  const set = new Set();
+  // the WHOLE quoted sig, not the `docRowNames` prefix (which stops at the first `(` and would drop
+  // the alternates after it).
+  for (const m of block.matchAll(/\bsig:\s*'([^']*)'/g)) {
+    const raw = m[1];
+    for (const part of raw.split(/\s*\/\s*/)) {
+      const clean = part.trim().replace(/^opt\s+/, '').split('(')[0].trim();
+      if (/^[A-Za-z]\w*$/.test(clean)) set.add(clean);
+    }
+  }
+  return set;
+}
+
 /** Element attr names documented in a `{ name: 'x', … }` table for the given const. */
 function docElementAttrs(constName) {
   return docRowNames(constName, 'name');
@@ -236,6 +309,37 @@ const surfaces = [
     name: '<field-cell> attrs',
     truth: cemAttrs('field-cell'),
     docs: docElementAttrs('FIELD_CELL_ATTRS'),
+  },
+  // the imperative / observable vocabulary (Phase 3, #998)
+  {
+    name: 'FieldHandle properties',
+    truth: engineHandleProperties(),
+    docs: docHandleNames(),
+  },
+  {
+    name: 'field events (on)',
+    truth: engineFieldEvents(),
+    docs: docRowNames('EVENTS', 'name'),
+  },
+  {
+    name: 'agent capabilities (forAgent)',
+    truth: engineStringUnion('AgentCapability'),
+    docs: docRowNames('AGENT_CAPABILITIES', 'name'),
+  },
+  {
+    name: 'snapshot profiles',
+    truth: engineStringUnion('SnapshotProfile'),
+    docs: docRowNames('SNAPSHOT_PROFILES', 'name'),
+  },
+  {
+    name: 'policy budgets',
+    truth: engineInterfaceMembers('FieldBudgets'),
+    docs: docRowNames('BUDGETS', 'name'),
+  },
+  {
+    name: 'BodyHandle members',
+    truth: engineInterfaceMembers('BodyHandle'),
+    docs: docRowNames('BODY_HANDLE', 'name'),
   },
 ];
 

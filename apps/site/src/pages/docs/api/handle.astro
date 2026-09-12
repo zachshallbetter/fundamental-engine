@@ -16,10 +16,12 @@ const expItem = (sig: string): string | undefined => {
   return EXPERIMENTAL.find((x: { item: string }) => x.item.includes(fn))?.item;
 };
 
-// Cross-platform parity is maintained in ONE place — the parity matrix
-// (docs/canonical/parity-matrix.md → /docs/api/parity). All 44 FieldHandle methods
-// ship on Three.js, Swift, and Kotlin (44/44/44); some behave differently by platform.
-// This page deliberately does not duplicate that table — a hand-copy here drifted before.
+// Cross-platform parity is maintained in ONE place — the generated parity matrix
+// (data/parity-matrix.json → /docs/api/parity), and per-member on /docs/api/imperative.
+// This page deliberately does not duplicate either — a hand-copy here drifted before, and the line
+// that used to sit here ("all 44 methods ship on Three.js, Swift and Kotlin — 44/44/44") was itself
+// the drift: the generator has reported a different number on every plane for months. Corrected in
+// docs-refactor Phase 3 (#998).
 
 const getWc = `import '@fundamental-engine/elements';
 
@@ -226,6 +228,15 @@ function focusChild(child) {
     </p>
   </header>
 
+  <div class="callout">
+    <b>Looking for the whole code surface?</b> The
+    <a href="/docs/api/imperative">imperative API reference</a> consolidates this page with
+    <code>createField</code> and its options, the sampling and observable reads, the capability-scoped
+    agent view, policy and budgets, identity and the body handle — and gives every entry a generated
+    <b>JS · Swift · Kotlin</b> support row. This page stays the handle's own narrative, with the
+    coordinate-space rules and the worked examples.
+  </div>
+
   <section class="docs-sec">
     <h2>How you get one</h2>
     <p>
@@ -245,9 +256,11 @@ function focusChild(child) {
   <section class="docs-sec">
     <h2>Methods</h2>
     <p class="parity-note">
-      All 44 methods ship on Three.js, Swift, and Kotlin (<strong>44/44/44</strong>); a few behave
-      differently by platform. See the <a href="/docs/api/parity">parity matrix</a> for the per-method,
-      per-platform breakdown.
+      The ports do <strong>not</strong> carry the whole handle, and the web does not carry the whole
+      union either — the divergence runs both ways. The
+      <a href="/docs/api/imperative">imperative API reference</a> puts a generated
+      <b>JS · Swift · Kotlin</b> support row on every member below, and the
+      <a href="/docs/api/parity">parity matrix</a> adds the Three.js column.
     </p>
     <dl class="api-table">
       {
@@ -363,12 +376,12 @@ function focusChild(child) {
     </p>
     <dl class="api-table">
       <div class="api-row">
-        <dt class="k"><code>absorb</code></dt>
-        <dd class="d">A sink body captured matter — the rising edge of accretion. Payload: <code>&#123; body, count &#125;</code>.</dd>
+        <dt class="k"><code>captured</code></dt>
+        <dd class="d">A sink body captured matter — the rising edge of accretion. Payload: <code>&#123; body, count &#125;</code>. (Named <code>absorb</code> before #1020; the old name never fires.)</dd>
       </div>
       <div class="api-row">
-        <dt class="k"><code>release</code></dt>
-        <dd class="d">A sink body reached capacity and released (supernova) — the falling edge. Payload: <code>&#123; body, count &#125;</code>.</dd>
+        <dt class="k"><code>released</code></dt>
+        <dd class="d">A sink body reached capacity and released (supernova) — the falling edge. Payload: <code>&#123; body, count &#125;</code>. (Named <code>release</code> before #1020.)</dd>
       </div>
       <div class="api-row">
         <dt class="k"><code>enter</code> / <code>exit</code></dt>
@@ -378,11 +391,17 @@ function focusChild(child) {
         <dt class="k"><code>met</code></dt>
         <dd class="d">Two bodies came into contact. Additional <code>field:*</code> events report threshold crossings (attention, entropy, memory, saturation) where supported.</dd>
       </div>
+      <div class="api-row">
+        <dt class="k"><code>focus</code></dt>
+        <dd class="d">EXPERIMENTAL — a <code>focus()</code> deposit landed: the write-back channel and its provenance receipt. Flat payload (no <code>Body</code> reference) so it serializes.</dd>
+      </div>
     </dl>
     <CodeTabs variants={[{ label: 'Event bus', lang: 'js', code: eventsAbsorb }]} />
     <div class="callout">
-      <code>absorb</code>/<code>release</code> and <code>enter</code>/<code>exit</code>/<code>met</code>
-      ship today on the same <code>on</code> bus; only <code>settle</code> remains reserved/planned (#441).
+      <code>captured</code>/<code>released</code>, <code>enter</code>/<code>exit</code>/<code>met</code>
+      and <code>focus</code> are the six types the bus declares today; only <code>settle</code> remains
+      reserved/planned (#441). The Swift and Kotlin buses carry a different set — see the
+      <a href="/docs/api/imperative#events">generated event rows</a>.
     </div>
   </section>
 
@@ -460,6 +479,7 @@ function focusChild(child) {
 
   <SeeAlso
     links={[
+      { href: '/docs/api/imperative', label: 'Imperative reference (with platform rows)' },
       { href: '/docs/api/options', label: 'createField & options' },
       { href: '/docs/api/forces', label: 'Forces' },
       { href: '/docs/patterns', label: "Patterns" },
