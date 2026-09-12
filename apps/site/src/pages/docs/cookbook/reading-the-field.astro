@@ -1,0 +1,198 @@
+---
+// COOKBOOK — reading and instrumenting the field (docs-refactor Phase 5, #1000; plan §8).
+//
+// Gap-list items made runnable here: the unified sampling tutorial, scalar grids, field channels
+// (addField), seeding + atomAt + readParticleIds, and agents outside Three.js.
+//
+// /docs/api/imperative documents the three GRAINS of reading as a reference; this page is the
+// worked version, and adds the four instrumentation surfaces that had no example anywhere.
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import PlatformSupport from '../../../components/PlatformSupport.astro';
+import CookbookExample from '../../../components/CookbookExample.astro';
+
+import readingSrc from '../../../lib/cookbook/reading.ts?raw';
+import gridSrc from '../../../lib/cookbook/scalar-grid.ts?raw';
+import channelsSrc from '../../../lib/cookbook/channels.ts?raw';
+import seedingSrc from '../../../lib/cookbook/seeding.ts?raw';
+import agentsSrc from '../../../lib/cookbook/agents.ts?raw';
+
+import { runReading } from '../../../lib/cookbook/reading.ts';
+import { runScalarGrid } from '../../../lib/cookbook/scalar-grid.ts';
+import { runChannels } from '../../../lib/cookbook/channels.ts';
+import { runSeeding } from '../../../lib/cookbook/seeding.ts';
+import { runAgent } from '../../../lib/cookbook/agents.ts';
+
+const reading = runReading();
+const grid = runScalarGrid();
+const channels = runChannels();
+const seeding = runSeeding();
+const agent = runAgent();
+---
+
+<DocsLayout
+  title="Fundamental — Reading & instrumenting the field"
+  description="Worked, executed examples for the read side of the engine: probes, query and snapshot/diff, host-authored scalar grids, external data as field channels, seeding records into the matter with stable ids, and engine-stepped agents without Three.js."
+>
+  <header class="docs-hero">
+    <p class="kicker">Cookbook</p>
+    <h1>Reading &amp; <span class="accent">instrumenting</span></h1>
+    <p class="lede">
+      A field is not only something that acts — it is something you can <em>ask</em>. This page is the
+      worked version of the read side: where to probe and what the answer means, the buffers the
+      engine will keep for you, how to put your own data <em>into</em> the field's read path, and how
+      to give pooled matter identity so you can pick a record back out of it.
+    </p>
+    <StatusChip label="Shipped · every example executes at build time" tone="stable" />
+  </header>
+
+  <div class="callout">
+    <b>The reference is next door.</b> Every method here — its signature, its type, and which of
+    Swift and Kotlin have it — is on the
+    <a href="/docs/api/imperative">imperative API reference</a>. This page does not repeat that; it
+    shows the calls working, with real numbers.
+  </div>
+
+  <section class="docs-sec">
+    <h2 id="three-grains">The three grains, and where to point them</h2>
+    <p>
+      Reading comes at three grains: a <strong>probe</strong> answers about a point, a
+      <strong>query</strong> about a region, and a <strong>snapshot</strong> about the whole field
+      over time. The probe is the one people misuse, so the example takes three of them — and the
+      lesson is that <em>where</em> you sample is most of the answer.
+    </p>
+    <CookbookExample
+      title="Probe, query, and snapshot → diff"
+      path="apps/site/src/lib/cookbook/reading.ts"
+      source={readingSrc}
+      result={reading}
+      caption="Beside the well the force points back at it; at the exact centre it cancels to zero by symmetry; past `range` there is nothing to feel. A probe that returns {0,0} usually means the point, not the field."
+    />
+    <p>
+      <PlatformSupport dimension="field-handle-methods" symbol="sample" note="the point probe" />
+    </p>
+    <p>
+      Note what a <code>diff</code> is: it is derived <em>purely</em> from two snapshots. Nothing is
+      recorded between them and nothing is retained — which is what makes it safe to use as an
+      agent's "what changed since my last turn".
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="scalar-grids">Scalar grids — a buffer the field keeps for you</h2>
+    <p>
+      <code>grid(name)</code> hands you a persistent, viewport-sized scalar buffer: deposit into it,
+      sample it back bilinearly, take its gradient, decay or clear it. Nothing is allocated until
+      first access.
+    </p>
+    <p>
+      The detail that surprises people is that <strong>the name chooses the physics</strong>: a grid
+      called <code>wave…</code> runs the wave scheme, <code>memory…</code> decays slowly, and
+      anything else diffuses. A force of the same name shares the same buffer — so a host can read
+      what a force writes, and a distinct name like <code>'scent'</code> keeps a field of your own
+      private.
+    </p>
+    <p>
+      <PlatformSupport dimension="field-handle-methods" symbol="grid" />
+    </p>
+    <CookbookExample
+      title="Deposit, diffuse, follow the gradient, clear"
+      path="apps/site/src/lib/cookbook/scalar-grid.ts"
+      source={gridSrc}
+      result={grid}
+      caption="The deposit spreads: the source value falls while a point 80px away rises, and the gradient there points back toward the source — the read a forage-by-gradient behaviour needs."
+    />
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="channels">Field channels — your data on the engine's read path</h2>
+    <p>
+      A grid is a buffer the engine owns. A <strong>channel</strong> is the opposite: data
+      <em>you</em> already own, registered so the field can read it.
+      <code>addField(name, sampler)</code> takes a pull-based <code>(x, y) =&gt; number</code> —
+      called on demand, never cached — so there is nothing to invalidate and the data stays yours.
+    </p>
+    <p>
+      <PlatformSupport dimension="field-handle-methods" symbol="addField" />
+    </p>
+    <CookbookExample
+      title="Register, sample, swap live, remove"
+      path="apps/site/src/lib/cookbook/channels.ts"
+      source={channelsSrc}
+      result={channels}
+      caption="An unregistered name reads 0 rather than throwing, so a sampleField call is always safe — including after remove()."
+    />
+    <p>
+      The win is the <strong>single path</strong>: force, density and now your terrain all answer to
+      <code>sample*</code> calls on one field, so a consumer never threads a second structure through
+      every function that already has the field in hand. The
+      <a href="/docs/field-channels">field-channels page</a> tells the longer story, including the
+      Habitat integration that motivated it.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="seeding">Seeding — giving pooled matter identity</h2>
+    <p>
+      Particles are a pool; ordinarily they mean nothing individually. <code>seed(atoms)</code>
+      attaches your records to them, <code>readParticleIds</code> reads their <strong>stable
+      ids</strong> back into a buffer you own (same pool order as <code>readParticles</code>, so
+      index <code>i</code> lines up), and <code>atomAt(x, y)</code> picks up the record on the
+      nearest seeded particle within about 24px — the hover-to-inspect affordance.
+    </p>
+    <p>
+      <PlatformSupport dimension="field-handle-methods" symbol="seed" />
+      <PlatformSupport dimension="field-handle-methods" symbol="atomAt" />
+    </p>
+    <CookbookExample
+      title="Records into the matter, and back out again"
+      path="apps/site/src/lib/cookbook/seeding.ts"
+      source={seedingSrc}
+      result={seeding}
+      caption="The ids are unique — identity, not position. Empty space returns null rather than a nearest-anything guess, which is what makes atomAt safe to call on every pointer move."
+    />
+    <p>
+      The division of labour: <strong>the engine carries the identity, you keep the payload.</strong>
+      Key your own record off the id rather than asking the engine to store your object.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="agents">Agents without Three.js</h2>
+    <p>
+      Most people meet <code>addAgent</code> through
+      <a href="/docs/guides/three">@fundamental-engine/three</a>, where it binds a mesh — which
+      leaves the impression that agents are a 3D feature. They are not: the agent lane is core. Give
+      it a position and a <code>report</code> callback and the engine integrates it under the net
+      field every frame, handing you its live particle. Drive a mesh, an SVG node, a native view — or
+      nothing, and just read where the field takes it.
+    </p>
+    <p>
+      <PlatformSupport dimension="field-handle-methods" symbol="addAgent" />
+    </p>
+    <CookbookExample
+      title="An engine-stepped agent, no renderer involved"
+      path="apps/site/src/lib/cookbook/agents.ts"
+      source={agentsSrc}
+      result={agent}
+      caption="The distance to the attractor fell over 120 frames: the position was integrated by the field, not assigned by the example."
+    />
+    <p>
+      An agent differs from a body: a body <em>emits</em> force, an agent <em>is moved by</em> it.
+      Reach for <code>addBody</code> with
+      <code>authority: 'dynamic'</code> when the thing should do both.
+    </p>
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/cookbook', label: 'All cookbook patterns' },
+      { href: '/docs/cookbook/signals-first', label: 'Signals-first fields (headless, sinks)' },
+      { href: '/docs/api/imperative', label: 'The imperative API reference' },
+      { href: '/docs/field-channels', label: 'Field channels, in depth' },
+      { href: '/docs/guides/three', label: 'The Three.js layer' },
+      { href: '/docs/inspector', label: 'Inspector & agent JSON' },
+    ]}
+  />
+</DocsLayout>

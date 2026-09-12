@@ -412,21 +412,29 @@ field.rescan();    // pick up the new spans immediately
       </div>
     </dl>
 
-    <pre><code class="language-ts">import &#123; headlessHost &#125; from '@fundamental-engine/core';
-import &#123; createField &#125; from '@fundamental-engine/vanilla';
+    <pre><code class="language-ts">import &#123; headlessHost, createField &#125; from '@fundamental-engine/core';
 
-const host  = headlessHost(&#123; width: 1920, height: 1080 &#125;);
-const field = createField(undefined, &#123; host, render: 'none' &#125;);
+const host = headlessHost(&#123; width: 1920, height: 1080 &#125;);
+// `createField`'s first parameter is typed HTMLCanvasElement, but under render:'none' the
+// engine never touches it — no context is acquired, no backing store is sized. The cast is
+// the honest spelling until the type admits the headless case (core's own `record` module
+// does exactly this internally).
+const field = createField(undefined as unknown as HTMLCanvasElement, &#123; host, render: 'none' &#125;);
 
 const densities: number[] = [];
 field.addBody(&#123;
   tokens: ['attract'],
-  rect: () =&gt; (&#123; x: 500, y: 400, width: 200, height: 100 &#125;),
-  onFeedback: (ch) =&gt; densities.push(ch.density),
+  // BodySpec.rect returns a LAYOUT BOX — left/top, not x/y.
+  rect: () =&gt; (&#123; left: 500, top: 400, width: 200, height: 100 &#125;),
+  onFeedback: (ch) =&gt; densities.push(ch.density ?? 0),
 &#125;);
 
 // run 10 frames
 for (let i = 0; i &lt; 10; i++) host.tick();</code></pre>
+    <p>
+      A worked, executed version of this — with the values it actually returns — is on
+      <a href="/docs/cookbook/signals-first">the signals-first cookbook page</a>.
+    </p>
   </section>
 
   <SeeAlso links={[

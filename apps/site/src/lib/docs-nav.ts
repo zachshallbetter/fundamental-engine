@@ -82,6 +82,25 @@ export const DOCS_NAV: DocGroup[] = [
     ],
   },
   {
+    // The task-shaped depth layer (docs-refactor Phase 5, #1000). Sits between Build (how to use
+    // each surface) and Reference (what every symbol is): "what people actually build".
+    title: 'Cookbook',
+    color: '#facc15',
+    glyph: '◆',
+    items: [
+      { href: '/docs/cookbook', label: 'Patterns by task', ready: true },
+      { href: '/docs/cookbook/signals-first', label: 'Signals-first fields', ready: true },
+      { href: '/docs/cookbook/contained-fields', label: 'Contained fields', ready: true },
+      { href: '/docs/cookbook/data-driven', label: 'Data-driven fields', ready: true },
+      { href: '/docs/cookbook/reading-the-field', label: 'Reading & instrumenting', ready: true },
+      { href: '/docs/cookbook/conditions-and-formations', label: 'Conditions & formations', ready: true },
+      { href: '/docs/cookbook/workbench', label: 'The visualization workbench', ready: true },
+      { href: '/docs/cookbook/performance-tuning', label: 'Performance tuning', ready: true },
+      { href: '/docs/cookbook/interface-chrome', label: 'Chrome & accessibility', ready: true },
+      { href: '/docs/cookbook/framework-interop', label: 'Framework interop', ready: true },
+    ],
+  },
+  {
     title: 'Reference',
     color: '#ff9d5c',
     glyph: '§',

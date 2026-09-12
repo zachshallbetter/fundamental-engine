@@ -1,0 +1,161 @@
+---
+// COOKBOOK — the visualization workbench (docs-refactor Phase 5, #1000; plan §6.3/§8 + §3 currency).
+//
+// The two-tier surface model made operable: SUBSTRATE (setRender, pick-one) and OVERLAY
+// (setOverlay, additive), plus the live signal readout and the overlayCanvas requirement the plan
+// flags as a silent no-op (§7). The demo is live because the surfaces only exist in a browser.
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import PlatformSupport from '../../../components/PlatformSupport.astro';
+import CookbookDemo from '../../../components/CookbookDemo.astro';
+import { RENDER_MODES, OVERLAY_MODES } from '../../../lib/docs-api.ts';
+
+const surfacesJs = `// SUBSTRATE — the base layer, behind your content. One at a time.
+field.setRender('streamlines');
+
+// OVERLAY — diagnostic readings, drawn in FRONT. Additive: the engine takes an array,
+// so these compose rather than replace each other.
+field.setOverlay(['force-vectors', 'grid']);
+field.setOverlay('off');            // clear the stack`;
+
+const overlayCanvasJs = `import { createOverlaySurface } from '@fundamental-engine/dom';
+
+// An overlay reading needs a SECOND canvas in front of the page. Without one,
+// setOverlay() is a silent no-op — the most common "why is nothing happening".
+// <field-root> and the React binding create it for you; a raw createField does not.
+const surface = createOverlaySurface(document);   // fixed, click-through, aria-hidden
+
+const field = createField(canvas, {
+  host,
+  overlayCanvas: surface.canvas,   // core sizes it, honouring dprCap + quality tiers
+});`;
+
+const readoutCss = `/* The signal readout: the conversion moment. These are the values the
+   engine writes onto a feedback body every frame — the field, in numbers. */
+.readout::after {
+  content: '--d ' var(--d, 0) ' · coherence ' var(--coherence, 0)
+           ' · temperature ' var(--temperature, 0);
+}`;
+
+const substrateModes = RENDER_MODES.filter((m) => m.name !== 'none');
+---
+
+<DocsLayout
+  title="Fundamental — The visualization workbench"
+  description="The engine's two-tier surface model made operable: a pick-one substrate (setRender) behind your content, an additive overlay stack (setOverlay) in front of it, the overlayCanvas requirement that makes overlays work, and the live signal readout."
+>
+  <header class="docs-hero">
+    <p class="kicker">Cookbook</p>
+    <h1>The visualization <span class="accent">workbench</span></h1>
+    <p class="lede">
+      The same field can be drawn a dozen ways, and read several more. The surfaces are two tiers
+      with genuinely different rules: one <strong>substrate</strong> behind your content, and any
+      number of <strong>overlay readings</strong> in front of it. Knowing which is which is most of
+      the API.
+    </p>
+    <StatusChip label="Shipped · demo runs live on this page" tone="stable" />
+  </header>
+
+  <section class="docs-sec">
+    <h2 id="two-tiers">Two tiers, two rules</h2>
+    <p>
+      The <strong>substrate</strong> is the base layer: the same matter, drawn one way at a time.
+      Picking <code>trails</code> replaces <code>dots</code> — there is only ever one base.
+    </p>
+    <p>
+      An <strong>overlay</strong> is a reading drawn on top, and readings <em>compose</em>:
+      <code>setOverlay</code> takes an array and the engine draws them in order. So the substrate is
+      a radio set and the overlays are checkboxes — a distinction the API makes structurally, not by
+      convention.
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: surfacesJs }]} />
+    <p>
+      <PlatformSupport dimension="field-handle-methods" symbol="setRender" />
+      <PlatformSupport dimension="field-handle-methods" symbol="setOverlay" />
+    </p>
+    <p>
+      The full vocabularies — {substrateModes.length + 1} substrate modes and
+      {OVERLAY_MODES.length} overlay readings, each with the platforms that have it — are on the
+      <a href="/docs/api/declarative#render">declarative reference</a>. Two names look like
+      exceptions and are worth stating here: <code>field-lines</code> is an
+      <em>overlay</em> reading, and the heatmap is its own toggle
+      (<code>setHeatmap</code>), not a render mode — which is why the
+      <code>RenderMode</code> type and what <code>setRender</code> accepts are not the same list.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="overlay-canvas">The overlay canvas — the silent no-op</h2>
+    <p>
+      An overlay draws in <em>front</em> of your content, so it needs a second canvas the engine can
+      draw onto. If there isn't one, <code>setOverlay</code> does nothing and says nothing — the
+      single most common "the API is broken" report, and it is a wiring gap rather than a bug.
+    </p>
+    <p>
+      <code>&lt;field-root&gt;</code> and the React component create that surface for you. A raw
+      <code>createField</code> does not; <code>createOverlaySurface</code> is the one-call version,
+      and it deliberately leaves the backing-store size to core so the DPR cap and quality tiers are
+      honoured.
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: overlayCanvasJs }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="live">The workbench, live</h2>
+    <p>
+      A contained field with the two tiers wired as they actually behave. Switch the substrate — one
+      wins. Toggle the readings — they stack.
+    </p>
+
+    <CookbookDemo
+      kind="workbench"
+      title="Substrate (pick one) · overlay (stack any)"
+      note="This demo has no overlay canvas of its own, so the overlay toggles record the stack the field is holding while the substrate is what you can see change — the no-op above, demonstrated rather than described."
+    >
+      <div class="cb-chip" data-body="attract swirl" data-strength="1.1" data-range="200" data-spin="1.2" data-feedback data-hot>
+        a body to draw around
+      </div>
+      <Fragment slot="controls">
+        <button type="button" data-cb-render="dots" aria-pressed="true">dots</button>
+        <button type="button" data-cb-render="trails" aria-pressed="false">trails</button>
+        <button type="button" data-cb-render="links" aria-pressed="false">links</button>
+        <button type="button" data-cb-render="streamlines" aria-pressed="false">streamlines</button>
+        <button type="button" data-cb-overlay="grid" aria-pressed="false">+ grid</button>
+        <button type="button" data-cb-overlay="force-vectors" aria-pressed="false">+ force-vectors</button>
+      </Fragment>
+    </CookbookDemo>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="readout">The signal readout</h2>
+    <p>
+      The workbench's most useful panel is not a picture at all. Every frame the engine writes its
+      measured channels onto each feedback body — density, load, lit, and the measured
+      thermodynamics. Printing them next to the drawing is the moment the field stops looking like
+      an effect and starts reading as an instrument.
+    </p>
+    <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: readoutCss }]} />
+    <p>
+      Every channel, its range and its cadence are on the
+      <a href="/docs/api/declarative#feedback">declarative reference</a>; the
+      <a href="/docs/diagnostics">diagnostics page</a> covers the explanatory overlays in depth.
+    </p>
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/cookbook', label: 'All cookbook patterns' },
+      { href: '/docs/api/declarative', label: 'Render modes & overlay readings (with parity)' },
+      { href: '/docs/diagnostics', label: 'Diagnostic overlays' },
+      { href: '/docs/inspector', label: 'Inspector & agent JSON' },
+      { href: '/patterns', label: 'The pattern gallery (workbench per pattern)' },
+    ]}
+  />
+
+  <script>
+    import { initCookbookDemos } from '../../../lib/cookbook/demos.ts';
+    initCookbookDemos();
+  </script>
+</DocsLayout>

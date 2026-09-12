@@ -1,0 +1,145 @@
+---
+// A cookbook example — the code that ran, and what it returned.
+//
+// The anti-drift discipline the generated reference pages apply to TABLES, applied to EXAMPLES.
+// A cookbook's failure mode is snippets that were never executed: they rot silently, because
+// nothing fails when prose and engine disagree. Here the page cannot show a snippet it did not run:
+//
+//   · `source` is the module's own text, imported with Vite's `?raw` — not a copy of it. Editing the
+//     example edits the snippet, because they are the same bytes.
+//   · `result` is what that module RETURNED when the site was built. Astro builds statically, so
+//     every headless example executes in Node during `astro build`. An example that throws fails
+//     the build; an example whose output changes shows its new output here.
+//   · src/lib/cookbook.test.ts asserts each result still MEANS what its page says — the second line,
+//     for the failure where a snippet still runs but no longer demonstrates its point.
+//
+// Browser-only examples (a contained field, a data binding, the workbench) cannot execute at build
+// time; those run live on the page and are pinned by e2e instead.
+import CodeTabs from './CodeTabs.astro';
+
+interface Props {
+  /** heading for the example. */
+  title: string;
+  /** the module source, passed from the page as `import src from '…?raw'`. */
+  source: string;
+  /** what the module returned at build time — rendered as the honest read-out. */
+  result?: unknown;
+  /** one line on what to notice in the output. */
+  caption?: string;
+  /** the module's path, shown so a reader can find and run it themselves. */
+  path?: string;
+  lang?: string;
+}
+const { title, source, result, caption, path, lang = 'ts' } = Astro.props;
+
+// Render the returned value as key → value rows; a scalar or array renders as one row.
+const rows: [string, string][] =
+  result && typeof result === 'object' && !Array.isArray(result)
+    ? Object.entries(result as Record<string, unknown>).map(([k, v]) => [k, JSON.stringify(v)])
+    : result !== undefined
+      ? [['returned', JSON.stringify(result)]]
+      : [];
+---
+
+<figure class="cb-example">
+  <figcaption class="cb-head">
+    <b>{title}</b>
+    {path && <code class="cb-path">{path}</code>}
+  </figcaption>
+
+  <CodeTabs variants={[{ label: 'Runs at build time', lang, code: source }]} />
+
+  {
+    rows.length > 0 && (
+      <div class="cb-out">
+        <span class="cb-out-label">What it returned when this page was built</span>
+        <dl class="cb-out-grid">
+          {rows.map(([k, v]) => (
+            <div class="cb-out-row">
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
+        {caption && <p class="cb-out-note">{caption}</p>}
+      </div>
+    )
+  }
+</figure>
+
+<style>
+  .cb-example {
+    margin: 1.6rem 0;
+  }
+  .cb-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+  .cb-head b {
+    font-size: 1rem;
+  }
+  .cb-path {
+    font-size: 0.7rem;
+    color: var(--text-4, #8a8fa0);
+  }
+  .cb-out {
+    margin-top: 0.7rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--line, #2a2a35);
+    border-left: 3px solid var(--accent, #4da3ff);
+    border-radius: 0 10px 10px 0;
+    background: color-mix(in srgb, var(--accent, #4da3ff) 4%, transparent);
+  }
+  .cb-out-label {
+    display: block;
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-4, #8a8fa0);
+    margin-bottom: 0.5rem;
+  }
+  .cb-out-grid {
+    margin: 0;
+    display: grid;
+    gap: 0.25rem 1rem;
+  }
+  .cb-out-row {
+    display: grid;
+    grid-template-columns: minmax(11rem, auto) 1fr;
+    gap: 1rem;
+    align-items: baseline;
+    border-bottom: 1px solid color-mix(in srgb, var(--line, #2a2a35) 60%, transparent);
+    padding-bottom: 0.22rem;
+  }
+  .cb-out-row:last-child {
+    border-bottom: 0;
+  }
+  .cb-out-row dt {
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.78rem;
+    color: var(--text-3, #9aa0ad);
+  }
+  .cb-out-row dd {
+    margin: 0;
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.82rem;
+    color: var(--accent, #4da3ff);
+    overflow-wrap: anywhere;
+  }
+  .cb-out-note {
+    margin: 0.6rem 0 0;
+    font-size: 0.82rem;
+    color: var(--text-3, #9aa0ad);
+  }
+  @media (max-width: 560px) {
+    .cb-out-row {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+  }
+</style>

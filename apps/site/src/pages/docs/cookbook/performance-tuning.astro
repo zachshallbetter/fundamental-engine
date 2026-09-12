@@ -1,0 +1,152 @@
+---
+// COOKBOOK — performance tuning (docs-refactor Phase 5, #1000; plan §8: dprCap / qualityTier / density).
+//
+// /docs/performance covers the SCHEDULER and what runs each frame. This page is the tuning layer:
+// the three dials that actually move the cost, measured rather than asserted — including the
+// `130 × density` rule that explains the contained-field surprise, and the honest note that
+// setQualityTier has no read-back on JS (a fact read out of the parity matrix, not hand-typed).
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import PlatformSupport from '../../../components/PlatformSupport.astro';
+import CookbookExample from '../../../components/CookbookExample.astro';
+
+import tuningSrc from '../../../lib/cookbook/tuning.ts?raw';
+import { runTuning } from '../../../lib/cookbook/tuning.ts';
+
+const tuning = runTuning();
+
+const governorJs = `import { QualityGovernor } from '@fundamental-engine/dom';
+
+// The governor DETECTS sustained overruns; you decide what to do about them.
+// <field-root> wires this for you. On a raw createField you own the loop:
+const gov = new QualityGovernor(16.67);
+
+function frame(t) {
+  const tier = gov.feed(t);          // 0 full · 1 effects reduced · 2 minimal · 3 paused
+  if (tier !== null) field.setQualityTier(tier);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);`;
+
+const dprJs = `// The backing store is the dominant fill cost on a retina display.
+// Effective DPR is min(devicePixelRatio, dprCap).
+const field = createField(canvas, { host, dprCap: 1.5 });
+
+field.setDprCap(1); // and it is runtime-settable`;
+---
+
+<DocsLayout
+  title="Fundamental — Performance tuning"
+  description="The three dials that move the cost of a field: density (the pool is 130 x density, field-wide), dprCap (the backing-store ceiling), and qualityTier (the degradation ladder) — with inspectBudget to judge a configuration before it ships."
+>
+  <header class="docs-hero">
+    <p class="kicker">Cookbook</p>
+    <h1>Performance <span class="accent">tuning</span></h1>
+    <p class="lede">
+      Three dials carry almost all of the cost: how much matter there is, how many device pixels it
+      is drawn into, and how much the engine is allowed to give up when a device cannot keep pace.
+      This page measures each one rather than asserting it.
+    </p>
+    <StatusChip label="Shipped · measured at build time" tone="stable" />
+  </header>
+
+  <div class="callout">
+    <b>Different page, different question.</b>
+    <a href="/docs/performance">/docs/performance</a> explains the six-phase scheduler and what runs
+    each frame — the <em>architecture</em> of the cost. This page is the <em>tuning</em>: which knob
+    to turn, and what it actually does.
+  </div>
+
+  <section class="docs-sec">
+    <h2 id="density">density — the pool is <code>130 × density</code>, field-wide</h2>
+    <p>
+      <code>density</code> is a particle-count multiplier over a base of 130. The number to
+      internalise is that this is a <strong>field-wide count, not a per-area one</strong>: the pool
+      does not grow because your field is large, and does not shrink because it is small.
+    </p>
+    <p>
+      That single fact explains the most common contained-field complaint. A card-sized field still
+      holds 130 particles spread across the whole volume, so each body gathers less and
+      <code>--d</code> reads low. The fix is to raise <code>density</code> for a small field, not
+      lower it — see <a href="/docs/cookbook/contained-fields">contained fields</a>.
+    </p>
+    <p>
+      <PlatformSupport dimension="field-options" symbol="density" />
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="dpr">dprCap — the backing-store ceiling</h2>
+    <p>
+      The effective device-pixel ratio is <code>min(devicePixelRatio, dprCap)</code>. On a 3× display
+      an uncapped field fills nine times the pixels of a 1× one for the same CSS box, which is why
+      the shipped budget caps it at 2. Lower it before you start cutting matter: it costs
+      sharpness, not behaviour.
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: dprJs }]} />
+    <p>
+      <PlatformSupport dimension="field-options" symbol="dprCap" />
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="quality-tier">qualityTier — the degradation ladder</h2>
+    <p>
+      A tier is a coarse, reversible statement of how much the engine may give up: <b>0</b> full,
+      <b>1</b> effects reduced, <b>2</b> minimal, <b>3</b> paused. At tier 2 and above the engine
+      caps the effective DPR and drops the heatmap on its own levers. The
+      <code>QualityGovernor</code> detects sustained overruns and tells you which tier to ask for;
+      <code>&lt;field-root&gt;</code> wires that loop for you, and a raw <code>createField</code>
+      does not.
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: governorJs }]} />
+    <div class="callout">
+      <b>A cross-platform asymmetry worth knowing.</b> On JS, <code>setQualityTier</code> is
+      <strong>write-only</strong> — the handle exposes no property to read the tier back, as the
+      example below measures. The Swift and Kotlin handles both publish one. The support row is
+      generated from the parity matrix, so it cannot drift from the ports:
+      <PlatformSupport
+        dimension="field-handle-properties"
+        symbol="qualityTier"
+        note="the read-back property — not on JS"
+      />
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="budget">Judging a configuration before it ships</h2>
+    <p>
+      <code>inspectBudget(counts)</code> compares a configuration against the shipped budget and
+      returns one finding per breach — no field required, so it runs in a unit test or a build step.
+    </p>
+    <CookbookExample
+      title="The dials, measured"
+      path="apps/site/src/lib/cookbook/tuning.ts"
+      source={tuningSrc}
+      result={tuning}
+      caption="130 particles at density 1 and 33 at 0.25 — the rule, measured on a live pool rather than quoted. The findings array is a real over-budget verdict, and the tier read-back is false on JS."
+    />
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="order">The order to turn them</h2>
+    <ul class="model">
+      <li><b>Measure first.</b> <code>createFieldPerf</code> gives you fps, frame budget, percentiles and dropped frames from your own rAF timestamps.</li>
+      <li><b>Cap the pixels.</b> <code>dprCap</code> costs sharpness only.</li>
+      <li><b>Then cut matter.</b> <code>density</code> changes how the field feels; do it deliberately.</li>
+      <li><b>Let the governor handle the bad device.</b> A tier is reversible; a hard cutoff is not.</li>
+    </ul>
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/cookbook', label: 'All cookbook patterns' },
+      { href: '/docs/performance', label: 'The scheduler and the frame' },
+      { href: '/docs/cookbook/contained-fields', label: 'Contained fields (and the density surprise)' },
+      { href: '/docs/api/utilities', label: 'QualityGovernor & createFieldPerf' },
+      { href: '/docs/api/imperative', label: 'The imperative API reference' },
+    ]}
+  />
+</DocsLayout>
