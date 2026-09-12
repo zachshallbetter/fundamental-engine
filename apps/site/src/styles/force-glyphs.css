@@ -101,7 +101,6 @@
   margin: -2px 0 0 -2px;
   border-radius: 50%;
   background: currentColor;
-  box-shadow: 0 0 7px currentColor;
 }
 .fgp-whitehole::after {
   inset: 0.5px;
@@ -114,7 +113,6 @@
   inset: 4px;
   border-radius: 50%;
   background: currentColor;
-  box-shadow: 0 0 7px currentColor;
 }
 .fgp-star::after {
   left: 50%;
@@ -136,7 +134,6 @@
   width: 1.6px;
   margin-left: -0.8px;
   background: currentColor;
-  box-shadow: 0 0 5px currentColor;
 }
 .fgp-quasar::after {
   inset: 4px;
@@ -147,44 +144,47 @@
 
 /* galaxy — a spiral disk */
 .fgp-galaxy::before {
-  inset: 0;
+  inset: 1px;
   border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    currentColor 70deg,
-    transparent 150deg,
-    transparent 200deg,
-    currentColor 250deg,
-    transparent 330deg
-  );
-  -webkit-mask: radial-gradient(farthest-side, #000 12%, transparent 16%, #000 30%, transparent 64%);
-  mask: radial-gradient(farthest-side, #000 12%, transparent 16%, #000 30%, transparent 64%);
+  border: 1.3px solid transparent;
+  border-top-color: currentColor;
+  border-bottom-color: currentColor;
+  transform: rotate(28deg);
 }
 .fgp-galaxy::after {
   left: 50%;
   top: 50%;
-  width: 3px;
-  height: 3px;
-  margin: -1.5px 0 0 -1.5px;
+  width: 3.4px;
+  height: 3.4px;
+  margin: -1.7px 0 0 -1.7px;
   border-radius: 50%;
   background: currentColor;
-  box-shadow: 0 0 5px currentColor;
 }
 
 /* nebula — a soft glowing cloud */
 .fgp-nebula::before {
-  inset: 1px;
+  left: 1.5px;
+  top: 7px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, currentColor 0%, transparent 60%);
-  filter: blur(0.6px);
+  background: currentColor;
+  box-shadow:
+    3.5px -1.2px 0 -0.6px currentColor,
+    6.5px 0.4px 0 -1.1px currentColor;
+  opacity: 0.9;
 }
 .fgp-nebula::after {
-  inset: 3px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 65% 60%, currentColor 0%, transparent 65%);
-  filter: blur(0.6px);
-  opacity: 0.7;
+  left: 3px;
+  top: 2px;
+  width: 7px;
+  height: 5.5px;
+  background:
+    linear-gradient(currentColor, currentColor) 0 1.5px / 1.2px 4px no-repeat,
+    linear-gradient(currentColor, currentColor) 3px 0 / 1.2px 5.5px no-repeat,
+    linear-gradient(currentColor, currentColor) 5.8px 2.2px / 1.2px 3.3px no-repeat;
+  transform: skewX(-14deg);
+  opacity: 0.75;
 }
 
 /* tornado — a funnel */
@@ -227,4 +227,29 @@
   border-radius: 50%;
   border: 1.4px solid currentColor;
   box-shadow: -4.5px 0 0 -2.2px currentColor;
+}
+
+/* fountain — a jet fanning up over the dish it falls back into */
+.fgp-fountain::before {
+  left: 50%;
+  top: 1.5px;
+  width: 9px;
+  height: 6.5px;
+  margin-left: -4.5px;
+  background:
+    linear-gradient(currentColor, currentColor) 0 2.5px / 1.3px 4px no-repeat,
+    linear-gradient(currentColor, currentColor) 3.85px 0 / 1.3px 6.5px no-repeat,
+    linear-gradient(currentColor, currentColor) 7.7px 2.5px / 1.3px 4px no-repeat;
+  opacity: 0.9;
+}
+.fgp-fountain::after {
+  left: 50%;
+  bottom: 1.5px;
+  width: 12px;
+  height: 3px;
+  margin-left: -6px;
+  border-radius: 0 0 6px 6px;
+  border-bottom: 1.4px solid currentColor;
+  border-left: 1.4px solid currentColor;
+  border-right: 1.4px solid currentColor;
 }
