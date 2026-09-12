@@ -22,6 +22,10 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    // Maven Central requires -sources and -javadoc jars next to every jar. The sources jar is the
+    // real Kotlin source; the javadoc jar is the accepted placeholder (no Java sources → empty jar).
+    withSourcesJar()
+    withJavadocJar()
 }
 
 kotlin {
@@ -88,8 +92,20 @@ tasks.named<ProcessResources>("processResources") {
     dependsOn(syncRecipes)
 }
 
+// The -sources jar packs main resources too, so it must see the synced canon first.
+tasks.named<Jar>("sourcesJar") {
+    dependsOn(syncRecipes)
+}
+
 // ── Publishing ──────────────────────────────────────────────────────────────
+// Two targets share ONE publication: GitHub Packages (live, `publish` on a release tag) and the
+// Maven Central staging tree (local; see gradle/maven-central.gradle.kts — upload is opt-in).
+extra["pomName"] = "Fundamental Engine — Core (Kotlin)"
+extra["pomDescription"] = "The Fundamental reciprocal field engine, in pure Kotlin/JVM: particles, " +
+    "bodies, the 36-force surface, the integrator, and the runtime driver. Mirror of " +
+    "@fundamental-engine/core and FundamentalCore (Swift)."
 apply(from = rootProject.file("gradle/github-packages.gradle.kts"))
+apply(from = rootProject.file("gradle/maven-central.gradle.kts"))
 publishing {
     publications {
         create<MavenPublication>("maven") {

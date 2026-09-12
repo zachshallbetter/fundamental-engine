@@ -10,7 +10,13 @@ plugins {
 }
 
 android {
-    publishing { singleVariant("release") }
+    // Maven Central requires -sources and -javadoc jars next to the AAR (AGP builds both).
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
     namespace = "com.fundamental.compose"
     compileSdk = 34
     buildToolsVersion = "34.0.0"
@@ -46,7 +52,14 @@ dependencies {
 }
 
 // ── Publishing ──────────────────────────────────────────────────────────────
+// Two targets share ONE publication: GitHub Packages (live, `publish` on a release tag) and the
+// Maven Central staging tree (local; see gradle/maven-central.gradle.kts — upload is opt-in).
+extra["pomName"] = "Fundamental Engine — Compose"
+extra["pomDescription"] = "Jetpack Compose adapter for the Fundamental reciprocal field engine: " +
+    "the FieldView composable and Modifier.fieldBody. Mirror of @fundamental-engine/react and " +
+    "FundamentalSwiftUI."
 apply(from = rootProject.file("gradle/github-packages.gradle.kts"))
+apply(from = rootProject.file("gradle/maven-central.gradle.kts"))
 afterEvaluate {
     publishing {
         publications {
