@@ -35,7 +35,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag the crate must match (must already exist, e.g. v0.10.1)'
+        description: 'Release tag the crate must match (must already exist AND contain rust/ — the plane landed after v0.10.1, so the first publishable tag is the next fleet release)'
         required: true
       dry_run:
         description: 'Rehearse only (package + verify, NO upload). Set to false only for the real publish.'
@@ -76,6 +76,8 @@ jobs:
         run: cargo build --locked --workspace
       - name: Test (incl. the shared cross-plane golden + the version lockstep guard)
         run: cargo test --locked --workspace
+      - name: Example runs
+        run: cargo run --locked --example ranking -p fundamental-core
 
       # The version-desync gate: tag == crate version == Rust FIELD_VERSION == the canonical
       # packages/core/package.json version. The four planes are versioned in lockstep; a crate

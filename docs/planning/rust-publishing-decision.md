@@ -30,8 +30,15 @@ The options weighed in #1047:
 `crate … does not exist`; a control request for `serde` returned `200`. A search for `fundamental`
 lists only unrelated crates (`fundamentals`, `paft-fundamentals`, `cetkaik_fundamental`). **Nothing was
 reserved** — crates.io has no reservation mechanism short of publishing, and publishing an empty
-placeholder is name-squatting the registry's policy discourages. The first real `0.10.x` publish claims
-the name for the token's account, so it should follow this decision promptly rather than sit.
+placeholder is name-squatting the registry's policy discourages. The first publish claims the name for
+the token's account, so it should follow this decision promptly rather than sit.
+
+**Which tag can be the first one: not `v0.10.1`.** The Rust plane landed in #1108 on 2026-09-11, seven
+weeks after `v0.10.1` was cut (2026-07-21) — `git ls-tree -d v0.10.1 rust` is empty. This workflow checks
+out `inputs.tag` and builds inside `rust/`, so a dispatch against any existing tag dies before the lockstep
+check on a missing directory. **The first publishable version is the next fleet tag**, and until that tag
+exists the workflow cannot be rehearsed end to end; `cargo package`/`publish --dry-run` from a working tree
+(`cd rust && cargo publish -p fundamental-core --dry-run`) is the rehearsal available before then.
 
 ## 2. Versioning — lockstep with `FIELD_VERSION`
 
