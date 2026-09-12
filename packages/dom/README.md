@@ -32,6 +32,18 @@ const field = createField(canvas, { host: browserHost() });
 const same = createBrowserField(canvas, {});
 ```
 
+For overlay readings (drawn on a second canvas in front of the content), `createOverlaySurface()`
+creates and places that canvas the way `<field-root>` does — fixed, click-through, `aria-hidden`,
+marked `data-field-overlay` — with a configurable blend mode and stacking level:
+
+```ts
+import { createBrowserField, createOverlaySurface } from '@fundamental-engine/dom';
+
+const surface = createOverlaySurface(document, { blend: 'screen', zIndex: 5 }); // the defaults
+const field = createBrowserField(canvas, { overlay: 'grid', overlayCanvas: surface.canvas });
+// core sizes the surface's backing store; `surface.destroy()` removes it after `field.destroy()`.
+```
+
 ## The platform
 
 `createFieldPlatform(root)` wires the six native-first registries on a root element and a frame
