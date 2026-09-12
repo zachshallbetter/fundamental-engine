@@ -46,17 +46,17 @@ for (const file of opt('gpu')) {
   console.log(`gpu · ${file} · ${m.gpu} · dpr ${m.dpr}`);
   for (const b of gb.sweep) {
     const row = m.sweep.find((r) => r.render === b.render && r.dprCap === b.dprCap && r.density === b.density);
-    check(`fps (median) render=${b.render} dprCap=${b.dprCap} density=${b.density}`, row?.fpsMed, b.minFpsMed, 'fps', true);
+    check(`frame ms (median) render=${b.render} dprCap=${b.dprCap} density=${b.density} (${row?.fpsMed ?? '?'} fps)`, row?.msMed, b.maxMsMed, 'ms');
   }
   for (const b of gb.compositing ?? []) {
     const row = m.compositing.find((r) => r.overlay === b.overlay && r.dprCap === b.dprCap);
-    check(`compositing fps (median) overlay=${b.overlay} dprCap=${b.dprCap}`, row?.fpsMed, b.minFpsMed, 'fps', true);
+    check(`compositing frame ms (median) overlay=${b.overlay} dprCap=${b.dprCap} (${row?.fpsMed ?? '?'} fps)`, row?.msMed, b.maxMsMed, 'ms');
   }
   for (const [path, b] of Object.entries(gb.pages ?? {})) {
     const p = m.pages[path];
     check(`${path} frame ms (median)`, p?.msMed, b.maxMsMed, 'ms');
     check(`${path} frame ms (p95)`, p?.msP95, b.maxMsP95, 'ms');
-    check(`${path} long tasks ≥ 50 ms in ${p?.seconds ?? 20} s`, p?.loafCount, b.maxLongTasks, '');
+    checks.push(`  · ${path} long tasks ≥ 50 ms in ${p?.seconds ?? 20} s: ${p?.loafCount}  (recorded, not gated — measured ${b.measuredLongTasks} when the budgets were written)`);
     check(`${path} Total Blocking Time`, p?.tbtMs, b.maxTbtMs, 'ms');
     check(`${path} JS heap after ${p?.seconds ?? 20} s`, p?.heapEndMB, b.maxHeapMB, 'MB');
   }

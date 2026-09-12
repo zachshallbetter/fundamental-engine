@@ -1,6 +1,6 @@
 {
   "label": "titan-dpr2",
-  "measuredAt": "2026-09-11T22:23:11.670Z",
+  "measuredAt": "2026-09-12T03:52:38.228Z",
   "site": "http://127.0.0.1:4399",
   "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36",
   "dpr": 2,
@@ -40,7 +40,7 @@
       "density": 16,
       "particles": 2080,
       "fpsMed": 60,
-      "fpsP5": 60,
+      "fpsP5": 30,
       "msMed": 16.7
     },
     {
@@ -103,7 +103,7 @@
       "density": 64,
       "particles": 8320,
       "fpsMed": 30,
-      "fpsP5": 20,
+      "fpsP5": 15,
       "msMed": 33.3
     },
     {
@@ -130,7 +130,7 @@
       "density": 64,
       "particles": 8320,
       "fpsMed": 30,
-      "fpsP5": 15,
+      "fpsP5": 12,
       "msMed": 33.3
     },
     {
@@ -225,48 +225,51 @@
   "pages": {
     "/": {
       "seconds": 20,
-      "frames": 1159,
-      "msMed": 16.69999999999891,
-      "msP95": 16.800000000000182,
+      "frames": 1164,
+      "msMed": 16.699999999999818,
+      "msP95": 16.799999999999272,
       "msP99": 33.399999999999636,
-      "fpsMed": 59.880239520962,
-      "dropped": 37,
-      "loafCount": 7,
-      "loafMaxMs": 57.09999990463257,
-      "tbtMs": 20.59999942779541,
-      "heapStartMB": 14.193049430847168,
-      "heapEndMB": 28.276996612548828,
-      "particles": 468
+      "fpsMed": 59.88023952095874,
+      "dropped": 33,
+      "loafCount": 12,
+      "loafMaxMs": 55.700000286102295,
+      "tbtMs": 27,
+      "heapStartMB": 15.41366958618164,
+      "heapEndMB": 8.19875431060791,
+      "particles": 468,
+      "heapEndRawMB": 35.02143478393555
     },
     "/eli5": {
       "seconds": 20,
-      "frames": 1183,
+      "frames": 1176,
       "msMed": 16.69999999999891,
       "msP95": 16.799999999999272,
-      "msP99": 33.20000000000073,
+      "msP99": 33.39999999999782,
       "fpsMed": 59.880239520962,
-      "dropped": 13,
+      "dropped": 22,
       "loafCount": 5,
-      "loafMaxMs": 70.69999980926514,
-      "tbtMs": 46,
-      "heapStartMB": 15.187230110168457,
-      "heapEndMB": 25.49303150177002,
-      "particles": 468
+      "loafMaxMs": 60.200000286102295,
+      "tbtMs": 35.09999990463257,
+      "heapStartMB": 17.08443832397461,
+      "heapEndMB": 6.628759384155273,
+      "particles": 468,
+      "heapEndRawMB": 11.071688652038574
     },
     "/docs/patterns": {
       "seconds": 20,
-      "frames": 1112,
-      "msMed": 16.699999999999818,
-      "msP95": 33.29999999999927,
-      "msP99": 33.400000000001455,
-      "fpsMed": 59.88023952095874,
-      "dropped": 86,
-      "loafCount": 0,
-      "loafMaxMs": 0,
-      "tbtMs": 0,
-      "heapStartMB": 8.673456192016602,
-      "heapEndMB": 19.001399040222168,
-      "particles": 468
+      "frames": 1174,
+      "msMed": 16.69999999999891,
+      "msP95": 16.799999999999272,
+      "msP99": 33.39999999999782,
+      "fpsMed": 59.880239520962,
+      "dropped": 27,
+      "loafCount": 1,
+      "loafMaxMs": 58.5,
+      "tbtMs": 8.5,
+      "heapStartMB": 22.439534187316895,
+      "heapEndMB": 6.653698921203613,
+      "particles": 468,
+      "heapEndRawMB": 11.180927276611328
     }
   },
   "gpuDevices": [

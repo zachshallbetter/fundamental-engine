@@ -1,6 +1,6 @@
 {
   "label": "titan-dpr1",
-  "measuredAt": "2026-09-11T20:14:44.451Z",
+  "measuredAt": "2026-09-12T03:50:17.703Z",
   "site": "http://127.0.0.1:4399",
   "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36",
   "dpr": 1,
@@ -40,7 +40,7 @@
       "density": 16,
       "particles": 2080,
       "fpsMed": 60,
-      "fpsP5": 60,
+      "fpsP5": 30,
       "msMed": 16.7
     },
     {
@@ -48,90 +48,90 @@
       "dprCap": 1,
       "density": 64,
       "particles": 8320,
-      "fpsMed": 30,
-      "fpsP5": 20,
-      "msMed": 33.4
-    },
-    {
-      "render": "dots",
-      "dprCap": 2,
-      "density": 4,
-      "particles": 520,
-      "fpsMed": 60,
-      "fpsP5": 60,
-      "msMed": 16.7
-    },
-    {
-      "render": "dots",
-      "dprCap": 2,
-      "density": 16,
-      "particles": 2080,
-      "fpsMed": 60,
-      "fpsP5": 60,
-      "msMed": 16.7
-    },
-    {
-      "render": "dots",
-      "dprCap": 2,
-      "density": 64,
-      "particles": 8320,
-      "fpsMed": 30,
-      "fpsP5": 12,
-      "msMed": 33.4
-    },
-    {
-      "render": "trails",
-      "dprCap": 1,
-      "density": 4,
-      "particles": 520,
-      "fpsMed": 60,
-      "fpsP5": 60,
-      "msMed": 16.7
-    },
-    {
-      "render": "trails",
-      "dprCap": 1,
-      "density": 16,
-      "particles": 2080,
-      "fpsMed": 60,
-      "fpsP5": 60,
-      "msMed": 16.7
-    },
-    {
-      "render": "trails",
-      "dprCap": 1,
-      "density": 64,
-      "particles": 8320,
-      "fpsMed": 30,
-      "fpsP5": 12,
-      "msMed": 33.4
-    },
-    {
-      "render": "trails",
-      "dprCap": 2,
-      "density": 4,
-      "particles": 520,
-      "fpsMed": 60,
-      "fpsP5": 60,
-      "msMed": 16.7
-    },
-    {
-      "render": "trails",
-      "dprCap": 2,
-      "density": 16,
-      "particles": 2080,
-      "fpsMed": 60,
-      "fpsP5": 60,
-      "msMed": 16.7
-    },
-    {
-      "render": "trails",
-      "dprCap": 2,
-      "density": 64,
-      "particles": 8320,
-      "fpsMed": 30,
+      "fpsMed": 20,
       "fpsP5": 15,
-      "msMed": 33.4
+      "msMed": 49.9
+    },
+    {
+      "render": "dots",
+      "dprCap": 2,
+      "density": 4,
+      "particles": 520,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "dots",
+      "dprCap": 2,
+      "density": 16,
+      "particles": 2080,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "dots",
+      "dprCap": 2,
+      "density": 64,
+      "particles": 8320,
+      "fpsMed": 20,
+      "fpsP5": 15,
+      "msMed": 49.9
+    },
+    {
+      "render": "trails",
+      "dprCap": 1,
+      "density": 4,
+      "particles": 520,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "trails",
+      "dprCap": 1,
+      "density": 16,
+      "particles": 2080,
+      "fpsMed": 60,
+      "fpsP5": 30,
+      "msMed": 16.7
+    },
+    {
+      "render": "trails",
+      "dprCap": 1,
+      "density": 64,
+      "particles": 8320,
+      "fpsMed": 20,
+      "fpsP5": 15,
+      "msMed": 49.9
+    },
+    {
+      "render": "trails",
+      "dprCap": 2,
+      "density": 4,
+      "particles": 520,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "trails",
+      "dprCap": 2,
+      "density": 16,
+      "particles": 2080,
+      "fpsMed": 60,
+      "fpsP5": 60,
+      "msMed": 16.7
+    },
+    {
+      "render": "trails",
+      "dprCap": 2,
+      "density": 64,
+      "particles": 8320,
+      "fpsMed": 20,
+      "fpsP5": 20,
+      "msMed": 49.9
     },
     {
       "render": "streamlines",
@@ -225,48 +225,51 @@
   "pages": {
     "/": {
       "seconds": 20,
-      "frames": 1177,
+      "frames": 1178,
       "msMed": 16.69999999999891,
       "msP95": 16.799999999999272,
       "msP99": 33.30000000000109,
       "fpsMed": 59.880239520962,
-      "dropped": 24,
-      "loafCount": 4,
-      "loafMaxMs": 61.59999990463257,
-      "tbtMs": 13.500000476837158,
-      "heapStartMB": 10.072452545166016,
-      "heapEndMB": 23.55014991760254,
-      "particles": 468
+      "dropped": 21,
+      "loafCount": 3,
+      "loafMaxMs": 53.19999980926514,
+      "tbtMs": 4.399999618530273,
+      "heapStartMB": 15.530471801757812,
+      "heapEndMB": 7.988224983215332,
+      "particles": 468,
+      "heapEndRawMB": 17.80892562866211
     },
     "/eli5": {
       "seconds": 20,
-      "frames": 1186,
+      "frames": 1178,
       "msMed": 16.69999999999891,
       "msP95": 16.799999999999272,
-      "msP99": 33.29999999999927,
+      "msP99": 33.399999999999636,
       "fpsMed": 59.880239520962,
-      "dropped": 14,
-      "loafCount": 4,
-      "loafMaxMs": 57,
-      "tbtMs": 16.90000009536743,
-      "heapStartMB": 13.347283363342285,
-      "heapEndMB": 15.991692543029785,
-      "particles": 468
+      "dropped": 20,
+      "loafCount": 16,
+      "loafMaxMs": 59.700000286102295,
+      "tbtMs": 65.80000019073486,
+      "heapStartMB": 10.847153663635254,
+      "heapEndMB": 6.880645751953125,
+      "particles": 468,
+      "heapEndRawMB": 21.63765811920166
     },
     "/docs/patterns": {
       "seconds": 20,
-      "frames": 1064,
-      "msMed": 16.699999999999818,
-      "msP95": 33.39999999999782,
-      "msP99": 33.400000000001455,
-      "fpsMed": 59.88023952095874,
-      "dropped": 133,
-      "loafCount": 0,
-      "loafMaxMs": 0,
-      "tbtMs": 0,
-      "heapStartMB": 9.613133430480957,
-      "heapEndMB": 28.68656635284424,
-      "particles": 468
+      "frames": 1177,
+      "msMed": 16.69999999999891,
+      "msP95": 16.799999999999272,
+      "msP99": 33.39999999999782,
+      "fpsMed": 59.880239520962,
+      "dropped": 24,
+      "loafCount": 1,
+      "loafMaxMs": 60.30000019073486,
+      "tbtMs": 10.300000190734863,
+      "heapStartMB": 17.6740140914917,
+      "heapEndMB": 5.1687164306640625,
+      "particles": 468,
+      "heapEndRawMB": 24.864338874816895
     }
   },
   "gpuDevices": [

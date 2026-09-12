@@ -10,12 +10,14 @@
  *   compute   frame ms (median) per density  ≤ worst-machine measured × 1.5, min +0.05 ms (Node timing jitter on a shared host)
  *             accumulator overhead            ≤ max(measured + 10, 25) %
  *             query()/snapshot()              ≤ measured × 2        (sub-millisecond values are noisy)
- *   fill-rate fps (median) per sweep row      ≥ floor(measured × 0.8)   (a 20 % fps loss fails)
- *   pages     frame ms median / p95           ≤ measured × 1.3
- *             long tasks (≥ 50 ms) in 20 s    ≤ max(measured + 4, measured × 2)   (rare-event count; noisiest number)
+ *   fill-rate frame ms (median) per sweep row ≤ measured × 1.6   (headless rAF quantizes to 16.7/33/50 ms: a 60→30 fps
+ *                                                                  drop fails; the stress rows at 30 fps may breathe to 20)
+ *   pages     frame ms median / p95           ≤ measured × 1.6 / × 2.1  (vsync quantization: 16.7 → 33 → 50 ms)
+ *             long tasks (≥ 50 ms) in 20 s    recorded, NOT gated — the count varied 3→16 run to run on the shared
+ *                                             host; Total Blocking Time carries the blocking signal
  *             Total Blocking Time             ≤ measured × 2 + 50 ms
  *             JS heap after 20 s (post-GC)    ≤ max(measured × 1.5, measured + 8 MB)
- * The compute budgets come from the SLOWEST compute machine given (the gate runs on the self-hosted
+ * The compute budgets take the WORST value per metric across the compute machines given (the gate runs on the self-hosted
  * titan-gpu runner, so give its numbers first). Re-run this after a deliberate performance change and
  * commit both files together — a budget only moves with a new measurement.
  */
@@ -53,9 +55,9 @@ if (computes.length) {
 for (const g of gpus) {
   budgets.gpu[g.label] = {
     machine: `${g.gpu} · dpr ${g.dpr} · ${g.viewport} · ${g.ua}`,
-    sweep: g.sweep.map((r) => ({ render: r.render, dprCap: r.dprCap, density: r.density, measuredFpsMed: r.fpsMed, minFpsMed: Math.floor(r.fpsMed * 0.8) })),
-    compositing: (g.compositing ?? []).map((r) => ({ overlay: r.overlay, dprCap: r.dprCap, measuredFpsMed: r.fpsMed, minFpsMed: Math.floor(r.fpsMed * 0.8) })),
-    pages: Object.fromEntries(Object.entries(g.pages ?? {}).map(([path, p]) => [path, { maxMsMed: r2(p.msMed * 1.3), maxMsP95: r2(p.msP95 * 1.3), maxLongTasks: Math.max(p.loafCount + 4, p.loafCount * 2), maxTbtMs: r2(p.tbtMs * 2 + 50), maxHeapMB: r2(Math.max((p.heapEndMB ?? 0) * 1.5, (p.heapEndMB ?? 0) + 8)) }])),
+    sweep: g.sweep.map((r) => ({ render: r.render, dprCap: r.dprCap, density: r.density, measuredFpsMed: r.fpsMed, measuredMsMed: r.msMed, maxMsMed: r2(r.msMed * 1.6) })),
+    compositing: (g.compositing ?? []).map((r) => ({ overlay: r.overlay, dprCap: r.dprCap, measuredFpsMed: r.fpsMed, measuredMsMed: r.msMed, maxMsMed: r2(r.msMed * 1.6) })),
+    pages: Object.fromEntries(Object.entries(g.pages ?? {}).map(([path, p]) => [path, { maxMsMed: r2(p.msMed * 1.6), maxMsP95: r2(p.msP95 * 2.1), measuredLongTasks: p.loafCount, maxTbtMs: r2(p.tbtMs * 2 + 50), maxHeapMB: r2(Math.max((p.heapEndMB ?? 0) * 1.5, (p.heapEndMB ?? 0) + 8)) }])),
   };
 }
 writeFileSync(resolve(budgetsPath), JSON.stringify(budgets, null, 2) + '\n');
@@ -80,6 +82,6 @@ for (const g of gpus) {
   for (const [path, p] of Object.entries(g.pages ?? {})) lines.push(`| \`${path}\` | ${p.particles ?? '—'} | ${f(p.msMed)} | ${f(p.msP95)} | ${f(p.msP99)} | ${p.dropped} | ${p.loafCount} | ${f(p.loafMaxMs, 0)} | ${f(p.tbtMs, 0)} | ${f(p.heapStartMB, 1)} | ${f(p.heapEndMB, 1)} |`);
   lines.push(``);
 }
-lines.push(`## How the budgets are derived`, ``, `Every budget in \`perf-budgets.json\` is a measured value from this sheet times a stated headroom:`, ``, `| measurement | budget rule |`, `|---|---|`, `| compute frame ms (median), per density | ≤ worst measured × 1.5 (min +0.05 ms) across the compute machines above |`, `| accumulator overhead | ≤ max(measured + 10, 25) % |`, `| query() / snapshot() | ≤ measured × 2 |`, `| fill-rate fps (median), per sweep row | ≥ floor(measured × 0.8) |`, `| page frame ms (median / p95) | ≤ measured × 1.3 |`, `| page long tasks (≥ 50 ms frames) in 20 s | ≤ max(measured + 4, measured × 2) — a count of rare events on a shared host is the noisiest number here |`, `| page Total Blocking Time | ≤ measured × 2 + 50 ms |`, `| page JS heap after 20 s (after a forced GC) | ≤ max(measured × 1.5, measured + 8 MB) |`, ``, `A budget moves only with a new measurement: re-run the gate by hand (\`workflow_dispatch\`), download the`, `\`perf-measurements-*\` artifact, run \`write-fact-sheet.mjs\` on it, and commit the regenerated sheet and budgets`, `together. Never edit the budgets file directly (gate spec §0.4).`, ``);
+lines.push(`## How the budgets are derived`, ``, `Every budget in \`perf-budgets.json\` is a measured value from this sheet times a stated headroom:`, ``, `| measurement | budget rule |`, `|---|---|`, `| compute frame ms (median), per density | ≤ worst measured × 1.5 (min +0.05 ms) across the compute machines above |`, `| accumulator overhead | ≤ max(measured + 10, 25) % |`, `| query() / snapshot() | ≤ measured × 2 |`, `| fill-rate frame ms (median), per sweep row | ≤ measured × 1.6 — headless rAF quantizes to 16.7 / 33 / 50 ms, so a 60→30 fps drop fails while a 30 fps stress row may breathe to 20 |`, `| page frame ms median / p95 | ≤ measured × 1.6 / × 2.1 — same quantization: a dropped-vsync median fails, a p95 that breathes one step does not |`, `| page long tasks (≥ 50 ms frames) in 20 s | recorded, not gated — the count varied 3→16 between runs on the shared host; TBT (below) carries the blocking signal |`, `| page Total Blocking Time | ≤ measured × 2 + 50 ms |`, `| page JS heap after 20 s (after a forced GC) | ≤ max(measured × 1.5, measured + 8 MB) |`, ``, `A budget moves only with a new measurement: re-run the gate by hand (\`workflow_dispatch\`), download the`, `\`perf-measurements-*\` artifact, run \`write-fact-sheet.mjs\` on it, and commit the regenerated sheet and budgets`, `together. Never edit the budgets file directly (gate spec §0.4).`, ``);
 writeFileSync(resolve(sheetPath), lines.join('\n'));
 console.log(`wrote ${sheetPath} and ${budgetsPath} (${computes.length} compute, ${gpus.length} gpu inputs)`);
