@@ -184,7 +184,7 @@ Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platf
 | `config/forces.config.ts` | Canonical nine + five formations + six conditions + identity colors. |
 | `config/presets.ts` | The eight cosmology presets as co-located virtual bodies. |
 | `config/palettes.ts` / `tokens.ts` | Accent/particle color ramps; design tokens as injectable CSS vars. |
-| `conformance/{types,run,expectations,experiments}.ts` | Headless real-engine scenarios + named expectations; **36 `EXPERIMENTS` (one per force) + 3 `COMPOSITE_EXPERIMENTS`**. Source of truth shared by the tests and the Lab. |
+| `conformance/{types,run,expectations,experiments}.ts` | Headless real-engine scenarios + named expectations; **36 `EXPERIMENTS` (one per force) + 4 `COMPOSITE_EXPERIMENTS`**. Source of truth shared by the tests and the Lab. |
 
 ---
 
@@ -294,8 +294,8 @@ Shared per-frame environment (`engine/types.ts`), filled by the engine: `dx/dy/d
 
 **Conditions** (6 — `data-when`): `active`, `fast`, `slow`, `hot`, `cool`, `scrolling`.
 
-**Presets** (8 — `data-preset`): `blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`,
-`tornado`, `fountain`.
+**Presets** (9 — `data-preset`): `blackhole`, `whitehole`, `wormhole`, `star`, `quasar`, `galaxy`,
+`nebula`, `tornado`, `fountain`.
 
 ---
 
@@ -326,7 +326,7 @@ Shared per-frame environment (`engine/types.ts`), filled by the engine: `dx/dy/d
 
 ## 10. Tests & conformance
 
-- **Conformance**: 36 `EXPERIMENTS` (one per registered force) + 3 `COMPOSITE_EXPERIMENTS`,
+- **Conformance**: 36 `EXPERIMENTS` (one per registered force) + 4 `COMPOSITE_EXPERIMENTS`,
   driven through the real engine and deterministic (seeded RNG). A **safety sweep** runs them all
   through global finite/bounded/conserved invariants (no NaN/Inf, `|v|≤c`, bounded heat, stable
   count). Snapshot regression (`inspect/snapshot.ts`) catches accidental physics drift.

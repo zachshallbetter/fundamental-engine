@@ -577,6 +577,7 @@ export interface ManualPreset {
 export const MANUAL_PRESETS: readonly ManualPreset[] = [
   { name: 'blackhole', tokens: ['attract', 'swirl', 'sink', 'lens'], desc: 'a well, an accretion disk, an event horizon, and lensing', example: 'A dramatic focal element — the field pours in, circles, and is swallowed.' },
   { name: 'whitehole', tokens: ['repel', 'stream'], desc: 'an emission horizon that throws matter out', example: 'A source that only emits — the field is pushed away and downwind.' },
+  { name: 'wormhole', tokens: ['attract', 'warp', 'repel'], desc: 'two linked throats — matter entering one is relocated to its pair and thrown clear', example: 'A pair of linked doorways — the field pours into one and erupts from the other.' },
   { name: 'star', tokens: ['gravity', 'thermal'], desc: 'hydrostatic equilibrium — gravity balanced by thermal pressure', example: 'A balanced body — gravity’s pull held off by thermal pressure.' },
   { name: 'quasar', tokens: ['attract', 'swirl', 'sink', 'lens', 'jet'], desc: 'an accreting black hole with polar jets', example: 'An accreting core with bright jets firing from its poles.' },
   { name: 'galaxy', tokens: ['attract', 'swirl', 'viscosity', 'lens'], desc: 'a spiral disk that settles into a plane', example: 'A spiral that winds the field into arms and settles into a disk.' },

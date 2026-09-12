@@ -31,7 +31,7 @@ instead of wiring the host themselves. The public surface is frozen for `0.x` (s
   forces (`lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`, `pressure`,
   `link`, `morph`, `hunt`, `spawn`, `resonate`, `spotlight`, the `screen` quiet zone, `pigment`,
   field-line transport `fieldflow`, and wormhole relocate `warp`).
-- **8 presets** compose those primitives into cosmology with no new engine code (`blackhole`, `star`,
+- **9 presets** compose those primitives into cosmology with no new engine code (`blackhole`, `star`,
   `galaxy`, `tornado`, …), plus **5 formations** that bias the whole field and **6 condition** gates.
 - **20 render modes**: matter/structure (`dots`, `trails`, `links`, `streamlines`, `metaballs`,
   `voronoi`, `field-lines`, `heatmap`, `knockout`, `redshift`, `blackbody`, `depth`) and

@@ -300,8 +300,8 @@ Forces also carry a four-field classification — gravity, electromagnetic, stro
 reads as a translation of the four fundamental fields into interface behavior. See
 [`/docs/natural-fields`](https://fundamental-engine.com/docs/natural-fields).
 
-**8 presets** compose primitives into cosmology with no new engine code: `blackhole`, `whitehole`,
-`star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
+**9 presets** compose primitives into cosmology with no new engine code: `blackhole`, `whitehole`,
+`wormhole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
 
 **20 render modes (all shipped):** the matter/structure modes `dots`, `trails`, `links`, `streamlines`,
 `metaballs`, `voronoi`, `field-lines`, `heatmap`, `knockout` (matter as negative space in a field

@@ -207,3 +207,24 @@
   border-top: 1.4px solid currentColor;
 }
 
+
+/* wormhole — two throats joined by a bridge */
+.fgp-wormhole::before {
+  left: 0.5px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  border: 1.4px solid currentColor;
+}
+.fgp-wormhole::after {
+  right: 0.5px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  border: 1.4px solid currentColor;
+  box-shadow: -4.5px 0 0 -2.2px currentColor;
+}

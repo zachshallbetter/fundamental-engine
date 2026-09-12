@@ -905,4 +905,50 @@ export const COMPOSITE_EXPERIMENTS: ForceConformance[] = [
       }),
     ],
   },
+  {
+    // The `wormhole` preset (§20.7/§20.9), fired as the preset actually expands: one body per
+    // virtual body, each with its OWN strength/range — a single multi-token body would share one
+    // strength/range and would not be this composite at all.
+    //
+    // Two mouths, 1200px apart so neither well reaches the other. Each mouth is
+    // `attract(0.9,300) + warp(throat 40) + repel(6,200, when:'hot')`. Coordinates are
+    // post-centring absolutes: the runner offsets cx/cy (and particles) by CENTER = (3000,2000)
+    // but NOT warpX/warpY, so the relocate targets are written already-offset.
+    scenario: {
+      force: 'attract warp repel',
+      tokens: ['attract'],
+      label: 'A wormhole pair: matter falls into mouth A and is thrown clear of mouth B',
+      family: 'extended',
+      klass: 'A',
+      body: { cx: 0, cy: 0, strength: 0.9, range: 300 }, // mouth A — the well
+      extraBodies: [
+        { tokens: ['warp'], attrs: { cx: 0, cy: 0, absorbR: 40, warpHas: true, warpX: 4200, warpY: 2000, twist: 0, warpScale: 1 } },
+        { tokens: ['repel'], attrs: { cx: 0, cy: 0, strength: 6, range: 200, when: 'hot' } },
+        { tokens: ['attract'], attrs: { cx: 1200, cy: 0, strength: 0.9, range: 300 } }, // mouth B
+        { tokens: ['warp'], attrs: { cx: 1200, cy: 0, absorbR: 40, warpHas: true, warpX: 3000, warpY: 2000, twist: 0, warpScale: 1 } },
+        { tokens: ['repel'], attrs: { cx: 1200, cy: 0, strength: 6, range: 200, when: 'hot' } },
+      ],
+      particles: [{ x: -250, y: 0 }], // at rest, 250px out from mouth A
+      frames: 600,
+    },
+    expectations: [
+      check('transports: matter ends up at the FAR mouth, not the one it fell into', 'invariant', (r) => {
+        const last = r.trajectory[r.trajectory.length - 1]![0]!;
+        const dA = Math.hypot(last.x - 3000, last.y - 2000);
+        const dB = Math.hypot(last.x - 4200, last.y - 2000);
+        return { pass: dB < dA, measured: `${f3(dA)}px from A, ${f3(dB)}px from B`, expected: 'nearer B (it crossed)' };
+      }),
+      check('does not trap: it is thrown clear of the exit throat, not parked on its lip', 'invariant', (r) => {
+        const last = r.trajectory[r.trajectory.length - 1]![0]!;
+        const dB = Math.hypot(last.x - 4200, last.y - 2000);
+        // the throat is 40px; the drafted lens-only composition parked at ~52px. The spec's
+        // repel mouth throws matter to the far side of the well.
+        return { pass: dB > 150, measured: `${f3(dB)}px from mouth B`, expected: '> 150px (well clear of the 40px throat)' };
+      }),
+      check('conserved: the relocation creates and destroys nothing', 'invariant', (r) => {
+        const n = r.trajectory[r.trajectory.length - 1]!.length;
+        return { pass: n === 1, measured: `${n} particle(s)`, expected: '1 (count unchanged)' };
+      }),
+    ],
+  },
 ];

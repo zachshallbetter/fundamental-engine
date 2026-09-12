@@ -131,7 +131,7 @@ export function parseBodyParams(a: BodyAttrs): StaticBody {
 /** A `BodyAttrs` view over one preset entry, so it parses through the very same
  *  defaults as a real `data-*` element (single source of truth in `parseBodyParams`).
  *  The entry's keys map to the attribute suffixes the parser already reads. */
-function entryAttrs(e: PresetEntry): BodyAttrs {
+function entryAttrs(e: PresetEntry, host?: BodyAttrs): BodyAttrs {
   const map: Record<string, string> = { body: e.body };
   if (e.strength != null) map.strength = String(e.strength);
   if (e.range != null) map.range = String(e.range);
@@ -141,6 +141,17 @@ function entryAttrs(e: PresetEntry): BodyAttrs {
   if (e.max != null) map.max = String(e.max);
   if (e.life != null) map.life = String(e.life);
   if (e.cap != null) map.cap = String(e.cap);
+  if (e.twist != null) map.twist = String(e.twist);
+  if (e.scale != null) map.scale = String(e.scale);
+  if (e.when != null) map.when = e.when;
+  // `@pair` is the "inherit the host element's own data-pair" sentinel (§20.9 `wormhole`):
+  // the preset table cannot know the partner selector, only the authored element can. With no
+  // host, or a host carrying no `data-pair`, the key is simply absent → `warp` stays unpaired
+  // and no-ops, which is what keeps an unpaired preset inert.
+  if (e.pair != null) {
+    const resolved = e.pair === '@pair' ? (host?.get('pair') ?? null) : e.pair;
+    if (resolved) map.pair = resolved;
+  }
   return {
     get: (name) => map[name] ?? null,
     has: (name) => name in map,
@@ -148,10 +159,12 @@ function entryAttrs(e: PresetEntry): BodyAttrs {
 }
 
 /** Expand a preset name into the static params of its virtual bodies (pure, §20.9).
- *  An unknown preset yields `[]` — the element simply contributes nothing. */
-export function expandPreset(name: string): StaticBody[] {
+ *  An unknown preset yields `[]` — the element simply contributes nothing.
+ *  `host` (the authored element's own attrs) resolves the `@pair` sentinel, so a paired
+ *  preset like `wormhole` can read the partner selector off the element. */
+export function expandPreset(name: string, host?: BodyAttrs): StaticBody[] {
   const entries = PRESETS[name];
-  return entries ? entries.map((e) => parseBodyParams(entryAttrs(e))) : [];
+  return entries ? entries.map((e) => parseBodyParams(entryAttrs(e, host))) : [];
 }
 
 /** A compact element description for guard messages: `tag#id.class` (best effort). */
@@ -334,7 +347,9 @@ export function scanBodies(root: ParentNode): Body[] {
   root.querySelectorAll('[data-preset]').forEach((node) => {
     if (!ownedByScanRoot(node, root)) return;
     const el = node as HTMLElement;
-    for (const sb of expandPreset(el.dataset.preset ?? '')) bodies.push(makeBody(el, sb));
+    // the element's own attrs resolve `@pair` (a preset whose virtual body is paired, §20.9).
+    const host = elementAttrs(el);
+    for (const sb of expandPreset(el.dataset.preset ?? '', host)) bodies.push(makeBody(el, sb));
   });
   // authored via intent/role rather than a raw data-body (authoring §4, worldclass §12). An
   // explicit data-body always takes the plain path above, so these never double-register.

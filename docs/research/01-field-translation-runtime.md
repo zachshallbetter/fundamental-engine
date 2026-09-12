@@ -459,8 +459,8 @@ The 36 forces fall into three families:
   `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, `pigment`, `fieldflow`, `screen`, `warp`,
   and the `resonate` / `spotlight` modifiers.
 
-Eight **presets** (`blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`,
-`fountain`) compose primitives into cosmology *with no new engine code*: a preset expands one DOM
+Nine **presets** (`blackhole`, `whitehole`, `wormhole`, `star`, `quasar`, `galaxy`, `nebula`,
+`tornado`, `fountain`) compose primitives into cosmology *with no new engine code*: a preset expands one DOM
 element into several co-located virtual bodies, each a primitive with its own attributes (e.g.
 `blackhole = attract + swirl + sink + lens`). This is a compositional algebra over the catalog, and
 it keeps the registry small while the expressive surface stays large. The per-force math, the
