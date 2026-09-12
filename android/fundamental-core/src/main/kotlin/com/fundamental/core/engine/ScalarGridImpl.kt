@@ -15,7 +15,13 @@ import kotlin.math.roundToInt
 // The lattice is 2D over the x/y plane, exactly as the JS — field buffers are a
 // surface phenomenon; z is ignored on sample/deposit and the gradient's z is 0.
 
-enum class GridMode { DIFFUSE, WAVE, MEMORY }
+/**
+ * A grid's stepping scheme. [HELD] is NOT a dynamical scheme: it is a raster the engine writes and
+ * then leaves alone — `step()` is a no-op, so a held grid never blurs, decays or advances. It is the
+ * backing store for a DECLARED POTENTIAL (#443): a host `addField` channel rasterised once per
+ * invalidation and read as -grad(Phi) by `relief`. Filled only through [ScalarGridImpl.fillFrom].
+ */
+enum class GridMode { DIFFUSE, WAVE, MEMORY, HELD }
 
 /** Clamp a Float to [lo, hi]. */
 private fun clamp(v: Float, lo: Float, hi: Float): Float =
@@ -89,9 +95,32 @@ class ScalarGridImpl(
     /** Advance one frame in the grid's mode. */
     fun step() {
         when (mode) {
+            // The declared-potential raster (#443): stepping would blur and decay a terrain the host
+            // declared. Every other arm is untouched, so no existing grid moves by a bit.
+            GridMode.HELD -> return
             GridMode.WAVE -> stepWave()
             GridMode.MEMORY -> stepDiffuse(D = 0.03f, decay = 0.004f) // barely blur, fade slowly
             GridMode.DIFFUSE -> stepDiffuse()
+        }
+    }
+
+    /**
+     * RASTERISE a sampler into this grid — the write API a [GridMode.HELD] potential needs (#443).
+     *
+     * Each cell (ix, iy) is filled from `sampler(ix*cell, iy*cell)` — the exact pixel coordinates
+     * [sample] interpolates between — so a bilinear read at a cell centre returns the sampler's own
+     * value and [gradient] is the true central difference of the sampled surface.
+     *
+     * NON-FINITE IS CLAMPED AT THE BOUNDARY: a host sampler returning NaN or infinity writes 0. A NaN
+     * velocity slips a `speed > c` guard entirely (the comparison is false), so the check belongs
+     * where the untrusted value enters the engine.
+     */
+    fun fillFrom(sampler: (Float, Float) -> Float) {
+        for (iy in 0 until rows) {
+            for (ix in 0 until cols) {
+                val v = sampler(ix * cell, iy * cell)
+                cur[iy * cols + ix] = if (v.isFinite()) v else 0f
+            }
         }
     }
 

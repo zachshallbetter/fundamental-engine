@@ -37,6 +37,7 @@ export type StaticBody = Pick<
   | 'feedback'
   | 'shaped'
   | 'chargeGated'
+  | 'potential'
   | 'species'
   | 'affects'
   | 'fmin'
@@ -99,6 +100,11 @@ export function parseBodyParams(a: BodyAttrs): StaticBody {
     feedback: a.has('feedback'),
     shaped: a.has('shaped'), // data-shaped → forces sample the element's box surface (Stage C)
     chargeGated: a.has('charge-gated'), // data-charge-gated → fieldflow follows only charged matter (#711)
+    // data-potential (#443) → the addField channel `relief` admits as a scalar potential Φ. Absent ⇒
+    // the key is absent (not `'height'`): the force applies its own default, so a body that never
+    // declared one carries no extra property and the scanned Body shape is unchanged for every
+    // existing page. An empty value is treated as absent.
+    ...(a.get('potential') ? { potential: a.get('potential')! } : {}),
     // matter tagging (#444): data-species tags emitted matter; data-affects (comma-sep) restricts
     // this body's forces to those species. Absent ⇒ no tag / acts on all matter.
     ...(a.get('species') != null && Number.isFinite(Number.parseFloat(a.get('species')!))

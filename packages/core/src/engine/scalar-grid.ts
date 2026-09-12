@@ -4,18 +4,25 @@
  * (a travelling wave, `∂²φ/∂t² = c²∇²φ`). Particles `deposit` into it and read its
  * `gradient`; the engine advances it once per frame with `step()`.
  *
- * Two stepping modes, chosen at construction (the field picks by grid name):
+ * Stepping modes, chosen at construction (the field picks by grid name):
  *  - `diffuse` — explicit heat equation with a decay term; D is clamped to the
  *    stable range for the forward scheme.
  *  - `wave`    — second-order leapfrog using a previous buffer; c² clamped for the
  *    CFL limit, with light damping.
+ *  - `memory`  — `diffuse` with a barely-blurring, slowly-fading parameterization.
+ *  - `held`    — NOT a dynamical scheme: a raster the engine writes and then leaves
+ *    alone. `step()` is a no-op, so a held grid never blurs, decays or advances. This
+ *    is the backing store for a DECLARED POTENTIAL (#443): the host's `addField`
+ *    channel rasterised once per invalidation and read as −∇Φ. A held grid is filled
+ *    only through {@link ScalarGridImpl.fillFrom}; `deposit` still works but nothing
+ *    in the engine deposits into one.
  *
  * Pure (no DOM), so every operation is golden-tested.
  */
 
 import type { ScalarGrid, Vec2 } from './types.ts';
 
-export type GridMode = 'diffuse' | 'wave' | 'memory';
+export type GridMode = 'diffuse' | 'wave' | 'memory' | 'held';
 
 export class ScalarGridImpl implements ScalarGrid {
   readonly mode: GridMode;
@@ -92,6 +99,11 @@ export class ScalarGridImpl implements ScalarGrid {
 
   /** advance one frame in the grid's mode. */
   step(): void {
+    // `held` is the declared-potential raster (#443): the engine wrote it, and it stays exactly
+    // as written until something invalidates it. Stepping it would blur and decay a terrain the
+    // host declared — so this returns before any scheme runs. Every OTHER mode's path below is
+    // unchanged, which is why no existing grid moves by a bit.
+    if (this.mode === 'held') return;
     if (this.mode === 'wave') this.stepWave();
     else if (this.mode === 'memory') this.stepDiffuse(0.03, 0.004); // barely blur, fade slowly
     else this.stepDiffuse();
@@ -141,6 +153,31 @@ export class ScalarGridImpl implements ScalarGrid {
     const k = rate <= 0 ? 1 : rate >= 1 ? 0 : 1 - rate;
     if (k === 1) return;
     for (let i = 0; i < this.cur.length; i++) this.cur[i]! *= k;
+  }
+
+  /**
+   * RASTERISE a sampler into this grid — the write API a `held` potential needs (#443).
+   *
+   * Each cell (ix, iy) is filled from `sampler(ix·cell, iy·cell)` — the exact pixel coordinates
+   * `sample()` interpolates between — so a bilinear read at a cell centre returns the sampler's own
+   * value and `gradient()` is the true central difference of the sampled surface at the grid scale.
+   *
+   * NON-FINITE IS CLAMPED AT THE BOUNDARY, not downstream: a host sampler returning `NaN` or
+   * `Infinity` writes 0 into that cell. A non-finite cell would propagate through `sample()` into a
+   * velocity, and a NaN velocity slips the `speed > c` guard entirely (it compares false) — so the
+   * check belongs here, where the untrusted value enters the engine, and `safety.test.ts` is the
+   * backstop rather than the design.
+   *
+   * Writes `cur` only; `nxt`/`prev` are irrelevant to a grid that never steps.
+   */
+  fillFrom(sampler: (x: number, y: number) => number): void {
+    const { cols, rows, cell, cur } = this;
+    for (let iy = 0; iy < rows; iy++) {
+      for (let ix = 0; ix < cols; ix++) {
+        const v = sampler(ix * cell, iy * cell);
+        cur[iy * cols + ix] = Number.isFinite(v) ? v : 0;
+      }
+    }
   }
 
   /** Zero every cell in all internal buffers (cur, nxt, prev). */

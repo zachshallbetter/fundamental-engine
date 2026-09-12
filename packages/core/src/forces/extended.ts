@@ -599,6 +599,69 @@ export const fieldflow: Force = {
   meta: { desc: 'follow the field lines — steer onto and stream down the net field a body radiates' },
 };
 
+/**
+ * §20.11 — `relief`: transport down a DECLARED POTENTIAL (#443, FieldKit gap #6).
+ *
+ * The engine does not own terrain and never will — a host does. `field.addField('height', sampler)`
+ * has let a host hand the engine an elevation surface since 0.5.1, but nothing could *read* it as a
+ * cause. `relief` is that coupling, and only that: it admits the named channel as a scalar potential
+ * Φ = G·h and moves matter down its gradient, `a = −∇Φ = −G·∇h`. Water drains into the basins of the
+ * host's own height map and an agent rolls downhill — emerging from the field, which is exactly what
+ * the ticket asks for, rather than being faked by the host each frame.
+ *
+ * **It is a no-op unless a host supplied the structure.** With no `Env.potential` accessor (the
+ * default hot path, every probe env) or no such channel registered, it returns before touching
+ * anything. That is what earns `truthMode: 'physical'` under the wallpaper rule: the force adds no
+ * decoration of its own, and with nothing declared there is nothing to see.
+ *
+ * The potential is read off a HELD raster of the channel (class [C], the `diffuse` idiom of
+ * force-reads-grid), not by calling the host sampler per particle — see `Env.potential`.
+ *
+ * - `data-potential` names the channel (default `'height'`).
+ * - `data-spin` picks the sign: ≥ 0 (default) is downhill, < 0 is uphill (wind fighting a ridge).
+ * - `data-strength` is the gain; `data-range` localizes it, and **`data-range="0"` is global** —
+ *   which is usually what terrain wants, since relief is a property of the whole field, not of a
+ *   neighbourhood around the declaring element.
+ *
+ * Mass: the engine rescales an additive force's Δv by 1/m, so heavy matter slides slower than
+ * `a = −G∇h` strictly allows. That is an **Idealization**, recorded as one in the designed-vs-natural
+ * map — not a faithful free-fall.
+ */
+const RELIEF_FLAT = 1e-9; // below this |∇Φ| the ground is flat — nothing to slide down
+export const relief: Force = {
+  token: 'relief',
+  label: 'Relief',
+  apply(b, p, e) {
+    // The accessor is absent on every env that has not opted in, and returns undefined for a channel
+    // that was never registered or has been removed — so BOTH no-coupling cases land here, before any
+    // state is touched. This is the "registration does not couple" guarantee, in one line.
+    const phi = e.potential?.(b.potential ?? 'height');
+    if (!phi) return;
+    if (b.range > 0 && e.dist >= b.range) return; // range 0 ⇒ global (the `fieldflow` convention)
+    const g = phi.gradient(p.x, p.y); // ∇Φ, up-slope
+    if (!Number.isFinite(g.x) || !Number.isFinite(g.y)) return; // a hostile channel never reaches v
+    if (Math.abs(g.x) < RELIEF_FLAT && Math.abs(g.y) < RELIEF_FLAT) return; // flat ground
+    const falloff = b.range > 0 ? 1 - e.dist / b.range : 1;
+    // data-spin < 0 inverts the transport: matter climbs the potential instead of draining down it.
+    const dir = b.spin < 0 ? 1 : -1;
+    const gain = b.strength * falloff * e.G * dir;
+    p.vx += g.x * gain;
+    p.vy += g.y * gain;
+    // Bound by the unit system's speed of light (§20.10), as gravity/thermal/fieldflow do. This is
+    // not decoration: a DISCONTINUOUS host channel (a cliff, a step in a cost surface) has an
+    // unbounded ∇Φ, and without the cap one bad cell is a particle leaving the field at any speed.
+    const vz = p.vz ?? 0;
+    const s2 = p.vx * p.vx + p.vy * p.vy + vz * vz;
+    if (s2 > e.c * e.c) {
+      const inv = e.c / Math.sqrt(s2);
+      p.vx *= inv;
+      p.vy *= inv;
+      if (vz) p.vz = vz * inv;
+    }
+  },
+  meta: { desc: 'transport down a host-declared potential — downhill flow over terrain height' },
+};
+
 /** The designed extended forces, in spec order (§20.3). */
 /**
  * §22.3 — `warp`: a wormhole throat. Matter that enters the throat (within `absorbR`) is
@@ -661,6 +724,7 @@ export const extendedForces: readonly Force[] = [
   pigment,
   fieldflow,
   warp,
+  relief,
 ];
 
 /** Register the designed extended forces on a registry (§4) — opt-in, alongside the nine. */

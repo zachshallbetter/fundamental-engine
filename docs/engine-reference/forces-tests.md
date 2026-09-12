@@ -213,6 +213,7 @@ body. "Δv" is the frame-0 effect on a still particle unless a velocity is given
 | `screen` | a quiet zone over a neighbour attractor (`extraBodies`) | matter at the screen's core barely moves (< 5% of the unshielded control); outside the radius the control feels plain attract exactly; the screen itself never moves matter | modifier | other bodies' force ×`clamp(1 − S(1 − d/r)², min, 1)` in the integrator pass |
 | `pigment` | p overlapping a tinted body | adopts the body's tint and carries it away (conserved color) | A | `c_p ← mix(c_p, tint)` on overlap (`d<0.6r`) |
 | `fieldflow` | neutral p in a charge's field | streams OUT along the field line; ends farther from the body; inert past range | A | steer `v += (n̂·\|v\| − v)·k` + stream `v += n̂·gain·a`, `n̂ = net field()/\|field\|` |
+| `relief` | p on a host-declared height channel | slides DOWN the declared potential (exact Δv = −∇Φ·S); ends lower; a pure no-op with no channel registered | C | `Φ = G·h` from an `addField` channel rasterised into a held grid; `v += −∇Φ·S·(1 − d/r)`, `data-spin` < 0 ⇒ uphill |
 | `warp` | p inside a paired throat | relocated to the `data-pair` body's throat (conserved — count unchanged), emerging just outside it; velocity rotated by `data-twist` | A | `p ← pairCentre + R(twist)·û·(absorbR·scale + 6)`, `v ← R(twist)·v` (kinematic teleport) |
 
 ### Composition & conditions
@@ -249,7 +250,11 @@ Condition gating runs through the real condition registry (`active`, `fast`, `sl
 
 ## Coverage
 
-- **36 forces**, each with an experiment (36 `EXPERIMENTS` + 4 `COMPOSITE_EXPERIMENTS`,
+<<<<<<< HEAD
+- **37 forces**, each with an experiment (36 `EXPERIMENTS` + 4 `COMPOSITE_EXPERIMENTS`,
+=======
+- **37 forces**, each with an experiment (37 `EXPERIMENTS` + 3 `COMPOSITE_EXPERIMENTS`,
+>>>>>>> 2ae0c080 (feat(core,swift,kotlin): height-aware fields — terrain as a declared potential (#443))
   ~79 invariant/exact checks), driven through the real engine and deterministic across
   runs, on top of the golden per-force unit tests and the integrator suite. A **safety
   sweep** then runs all 40 experiments through global finite/bounded/conserved invariants

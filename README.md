@@ -208,7 +208,7 @@ trail the newest JS-side additions.
 
 - **Rust (headless, experimental)** — a fourth plane in [`rust/`](rust/README.md): an f64, seeded,
   zero-dependency `fundamental-core` crate for servers, data pipelines and CMS runtimes, where a body is
-  a data record rather than a widget. 28 of the 36 forces today, held to the same cross-plane golden;
+  a data record rather than a widget. 28 of the 37 forces today, held to the same cross-plane golden;
   **not yet published** to crates.io — the publish path (`fundamental-core`, lockstep-versioned,
   maintainer-dispatched) is prepared per [RELEASING.md](RELEASING.md) (#1047) — and not on the parity
   page yet. Tracked by epic #1036.
@@ -285,16 +285,16 @@ fill-rate-bound, not particle-bound; `<field-root>` applies it automatically.
 
 
 
-**36 forces**, in three families.
+**37 forces**, in three families.
 
 - **Canonical interface forces (9):** `attract`, `repel`, `swirl`, `stream`, `viscosity`, `jet`,
   `tether`, `wall`, `sink`. Designed interface verbs with bounded, legible falloff.
 - **Natural forces (8):** `gravity`, `charge`, `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`,
   `memory`. Real field laws: softened inverse-square, Coulomb/Lorentz behavior, Langevin noise,
   diffusion, travelling waves, and sediment-like memory.
-- **Designed-extended forces and modifiers (19):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`,
+- **Designed-extended forces and modifiers (20):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`,
   `align`, `wind`, `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, `resonate`, `spotlight`,
-  `screen`, `pigment`, `fieldflow`, `warp`.
+  `screen`, `pigment`, `fieldflow`, `warp`, `relief`.
 
 Forces also carry a four-field classification — gravity, electromagnetic, strong, weak — so the catalog
 reads as a translation of the four fundamental fields into interface behavior. See
@@ -527,7 +527,7 @@ See [`docs/canonical/platform-architecture.md`](docs/canonical/platform-architec
 [Swift package](swift/README.md) (`swift/`) covers iOS / macOS / visionOS; the
 [Kotlin / Android port](android/README.md) (`android/`) covers Android and a desktop JVM. Each mirrors
 the npm package layout (a pure renderer-agnostic core, the six-phase platform scheduler, a native host,
-and a native lab) and ships the full 36-force surface, the `FieldHandle` API, and a FieldLab. Both are
+and a native lab) and ships the full 37-force surface, the `FieldHandle` API, and a FieldLab. Both are
 held to the JS engine's force math by a single shared, machine-checked **cross-plane conformance
 golden** — at `depth: 0` a ported field and a JS field produce the same motion
 ([`docs/canonical/testing-and-conformance.md`](docs/canonical/testing-and-conformance.md)).

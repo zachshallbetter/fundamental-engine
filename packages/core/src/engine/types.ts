@@ -323,6 +323,11 @@ export interface Body {
    *  modelling magnetized plasma tied to the field line. Undefined/false ⇒ the default neutral-medium
    *  advection (fieldflow transports ALL matter). Only read by the `fieldflow` force. */
   chargeGated?: boolean;
+  /** `data-potential` (#443) — the name of the {@link FieldHandle.addField} channel this body admits
+   *  as a scalar POTENTIAL Φ, read by the `relief` force as downhill transport (−∇Φ). Undefined ⇒
+   *  `'height'`, the terrain reading the channel substrate was documented for. `data-spin` selects the
+   *  sign: ≥ 0 (the default) moves matter DOWN the potential, < 0 moves it up. Only read by `relief`. */
+  potential?: string;
   /** `data-species` — the species tag this body stamps on matter it *emits* (a `spawn` source),
    *  so multiple ecologies (pollen vs seeds vs spores) can share one field. Undefined ⇒ 0. */
   species?: number;
@@ -512,6 +517,22 @@ export interface Env {
    * into a corner, even though only `linear` is populated today. Read-only contract: setting
    * `accum` never alters how matter moves. */
   accum?: FieldImpulseAccumulator;
+  /**
+   * OPT-IN declared-potential accessor (#443). A host channel registered with
+   * {@link FieldHandle.addField} — terrain height, a cost surface — admitted as a scalar POTENTIAL
+   * Φ and handed to a force as a read-only {@link ScalarGrid}, so the force reads transport as
+   * −∇Φ. Returns `undefined` for a channel that was never registered or has since been `remove()`d,
+   * which is what makes a potential-reading force a pure no-op rather than a reader of stale state.
+   *
+   * Absent on the default hot path — the `fieldAt?` / `accum?` precedent. The engine assigns it only
+   * while a body actually declares a potential-reading token, so a bare or probe env never carries
+   * it and `applyForce` never sees the property. Registering a channel does NOT couple it: a field
+   * whose host called `addField` but declared no such body is byte-identical to one that did not.
+   *
+   * The returned grid is a HELD raster (`GridMode 'held'`), refreshed when the channel changes —
+   * the one documented place the engine caches a channel sampler (see `addField`).
+   */
+  potential?(name: string): ScalarGrid | undefined;
   /** The integration scheme (substrate doc 04 §Step 3). `undefined`/`'legacy'` is the shipped
    * semi-implicit Euler with per-frame decay (the default — unchanged). `'fixed'` is the opt-in
    * fixed-timestep integrator: additive force impulses and the `FRICTION`/`HEAT_DECAY` decays scale
@@ -1067,6 +1088,9 @@ export interface BodySpec {
   angle?: number;
   /** tint for `pigment` color transport. */
   color?: string;
+  /** the {@link FieldHandle.addField} channel this body admits as a scalar potential, for `relief`
+   *  (#443). Omitted ⇒ `'height'`. The programmatic mirror of `data-potential`. */
+  potential?: string;
   /** the body's box in field-pixel space, sampled each frame — the position source (a non-DOM
    *  host projects its mesh/view position through here). */
   rect: () => { left: number; top: number; width: number; height: number };
@@ -1784,9 +1808,22 @@ export interface FieldHandle {
    * surfaces; `addField` is an on-demand input channel): instead of bolting a parallel grid alongside
    * the field, hand the engine a sampler `(x, y) => number` (terrain height, soil moisture, a heat map)
    * and read it back through `sampleField(name, x, y)`, so a consumer queries **one** field, not two.
-   * The sampler is pull-based — called on demand, never cached — so keep it cheap. The returned
-   * {@link FieldChannelHandle} swaps the sampler live or removes the channel. (Force coupling — a force
-   * reading a channel as a potential — is a separate, opt-in step; this is the read substrate.)
+   * The sampler is pull-based — called on demand — so keep it cheap. The returned
+   * {@link FieldChannelHandle} swaps the sampler live or removes the channel.
+   *
+   * **AMENDED at #443 (was: "never cached").** `sampleField` still calls the sampler on every read and
+   * caches nothing. There is now exactly ONE exception, and it is opt-in: a body declaring `relief`
+   * admits this channel as a scalar potential, and the engine rasterises the sampler into a held grid
+   * so the force pass reads a buffer rather than calling the host once per particle per frame. That
+   * raster is invalidated — and re-rasterised on the next read — by every event that could change what
+   * the sampler answers: `addField`, {@link FieldChannelHandle.set}, {@link FieldChannelHandle.remove}
+   * (which also drops the raster, so a removed channel can never be read stale) and a viewport resize.
+   * Nothing is rasterised on a frame cadence, so the held state is never frame-phase dependent. With no
+   * such body declared, nothing is ever cached and this promise holds as originally written.
+   *
+   * The sampler must therefore obey the field-function contract it always did: side-effect free and
+   * stable for a fixed state. A sampler that silently changes its answers WITHOUT `set()` was never
+   * contractual, and is the one case the raster can lag.
    */
   addField(name: string, sampler: (x: number, y: number) => number): FieldChannelHandle;
   /** Sample a registered field channel at `(x, y)`. Returns 0 for an unregistered channel. */

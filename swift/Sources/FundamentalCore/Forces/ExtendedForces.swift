@@ -449,9 +449,43 @@ public struct WarpForce: Force {
 }
 
 /// The designed extended forces, in spec order (§20.3).
+/// §20.11 — `relief`: transport down a DECLARED POTENTIAL (#443, FieldKit gap #6).
+///
+/// The engine does not own terrain — a host does. `addField("height", sampler)` has let a host hand
+/// the engine an elevation surface since 0.5.1; `relief` is the coupling that finally reads it as a
+/// cause. It admits the named channel as a scalar potential Φ = G·h and moves matter down its
+/// gradient, `a = −∇Φ`. Water drains into the basins of the host's own height map.
+///
+/// A pure no-op unless a host supplied the structure (no accessor, or no such channel) — which is
+/// what earns `truthMode: physical` under the wallpaper rule: with nothing declared there is nothing
+/// to see. `potential` names the channel (default "height"); `spin` < 0 climbs instead of drains;
+/// `range` 0 ⇒ global, which is usually what terrain wants.
+let RELIEF_FLAT: Float = 1e-9 // below this |∇Φ| the ground is flat — nothing to slide down
+public struct ReliefForce: Force {
+    public let token = "relief"
+    public let label = "Relief"
+    public init() {}
+
+    public func apply(body b: Body, particle p: Particle, env e: Env) {
+        // Both no-coupling cases land here, before any state is touched: no accessor (the default
+        // path) and no such channel (never registered, or removed).
+        guard let lookup = e.potential, let phi = lookup(b.potential ?? "height") else { return }
+        if b.range > 0 && e.dist >= b.range { return } // range 0 ⇒ global (the `fieldflow` convention)
+        let g = phi.gradient(at: p.position) // ∇Φ, up-slope; a scalar grid's gradient has z = 0
+        guard g.x.isFinite, g.y.isFinite else { return } // a hostile channel never reaches v
+        if abs(g.x) < RELIEF_FLAT && abs(g.y) < RELIEF_FLAT { return } // flat ground
+        let falloff: Float = b.range > 0 ? 1 - e.dist / b.range : 1
+        let dir: Float = b.spin < 0 ? 1 : -1 // spin < 0 ⇒ climb the potential instead of draining
+        p.velocity += g * (b.strength * falloff * e.G * dir)
+        // Not decoration: a DISCONTINUOUS channel (a cliff) has an unbounded ∇Φ, and without the cap
+        // one bad cell is a particle leaving the field at any speed.
+        clampToC(p, e.c)
+    }
+}
+
 public func extendedForces() -> [any Force] {
     [LensForce(), GateForce(), BuoyancyForce(), ShearForce(), CrystallizeForce(),
      AlignForce(), WindForce(), CohesionForce(), PressureForce(), LinkForce(),
      HuntForce(), MorphForce(), SpawnForce(), ResonateForce(), SpotlightForce(),
-     ScreenForce(), PigmentForce(), FieldFlowForce(), WarpForce()]
+     ScreenForce(), PigmentForce(), FieldFlowForce(), WarpForce(), ReliefForce()]
 }

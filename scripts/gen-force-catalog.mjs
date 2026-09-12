@@ -158,8 +158,8 @@ console.log(
 // ---------------------------------------------------------------------------
 if (catalog.length < 30) {
   console.error(
-    `ERROR: only ${catalog.length} forces found — expected 36. Check source parsing.`,
+    `ERROR: only ${catalog.length} forces found — expected at least 30. Check source parsing.`,
   );
   process.exit(1);
 }
-console.log(`✓ catalog count = ${catalog.length} (expected 36)`);
+console.log(`✓ catalog count = ${catalog.length}`);

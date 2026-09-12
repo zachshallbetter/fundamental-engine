@@ -286,6 +286,14 @@
       "color": "#fb923c"
     },
     {
+      "token": "relief",
+      "label": "Relief",
+      "family": "extended",
+      "class": "C",
+      "truthMode": "physical",
+      "color": null
+    },
+    {
       "token": "warp",
       "label": "Warp",
       "family": "extended",

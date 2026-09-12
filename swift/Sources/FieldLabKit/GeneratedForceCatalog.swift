@@ -13,7 +13,7 @@ public struct CatalogForceEntry: Identifiable, Codable {
     public let color: String?
 }
 
-/// All 36 forces in the canonical catalog, single-sourced from the JS engine.
+/// All 37 forces in the canonical catalog, single-sourced from the JS engine.
 public let GENERATED_FORCE_CATALOG: [CatalogForceEntry] = [
     CatalogForceEntry(token: "attract", label: "Attract", family: "canonical", cls: "A", truthMode: "designed", color: "#4da3ff"),
     CatalogForceEntry(token: "repel", label: "Repel", family: "canonical", cls: "A", truthMode: "designed", color: "#ff9d5c"),
@@ -50,5 +50,6 @@ public let GENERATED_FORCE_CATALOG: [CatalogForceEntry] = [
     CatalogForceEntry(token: "spotlight", label: "Spotlight", family: "extended", cls: "modifier", truthMode: "designed", color: "#fef08a"),
     CatalogForceEntry(token: "screen", label: "Screen", family: "extended", cls: "modifier", truthMode: "designed", color: "#94a3b8"),
     CatalogForceEntry(token: "pigment", label: "Pigment", family: "extended", cls: "A", truthMode: "designed", color: "#fb923c"),
+    CatalogForceEntry(token: "relief", label: "Relief", family: "extended", cls: "C", truthMode: "physical", color: nil),
     CatalogForceEntry(token: "warp", label: "Warp", family: "extended", cls: "A", truthMode: "designed", color: "#c4b5fd")
 ]

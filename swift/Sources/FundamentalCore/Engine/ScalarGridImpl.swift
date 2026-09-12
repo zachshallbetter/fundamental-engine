@@ -15,6 +15,11 @@ import simd
 
 public enum GridMode: Sendable {
     case diffuse, wave, memory
+    /// NOT a dynamical scheme: a raster the engine writes and then leaves alone. `step()` is a no-op,
+    /// so a held grid never blurs, decays or advances. The backing store for a DECLARED POTENTIAL
+    /// (#443) — a host `addField` channel rasterised once per invalidation and read as −∇Φ by
+    /// `relief`. Filled only through ``ScalarGridImpl/fillFrom(_:)``.
+    case held
 }
 
 public final class ScalarGridImpl: ScalarGrid {
@@ -46,6 +51,24 @@ public final class ScalarGridImpl: ScalarGrid {
     /// The current value at a clamped (Neumann boundary) cell.
     @inline(__always) private func at(_ ix: Int, _ iy: Int) -> Float {
         cur[clampRow(iy) * cols + clampCol(ix)]
+    }
+
+    /// RASTERISE a sampler into this grid — the write API a `held` potential needs (#443).
+    ///
+    /// Each cell (ix, iy) is filled from `sampler(ix·cell, iy·cell)` — the exact pixel coordinates
+    /// `sample(at:)` interpolates between — so a bilinear read at a cell centre returns the sampler's
+    /// own value and `gradient(at:)` is the true central difference of the sampled surface.
+    ///
+    /// NON-FINITE IS CLAMPED AT THE BOUNDARY: a host sampler returning NaN or infinity writes 0.
+    /// A NaN velocity slips a `speed > c` guard entirely (the comparison is false), so the check
+    /// belongs where the untrusted value enters the engine.
+    public func fillFrom(_ sampler: (Float, Float) -> Float) {
+        for iy in 0..<rows {
+            for ix in 0..<cols {
+                let v = sampler(Float(ix) * cell, Float(iy) * cell)
+                cur[iy * cols + ix] = v.isFinite ? v : 0
+            }
+        }
     }
 
     /// Bilinear sample of the field in pixel space.
@@ -86,6 +109,10 @@ public final class ScalarGridImpl: ScalarGrid {
     /// Advance one frame in the grid's mode.
     public func step() {
         switch mode {
+        // The declared-potential raster (#443): the engine wrote it and it stays as written until
+        // something invalidates it. Stepping would blur and decay a terrain the host declared. Every
+        // other arm below is untouched, which is why no existing grid moves by a bit.
+        case .held: return
         case .wave:   stepWave()
         case .memory: stepDiffuse(D: 0.03, decay: 0.004) // barely blur, fade slowly
         case .diffuse: stepDiffuse()

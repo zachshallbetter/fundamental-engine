@@ -78,6 +78,7 @@ Not every concept is a shortcut. Each cell below is tagged with one of:
 | Engine concept | What nature does | Relationship | What it buys |
 |---|---|---|---|
 | Scalar grids (memory/heat/density) | Continuous fields (PDEs) | **Idealization** | Discretization — every field sim does it |
+| `relief` transport down a declared potential Φ = G·h | Gravity restricted to a surface: `a = −g∇h`, mass-independent | **Idealization** | The law is right, the mass model is not: the engine rescales an additive force's Δv by 1/m, so heavy matter slides slower than a slope allows. Also planar (phase 1) and read off a discretized raster of the host's channel. Deliberately not "Faithful" |
 | Neighbor cutoff radius (spatial hash) | Forces act at all distances | **Idealization** | O(N) not O(N²); screening/Debye length is even physically real |
 | Reciprocity via CSS-feedback loop | Direct mutual force (3rd law) | **Departure** | The field talks to the DOM through *style*, not motion — the platform-native trick |
 | Render optional / signals-first (`render:'none'`) | Phenomena are always "rendered" (physical) | **Departure** | Behavioral model as substrate, not spectacle — motion is one view |

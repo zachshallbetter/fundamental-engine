@@ -286,6 +286,37 @@ class FieldController(
 
     private val channels = HashMap<String, (Float, Float) -> Float>()
 
+    // ── declared potentials (#443) ────────────────────────────────────────────────────────────
+    // A host channel admitted as a scalar potential Phi, rasterised into a HELD grid that `relief`
+    // reads as -grad(Phi). This raster is the ONE place a channel sampler is cached (the amended
+    // addField contract), so its invalidation set is the whole correctness story: addFieldChannel,
+    // a re-registration (the `set` idiom), removeFieldChannel (which also DROPS the grid) and
+    // resize. There is deliberately NO frame cadence, so held state can never be frame-phase
+    // dependent or outlive its channel.
+    private var channelEpoch = 0
+    private val potentialStamp = HashMap<String, Int>() // grid key -> the epoch its cells were filled at
+    private fun potentialKey(name: String) = "potential:$name"
+    private fun invalidatePotentials() { channelEpoch++ }
+
+    /**
+     * The held raster of a declared potential, refilled when the channel it came from has changed.
+     * Null for a channel that was never registered or has been removed — which is what makes `relief`
+     * a pure no-op rather than a reader of stale state.
+     */
+    fun potentialAt(name: String): ScalarGrid? {
+        val sampler = channels[name] ?: return null
+        val key = potentialKey(name)
+        val g = grids.getOrPut(key) {
+            potentialStamp[key] = -1
+            ScalarGridImpl(w, h, GridMode.HELD)
+        }
+        if (potentialStamp[key] != channelEpoch) {
+            g.fillFrom(sampler) // non-finite samples are clamped to 0 inside fillFrom, at the boundary
+            potentialStamp[key] = channelEpoch
+        }
+        return g
+    }
+
     // ── Body-Matter-Interaction toggles (§2.4 / Concept 4 / H1) ──────────────────────────────────
     /** Conserved attention — engaging a body drains the others (Σ S·mul invariant). */
     var attentionEnabled: Boolean = false
@@ -341,7 +372,13 @@ class FieldController(
 
     private fun modeForName(name: String): GridMode = when {
         name.startsWith("wave") -> GridMode.WAVE
-        name == "memory" -> GridMode.MEMORY
+        // Was `name == "memory"` (exact) where JS and Swift both use a PREFIX — a real cross-plane
+        // drift, fixed here because #443 rewrites this function anyway and leaving a known divergence
+        // in freshly-touched code is worse than the one-word change. No shipped name is affected: the
+        // `memory` force opens exactly "memory", which matches under either spelling.
+        name.startsWith("memory") -> GridMode.MEMORY
+        // The declared-potential raster (#443) — held, so it never blurs or decays.
+        name.startsWith("potential:") -> GridMode.HELD
         else -> GridMode.DIFFUSE
     }
 
@@ -363,6 +400,9 @@ class FieldController(
         h = height
         env.volume = Vec3(w, h, d)
         grids.values.forEach { it.resize(w, h) }
+        // resize() preserves NOTHING, so every held raster is now all zeros — a flat potential.
+        // Invalidate so the next force pass refills it; `relief` would otherwise read a zero gradient.
+        invalidatePotentials()
         heatmap?.resize(w, h)
         rebuildWaves()
     }
@@ -476,9 +516,21 @@ class FieldController(
     fun grid(name: String): ScalarGrid = grids.getOrPut(name) { ScalarGridImpl(w, h, modeForName(name)) }
 
     /** Register / replace an external scalar field channel (the open-input analog of a render surface). */
-    fun addFieldChannel(name: String, sampler: (Float, Float) -> Float) { channels[name] = sampler }
+    fun addFieldChannel(name: String, sampler: (Float, Float) -> Float) {
+        channels[name] = sampler
+        // Covers both registering a NEW channel (possibly after a `relief` body was declared) and
+        // re-registering to swap the sampler live — the Kotlin spelling of the JS handle's set().
+        invalidatePotentials()
+    }
 
-    fun removeFieldChannel(name: String) { channels.remove(name) }
+    fun removeFieldChannel(name: String) {
+        channels.remove(name)
+        // Drop the raster with the channel, or the held cells outlive it and `relief` keeps
+        // transporting matter down terrain the host has withdrawn.
+        grids.remove(potentialKey(name))
+        potentialStamp.remove(potentialKey(name))
+        invalidatePotentials()
+    }
 
     /** Sample a registered channel at (x, y); 0 if none by that name. */
     fun sampleField(name: String, x: Float, y: Float): Float = channels[name]?.invoke(x, y) ?: 0f
@@ -561,6 +613,10 @@ class FieldController(
         // charge induction (§2.4): charge bodies polarize nearby matter, so charge/magnetism act.
         induceCharges(_bodies, store.particles)
 
+        // `Env.potential` is an OPT-IN service (the `fieldAt` precedent): present only while a body
+        // actually declares `relief`, so registering a channel never couples it and the default path
+        // is byte-identical. Decided from the live body list each frame.
+        env.potential = if (_bodies.any { "relief" in it.tokens }) { name -> potentialAt(name) } else null
         step(StepInput(store, _bodies, env, forces, conditions, waves = if (wavesEnabled) _waves else null, separation = separation, restingMotion = restingMotion))
 
         // the bound↔free reservoir (§2.4): heal calm matter onto the lines, tear it loose near bodies.

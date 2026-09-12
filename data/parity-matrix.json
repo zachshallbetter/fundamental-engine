@@ -1793,6 +1793,7 @@
         "pigment",
         "pressure",
         "propagate",
+        "relief",
         "repel",
         "resonate",
         "screen",
@@ -1810,9 +1811,9 @@
         "wind"
       ],
       "counts": {
-        "js": 36,
-        "swift": 36,
-        "kotlin": 36
+        "js": 37,
+        "swift": 37,
+        "kotlin": 37
       },
       "planes": {
         "js": [
@@ -1837,6 +1838,7 @@
           "pigment",
           "pressure",
           "propagate",
+          "relief",
           "repel",
           "resonate",
           "screen",
@@ -1875,6 +1877,7 @@
           "pigment",
           "pressure",
           "propagate",
+          "relief",
           "repel",
           "resonate",
           "screen",
@@ -1913,6 +1916,7 @@
           "pigment",
           "pressure",
           "propagate",
+          "relief",
           "repel",
           "resonate",
           "screen",
@@ -2053,6 +2057,12 @@
         },
         {
           "symbol": "propagate",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "relief",
           "js": true,
           "swift": true,
           "kotlin": true
@@ -2468,6 +2478,7 @@
         "max",
         "opsz",
         "pair",
+        "potential",
         "preset",
         "range",
         "risk",
@@ -2484,7 +2495,7 @@
         "when"
       ],
       "counts": {
-        "js": 32,
+        "js": 33,
         "swift": 4,
         "kotlin": 4
       },
@@ -2508,6 +2519,7 @@
           "max",
           "opsz",
           "pair",
+          "potential",
           "preset",
           "range",
           "risk",
@@ -2646,6 +2658,12 @@
           "kotlin": false
         },
         {
+          "symbol": "potential",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
           "symbol": "preset",
           "js": true,
           "swift": false,
@@ -2746,13 +2764,14 @@
         "data",
         "feedback",
         "identity",
+        "potential",
         "range",
         "spin",
         "strength",
         "tokens"
       ],
       "counts": {
-        "js": 10,
+        "js": 11,
         "swift": 9,
         "kotlin": 8
       },
@@ -2764,6 +2783,7 @@
           "data",
           "feedback",
           "identity",
+          "potential",
           "range",
           "spin",
           "strength",
@@ -2827,6 +2847,12 @@
           "js": true,
           "swift": true,
           "kotlin": true
+        },
+        {
+          "symbol": "potential",
+          "js": true,
+          "swift": false,
+          "kotlin": false
         },
         {
           "symbol": "range",

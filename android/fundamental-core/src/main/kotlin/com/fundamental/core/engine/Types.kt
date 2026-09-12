@@ -144,6 +144,14 @@ class Body(
 
     private var viewRef: WeakReference<Any>? = null
 
+    /**
+     * `data-potential` (#443) — the name of the `addField` channel this body admits as a scalar
+     * POTENTIAL Phi, read by `relief` as downhill transport (-grad(Phi)). Null => "height". [spin]
+     * selects the sign: >= 0 (default) moves matter DOWN the potential, < 0 moves it up. Only read by
+     * `relief`. A body property with a default, so every existing `Body(...)` call site is unchanged.
+     */
+    var potential: String? = null
+
     /** Captured load held by `sink` (was `mass`, §21.2). */
     var accreted: Float = 0f
 
@@ -334,6 +342,19 @@ class Env {
 
     /** Net structure field at a world point (dipoles + monopoles). Set by the integrator. */
     var fieldAt: ((p: Vec3) -> Vec3)? = null
+
+    /**
+     * OPT-IN declared-potential accessor (#443) — the JS `Env.potential?` mirror. A host channel
+     * registered with `addField` (terrain height, a cost surface) admitted as a scalar POTENTIAL Phi
+     * and handed to a force as a read-only [ScalarGrid], so the force reads transport as -grad(Phi).
+     * Returns null for a channel that was never registered or has been removed, which is what makes
+     * `relief` a pure no-op rather than a reader of stale state.
+     *
+     * Null on the default path — the [fieldAt] precedent. [com.fundamental.core.runtime.FieldController]
+     * assigns it only while a body actually declares `relief`, so registering a channel never couples
+     * it. The returned grid is a [GridMode.HELD] raster, refreshed when the channel changes.
+     */
+    var potential: ((name: String) -> ScalarGrid?)? = null
 }
 
 /** The outcome of a modifier force's [Force.modify] hook (spotlight → screen → resonate). */

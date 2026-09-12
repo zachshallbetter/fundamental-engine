@@ -78,6 +78,7 @@ export const FORCE_COLORS: Record<string, string> = {
   memory: '#c9a27e', // worn paths — a faded sepia
   // designed-extended forces (§20.2 registry colors)
   lens: '#67e8f9',
+  relief: '#b0846a', // earth — the only force whose structure the HOST supplies (#443)
   gate: '#fb7185',
   buoyancy: '#fcd34d',
   shear: '#818cf8',
@@ -104,6 +105,7 @@ export const FORCE_COLORS: Record<string, string> = {
  * are authored). The UI renders this alongside a live demo of the force.
  */
 export const FORCE_EXAMPLES: Record<string, string> = {
+  relief: 'Drain a map: matter settles into the valleys of the terrain your app already owns.',
   // canonical nine
   attract: 'A hero word that pulls the field into orbit around it.',
   repel: 'A dismiss control that opens a clean void in the field.',
@@ -152,6 +154,7 @@ export const FORCE_EXAMPLES: Record<string, string> = {
  * crystallize → Cz, propagate → Pg, spotlight → Sl, pigment → Pm).
  */
 export const FORCE_SYMBOLS: Record<string, string> = {
+  relief: 'Rf',
   // canonical nine
   attract: 'At', repel: 'Re', swirl: 'Sw', stream: 'St', viscosity: 'Vi',
   jet: 'Jt', tether: 'Te', wall: 'Wl', sink: 'Sk',
@@ -172,6 +175,7 @@ export const FORCE_SYMBOLS: Record<string, string> = {
  * physics rather than the design bundle's simplified reading of those names.
  */
 export const FORCE_SUMMARIES: Record<string, string> = {
+  relief: 'The ground itself tilts — matter finds the low places without being told where they are.',
   // canonical nine
   attract: 'Pulls matter into a well — an inverse-square gravity well bent into a spiral.',
   repel: 'Pushes matter away — an inverted well that carves a clean void.',
@@ -215,6 +219,7 @@ export const FORCE_SUMMARIES: Record<string, string> = {
 
 /** The functional one-liner for every force — what it does, plainly (the Lab's EFFECT line). */
 export const FORCE_EFFECTS: Record<string, string> = {
+  relief: 'Slides matter down a height field the host supplies.',
   // canonical nine
   attract: 'Draws particles inward.',
   repel: 'Drives particles outward.',
@@ -547,6 +552,14 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
   },
   {
     family: 'extended',
+    token: 'relief',
+    label: 'Relief',
+    formula: 'Φ = G·h(x,y) from an addField channel;  v += −∇Φ·S·(1 − d/r)   (data-spin < 0 ⇒ uphill)',
+    attrs: ['potential', 'strength', 'range', 'spin'],
+    desc: 'transport down a host-declared potential — downhill flow over terrain height',
+  },
+  {
+    family: 'extended',
     token: 'warp',
     label: 'Warp',
     formula: 'within absorbR: p ← pairCentre + R(twist)·û·(absorbR·scale + 6);  v ← R(twist)·v',
@@ -639,6 +652,10 @@ export const FORCE_KIND: Record<string, ForceKind> = {
   morph: 'analogue',
   // transport — motion along field structure
   fieldflow: 'transport', pigment: 'transport',
+  // transport along a potential the HOST declares (#443) — no fundamental-field parent in
+  // FORCE_FIELD: the engine's `gravity` is the Newtonian body field, while `relief` carries matter
+  // down whatever surface the host handed in. Kinship, not identity.
+  relief: 'transport',
 };
 
 /** The fundamental-field parent for tokens that translate one (omitted for designed/derived/metric/transport with no single parent). */

@@ -6,6 +6,9 @@
  * source of truth shared by `conformance.test.ts` and the Lab detector.
  */
 import type { Expectation, ForceConformance, ScenarioResult } from './types.ts';
+// The no-channel control re-runs a scenario in-process (the `relief` wallpaper pin). `expectations.ts`
+// already imports from `run.ts`, so this adds no new module edge.
+import { runScenario } from './run.ts';
 import {
   adoptsTint,
   approachesBody,
@@ -793,6 +796,48 @@ export const EXPERIMENTS: ForceConformance[] = [
       frames: 4,
     },
     expectations: [adoptsTint()],
+  },
+  {
+    scenario: {
+      force: 'relief',
+      label: 'A particle on a host-declared slope',
+      family: 'extended',
+      klass: 'C',
+      // range 0 ⇒ global, which is what terrain wants: relief is a property of the whole field.
+      body: { cx: 0, cy: 0, range: 0, strength: 1 },
+      // h = 0.01·x — a LINEAR height channel, chosen deliberately: its gradient is the same constant
+      // everywhere, so `centerScenario`'s translation of body + particles into positive space cannot
+      // change what the particle feels, and `relief` needs no NO_OFFSET exemption.
+      channel: { name: 'height', sampler: (x: number) => 0.01 * x },
+      particles: [{ x: 0, y: 0 }],
+      frames: 30,
+    },
+    expectations: [
+      // Δv = −∇Φ·S·G = −(0.01, 0)·1·1. Pinned tight (±5e-5): this IS the declared law, and the default
+      // tolerance (2e-3) is 20% of the value — it would pass a force merely moving the right way.
+      exactDelta(-0.01, 0, 5e-5),
+      check('drains downhill (ends lower on the potential)', 'invariant', (r) => {
+        const first = r.trajectory[0]![0]!;
+        const last = r.trajectory[r.trajectory.length - 1]![0]!;
+        return {
+          pass: last.x < first.x,
+          measured: `h ${f3(0.01 * first.x)} → ${f3(0.01 * last.x)}`,
+          expected: 'ends lower on the declared potential',
+        };
+      }),
+      check('no channel ⇒ no impulse (the wallpaper pin)', 'invariant', (r) => {
+        // Re-run the SAME scenario with the channel stripped. With nothing declared by the host there
+        // is no structure to move matter, so the force must do literally nothing — which is what makes
+        // a truthMode:'physical' force over a host-supplied field legal under the wallpaper rule.
+        const { channel: _drop, ...bare } = r.scenario;
+        const d = runScenario(bare).applyDelta[0]!;
+        return {
+          pass: d.dvx === 0 && d.dvy === 0,
+          measured: `Δv = (${f3(d.dvx)}, ${f3(d.dvy)})`,
+          expected: 'Δv = (0, 0) with no channel registered',
+        };
+      }),
+    ],
   },
   {
     // warp is position-dependent (reads warpX/warpY) and in NO_OFFSET, so coords are absolute.

@@ -53,6 +53,15 @@ export interface Scenario {
   /** seed for RNG forces (thermal, jet) so the run is reproducible. */
   seed?: number;
   /**
+   * A host field CHANNEL registered for this scenario — the `addField(name, sampler)` input a
+   * declared-potential force (`relief`, #443) reads. The runner rasterises it into a held grid and
+   * exposes `Env.potential`, exactly as the engine does. Absent ⇒ `Env.potential` is undefined and a
+   * potential-reading force no-ops, which is itself the wallpaper check. Keep the sampler cheap and
+   * offset-invariant (a LINEAR height): `centerScenario` translates bodies and particles, so a
+   * non-linear potential would be sampled somewhere else than authored.
+   */
+  channel?: { name: string; sampler: (x: number, y: number) => number };
+  /**
    * Additional bodies simulated alongside `body`, each with its own tokens and attrs —
    * for cross-body behavior (e.g. a `screen` quiet zone attenuating another body's force,
    * workover v0.3). Centred with the scenario; frame-0 `applyDelta` still measures the
