@@ -544,9 +544,23 @@ article[data-feedback] h2 {
       This is the one part of the declarative surface where a capability can go missing in two different
       places, so each entry carries <strong>two</strong> rows. <b>Accepted</b> is whether the plane's engine
       takes the mode at all; <b>Drawn</b> is whether that plane's declarative host actually paints it. They are
-      not the same question — the Kotlin core accepts <code>{kotlinHostRenderGap.join(', ')}</code>, which the
-      Compose <code>FieldView</code> has no draw path for: exactly the way a multi-hue palette was once accepted
-      and then collapsed to a single accent by an Android host.
+      not the same question:
+      {
+        kotlinHostRenderGap.length > 0 ? (
+          <Fragment>
+            {' '}the Kotlin core accepts <code>{kotlinHostRenderGap.join(', ')}</code>, which the Compose{' '}
+            <code>FieldView</code> has no draw path for — exactly the way a multi-hue palette was once
+            accepted and then collapsed to a single accent by an Android host.
+          </Fragment>
+        ) : (
+          <Fragment>
+            {' '}the Compose <code>FieldView</code> once declared a render enum of its own and drew four of
+            the seven modes its core accepted, so three were unreachable from a Compose app — the same
+            shape of gap as the palette an Android host once collapsed to a single accent. Both are
+            closed, and these rows are what keeps them closed.
+          </Fragment>
+        )
+      }
     </p>
     <dl class="api-table">
       {
@@ -569,8 +583,10 @@ article[data-feedback] h2 {
       }
     </dl>
     <p>
-      Compose additionally draws a <code>glow</code> mode that neither JS nor Swift has — the ports are not
-      strictly a subset of the web.
+      The ports draw exactly this shared vocabulary — no host-local extras. Compose used to add a
+      <code>glow</code> mode of its own that no other plane defined and no conformance test covered; it is
+      retired in favour of the <code>dots</code> mode with a raised <code>particleGlow</code>, which is the
+      same soft additive bloom expressed in the shared vocabulary.
     </p>
   </section>
 

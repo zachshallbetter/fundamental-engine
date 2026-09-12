@@ -2956,14 +2956,13 @@
       "idiom": {
         "js": "the engine owns the underlay draw — no separate host renderer",
         "swift": "`CoreGraphicsRenderer.draw(in:)` (Metal hybrid for dots/trails/links)",
-        "kotlin": "the Compose `FieldView` `Canvas`, driven by its OWN four-case `RenderMode`"
+        "kotlin": "the Compose `FieldView` `Canvas`, driven by the engine's `RenderMode` (an exhaustive `when`)"
       },
       "union": [
         "blackbody",
         "depth",
         "dots",
         "flow",
-        "glow",
         "knockout",
         "links",
         "metaballs",
@@ -2975,7 +2974,7 @@
       "counts": {
         "js": 11,
         "swift": 6,
-        "kotlin": 4
+        "kotlin": 6
       },
       "planes": {
         "js": [
@@ -3001,9 +3000,11 @@
         ],
         "kotlin": [
           "dots",
-          "glow",
           "links",
-          "trails"
+          "metaballs",
+          "streamlines",
+          "trails",
+          "voronoi"
         ]
       },
       "support": [
@@ -3032,12 +3033,6 @@
           "kotlin": false
         },
         {
-          "symbol": "glow",
-          "js": false,
-          "swift": false,
-          "kotlin": true
-        },
-        {
           "symbol": "knockout",
           "js": true,
           "swift": false,
@@ -3053,7 +3048,7 @@
           "symbol": "metaballs",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "redshift",
@@ -3065,7 +3060,7 @@
           "symbol": "streamlines",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         },
         {
           "symbol": "trails",
@@ -3077,7 +3072,7 @@
           "symbol": "voronoi",
           "js": true,
           "swift": true,
-          "kotlin": false
+          "kotlin": true
         }
       ]
     },

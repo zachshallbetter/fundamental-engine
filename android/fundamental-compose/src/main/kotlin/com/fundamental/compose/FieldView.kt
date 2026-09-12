@@ -36,8 +36,17 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import android.provider.Settings
+import androidx.compose.ui.graphics.BlendMode
 import com.fundamental.core.engine.Body
+import com.fundamental.core.engine.Particle
+import com.fundamental.core.engine.marchingCell
+import com.fundamental.core.engine.nearestParticle
+import com.fundamental.core.engine.splatDensity
+import com.fundamental.core.engine.voronoiWalls
+import com.fundamental.core.math.Vec3
 import com.fundamental.core.runtime.FieldController
+import com.fundamental.core.runtime.RenderMode
+import kotlin.math.sqrt
 import com.fundamental.core.engine.Box as FieldBox
 
 /**
@@ -49,21 +58,6 @@ import com.fundamental.core.engine.Box as FieldBox
  * a force source whose well tracks its on-screen bounds — "elements bend the field; the field bends them
  * back."
  */
-
-/** How the particle pool is drawn (the matter render modes — mirror of the JS/Swift modes). */
-enum class RenderMode {
-    /** Soft round particles (the default). */
-    DOTS,
-
-    /** Motion trails — the frame fades instead of clearing, so matter leaves comet tails. */
-    TRAILS,
-
-    /** Proximity links — line segments between nearby particles (constellation / network look). */
-    LINKS,
-
-    /** Soft additive glow — radial-gradient blobs, brightest where matter is hot. */
-    GLOW,
-}
 
 /** Provides the running [FieldController] to descendants so [Modifier.fieldBody] can attach. */
 val LocalFieldController = compositionLocalOf<FieldController?> { null }
@@ -80,6 +74,43 @@ val LocalFieldRootCoordinates = compositionLocalOf<LayoutCoordinates?> { null }
 private const val LINK_RADIUS = 38f // px — links connect particles closer than this
 private val COOL = Color(0xFFFFE0C8) // resting (warm-default identity), matches the engine palette
 
+// The three modes added in #1158 use the SAME constants as the JS underlay (field.ts §20.6) and the
+// Swift CoreGraphicsRenderer, so a field in `metaballs` reads the same on all three planes. The
+// geometry itself lives in :fundamental-core (engine/RenderModes.kt) — shared, and unit-tested there.
+private const val MB_STEP = 16f      // metaballs: density-grid resolution (px) — JS STEP
+private const val MB_RADIUS = 34f    // metaballs: kernel radius (px), fixed, not size-scaled — JS RAD
+private const val MB_LEVEL = 0.9f    // metaballs: the iso threshold that becomes the blob skin — JS LEVEL
+private const val VOR_STEP = 18f     // voronoi: owner-grid resolution (px) — JS STEP
+private const val VOR_SEARCH = VOR_STEP * 3f // voronoi: nearest-site candidate radius — JS SEARCH
+private const val SL_GRID = 46f      // streamlines: the probe lattice pitch (px) — JS GRID
+private const val SL_RESAMPLE = 3    // streamlines: re-probe the field every Nth frame (JS cadence)
+
+/** Reusable metaballs density grid — allocated per size/mode, not per frame (mirrors the JS scratch). */
+private class DensityGrid(val cols: Int, val rows: Int) {
+    val values = FloatArray(cols * rows)
+}
+
+/** Reusable voronoi owner grid (one stable particle id per node, -1 = unowned). */
+private class OwnerGrid(val cols: Int, val rows: Int) {
+    val owners = IntArray(cols * rows)
+}
+
+/** One streamline probe: the unit direction of the felt force and its magnitude. */
+private class Arrow(val x: Float, val y: Float, val ux: Float, val uy: Float, val mag: Float)
+
+/**
+ * Cached streamline probes. The arrows trace the body-induced force field, which only changes when
+ * bodies move — so the lattice is re-probed on a cadence and DRAWN from cache every frame (the JS
+ * treatment). [maxSmoothed] is the EMA-smoothed normalization peak: rise fast, decay slow, so a quiet
+ * frame never flashes the whole field.
+ */
+private class StreamlineCache {
+    var arrows: List<Arrow> = emptyList()
+    var quiescent: List<Offset> = emptyList()
+    var maxSmoothed = 0f
+    var probed = false
+}
+
 @Composable
 fun FieldView(
     modifier: Modifier = Modifier,
@@ -92,6 +123,17 @@ fun FieldView(
      */
     palette: List<Color> = listOf(accent),
     particleCount: Int = 300,
+    /**
+     * How the particle pool is drawn — the engine's own [RenderMode]
+     * (`com.fundamental.core.runtime.RenderMode`), the same seven-mode vocabulary the JS and Swift
+     * planes take. Every mode has a draw path here; [RenderMode.NONE] draws nothing while the
+     * simulation and every signal stay live (the signals-only underlay, which is what the core
+     * `FieldHandle` itself defaults to).
+     *
+     * The host default stays [RenderMode.DOTS] — the mode this composable has always drawn — so
+     * existing callers keep their field. Pass [RenderMode.NONE] explicitly for the signals-first
+     * posture.
+     */
     renderMode: RenderMode = RenderMode.DOTS,
     /**
      * Soft glow halo drawn behind each DOTS particle (0 = flat dots, the previous
@@ -153,6 +195,26 @@ fun FieldView(
         }
     }
 
+    // Scratch surfaces for the grid-based modes, sized once per size/mode change rather than per
+    // frame — the Compose analog of the JS `mball` / `vor` scratch arrays and `slSamples` cache.
+    val mball = remember(canvasSize, renderMode) {
+        if (renderMode == RenderMode.METABALLS && canvasSize.width > 0 && canvasSize.height > 0) {
+            DensityGrid((canvasSize.width / MB_STEP).toInt() + 2, (canvasSize.height / MB_STEP).toInt() + 2)
+        } else {
+            null
+        }
+    }
+    val vor = remember(canvasSize, renderMode) {
+        if (renderMode == RenderMode.VORONOI && canvasSize.width > 0 && canvasSize.height > 0) {
+            OwnerGrid((canvasSize.width / VOR_STEP).toInt() + 1, (canvasSize.height / VOR_STEP).toInt() + 1)
+        } else {
+            null
+        }
+    }
+    val streamlines = remember(canvasSize, renderMode) {
+        if (renderMode == RenderMode.STREAMLINES) StreamlineCache() else null
+    }
+
     Box(
         modifier = modifier
             .onGloballyPositioned { rootCoordinates = it }
@@ -180,7 +242,10 @@ fun FieldView(
             // Stable per-particle hue: the pool is updated in place, so a particle keeps
             // its array index across frames — no per-frame colour flicker.
             val hues = palette.ifEmpty { listOf(accent) }
-            when (renderMode) {
+            // An exhaustive `when` EXPRESSION over the engine's RenderMode, deliberately: a mode added
+            // to the core enum then fails this host at COMPILE time instead of silently drawing
+            // nothing, which is exactly how the four-mode host enum hid three modes until #1158.
+            val drawn: Unit = when (renderMode) {
                 RenderMode.DOTS -> {
                     // Faint constellation links first, so dots draw over them.
                     if (constellation) {
@@ -216,21 +281,6 @@ fun FieldView(
                     }
                 }
 
-                RenderMode.GLOW -> particles.forEachIndexed { i, p ->
-                    val heat = p.heat.coerceIn(0f, 1f)
-                    val c0 = lerp(COOL, hues[i % hues.size], heat)
-                    val glowR = 5f + p.size * 2f + heat * 16f
-                    drawCircle(
-                        brush = Brush.radialGradient(
-                            colors = listOf(c0.copy(alpha = 0.45f + heat * 0.4f), Color.Transparent),
-                            center = Offset(p.position.x, p.position.y),
-                            radius = glowR,
-                        ),
-                        radius = glowR,
-                        center = Offset(p.position.x, p.position.y),
-                    )
-                }
-
                 RenderMode.LINKS -> {
                     for (p in particles) {
                         val po = Offset(p.position.x, p.position.y)
@@ -262,6 +312,127 @@ fun FieldView(
                         drawCircle(lerp(COOL, hues[i % hues.size], p.heat.coerceIn(0f, 1f)), 2f, Offset(p.position.x, p.position.y), 0.85f)
                     }
                 }
+
+                // A liquid iso-surface: splat every FREE particle's density kernel onto a coarse grid,
+                // then trace one contour of it with marching squares — the swarm reads as one molten
+                // skin rather than discrete dots. Captured matter is out of the blob (JS/Swift parity),
+                // and the contour REPLACES the matter, so no dots are drawn under it.
+                RenderMode.METABALLS -> if (mball != null) {
+                    val g = mball.values
+                    java.util.Arrays.fill(g, 0f)
+                    for (p in particles) {
+                        if (p.cap != null) continue
+                        splatDensity(g, mball.cols, mball.rows, MB_STEP, p.position.x, p.position.y, MB_RADIUS)
+                    }
+                    for (gy in 0 until mball.rows - 1) {
+                        for (gx in 0 until mball.cols - 1) {
+                            val segs = marchingCell(
+                                tl = g[gy * mball.cols + gx],
+                                tr = g[gy * mball.cols + gx + 1],
+                                br = g[(gy + 1) * mball.cols + gx + 1],
+                                bl = g[(gy + 1) * mball.cols + gx],
+                                level = MB_LEVEL,
+                            )
+                            for (sg in segs) {
+                                drawLine(
+                                    accent,
+                                    Offset((gx + sg.x1) * MB_STEP, (gy + sg.y1) * MB_STEP),
+                                    Offset((gx + sg.x2) * MB_STEP, (gy + sg.y2) * MB_STEP),
+                                    strokeWidth = 1.4f,
+                                    alpha = 0.5f,
+                                    blendMode = BlendMode.Plus, // the JS 'lighter' composite
+                                )
+                            }
+                        }
+                    }
+                } else Unit
+
+                // Shattered glass: each grid node takes the id of its nearest particle, and a wall is
+                // stroked wherever two adjacent nodes disagree. The matter stays visible over the walls
+                // (JS keeps the swarm here; Swift draws its dots on top), so the cells read as owned.
+                RenderMode.VORONOI -> if (vor != null) {
+                    for (gy in 0 until vor.rows) {
+                        for (gx in 0 until vor.cols) {
+                            val nx = gx * VOR_STEP
+                            val ny = gy * VOR_STEP
+                            val cands = c.store.near(Vec3(nx, ny, 0f), VOR_SEARCH)
+                            val k = nearestParticle(nx, ny, cands)
+                            vor.owners[gy * vor.cols + gx] = if (k >= 0) cands[k].id else -1
+                        }
+                    }
+                    for (w in voronoiWalls(vor.owners, vor.cols, vor.rows)) {
+                        drawLine(
+                            accent,
+                            Offset(w.x1 * VOR_STEP, w.y1 * VOR_STEP),
+                            Offset(w.x2 * VOR_STEP, w.y2 * VOR_STEP),
+                            strokeWidth = 1f,
+                            alpha = 0.32f,
+                            blendMode = BlendMode.Plus, // the JS 'lighter' composite
+                        )
+                    }
+                    particles.forEachIndexed { i, p ->
+                        val heat = p.heat.coerceIn(0f, 1f)
+                        drawCircle(lerp(COOL, hues[i % hues.size], heat), 1.5f + heat * 2f, Offset(p.position.x, p.position.y), 0.9f)
+                    }
+                } else Unit
+
+                // The force field itself, not the matter: short arrows along the net push a still test
+                // particle would feel at a probe lattice (§20.6 diagnostic). Lengths and alphas scale
+                // with the sqrt-compressed magnitude relative to an EMA-smoothed peak, so a weak dipole
+                // reads as clearly as a strong attractor. Draws ALONE — the matter is suppressed.
+                RenderMode.STREAMLINES -> if (streamlines != null) {
+                    if (!streamlines.probed || frame % SL_RESAMPLE == 0) {
+                        val arrows = ArrayList<Arrow>()
+                        val quiet = ArrayList<Offset>()
+                        var frameMax = 0f
+                        var py = SL_GRID / 2f
+                        while (py < size.height) {
+                            var px = SL_GRID / 2f
+                            while (px < size.width) {
+                                val f = c.sample(px, py)
+                                val mag = sqrt(f.x * f.x + f.y * f.y)
+                                if (mag > 1e-9f) {
+                                    arrows.add(Arrow(px, py, f.x / mag, f.y / mag, mag))
+                                    if (mag > frameMax) frameMax = mag
+                                } else {
+                                    quiet.add(Offset(px, py)) // a true dead zone — a faint dot, not an arrow
+                                }
+                                px += SL_GRID
+                            }
+                            py += SL_GRID
+                        }
+                        streamlines.maxSmoothed = when {
+                            streamlines.maxSmoothed == 0f -> frameMax
+                            frameMax > streamlines.maxSmoothed ->
+                                streamlines.maxSmoothed * 0.7f + frameMax * 0.3f // track rises promptly
+                            else -> streamlines.maxSmoothed * 0.9f + frameMax * 0.1f // decay slowly
+                        }
+                        streamlines.arrows = arrows
+                        streamlines.quiescent = quiet
+                        streamlines.probed = true
+                    }
+                    for (q in streamlines.quiescent) drawCircle(accent, 0.5f, q, 0.05f)
+                    val peak = streamlines.maxSmoothed
+                    if (peak > 0f) {
+                        for (a in streamlines.arrows) {
+                            val rel = sqrt(a.mag / peak) // sqrt compresses the range so weak vectors read
+                            val len = SL_GRID * 0.46f * (0.28f + 0.72f * rel)
+                            val ex = a.x + a.ux * len
+                            val ey = a.y + a.uy * len
+                            val al = (0.1f + rel * 0.5f).coerceIn(0f, 0.72f)
+                            val tip = Offset(ex, ey)
+                            drawLine(accent, Offset(a.x, a.y), tip, strokeWidth = 1f, alpha = al)
+                            val ah = 3.4f
+                            drawLine(accent, tip, Offset(ex - a.ux * ah - a.uy * ah * 0.6f, ey - a.uy * ah + a.ux * ah * 0.6f), strokeWidth = 1f, alpha = al)
+                            drawLine(accent, tip, Offset(ex - a.ux * ah + a.uy * ah * 0.6f, ey - a.uy * ah - a.ux * ah * 0.6f), strokeWidth = 1f, alpha = al)
+                        }
+                    } else Unit
+                } else Unit
+
+                // Signals-only: the simulation, the bodies and every feedback channel stay live; the
+                // draw stops. This is what the core FieldHandle defaults to, and it is a real mode
+                // here rather than an unrepresentable one.
+                RenderMode.NONE -> Unit
             }
         }
 
