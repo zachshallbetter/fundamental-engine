@@ -30,6 +30,7 @@ export * from './field-nav.ts';
 export * from './bind-data.ts';
 export * from './browser-host.ts';
 export * from './register-properties.ts';
+export * from './anchor-bodies.ts';
 export * from './container-host.ts';
 export * from './export-dom.ts';
 export * from './governor.ts';

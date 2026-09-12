@@ -173,6 +173,47 @@ const consumers = `<!-- capture: a chip that collapses into a sink when the fiel
 <button data-body="spawn" data-emit>
   <template><span class="spark">·</span></template>
 </button>`;
+// Anchored UI (#680): tether a tooltip to a MOVING body with CSS Anchor Positioning. The engine moves a
+// [data-move] element by writing `transform: translate(…)`, and `anchor()` resolves against the anchor's
+// transformed box — so all a tooltip needs is a stable `anchor-name` on the mover, which `anchorBodies()`
+// from @fundamental-engine/dom writes (feature-detected: no `anchor-name`, no write). The stage below is
+// live: the chips are real data-move="layout" movers spread by the page's field; the tip is anchored to
+// the first one. Without anchor positioning the tip falls back to a static position beside the slot.
+const anchoredHtml = `<div class="stage">
+  <span class="chip" id="chip-design" data-move="layout">design</span>
+  <span class="chip" data-move="layout">physics</span>
+  <span class="chip" data-move="layout">layout</span>
+  <!-- the tooltip: anchored to #chip-design, follows it as the field moves the chip -->
+  <span class="tip" role="tooltip">tethered</span>
+</div>`;
+
+const anchoredCss = `.stage { position: relative; min-height: 200px; }
+.chip  { position: absolute; left: 50%; top: 50%; will-change: transform; }
+
+/* anchorBodies() names each body --field-body-<id> */
+.tip {
+  position: absolute;
+  position-anchor: --field-body-chip-design;
+  top: anchor(bottom);  left: anchor(left);
+}
+/* no anchor positioning: a static tooltip beside the chip's layout slot */
+@supports not (anchor-name: --x) {
+  .tip { left: 50%; top: calc(50% + 1.6rem); }
+}`;
+
+const anchoredJs = `import { anchorBodies } from '@fundamental-engine/dom';
+
+// writes anchor-name on every [data-body] / [data-move] under the root;
+// a no-op (supported: false) where CSS.supports('anchor-name: --x') is false
+const anchored = anchorBodies({ root: document.querySelector('.stage') });
+anchored.supported;                                        // false ⇒ nothing was written
+anchored.nameFor(document.querySelector('#chip-design')); // '--field-body-chip-design'
+
+// a DYNAMIC body (data-authority="dynamic") never moves in the DOM — the engine owns its
+// position. Opt into the follow channel to get the offset as --move-x / --move-y (px):
+anchorBodies({ root, follow: { field } });
+// .tip { translate: var(--move-x, 0px) var(--move-y, 0px); }`;
+
 ---
 
 <DocsLayout
@@ -252,6 +293,32 @@ const consumers = `<!-- capture: a chip that collapses into a sink when the fiel
     can't show relocation. See the <a href="/docs/api/handle">agent consumption model</a> for the
     captured / relocated / emitted events.
   </p>
+
+  <h3 id="anchored-ui">Anchored UI — tether a tooltip to a moving body</h3>
+  <p>
+    A body the engine moves is still a normal element, so a popover or tooltip can tether to it with
+    <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning">CSS Anchor
+    Positioning</a>: <code>anchorBodies()</code> from <code>@fundamental-engine/dom</code> writes a
+    stable <code>anchor-name</code> on every body and mover, and <code>anchor()</code> resolves against
+    the mover&apos;s <em>transformed</em> box — the tip follows the chip wherever the field takes it.
+    Feature-detected: where the browser lacks anchor positioning nothing is written and the tip sits
+    beside the chip&apos;s slot. The stage below is live.
+  </p>
+  <div class="au-anchor" data-au-anchor aria-label="anchored tooltip demo">
+    <span class="au-chip" id="au-chip-design" data-move="layout">design</span>
+    <span class="au-chip" data-move="layout">physics</span>
+    <span class="au-chip" data-move="layout">layout</span>
+    <span class="au-chip" data-move="layout">motion</span>
+    <span class="au-tip" role="tooltip" data-au-tip>tethered · <code>position-anchor</code></span>
+  </div>
+  <CodeTabs
+    variants={[
+      { label: 'HTML', lang: 'html', code: anchoredHtml },
+      { label: 'CSS', lang: 'css', code: anchoredCss },
+      { label: 'JS', lang: 'ts', code: anchoredJs },
+    ]}
+    caption="Kinematic movers need only the name — anchor positioning follows their transform. A <code>dynamic</code> body never moves in the DOM, so the opt-in <code>follow</code> channel writes its engine-owned offset as <code>--move-x</code> / <code>--move-y</code>."
+  />
 
   <h2 id="feedback">Reading the field — CSS feedback channels</h2>
   <p>
@@ -333,6 +400,20 @@ const consumers = `<!-- capture: a chip that collapses into a sink when the fiel
   />
 </DocsLayout>
 
+<script>
+  import { anchorBodies } from '@fundamental-engine/dom';
+  import { pageRuntime } from '../../lib/page-runtime';
+
+  // The anchored-UI demo (#680): name the stage's movers so the tip's `position-anchor` resolves.
+  // pageRuntime re-runs on every client-side navigation (teardown first), so names never stack.
+  // `data-anchored` reports the feature detection for the e2e spec and the static fallback.
+  pageRuntime('[data-au-anchor]', (root) => {
+    const anchored = anchorBodies({ root });
+    root.setAttribute('data-anchored', String(anchored.supported));
+    return () => anchored.dispose();
+  });
+</script>
+
 <style>
   .lede { color: var(--muted, #9aa); }
   .au-live { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; margin: 1rem 0 1.5rem; }
@@ -345,4 +426,28 @@ const consumers = `<!-- capture: a chip that collapses into a sink when the fiel
   .au-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.5rem 0 1.5rem; }
   .au-table th, .au-table td { text-align: left; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--line, #2a2a35); vertical-align: top; }
   .au-table th { color: var(--muted, #9aa); }
+  /* anchored UI demo (#680): four movers stacked at one point; the field spreads them, the tip follows #au-chip-design */
+  .au-anchor {
+    position: relative; min-height: 220px; margin: 1rem 0 1.5rem; border-radius: 12px;
+    border: 1px solid var(--line, #2a2a35); background: color-mix(in srgb, #0e121b 72%, transparent);
+    overflow: hidden;
+  }
+  .au-chip {
+    position: absolute; left: 50%; top: 50%; margin: -0.9em 0 0 -2.4em; will-change: transform;
+    padding: 0.3em 0.75em; border-radius: 999px; font: 500 0.82rem ui-monospace, monospace;
+    color: #0b0f17; background: #4da3ff; white-space: nowrap;
+  }
+  .au-tip {
+    position: absolute; z-index: 1; pointer-events: none; white-space: nowrap;
+    position-anchor: --field-body-au-chip-design;
+    top: anchor(bottom); left: anchor(left); margin-top: 0.35rem;
+    padding: 0.25em 0.6em; border-radius: 6px; font-size: 0.75rem;
+    color: var(--fg, #e8ecf5); background: color-mix(in srgb, #4da3ff 18%, #0e121b);
+    border: 1px solid color-mix(in srgb, #4da3ff 45%, transparent);
+  }
+  .au-tip code { font-size: 0.72rem; color: #4da3ff; }
+  /* no anchor positioning: a static tip beside the chip's layout slot (meaning survives, motion doesn't) */
+  @supports not (anchor-name: --x) {
+    .au-tip { left: 50%; top: calc(50% + 1rem); margin-left: -2.4em; }
+  }
 </style>
