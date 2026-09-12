@@ -4,7 +4,7 @@ name: Perf (hardware)
 # §3.1 RC-7; budgets sourced from docs/planning/fundamental-perf-fact-sheet.md, never invented).
 #
 # Runs on the self-hosted `titan-gpu` runner (titan-node: Ubuntu 22.04, NVIDIA GTX TITAN X, Chrome with
-# ANGLE-over-Vulkan GPU rasterization in headless=new). Three measurements, one checker:
+# ANGLE over the NVIDIA EGL driver — hardware WebGL + GPU rasterization in headless=new, no X display). Three measurements, one checker:
 #   1. the Node compute bench (packages/core/bench, BENCH_JSON=1)            → compute budgets
 #   2. /perf-bench fill-rate sweep at DPR 1 and DPR 2 via CDP (sweep-gpu.mjs) → fill-rate budgets
 #   3. real pages (/, /eli5, /docs/patterns): frame deltas, LoAF, heap       → page budgets
