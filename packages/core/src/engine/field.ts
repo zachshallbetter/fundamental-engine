@@ -3140,12 +3140,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           return applyRedactions(snap as unknown as Record<string, unknown>, redactions) as unknown as FieldSnapshot;
         }
         // read:body-data is the gate for opaque `data`: without it, force `includeData` off (tightens,
-        // never widens — even if a profile or explicit flag asked for it). Everything else composes with
-        // resolveSnapshotInclusion's TIGHTEST-wins rule + the field's own privacy policy downstream.
+        // never widens — even if a profile or explicit flag asked for it). read:diagnostics is the gate
+        // for the RAW PARTICLE POOL — the engine's own internal state, not a modelled reading of bodies /
+        // relationships / metrics — so without it `includeParticles` is forced off even under `profile:
+        // 'debug'`. Everything else composes with resolveSnapshotInclusion's TIGHTEST-wins rule + the
+        // field's own privacy policy downstream.
         const scoped: FieldSnapshotOptions = { ...snapOpts };
         if (!has('read:body-data')) scoped.includeData = false;
         if (!has('read:relationships')) scoped.includeRelationships = false;
         if (!has('read:influences')) scoped.includeInfluences = false;
+        if (!has('read:diagnostics')) scoped.includeParticles = false;
         const snap = handle.snapshot(scoped);
         if (!has('read:projections')) snap.projections = [];
         return applyRedactions(snap as unknown as Record<string, unknown>, redactions) as unknown as FieldSnapshot;
@@ -3155,8 +3159,18 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         get capabilities() { return Object.freeze([...caps]); },
         get redactions() { return Object.freeze([...redactions]); },
         query: scopeQuery,
-        snapshot: scopeSnapshot,
       };
+      // `snapshot` is present ONLY when granted — the facade's shape reflects the grant, exactly as
+      // `replay`/`focusState` do. read:snapshots gates the CAPTURE SURFACE, not a lane within a reading:
+      // the per-lane caps (body-data / relationships / influences / projections / diagnostics) narrow what
+      // a capture contains, this one decides whether a capture may be taken at all. Withholding it closes
+      // the call rather than returning an empty shell — an empty capture is indistinguishable from an
+      // empty field, and a silent-but-permissive-looking reading is the failure this gate exists to stop.
+      // `query()` stays available under the base grant, so a denied agent is never blinded, only barred
+      // from the portable, serializable, replayable artifact.
+      if (has('read:snapshots')) {
+        view.snapshot = scopeSnapshot;
+      }
       // `replay` is present ONLY when granted — the facade's shape reflects the capability.
       if (has('read:replay')) {
         view.replay = (a, b, replayOpts) => handle.replay(a, b, replayOpts);

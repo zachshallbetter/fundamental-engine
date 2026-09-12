@@ -1258,4 +1258,14 @@ final class ScopedAgentView: AgentFieldView {
         guard budgetOpen, capabilities.contains(.relationships) else { return [] }
         return engine?.readEdges() ?? []
     }
+
+    // `read:snapshots` gates the CAPTURE SURFACE itself — not a lane within a reading. Without it there is
+    // nothing to tighten: the call is CLOSED (nil), not emptied, because an empty capture is
+    // indistinguishable from an empty field. With it, the per-lane caps still narrow what the capture
+    // holds, and a closed agentRead budget pins it to the most-restricted profile (mirrors JS).
+    func snapshot(_ opts: FieldSnapshotOptions? = nil) -> FieldSnapshot? {
+        guard capabilities.contains(.snapshots), let engine else { return nil }
+        guard budgetOpen else { return engine.snapshot(FieldSnapshotOptions(profile: .public_)) }
+        return engine.snapshot(scopeSnapshotOptions(opts, capabilities: capabilities))
+    }
 }

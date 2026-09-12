@@ -79,11 +79,11 @@ test('forAgent: snapshot withholds body.data unless read:body-data is granted', 
   try {
     const noData = field.forAgent({ capabilities: ['read:snapshots'] });
     // even when the agent explicitly asks for data, the missing cap withholds it (tightens, never widens).
-    const s1 = noData.snapshot({ includeData: true });
+    const s1 = noData.snapshot!({ includeData: true });
     assert.ok(s1.bodies.every((b) => b.data === undefined), 'no read:body-data → data withheld even with includeData');
 
-    const withData = field.forAgent({ capabilities: ['read:body-data'] });
-    const s2 = withData.snapshot({ includeData: true });
+    const withData = field.forAgent({ capabilities: ['read:snapshots', 'read:body-data'] });
+    const s2 = withData.snapshot!({ includeData: true });
     assert.ok(s2.bodies.some((b) => b.data !== undefined), 'read:body-data → data present when asked + policy permits');
   } finally {
     field.destroy();
@@ -93,8 +93,8 @@ test('forAgent: snapshot withholds body.data unless read:body-data is granted', 
 test('forAgent: redactions strip dotted paths after capability scoping', () => {
   const field = fieldWithBodies();
   try {
-    const view = field.forAgent({ capabilities: ['read:body-data', 'read:metrics'], redactions: ['body.data', 'metrics.bodies'] });
-    const s = view.snapshot({ includeData: true });
+    const view = field.forAgent({ capabilities: ['read:snapshots', 'read:body-data', 'read:metrics'], redactions: ['body.data', 'metrics.bodies'] });
+    const s = view.snapshot!({ includeData: true });
     assert.ok(s.bodies.every((b) => b.data === undefined), 'body.data redacted from every snapshot body');
     const q = view.query();
     assert.ok(!('bodies' in q.metrics), 'metrics.bodies redacted from the metrics record');
@@ -152,8 +152,8 @@ test('forAgent: an agent view can never widen past what policy already forbids',
   // policy forbids body data outright; even read:body-data + includeData cannot surface it.
   const field = fieldWithBodies({ allowBodyDataInSnapshots: false });
   try {
-    const view = field.forAgent({ capabilities: ['read:body-data'] });
-    const s = view.snapshot({ includeData: true });
+    const view = field.forAgent({ capabilities: ['read:snapshots', 'read:body-data'] });
+    const s = view.snapshot!({ includeData: true });
     assert.ok(s.bodies.every((b) => b.data === undefined), 'policy deny wins over the agent view grant');
   } finally {
     field.destroy();
@@ -163,13 +163,81 @@ test('forAgent: an agent view can never widen past what policy already forbids',
 test('forAgent: budgets.agentRead === 0 closes the surface to the most-restricted view', () => {
   const field = fieldWithBodies({ budgets: { agentRead: 0 } });
   try {
-    const view = field.forAgent({ capabilities: ['read:metrics', 'read:relationships', 'read:influences', 'read:projections'] });
+    const view = field.forAgent({ capabilities: ['read:snapshots', 'read:metrics', 'read:relationships', 'read:influences', 'read:projections'] });
     const q = view.query();
     assert.deepEqual(q.metrics, {}, 'closed agentRead budget → no metrics');
     assert.deepEqual(q.relationships, [], 'closed agentRead budget → no relationships');
     assert.deepEqual(q.influences, [], 'closed agentRead budget → no influences');
-    const s = view.snapshot({ profile: 'debug', includeData: true });
+    const s = view.snapshot!({ profile: 'debug', includeData: true });
     assert.ok(s.bodies.every((b) => b.data === undefined), 'closed agentRead budget → snapshot falls to public (no data)');
+  } finally {
+    field.destroy();
+  }
+});
+
+// ─── Capability GATES: a grant that withholds a capability must actually close the surface ──────────
+// These are the tests whose absence let `read:snapshots` and `read:diagnostics` ship declared-but-never-
+// consulted (#1160): every other capability had a "withheld → stripped" assertion, these two had none, so
+// a withheld grant returned FULL data and nothing failed. Each asserts the DENY direction first.
+
+test('forAgent: snapshot is present ONLY when read:snapshots is granted (the capture surface is closed, not emptied)', () => {
+  const field = fieldWithBodies();
+  try {
+    // DENY: every other read cap granted, `read:snapshots` deliberately withheld.
+    const denied = field.forAgent({
+      capabilities: ['read:metrics', 'read:relationships', 'read:influences', 'read:body-data', 'read:projections', 'read:diagnostics'],
+    });
+    assert.equal(denied.snapshot, undefined, 'no read:snapshots → no snapshot method on the facade');
+    // the live read is NOT collateral damage: a denied agent is barred from the capture, not blinded.
+    assert.ok(denied.query().bodies.length >= 2, 'query() still serves the base grant without read:snapshots');
+
+    // GRANT: the capture surface appears.
+    const granted = field.forAgent({ capabilities: ['read:snapshots'] });
+    assert.equal(typeof granted.snapshot, 'function', 'read:snapshots → snapshot present');
+    assert.ok(granted.snapshot!().bodies.length >= 2, 'the granted capture actually captures');
+
+    // an EMPTY grant is the most-restricted view: query only, no capture.
+    assert.equal(field.forAgent({ capabilities: [] }).snapshot, undefined, 'empty grant → no capture surface');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('forAgent: read:diagnostics gates the raw particle pool — withheld, it stays out even under profile debug', () => {
+  const field = fieldWithBodies();
+  try {
+    // DENY: the capture is granted, the diagnostic lane is not. The agent asks for particles BOTH ways —
+    // the explicit flag and the `debug` profile whose baseline turns them on. Both must lose.
+    const denied = field.forAgent({ capabilities: ['read:snapshots', 'read:body-data', 'read:metrics'] });
+    assert.equal(denied.snapshot!({ includeParticles: true }).particles, undefined,
+      'no read:diagnostics → the raw particle pool is withheld even when explicitly requested');
+    assert.equal(denied.snapshot!({ profile: 'debug', includeParticles: true }).particles, undefined,
+      'no read:diagnostics → the debug profile cannot re-open the particle lane (tightens, never widens)');
+
+    // GRANT: the lane opens, and only then.
+    const granted = field.forAgent({ capabilities: ['read:snapshots', 'read:diagnostics'] });
+    const withParticles = granted.snapshot!({ includeParticles: true });
+    assert.ok(Array.isArray(withParticles.particles), 'read:diagnostics → the raw particle pool is served');
+
+    // and the grant is still opt-in: the cap alone does not force the heavy lane on.
+    assert.equal(granted.snapshot!().particles, undefined, 'read:diagnostics is permission, not a request');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('forAgent: the two gates compose with the per-lane caps and with policy (tighten-only)', () => {
+  const field = fieldWithBodies();
+  try {
+    // A capture granted, every lane cap withheld: the shell arrives, the lanes do not.
+    const view = field.forAgent({ capabilities: ['read:snapshots'] });
+    const s = view.snapshot!({ profile: 'debug', includeData: true, includeParticles: true, includeInfluences: true });
+    assert.ok(s.bodies.length >= 2, 'ids + shape survive — identity is the base grant');
+    assert.ok(s.bodies.every((b) => b.data === undefined), 'no read:body-data → no opaque data');
+    assert.equal(s.particles, undefined, 'no read:diagnostics → no raw particle pool');
+    assert.deepEqual(s.relationships, [], 'no read:relationships → no relationship graph');
+    assert.equal(s.influences, undefined, 'no read:influences → no influence attribution');
+    assert.deepEqual(s.projections, [], 'no read:projections → no projection metadata');
   } finally {
     field.destroy();
   }
@@ -249,7 +317,7 @@ test('forAgent: a fully-granted agent view exposes ONLY the AGENT_EXPOSED method
     const view = field.forAgent({
       capabilities: [
         'read:metrics', 'read:relationships', 'read:influences', 'read:body-data',
-        'read:snapshots', 'read:replay', 'read:projections', 'read:focus',
+        'read:snapshots', 'read:replay', 'read:projections', 'read:focus', 'read:diagnostics',
       ],
     });
     const viewMethods = new Set(

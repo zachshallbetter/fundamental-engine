@@ -1269,9 +1269,17 @@ export type AgentCapability =
   | 'read:metrics'
   | 'read:relationships'
   | 'read:influences'
+  /** gates the CAPTURE surface: {@link AgentFieldView.snapshot} is present ONLY when this is granted
+   *  (otherwise `undefined`, so the facade's shape reflects the grant). Withholding it closes the call
+   *  rather than emptying it — an empty capture is indistinguishable from an empty field. `query()` is
+   *  unaffected: the live read stays available under the base grant. */
   | 'read:snapshots'
   | 'read:body-data'
   | 'read:projections'
+  /** gates the DIAGNOSTIC lane of a capture — the raw particle pool (`includeParticles`), the engine's
+   *  own internal state rather than a modelled reading of bodies/relationships/metrics. Without it
+   *  `includeParticles` is forced off even when a `debug` profile or an explicit flag asked for it
+   *  (tightens, never widens). */
   | 'read:diagnostics'
   | 'read:replay'
   /** EXPERIMENTAL: gates the {@link AgentFieldView.focusState} digest + the per-source provenance split.
@@ -1281,7 +1289,8 @@ export type AgentCapability =
 /** Options for {@link FieldHandle.forAgent} — the capability grant + optional redaction list. */
 export interface AgentViewOptions {
   /** the capabilities this agent view grants. An allow-list: any dimension not listed is stripped from
-   *  every reading. An empty set yields the most-restricted view (ids + shape only). */
+   *  every reading. An empty set yields the most-restricted view — ids + shape through `query()` only,
+   *  with no `snapshot()` on the facade at all (that surface needs `read:snapshots`). */
   capabilities: AgentCapability[];
   /** dotted paths stripped from every reading AFTER capability scoping (e.g. `'body.data'`, `'host.user'`,
    *  `'metrics.temperature'`). `body.*` / `relationship.*` / `influence.*` / `projection.*` prefixes address
@@ -1305,9 +1314,12 @@ export interface AgentFieldView {
   /** a capability-scoped, redacted {@link FieldQueryResult}. Dimensions the caps don't grant are absent
    *  (no `read:influences` → no influences; no `read:relationships` → no relationships; etc.). */
   query(q?: FieldQuery): FieldQueryResult;
-  /** a capability-scoped, redacted {@link FieldSnapshot}. Body `data` is withheld unless `read:body-data`
-   *  is granted (and policy permits it); a `profile`/`include*` request can only tighten from here. */
-  snapshot(opts?: FieldSnapshotOptions): FieldSnapshot;
+  /** a capability-scoped, redacted {@link FieldSnapshot} — the portable CAPTURE, present ONLY when
+   *  `read:snapshots` is granted (otherwise `undefined`, so the facade's shape reflects the grant).
+   *  Body `data` is withheld unless `read:body-data` is granted (and policy permits it); the raw particle
+   *  pool is withheld unless `read:diagnostics` is granted; a `profile`/`include*` request can only
+   *  tighten from here. */
+  snapshot?(opts?: FieldSnapshotOptions): FieldSnapshot;
   /** narrate how the field changed between two snapshots — present ONLY when `read:replay` is granted
    *  (otherwise `undefined`, so the facade's shape reflects the grant). */
   replay?(a: FieldSnapshot, b: FieldSnapshot, opts?: ReplayOptions): CausalReplay;
