@@ -13,6 +13,14 @@ import ManualForceRow from "../components/home/ManualForceRow.astro";
 import PresetRow from "../components/home/PresetRow.astro";
 import { MANUAL_FORCES, MANUAL_PRESETS, NATURAL_FIELDS, FORCE_FIELD, type ManualEntry, type ManualPreset } from "@fundamental-engine/core";
 import { RENDER_MODES, OVERLAY_MODES } from "../lib/docs-api.ts";
+// The tour's two rows are PICKERS of things to draw, not the full vocabulary: `none` (the
+// signals-only underlay) and `off` (the cleared overlay) are the RESTING states this panel already
+// restores to when it scrolls out of view — offering them as buttons would just be "stop drawing",
+// and `none` sitting first would make the panel boot the page field into a blank underlay.
+// They belong in the reference tables (and in the check:docs gate, which is why they are in
+// docs-api.ts), not in this control. Filtered here rather than omitted there.
+const TOUR_RENDER_MODES = RENDER_MODES.filter((m) => m.name !== "none");
+const TOUR_OVERLAY_MODES = OVERLAY_MODES.filter((m) => m.name !== "off");
 import contours from "../data/contours.json";
 import "../styles/manual.css";
 import "../styles/force-glyphs.css";
@@ -1089,17 +1097,17 @@ const chapters = [
         <div class="rendertour" data-rendertour>
           <span class="stage-label">matter · field.setRender(mode) — one at a time</span>
           <div class="rt-modes" role="group" aria-label="Pick the matter mode (underlay — exclusive)">
-            {RENDER_MODES.map((m, i) => (
+            {TOUR_RENDER_MODES.map((m, i) => (
               <button type="button" data-render={m.name} data-def={m.desc} aria-pressed={i === 0 ? "true" : "false"}>{m.name}</button>
             ))}
           </div>
           <span class="stage-label">readings · field.setOverlay([&hellip;]) — stack as many as you like</span>
           <div class="rt-modes rt-readings" role="group" aria-label="Toggle overlay readings (in front — additive)">
-            {OVERLAY_MODES.map((m) => (
+            {TOUR_OVERLAY_MODES.map((m) => (
               <button type="button" data-overlay-mode={m.name} data-def={m.desc} aria-pressed="false">{m.name}</button>
             ))}
           </div>
-          <p class="rt-caption" data-rt-caption aria-live="polite">{RENDER_MODES[0]!.name} — {RENDER_MODES[0]!.desc}</p>
+          <p class="rt-caption" data-rt-caption aria-live="polite">{TOUR_RENDER_MODES[0]!.name} — {TOUR_RENDER_MODES[0]!.desc}</p>
           <span class="hintline">plays across the whole page field behind the content while in view</span>
         </div>
       </Fragment>
