@@ -1,0 +1,172 @@
+---
+// COOKBOOK — framework interop: SSR, hydration, islands (docs-refactor Phase 5, #1000; plan §8).
+//
+// The honest shape of this topic: the engine is a BROWSER runtime with a server-safe authoring
+// surface. Nothing here invents an SSR API — the point is that the markup contract survives
+// serialization and the runtime attaches afterwards, which is why islands work at all.
+//
+// This site is the worked example: an Astro static build, a persisted <field-root>, and a
+// ClientRouter that swaps content without tearing the field down.
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import PlatformSupport from '../../../components/PlatformSupport.astro';
+
+const ssrHtml = `<!-- Server-rendered, and complete without JavaScript. The contract is
+     ATTRIBUTES, so it serializes: the body exists in the HTML the server sent. -->
+<article data-body="attract" data-feedback data-hot>
+  <h2>Quarterly report</h2>
+</article>
+
+<!-- The runtime attaches later and adopts what it finds. Nothing about the
+     element changes on hydration — it was already a body, it just wasn't measured yet. -->
+<field-root></field-root>`;
+
+const reactJsx = `// React: the component owns the canvas and the overlay surface for you.
+import { FieldField } from '@fundamental-engine/react';
+
+export default function Layout({ children }) {
+  return (
+    <>
+      <FieldField accent="#4da3ff" onReady={(f) => f.scan()} />
+      {children}
+    </>
+  );
+}`;
+
+const islandJsx = `// An ISLAND that renders bodies must tell the field they arrived: the engine
+// scans at boot, and an island hydrates after that.
+useEffect(() => {
+  field.scan();        // re-scan for the bodies this island just rendered
+}, [items]);
+
+// A body whose PARAMETERS change does not need a rescan — the reactive-param path
+// applies within a frame:
+handle.set({ strength: next });`;
+
+const teardownJs = `// SPA navigation is where fields leak. A field owns a rAF loop, listeners and
+// (contained) a ResizeObserver. Tear it down on unmount, every time.
+useEffect(() => {
+  const field = createField(canvas, { host: browserHost() });
+  return () => field.destroy();
+}, []);`;
+
+const astroNote = `---
+// This site: a static Astro build. The field is a persisted island — one <field-root>
+// in the base layout, outside the swapped content, so client-side navigation changes
+// the page WITHOUT restarting the engine.
+---
+<field-root render="none"></field-root>
+<slot />`;
+---
+
+<DocsLayout
+  title="Fundamental — Framework interop: SSR, hydration & islands"
+  description="How the field behaves under server rendering, hydration and island architectures: the attribute contract serializes, the runtime attaches afterwards and adopts what it finds, islands re-scan after they hydrate, and every entry point must be torn down on unmount."
+>
+  <header class="docs-hero">
+    <p class="kicker">Cookbook</p>
+    <h1>Framework <span class="accent">interop</span></h1>
+    <p class="lede">
+      The engine is a browser runtime with a <strong>server-safe authoring surface</strong>. That
+      distinction is the whole topic: because a body is declared in attributes, it survives
+      serialization and arrives in the HTML the server sent — and the runtime, whenever it attaches,
+      simply adopts what it finds.
+    </p>
+    <StatusChip label="Shipped · this site is the worked example" tone="stable" />
+  </header>
+
+  <div class="callout">
+    <b>There is no SSR API, and there should not be.</b> Nothing renders a field on the server: there
+    is no canvas, no rAF and no viewport there. What survives the server is the
+    <em>declaration</em> — and that is enough, because the field's contract is markup.
+  </div>
+
+  <section class="docs-sec">
+    <h2 id="ssr">Server rendering</h2>
+    <p>
+      A server-rendered page is complete before any script runs: the content is there, the semantics
+      are there, and the bodies are there as attributes. When the runtime attaches it scans and
+      begins measuring. Nothing about the elements changes — they were already bodies; they just
+      weren't being measured yet.
+    </p>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: ssrHtml }]} />
+    <p>
+      This is also why <code>render: 'none'</code> is such a natural default for content sites: the
+      no-JavaScript page and the hydrated page differ by a measurement, not by a layout.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="islands">Islands and hydration</h2>
+    <p>
+      An island hydrates <em>after</em> the field's initial scan, so bodies it renders are new to the
+      engine. The rule is small and easy to get wrong in exactly one direction:
+    </p>
+    <ul class="model">
+      <li>
+        <b>New elements → <code>scan()</code>.</b> The field does not poll the DOM; tell it when the
+        set of bodies changed.
+      </li>
+      <li>
+        <b>Changed parameters → nothing.</b> A body whose <code>strength</code> or <code>range</code>
+        changes is picked up on the measure cadence. Use <code>handle.set(...)</code> for a
+        programmatic body; re-scanning for this is waste.
+      </li>
+      <li>
+        <b>One field per page.</b> <code>&lt;field-root&gt;</code> is a page singleton. Two islands
+        that each mount a page-wide field give you two engines writing the same variables — use one
+        field and let islands contribute bodies, or scope each to its own
+        <a href="/docs/cookbook/contained-fields">contained field</a>.
+      </li>
+    </ul>
+    <CodeTabs
+      variants={[
+        { label: 'React island', lang: 'tsx', code: islandJsx },
+        { label: 'React component', lang: 'tsx', code: reactJsx },
+      ]}
+    />
+    <p>
+      <PlatformSupport dimension="field-handle-methods" symbol="rescan" note="after the DOM changes" />
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="teardown">Teardown is not optional</h2>
+    <p>
+      In a single-page app this is the bug that actually bites. A field owns a
+      <code>requestAnimationFrame</code> loop, window listeners and — when contained — a
+      <code>ResizeObserver</code>. A component that mounts a field and never destroys it leaks an
+      engine per navigation, and the symptom is a page that grows steadily heavier rather than one
+      that breaks.
+    </p>
+    <CodeTabs variants={[{ label: 'React', lang: 'tsx', code: teardownJs }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="this-site">This site, as the worked example</h2>
+    <p>
+      These docs are a static Astro build with client-side routing. The field is a
+      <strong>persisted island</strong>: a single <code>&lt;field-root&gt;</code> in the base layout,
+      outside the swapped content, so navigating between pages changes the document without
+      restarting the engine — the field stays continuous across the transition.
+    </p>
+    <CodeTabs variants={[{ label: 'Astro layout', lang: 'astro', code: astroNote }]} />
+    <p>
+      Page-level runtimes follow the same discipline: each boots on load and on every navigation, and
+      tears down before the swap, so nothing stacks. Every live demo in this cookbook is wired that
+      way.
+    </p>
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/cookbook', label: 'All cookbook patterns' },
+      { href: '/docs/guides/react', label: 'The React guide' },
+      { href: '/docs/guides/web-component', label: 'The web-component guide' },
+      { href: '/docs/troubleshooting', label: 'Troubleshooting (SSR & hydration)' },
+      { href: '/docs/cookbook/contained-fields', label: 'Contained fields' },
+    ]}
+  />
+</DocsLayout>

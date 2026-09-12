@@ -1,0 +1,185 @@
+---
+// COOKBOOK — signals-first fields (docs-refactor Phase 5, #1000; plan §6.3/§8).
+//
+// The gap-list items this page makes runnable: invisible / signals-first fields, the headlessHost
+// custom host, and a custom `feedbackSink`. The reference pages say what these ARE
+// (/docs/api/imperative for the option and the handle, /docs/api/declarative for the channels);
+// this page is the depth layer — the worked, executed version.
+//
+// Both examples run at BUILD TIME: the modules are imported and called below, and their real return
+// values are rendered by <CookbookExample>. A broken example fails `astro build`.
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import PlatformSupport from '../../../components/PlatformSupport.astro';
+import CookbookExample from '../../../components/CookbookExample.astro';
+
+// the examples — imported twice on purpose: as SOURCE (the snippet) and as CODE (the result).
+import signalsFirstSrc from '../../../lib/cookbook/signals-first.ts?raw';
+import customSinkSrc from '../../../lib/cookbook/custom-sink.ts?raw';
+import { runSignalsFirst } from '../../../lib/cookbook/signals-first.ts';
+import { runCustomSink } from '../../../lib/cookbook/custom-sink.ts';
+
+const signalsFirst = runSignalsFirst();
+const customSink = runCustomSink();
+
+const domSignals = `<!-- The same idea in the DOM: no canvas, no particles, no drawing.
+     'none' is the DEFAULT render mode (#538) — a bare <field-root> is already
+     signals-only. The simulation runs; what you get back is CSS. -->
+<field-root></field-root>
+
+<article data-body="attract" data-feedback data-hot>
+  <h2>Quarterly report</h2>
+</article>`;
+
+const domCss = `/* the reciprocal half — the field writes, your CSS reads.
+   --d rests SMALL by design (fractions of 1); amplify it, don't
+   bake a magic number into every consumer. */
+[data-feedback] {
+  --d-amp: clamp(0, calc(var(--d, 0) * 12), 1);
+}
+article {
+  border-color: color-mix(in srgb, var(--accent) calc(var(--d-amp) * 100%), transparent);
+  transform: translateY(calc(var(--d-amp) * -3px));
+}`;
+---
+
+<DocsLayout
+  title="Fundamental — Signals-first fields"
+  description="A field that draws nothing: render:'none', the headless host, and a custom feedbackSink. The full simulation runs and returns signals — CSS variables, per-body channels, or whatever your sink routes them to — with no canvas and, headlessly, no DOM at all."
+>
+  <header class="docs-hero">
+    <p class="kicker">Cookbook</p>
+    <h1>Signals-first <span class="accent">fields</span></h1>
+    <p class="lede">
+      The field's most useful mode draws nothing at all. <code>render: 'none'</code> runs the whole
+      force pipeline and writes every feedback channel without ever acquiring a canvas context —
+      so the field becomes a <strong>measurement substrate</strong>, and what you consume is signals:
+      CSS variables on your own elements, per-body channels in a callback, or anything your own
+      <code>feedbackSink</code> routes them to.
+    </p>
+    <StatusChip label="Shipped · examples execute at build time" tone="stable" />
+  </header>
+
+  <div class="callout">
+    <b>This is the default, not a special mode.</b> <code>render</code> defaults to
+    <code>'none'</code> (#538): a bare <code>&lt;field-root&gt;</code> is already signals-only, and
+    no canvas context is allocated until you ask for one. The twelve
+    <a href="/evidence">invisible-field examples</a> are all built this way — real datasets, no
+    particle swarm.
+    <PlatformSupport dimension="field-options" symbol="render" />
+  </div>
+
+  <section class="docs-sec">
+    <h2 id="in-the-dom">In the DOM: markup in, CSS out</h2>
+    <p>
+      The loop is closed entirely in the browser's own vocabulary. An element declares itself a body;
+      the field measures what gathers on it; the measurement comes back as a custom property your
+      stylesheet reads. No framework, no imperative code, nothing drawn.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'HTML', lang: 'html', code: domSignals },
+        { label: 'CSS', lang: 'css', code: domCss },
+      ]}
+    />
+    <p>
+      The attribute contract and every channel the field writes back are documented once, on the
+      <a href="/docs/api/declarative">declarative reference</a> — including which of them Swift and
+      Kotlin actually have.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="headless">Without a DOM at all: the headless host</h2>
+    <p>
+      <code>headlessHost</code> binds the engine to nothing — an abstract volume you size, an empty
+      scan root (bodies arrive through <code>addBody</code>, not <code>[data-body]</code>), and a
+      <strong>manual loop</strong> you drive with <code>tick()</code> instead of
+      <code>requestAnimationFrame</code>. That makes the field usable from a Node service, an agent
+      turn, or a deterministic test.
+    </p>
+    <p>
+      <PlatformSupport
+        dimension="field-handle-methods"
+        symbol="addBody"
+        note="the programmatic body — the only way in without a DOM"
+      />
+    </p>
+    <CookbookExample
+      title="A field with no canvas and no document"
+      path="apps/site/src/lib/cookbook/signals-first.ts"
+      source={signalsFirstSrc}
+      result={signalsFirst}
+      caption="The density is non-zero: matter genuinely gathered on a body that has no element, in a field that drew nothing."
+    />
+    <div class="callout">
+      <b>One rough edge, stated plainly.</b> <code>createField</code>'s first parameter is typed
+      <code>HTMLCanvasElement</code>, but under <code>render: 'none'</code> the engine never touches
+      it — it acquires no context and sizes no backing store. The honest spelling today is the cast
+      you see above; the engine's own <code>record</code> module does exactly the same thing
+      internally. The type has not yet caught up with the headless path.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="feedback-sink">Sending the signals somewhere else: <code>feedbackSink</code></h2>
+    <p>
+      Every feedback write in the engine flows through one contract —
+      <code>(el, channels) =&gt; void</code>. The default implementation
+      (<code>cssFeedbackSink</code>) writes <code>--d</code>, <code>--load</code>,
+      <code>--lit</code> and the measured thermodynamics onto the element. Install your own and the
+      same values go wherever you want instead: a store, a socket, a native bridge, a test recorder.
+    </p>
+    <p>
+      <PlatformSupport
+        dimension="field-options"
+        symbol="feedbackSink"
+        note="the sink seam itself"
+      />
+    </p>
+    <CookbookExample
+      title="A sink that routes channels away from CSS"
+      path="apps/site/src/lib/cookbook/custom-sink.ts"
+      source={customSinkSrc}
+      result={customSink}
+      caption="The channel list is the sink's real payload — read off a live run, not transcribed from the type."
+    />
+    <p>
+      Installing a sink <em>replaces</em> the CSS write path; nothing is written to any element. That
+      is the point on a non-DOM host, and the trap on a DOM one — if your stylesheet stopped
+      reacting after you installed a sink, this is why.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="when">When to reach for this</h2>
+    <ul class="model">
+      <li>
+        <b>Real content, no ornament.</b> A reading surface where importance should be felt in type
+        and ink rather than watched as motion — the whole
+        <a href="/evidence">invisible-fields family</a>.
+      </li>
+      <li>
+        <b>An agent or a service.</b> The field as a salience substrate that never renders; read it
+        through the capability-scoped <a href="/docs/api/imperative#agent">agent view</a>.
+      </li>
+      <li>
+        <b>Tests.</b> A manual tick plus a seeded <code>rng</code> makes a run reproducible — which
+        is what every example on this page relies on.
+      </li>
+    </ul>
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/cookbook', label: 'All cookbook patterns' },
+      { href: '/docs/cookbook/reading-the-field', label: 'Reading the field: probes, grids, channels' },
+      { href: '/docs/api/imperative', label: 'The imperative API reference' },
+      { href: '/docs/api/declarative', label: 'The declarative reference (channels, attributes)' },
+      { href: '/docs/api/utilities', label: 'headlessHost in the utilities reference' },
+      { href: '/evidence', label: 'The invisible-fields examples' },
+    ]}
+  />
+</DocsLayout>

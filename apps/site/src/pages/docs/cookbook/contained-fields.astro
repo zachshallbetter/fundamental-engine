@@ -1,0 +1,161 @@
+---
+// COOKBOOK — contained, component-scoped fields (docs-refactor Phase 5, #1000; plan §6.3/§7/§8).
+//
+// Gap-list items: contained (component-scoped) fields, the containerHost custom host, and the
+// contained-field DENSITY correction the plan calls out in §7 (the pool is 130 x density FIELD-WIDE,
+// so a card-sized field reads a low --d unless you raise density).
+//
+// The demo is live because a contained field needs a real element to be scoped to.
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import PlatformSupport from '../../../components/PlatformSupport.astro';
+import CookbookDemo from '../../../components/CookbookDemo.astro';
+
+const boundsJs = `import { createField } from '@fundamental-engine/vanilla';
+
+// \`bounds\` scopes the field to ONE element: bodies are scanned inside it, positions
+// live in its local coordinate space, and the canvas is drawn in that same space.
+const field = createField(canvas, {
+  bounds: card,      // → containerHost(card) under the hood
+  render: 'dots',
+  density: 4,        // a small field needs MORE density, not less — see below
+});`;
+
+const hostJs = `import { createField } from '@fundamental-engine/core';
+import { containerHost } from '@fundamental-engine/dom';
+
+// The same thing, wired by hand — useful when you already hold a host, or want to
+// wrap one. \`bounds\` is just this call.
+const field = createField(canvas, { host: containerHost(card) });`;
+
+const shadowJs = `// A component in a shadow root registers its host element as a body by
+// dispatching a composed registration event. Two controls decide WHICH field adopts it:
+el.dispatchEvent(new CustomEvent('field:register-body', {
+  bubbles: true, composed: true,
+  detail: {
+    tokens: ['attract'],
+    scope: 'nearest',     // only the nearest enclosing field adopts it (not every field)
+    // field: '#card-2',  // …or name a field explicitly — a portal. Beats \`scope\`.
+  },
+}));`;
+---
+
+<DocsLayout
+  title="Fundamental — Contained fields"
+  description="A field scoped to one element instead of the window: containerHost / bounds, the local coordinate space, nearest-enclosing-field ownership for shadow-DOM components and portals, and why a small contained field needs a higher density, not a lower one."
+>
+  <header class="docs-hero">
+    <p class="kicker">Cookbook</p>
+    <h1>Contained <span class="accent">fields</span></h1>
+    <p class="lede">
+      A field does not have to own the window. Scope it to a single element and it becomes a
+      component-level primitive: a card with its own physics, a widget you can drop twice on a page,
+      a preview that cannot reach the content around it.
+    </p>
+    <StatusChip label="Shipped · demo runs live on this page" tone="stable" />
+  </header>
+
+  <section class="docs-sec">
+    <h2 id="bounds">Scoping a field to an element</h2>
+    <p>
+      Pass <code>bounds</code> and everything moves into that element's local space: the scan root is
+      the element (not the document), <code>viewport()</code> returns its box, and scroll, resize and
+      input are observed on it rather than on the window.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'bounds', lang: 'ts', code: boundsJs },
+        { label: 'containerHost', lang: 'ts', code: hostJs },
+      ]}
+    />
+    <p>
+      <PlatformSupport
+        dimension="field-options"
+        symbol="host"
+        note="the host seam a contained field is built on"
+      />
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="ownership">Two fields, no fight</h2>
+    <p>
+      This page already runs a page-wide field. A contained field inside it would be a second engine
+      writing <code>--d</code> onto the same elements every frame — the per-frame flicker that
+      nearest-enclosing-field ownership exists to prevent.
+    </p>
+    <p>
+      So <code>containerHost</code> marks its bounds element as a <strong>field boundary</strong> when
+      it attaches: the outer field's scan skips everything the contained field owns, and
+      <code>detach()</code> removes the marker so the outer field re-adopts those bodies on the next
+      rescan. You get this by construction — there is nothing to configure.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="density">The density surprise — and the fix</h2>
+    <p>
+      The most common contained-field complaint is "my card barely glows". The cause is not the
+      contained path; it is that <strong>the particle pool is <code>130 × density</code> field-wide,
+      not per-area</strong>. A card-sized field still holds the same matter as a page-sized one,
+      spread over its whole volume, so each body gathers less and <code>--d</code> reads low.
+    </p>
+    <p>
+      The fix is the opposite of most people's instinct: <strong>raise</strong> <code>density</code>
+      for a small field. The demo below rebuilds its field at <code>density: 4</code> and
+      <code>density: 0.5</code> so you can watch the same body's <code>--d</code> move.
+    </p>
+
+    <CookbookDemo
+      kind="contained"
+      title="A field scoped to this box"
+      note="The readout is the live --d the contained field writes onto the card — not a number this page computed. Switch the density and watch it change."
+    >
+      <div class="cb-chip" data-body="attract" data-strength="1.2" data-range="220" data-feedback data-hot>
+        a body inside the contained field
+      </div>
+      <button slot="controls" type="button" data-cb-density>density 4 (try 0.5)</button>
+    </CookbookDemo>
+
+    <div class="callout">
+      <b>Why the pool is field-wide.</b> It keeps the cost of a field predictable: dropping a widget
+      on a page adds a known, bounded amount of matter rather than an amount that scales with layout.
+      The trade is that <em>density means "how much matter", not "how dense it looks"</em> — see
+      <a href="/docs/cookbook/performance-tuning">performance tuning</a>.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="shadow">Components in a shadow root, and portals</h2>
+    <p>
+      A component that hides its internals in a shadow root cannot be found by a light-DOM scan. It
+      registers itself instead, by dispatching a <em>composed</em> registration event that crosses
+      the boundary — the field registers the host element and writes state back onto it.
+    </p>
+    <p>
+      Two controls decide which field adopts it. <code>scope: 'nearest'</code> applies the same
+      nearest-enclosing-field ownership the scanner uses, so a component inside a contained field
+      joins <em>that</em> field. An explicit <code>field</code> target is a <strong>portal</strong>:
+      it names a field by its scan root and beats <code>scope</code> entirely — and matches no field
+      at all if none exists yet, staying inert rather than falling back to the page.
+    </p>
+    <CodeTabs variants={[{ label: 'Registration event', lang: 'ts', code: shadowJs }]} />
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/cookbook', label: 'All cookbook patterns' },
+      { href: '/docs/cookbook/performance-tuning', label: 'Performance tuning (density, dprCap, tiers)' },
+      { href: '/docs/reactive-component', label: 'A reactive component, step by step' },
+      { href: '/docs/api/imperative', label: 'The imperative API reference' },
+      { href: '/docs/platform', label: 'Host model & platform layer' },
+    ]}
+  />
+
+  <script>
+    import { initCookbookDemos } from '../../../lib/cookbook/demos.ts';
+    initCookbookDemos();
+  </script>
+</DocsLayout>

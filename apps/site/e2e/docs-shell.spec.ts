@@ -100,6 +100,9 @@ test.describe("docs shell", () => {
     expect(titles).toEqual([
       "Start",
       "Build",
+      // the task-shaped depth layer (docs-refactor Phase 5, #1000) sits between "how to use each
+      // surface" and "what every symbol is"
+      "Cookbook",
       "Reference",
       "Substrate",
       "Assurance",

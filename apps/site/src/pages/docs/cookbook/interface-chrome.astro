@@ -1,0 +1,164 @@
+---
+// COOKBOOK — navigation chrome + accessibility (docs-refactor Phase 5, #1000; plan §6.3/§8).
+//
+// Two gap-list items that belong together: both are about a field applied to the parts of an
+// interface that must keep working when the field does not. /docs/accessibility states the
+// platform's guarantees; this page is the authoring layer — how to build chrome that degrades to
+// plain, reachable HTML by construction.
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import CookbookDemo from '../../../components/CookbookDemo.astro';
+
+const navJs = `import { bindFieldNav } from '@fundamental-engine/dom';
+
+// Signals-only over real links: every <a> becomes a body, the current link is pinned
+// as the well, and "visited" is a predicate YOU own. Nothing is drawn.
+const handle = bindFieldNav(nav, 'navigation-current', {
+  pin: nav.querySelector('[aria-current="page"]'),
+  visited: (href) => visitLog.has(href),
+});
+
+// Returns NULL under prefers-reduced-motion, with no links, or on an unknown pattern —
+// so the failure mode is "plain nav", never "broken nav".
+handle?.destroy();`;
+
+const navCss = `/* The binding writes the lanes; CSS decides what they mean visually.
+   Weight and ink only — no motion, nothing that moves a hit target. */
+nav a {
+  color: color-mix(in srgb, var(--accent) calc(var(--field-attention, 0) * 100%), var(--text-3));
+  font-weight: calc(400 + var(--field-attention, 0) * 300);
+}
+nav a.nav-visited::after { content: ' ·'; }`;
+
+const a11yHtml = `<!-- The canvas is decorative by construction: aria-hidden, not focusable,
+     click-through. Meaning never lives in it. -->
+<field-root></field-root>
+
+<!-- The meaning lives in the DOM, where assistive tech already reads it.
+     The field AMPLIFIES the heading; it does not carry it. -->
+<h2 data-body="attract" data-feedback>Q3 sales</h2>`;
+
+const a11yCss = `/* Reduced motion is not "less animation" — it is the same MEANING,
+   expressed without movement. The engine stops integrating (dt = 0); make sure
+   what you built on top degrades to a static equivalent, not to nothing. */
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+  /* keep the signal, drop the travel */
+  .card { border-left-width: calc(1px + var(--d-amp) * 3px); }
+}`;
+---
+
+<DocsLayout
+  title="Fundamental — Navigation chrome & accessibility"
+  description="Applying a field to navigation, breadcrumbs and pagers with bindFieldNav — signals-only, progressive-enhancement-first — and the authoring rules that keep a field accessible: decorative canvas, meaning in the DOM, and reduced motion that loses no information."
+>
+  <header class="docs-hero">
+    <p class="kicker">Cookbook</p>
+    <h1>Chrome &amp; <span class="accent">accessibility</span></h1>
+    <p class="lede">
+      Navigation is the hardest surface to put a field on, because it is the one that absolutely must
+      work when the field does not. The same discipline that makes chrome safe — signals only,
+      meaning in the DOM, a plain fallback by construction — is what makes any field accessible.
+    </p>
+    <StatusChip label="Shipped · demo runs live on this page" tone="stable" />
+  </header>
+
+  <section class="docs-sec">
+    <h2 id="nav">Navigation chrome, signals-only</h2>
+    <p>
+      <code>bindFieldNav</code> is the idiom this site spread across a dozen surfaces — top nav,
+      sidebar, breadcrumbs, pagers, footer — lifted into the platform. It runs a Pattern
+      <strong>signals-only</strong> over the links inside a root: each becomes a body, the current one
+      can be pinned as the well, and previously-visited links can be marked from a predicate you
+      supply. Nothing is drawn, and the visit log stays yours.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'TypeScript', lang: 'ts', code: navJs },
+        { label: 'CSS', lang: 'css', code: navCss },
+      ]}
+    />
+
+    <CookbookDemo
+      kind="nav"
+      title="A nav bound as a field"
+      stage={false}
+      note="These are ordinary links: click them and they navigate. The weight and ink come from the attention lane the binding writes; the trailing dot marks a 'visited' route from this page's own predicate."
+    >
+      <nav data-cb-nav aria-label="Cookbook demo navigation">
+        <a href="/docs/cookbook" aria-current="page">Cookbook</a>
+        <a href="/docs/cookbook/signals-first">Signals-first</a>
+        <a href="/docs/cookbook/contained-fields">Contained fields</a>
+        <a href="/docs/cookbook/data-driven">Data-driven</a>
+        <a href="/docs/cookbook/workbench">Workbench</a>
+      </nav>
+    </CookbookDemo>
+
+    <div class="callout">
+      <b>Progressive enhancement is the contract, not a courtesy.</b> Under
+      <code>prefers-reduced-motion</code>, with no links, or with a Pattern it cannot resolve,
+      <code>bindFieldNav</code> returns <code>null</code> and writes nothing. There is no degraded
+      state to design, because the undegraded state <em>is</em> the HTML.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="rules">The three rules that keep a field accessible</h2>
+    <ol class="model">
+      <li>
+        <b>The canvas carries nothing.</b> It is <code>aria-hidden</code>, not focusable and
+        click-through by construction. If a reader would lose information with the canvas removed,
+        the information is in the wrong place.
+      </li>
+      <li>
+        <b>Meaning lives in the DOM.</b> The field measures semantic HTML and writes numbers back
+        onto it. Assistive technology reads the same heading it always did; the field only changes
+        how emphatically it is drawn.
+      </li>
+      <li>
+        <b>Reduced motion keeps the meaning.</b> The engine stops integrating under
+        <code>prefers-reduced-motion</code>, and engagement still works through focus as well as
+        hover. What you build on top must degrade to a <em>static equivalent</em> — weight, ink, a
+        border — not to nothing.
+      </li>
+    </ol>
+    <CodeTabs
+      variants={[
+        { label: 'HTML', lang: 'html', code: a11yHtml },
+        { label: 'CSS', lang: 'css', code: a11yCss },
+      ]}
+    />
+    <p>
+      The platform's own guarantees, and a side-by-side of the animated field against its static
+      fallback, are on <a href="/docs/accessibility">the accessibility page</a> and
+      <a href="/docs/accessibility-preview">its preview</a>.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="checks">Checking your own surface</h2>
+    <ul class="model">
+      <li><b>Turn the field off.</b> Every docs page here has a toggle for exactly this reason: the page must still be complete.</li>
+      <li><b>Turn motion off.</b> Then re-read the page and ask what information you lost.</li>
+      <li><b>Tab through it.</b> Focus must engage a body the way hover does.</li>
+      <li><b>Run the lint.</b> <code>lintPlatform()</code> catches the feedback-lane mistakes — a body that writes a variable nothing reads, or CSS reading one nothing writes.</li>
+    </ul>
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/cookbook', label: 'All cookbook patterns' },
+      { href: '/docs/accessibility', label: 'Accessibility guarantees' },
+      { href: '/docs/accessibility-preview', label: 'Animated vs static, side by side' },
+      { href: '/docs/api/utilities', label: 'bindFieldNav in the utilities reference' },
+      { href: '/docs/platform', label: 'lintPlatform & the registries' },
+    ]}
+  />
+
+  <script>
+    import { initCookbookDemos } from '../../../lib/cookbook/demos.ts';
+    initCookbookDemos();
+  </script>
+</DocsLayout>

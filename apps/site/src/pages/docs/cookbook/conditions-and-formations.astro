@@ -1,0 +1,173 @@
+---
+// COOKBOOK — authoring conditions and formations (docs-refactor Phase 5, #1000; plan §8).
+//
+// The gap list asks for condition & formation AUTHORING, not enumeration (/docs/api/catalog and
+// /docs/api/declarative already enumerate them). Two honest findings shape this page:
+//
+//  1. There is no public registration API for a CUSTOM condition. `createRegistry()` exposes
+//     `.condition(id, fn)`, but `createField` builds its own registry internally and takes no
+//     registry option — so authoring means composing the six built-ins, and this page says so
+//     rather than implying an extensibility that does not exist.
+//  2. `data-formation` is read by the engine (field.ts's conductor scans `[data-formation]`) but
+//     appears in NO documentation table, and the check:docs body-attr surface cannot see it because
+//     that extractor reads scanner.ts. Documented here; noted in the PR.
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import PlatformSupport from '../../../components/PlatformSupport.astro';
+import CookbookExample from '../../../components/CookbookExample.astro';
+import CookbookDemo from '../../../components/CookbookDemo.astro';
+import { CONDITIONS, FORMATIONS } from '@fundamental-engine/core';
+
+import formationsSrc from '../../../lib/cookbook/formations.ts?raw';
+import { runFormations } from '../../../lib/cookbook/formations.ts';
+
+const formations = runFormations();
+
+const whenHtml = `<!-- A gate decides WHEN a body's forces act. The body is always a body;
+     the gate only decides whether its force applies this frame. -->
+<button data-body="repel" data-when="active" data-hot data-strength="1.4">
+  Delete
+</button>
+
+<!-- Selective gates read each PARTICLE, not the body: 'fast' acts only on
+     fast-moving matter, so the same body treats calm and agitated matter differently. -->
+<div data-body="viscosity" data-when="fast" data-strength="0.8">Settling zone</div>`;
+
+const formationHtml = `<!-- The conductor: as a section crosses mid-viewport it eases the
+     WHOLE field into that posture. After ~6s of no input the field drifts back to 'ambient'. -->
+<section data-formation="wells">   … work …   </section>
+<section data-formation="lanes">   … writing … </section>`;
+
+const formationJs = `field.setFormation('lanes');   // …or drive it directly`;
+---
+
+<DocsLayout
+  title="Fundamental — Authoring conditions & formations"
+  description="The two orthogonal axes of authoring: conditional gates (data-when) that decide when a body's forces act, and formations — the one global posture every free particle carries — set by the conductor via data-formation or directly with setFormation."
+>
+  <header class="docs-hero">
+    <p class="kicker">Cookbook</p>
+    <h1>Conditions &amp; <span class="accent">formations</span></h1>
+    <p class="lede">
+      Two axes sit beside the forces, and both are about <em>when</em> rather than <em>what</em>. A
+      <strong>condition</strong> gates one body: its forces act only when the gate passes. A
+      <strong>formation</strong> is field-wide: one global posture every free particle carries.
+      Neither is a force, and neither can be expressed as one.
+    </p>
+    <StatusChip label="Shipped · closed vocabularies, stated honestly" tone="stable" />
+  </header>
+
+  <section class="docs-sec">
+    <h2 id="conditions">Conditions — gating one body</h2>
+    <p>
+      <code>data-when</code> takes one of {CONDITIONS.length - 1} gate names (plus the empty default,
+      "always"). The distinction that matters when authoring: <code>active</code> and
+      <code>scrolling</code> read the <em>world</em> — is this body engaged, is the page moving —
+      while <code>fast</code>, <code>slow</code>, <code>hot</code> and <code>cool</code> are
+      <strong>selective</strong>: they are evaluated per particle, so one body can act on agitated
+      matter and ignore calm matter in the same frame.
+    </p>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: whenHtml }]} />
+
+    <dl class="api-table">
+      {
+        CONDITIONS.filter((c) => c.id).map((c) => (
+          <div class="api-row" id={`when-${c.id}`}>
+            <dt class="k">
+              <code>data-when="{c.id}"</code>
+              <span class="ty">{c.selective ? 'per particle' : 'per body / frame'}</span>
+            </dt>
+            <dd class="d">
+              {c.desc}
+              <PlatformSupport dimension="conditions" symbol={c.id} />
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <CookbookDemo
+      kind="conditions"
+      title="A gate that only opens when engaged"
+      note="Hover or focus the gated body: data-when='active' means its force applies only while it is engaged. The readout reports the gate state and the live --d."
+    >
+      <div class="cb-chip" data-cb-gated data-body="attract" data-when="active" data-strength="1.6" data-range="220" data-feedback data-hot tabindex="0">
+        gated body — hover or focus me
+      </div>
+      <div class="cb-chip" data-body="attract" data-strength="0.5" data-range="160" data-feedback>
+        ungated neighbour
+      </div>
+    </CookbookDemo>
+
+    <div class="callout">
+      <b>The vocabulary is closed, and that is worth saying plainly.</b> The engine's registry does
+      carry a <code>condition(id, fn)</code> method, but <code>createField</code> constructs its
+      registry internally and accepts no registry option — so there is <strong>no public API for
+      registering a custom gate</strong> today. Authoring a condition means composing the built-ins
+      with the force set and the <code>data-affects</code> / <code>data-species</code> selectors.
+      Reach for a <a href="/docs/cookbook/reading-the-field#channels">field channel</a> when the
+      predicate you want is really external data.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="formations">Formations — the one global posture</h2>
+    <p>
+      A formation is five numbers — drift, wander, orbit, spread, convergence — applied as a bias to
+      every free particle. The engine <strong>eases</strong> toward the target each frame, so a
+      change glides rather than snaps. There are {FORMATIONS.length}, and the presets themselves are
+      engine-owned: authoring means choosing one, and deciding <em>when</em> it applies.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'Declarative (the conductor)', lang: 'html', code: formationHtml },
+        { label: 'Imperative', lang: 'ts', code: formationJs },
+      ]}
+    />
+    <p>
+      <PlatformSupport dimension="field-handle-methods" symbol="setFormation" />
+    </p>
+
+    <CookbookExample
+      title="Switching the posture is visible in the matter"
+      path="apps/site/src/lib/cookbook/formations.ts"
+      source={formationsSrc}
+      result={formations}
+      caption="Mean horizontal velocity across the live pool, measured under each posture: `ambient` rests, `lanes` carries. The formation is not a flag — it moves the matter."
+    />
+
+    <div class="callout">
+      <b>A documentation gap this page closes.</b> <code>data-formation</code> is read by the engine —
+      the conductor scans <code>[data-formation]</code> sections and eases the field as each crosses
+      mid-viewport — but it appears in no attribute table on this site. It escaped the
+      <code>check:docs</code> body-attribute surface because that gate reads the scanner, and this
+      attribute is handled in the frame loop instead. Filed with the Phase 5 PR.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="choosing">Which axis do I want?</h2>
+    <ul class="model">
+      <li><b>One element should behave differently in some state</b> → a condition.</li>
+      <li><b>The whole page should change character in a section</b> → a formation.</li>
+      <li><b>Only some matter should respond</b> → a selective gate (<code>fast</code>, <code>hot</code>, …).</li>
+      <li><b>The rule depends on your data</b> → neither: a <a href="/docs/cookbook/reading-the-field#channels">channel</a>, or a metric through <a href="/docs/cookbook/data-driven">bindData</a>.</li>
+    </ul>
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/cookbook', label: 'All cookbook patterns' },
+      { href: '/docs/api/declarative#conditions', label: 'Conditions & formations in the reference' },
+      { href: '/docs/api/catalog', label: 'The catalog page' },
+      { href: '/docs/cookbook/reading-the-field', label: 'Reading & instrumenting' },
+    ]}
+  />
+
+  <script>
+    import { initCookbookDemos } from '../../../lib/cookbook/demos.ts';
+    initCookbookDemos();
+  </script>
+</DocsLayout>

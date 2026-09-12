@@ -1,0 +1,168 @@
+---
+// A LIVE cookbook demo — the browser-only counterpart to <CookbookExample>.
+//
+// A contained field, a data binding, the workbench and nav chrome cannot execute at build time, so
+// they run here on the page that documents them. The runtime is src/lib/cookbook/demos.ts, keyed by
+// `kind`; it writes a status line into [data-cb-status], which is the reader's proof the thing is
+// live and the hook e2e asserts on. A demo that stops working fails CI rather than rotting quietly.
+interface Props {
+  /** which mount in lib/cookbook/demos.ts drives this: contained | conditions | workbench | binding | nav */
+  kind: 'contained' | 'conditions' | 'workbench' | 'binding' | 'nav';
+  title: string;
+  /** one line on what to watch for. */
+  note?: string;
+  /** stage height in px. */
+  height?: number;
+  /** the stage is a positioned canvas host (a contained field draws into it). */
+  stage?: boolean;
+}
+const { kind, title, note, height = 190, stage = true } = Astro.props;
+---
+
+<figure class="cb-demo" data-cb-demo={kind}>
+  <figcaption class="cb-demo-head">
+    <b>{title}</b>
+    <span class="cb-live">live on this page</span>
+  </figcaption>
+
+  {
+    stage ? (
+      <div class="cb-stage" data-cb-stage style={`min-height:${height}px`}>
+        <slot />
+      </div>
+    ) : (
+      <div class="cb-plain">
+        <slot />
+      </div>
+    )
+  }
+
+  <div class="cb-controls"><slot name="controls" /></div>
+
+  <p class="cb-status" data-cb-status aria-live="polite">starting…</p>
+  {note && <p class="cb-demo-note">{note}</p>}
+</figure>
+
+<style>
+  .cb-demo {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 12px;
+    background: color-mix(in srgb, #0e121b 55%, transparent);
+  }
+  .cb-demo-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.7rem;
+  }
+  .cb-live {
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #0b0b10;
+    background: #2dd4bf;
+    border-radius: 4px;
+    padding: 0.05rem 0.4rem;
+  }
+  .cb-stage {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    align-content: center;
+    justify-content: center;
+  }
+  .cb-plain {
+    padding: 0.2rem 0;
+  }
+  .cb-controls:empty {
+    display: none;
+  }
+  .cb-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.7rem;
+  }
+  .cb-status {
+    margin: 0.7rem 0 0;
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.74rem;
+    color: var(--accent, #4da3ff);
+  }
+  .cb-demo-note {
+    margin: 0.4rem 0 0;
+    font-size: 0.82rem;
+    color: var(--text-3, #9aa0ad);
+  }
+</style>
+
+<style is:global>
+  /* controls + bodies inside a demo stage — global so page-authored slot content is reached. */
+  .cb-demo button {
+    font: inherit;
+    font-size: 0.78rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--line, #2a2a35);
+    background: transparent;
+    color: var(--text-2, #cfd3df);
+    cursor: pointer;
+  }
+  .cb-demo button[aria-pressed='true'] {
+    border-color: var(--accent, #4da3ff);
+    color: var(--accent, #4da3ff);
+  }
+  .cb-demo .cb-chip {
+    position: relative;
+    padding: 0.55rem 0.9rem;
+    border-radius: 10px;
+    border: 1px solid var(--line, #2a2a35);
+    background: color-mix(in srgb, #0e121b 70%, transparent);
+    font-size: 0.85rem;
+    /* the reciprocal half: the field's own --d write-back drives the ink */
+    color: color-mix(in srgb, var(--accent, #4da3ff) calc(var(--d, 0) * 180%), var(--text-2, #cfd3df));
+    box-shadow: 0 0 calc(var(--d, 0) * 30px) rgba(77, 163, 255, calc(var(--d, 0) * 0.35));
+  }
+  .cb-demo ul[data-cb-records] {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+    width: 100%;
+  }
+  .cb-demo .cb-record {
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid var(--line, #2a2a35);
+    font-size: 0.86rem;
+    /* --field-priority is what the bound Pattern writes back per record */
+    border-left: 3px solid
+      color-mix(in srgb, var(--accent, #4da3ff) calc(var(--field-priority, 0) * 100%), transparent);
+    opacity: calc(0.55 + var(--field-priority, 0) * 0.45);
+  }
+  .cb-demo nav[data-cb-nav] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+  .cb-demo nav[data-cb-nav] a {
+    font-size: 0.85rem;
+    /* the nav binding writes these lanes; CSS turns them into ink and weight */
+    color: color-mix(in srgb, var(--accent, #4da3ff) calc(var(--field-attention, 0) * 100%), var(--text-3, #9aa0ad));
+    font-weight: calc(400 + var(--field-attention, 0) * 300);
+  }
+  .cb-demo nav[data-cb-nav] a.nav-visited::after {
+    content: ' ·';
+    color: var(--accent, #4da3ff);
+  }
+</style>

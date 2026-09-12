@@ -1,0 +1,146 @@
+---
+// COOKBOOK — data-driven fields (docs-refactor Phase 5, #1000; plan §8: bindData at scale).
+//
+// The demo is live: bindData needs a document. The twelve invisible-field examples are the
+// production-scale version of exactly this pattern, so the page hands readers off to them.
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import SeeItLive from '../../../components/SeeItLive.astro';
+import CookbookDemo from '../../../components/CookbookDemo.astro';
+
+const bindJs = `import { bindData } from '@fundamental-engine/dom';
+
+// Records become bodies. The MAPPER owns the per-record physics and meaning;
+// the PATTERN frames which metrics are tracked and written back as --field-*.
+const binding = bindData(list, tickets, (t) => ({
+  id: t.id,                                   // the identity updates diff against
+  label: t.title,
+  body: { tokens: ['attract'], strength: 0.3 + t.priority, range: 180, feedback: true },
+  metrics: { priority: t.priority },          // → --field-priority on this record
+  relationships: t.blocks                     // → a real graph edge, not a decoration
+    ? [{ to: t.blocks, type: 'blocks', strength: t.priority }]
+    : [],
+}), { pattern: 'priority-well', tag: 'li', className: 'ticket' });
+
+binding.update(nextTickets);   // diffed by id: survivors keep identity, removals decay out
+binding.inspect();             // { records, bodies, relationships }
+binding.destroy();`;
+
+const cssBind = `/* The data's own numbers come back as custom properties.
+   Nothing here knows about physics — it reads a measurement. */
+.ticket {
+  border-left: 3px solid
+    color-mix(in srgb, var(--accent) calc(var(--field-priority, 0) * 100%), transparent);
+  opacity: calc(0.55 + var(--field-priority, 0) * 0.45);
+}`;
+
+const scaleJs = `// At scale the shape that matters is the UPDATE, not the first render.
+// bindData diffs by id, so a poll that returns mostly-unchanged rows is cheap:
+async function refresh() {
+  const rows = await fetch('/api/tickets').then((r) => r.json());
+  binding.update(rows);          // added → enter · kept → re-measured · removed → decay out
+}
+setInterval(refresh, 30_000);
+
+// Own the lifecycle: a binding holds a scoped platform and a rAF loop.
+onUnmount(() => binding.destroy());`;
+---
+
+<DocsLayout
+  title="Fundamental — Data-driven fields"
+  description="bindData at scale: real records become bodies, mapped metrics become --field-* state, mapped relationships become graph edges, and updates diff by id so survivors keep their identity while removals decay out instead of popping."
+>
+  <header class="docs-hero">
+    <p class="kicker">Cookbook</p>
+    <h1>Data-driven <span class="accent">fields</span></h1>
+    <p class="lede">
+      The point of a field over a chart is that the <em>data</em> carries the physics.
+      <code>bindData</code> is the bridge: records become bodies, the numbers you already have become
+      the field's state, and the relationships you already know become real edges — so what a reader
+      sees is a measurement of the data, not a decoration applied to it.
+    </p>
+    <StatusChip label="Shipped · demo runs live on this page" tone="stable" />
+  </header>
+
+  <section class="docs-sec">
+    <h2 id="shape">The shape of a binding</h2>
+    <p>
+      Three things divide cleanly. The <strong>mapper</strong> owns each record: its tokens, its
+      metric values, its edges. The <strong>Pattern</strong> frames the field: which metrics are
+      tracked and bound to <code>--field-*</code>. <strong>Your CSS</strong> owns the appearance, and
+      never learns any physics — it reads a number.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'TypeScript', lang: 'ts', code: bindJs },
+        { label: 'CSS', lang: 'css', code: cssBind },
+      ]}
+    />
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="live">Live, on this page</h2>
+    <p>
+      Four tickets, bound. The left rule and the opacity are driven by
+      <code>--field-priority</code> — the value the binding wrote, not a class this page assigned.
+      Apply the update and the set changes by <em>id</em>: two records survive and keep their
+      identity, one arrives, two leave.
+    </p>
+
+    <CookbookDemo
+      kind="binding"
+      title="Records as bodies"
+      stage={false}
+      note="The status line is binding.inspect() — the binding's own count of records, bodies and relationships."
+    >
+      <ul data-cb-records></ul>
+      <button slot="controls" type="button" data-cb-update>apply an update</button>
+    </CookbookDemo>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="at-scale">At scale</h2>
+    <p>
+      The first render is the easy half. What decides whether a data-driven field survives contact
+      with production is the <strong>update path</strong>: <code>update()</code> diffs by id, so a
+      poll that returns mostly-unchanged rows costs almost nothing, survivors are re-measured rather
+      than rebuilt, and removed records <em>decay</em> out over <code>decayMs</code> instead of
+      popping.
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: scaleJs }]} />
+    <ul class="model">
+      <li><b>Give every record a stable id.</b> The diff is only as good as the identity you supply.</li>
+      <li><b>Keep the mapper pure.</b> It runs per record on every update.</li>
+      <li><b>Map meaning, not appearance.</b> <code>priority</code>, <code>confidence</code>, <code>staleness</code> — then let CSS decide what those look like.</li>
+      <li><b>Own the teardown.</b> A binding holds a scoped platform and a loop.</li>
+    </ul>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="production">The production-scale version</h2>
+    <p>
+      Twelve example pages take a real dataset each — a market feed, an inbox, a dependency graph, a
+      release calendar — and run exactly this pattern at full size, with committed snapshots that
+      upgrade to live data in the browser. They are the honest answer to "does this hold up on real
+      data".
+    </p>
+    <SeeItLive slug="backlog" why="A real backlog: priority, staleness and blocking edges as field state — the same bindData shape as the demo above." />
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/cookbook', label: 'All cookbook patterns' },
+      { href: '/docs/field-channels', label: 'Data binding & channels' },
+      { href: '/docs/patterns', label: 'The Pattern model' },
+      { href: '/evidence', label: 'The twelve invisible-field examples' },
+      { href: '/docs/api/declarative', label: 'The feedback channels reference' },
+    ]}
+  />
+
+  <script>
+    import { initCookbookDemos } from '../../../lib/cookbook/demos.ts';
+    initCookbookDemos();
+  </script>
+</DocsLayout>

@@ -1,0 +1,257 @@
+---
+// COOKBOOK — the index (docs-refactor Phase 5, #1000; plan §6.3).
+//
+// The Build section's front door: task-shaped, not feature-shaped. Two rosters live here —
+// the patterns (this section's pages) and the six FIELD STUDIES, folded in as worked patterns
+// rather than left as a separate genre, which is the consolidation §6 asks for. Phase 6 owns
+// retiring/redirecting the old locations; this page consolidates and cross-links only.
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import { patternById } from '@fundamental-engine/core';
+
+interface Entry {
+  href: string;
+  title: string;
+  task: string;
+  covers: string[];
+  live?: 'build' | 'browser';
+}
+
+// The patterns, in the order a reader meets the problems.
+const PATTERNS: Entry[] = [
+  {
+    href: '/docs/cookbook/signals-first',
+    title: 'Signals-first fields',
+    task: 'I want the measurements, not a picture.',
+    covers: ['render: none', 'headlessHost', 'feedbackSink', 'the signal readout'],
+    live: 'build',
+  },
+  {
+    href: '/docs/cookbook/contained-fields',
+    title: 'Contained fields',
+    task: 'I want a field inside one component, not the whole window.',
+    covers: ['containerHost / bounds', 'shadow-DOM scope & portals', 'the density surprise'],
+    live: 'browser',
+  },
+  {
+    href: '/docs/cookbook/data-driven',
+    title: 'Data-driven fields',
+    task: 'I have real records and want the data to carry the physics.',
+    covers: ['bindData', 'mapped metrics & edges', 'updates that diff by id'],
+    live: 'browser',
+  },
+  {
+    href: '/docs/cookbook/reading-the-field',
+    title: 'Reading & instrumenting',
+    task: 'I want to ask the field questions.',
+    covers: ['probes, query, snapshot → diff', 'scalar grids', 'field channels', 'seeding & atomAt', 'agents without Three.js'],
+    live: 'build',
+  },
+  {
+    href: '/docs/cookbook/conditions-and-formations',
+    title: 'Conditions & formations',
+    task: 'I want behaviour that depends on when, not what.',
+    covers: ['data-when gates', 'selective (per-particle) gates', 'formations & the conductor'],
+    live: 'build',
+  },
+  {
+    href: '/docs/cookbook/workbench',
+    title: 'The visualization workbench',
+    task: 'I want to see the field, and see into it.',
+    covers: ['substrate vs overlay', 'the overlayCanvas requirement', 'the signal readout'],
+    live: 'browser',
+  },
+  {
+    href: '/docs/cookbook/performance-tuning',
+    title: 'Performance tuning',
+    task: 'It needs to be cheaper.',
+    covers: ['density (130 × density)', 'dprCap', 'qualityTier & the governor', 'inspectBudget'],
+    live: 'build',
+  },
+  {
+    href: '/docs/cookbook/interface-chrome',
+    title: 'Chrome & accessibility',
+    task: 'I want a field on navigation without breaking it.',
+    covers: ['bindFieldNav', 'progressive enhancement', 'reduced motion that keeps meaning'],
+    live: 'browser',
+  },
+  {
+    href: '/docs/cookbook/framework-interop',
+    title: 'Framework interop',
+    task: 'I render on the server, or in islands.',
+    covers: ['SSR & the attribute contract', 'hydration & scan()', 'teardown on unmount'],
+    live: 'browser',
+  },
+];
+
+// The six field studies — worked patterns, not a separate genre. Each takes a familiar page and
+// reinterprets it as a field; the Pattern ids are read from the catalog so the lanes can't drift.
+const STUDIES: { href: string; title: string; task: string; patterns: string[] }[] = [
+  {
+    href: '/docs/studies/reading-field',
+    title: 'Reading Field',
+    task: 'A long-form article that measures attention and remembers it.',
+    patterns: ['reading-field', 'citation-thread', 'evidence-field'],
+  },
+  {
+    href: '/docs/studies/review-field',
+    title: 'Review Field',
+    task: 'A pull request as heat, tension and a reviewer constellation.',
+    patterns: ['review-pressure', 'review-constellation'],
+  },
+  {
+    href: '/docs/studies/search-field',
+    title: 'Search Field',
+    task: 'Search results as a trust gradient with contradiction polarity.',
+    patterns: ['search-relevance-field', 'trust-gradient', 'polarity-filter'],
+  },
+  {
+    href: '/docs/studies/system-weather',
+    title: 'System Weather',
+    task: 'A metrics dashboard read as weather — heat, pressure, anomalies.',
+    patterns: ['attention-weather', 'anomaly-bloom'],
+  },
+  {
+    href: '/docs/studies/evidence-field',
+    title: 'Evidence Field',
+    task: 'Claims, sources and contradiction as a deterministic field.',
+    patterns: ['evidence-field', 'conflict-field', 'source-constellation'],
+  },
+  {
+    href: '/docs/studies/visual-binding',
+    title: 'Visual Binding',
+    task: 'An expressive SVG bound to the semantic source it illustrates.',
+    patterns: ['relation-lens', 'semantic-gravity-map'],
+  },
+];
+
+// Resolve each study's Patterns against the catalog — a bad id fails the build rather than
+// rendering a dead name.
+const studies = STUDIES.map((s) => ({
+  ...s,
+  resolved: s.patterns.map((id) => {
+    const p = patternById(id);
+    if (!p) throw new Error(`docs/cookbook: unknown Pattern id '${id}' — check the catalog.`);
+    return p;
+  }),
+}));
+---
+
+<DocsLayout
+  title="Fundamental — Cookbook"
+  description="The task-oriented depth layer: signals-first and contained fields, data-driven binding, reading and instrumenting, conditions and formations, the visualization workbench, performance tuning, navigation chrome and accessibility, and framework interop — every pattern with a runnable example."
+>
+  <header class="docs-hero">
+    <p class="kicker">Cookbook</p>
+    <h1>Patterns, <span class="accent">worked through</span></h1>
+    <p class="lede">
+      The reference tells you what every option and method <em>is</em>. This section is the other
+      half: what people actually build, in the order they hit the problems — with examples that run
+      rather than snippets that were never executed.
+    </p>
+    <StatusChip label="Shipped · every example runs" tone="stable" />
+  </header>
+
+  <div class="callout">
+    <b>How "runnable" is enforced here.</b> Every headless example is a real module in
+    <code>src/lib/cookbook/</code>. Each page imports it <em>twice</em> — once as source, so the
+    snippet you copy is literally the file, and once as code, executed during the site build with its
+    real return values printed beneath it. A broken example fails the build. The browser-only
+    patterns run live on their page and are pinned by end-to-end tests.
+  </div>
+
+  <section class="docs-sec">
+    <h2 id="patterns">By task</h2>
+    <div class="next-grid">
+      {
+        PATTERNS.map((p) => (
+          <a class="next-card" href={p.href}>
+            <b>{p.title}</b>
+            <span>
+              <em>{p.task}</em>
+              <br />
+              {p.covers.join(' · ')}
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="studies">Field studies — the same patterns at full size</h2>
+    <p>
+      A study takes a page you already know and reinterprets the whole thing as a field: semantic
+      HTML first, the platform runtime layered on top, diagnostics available, and a reduced-motion
+      equivalent that loses nothing. They are worked patterns rather than a separate genre — where a
+      cookbook page shows one technique in isolation, a study shows several of them holding a real
+      page together.
+    </p>
+    <dl class="api-table">
+      {
+        studies.map((s) => (
+          <div class="api-row">
+            <dt class="k">
+              <a href={s.href}>{s.title}</a>
+            </dt>
+            <dd class="d">
+              {s.task}
+              <span class="rc-meta">
+                Patterns: {s.resolved.map((p) => p.name).join(' · ')}
+              </span>
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="elsewhere">Where the rest of it lives</h2>
+    <ul class="model">
+      <li>
+        <b>The complete surface</b> — every attribute, force, channel, option and method, each with a
+        generated JS · Swift · Kotlin support row: the
+        <a href="/docs/api/declarative">declarative</a> and
+        <a href="/docs/api/imperative">imperative</a> references.
+      </li>
+      <li>
+        <b>The on-ramp</b> — <a href="/docs/getting-started">install</a>,
+        <a href="/docs/tutorial">your first field</a>, and
+        <a href="/docs/concepts">the mental model</a>.
+      </li>
+      <li>
+        <b>Real data at production scale</b> — the
+        <a href="/evidence">twelve invisible-field examples</a>.
+      </li>
+      <li>
+        <b>The catalog</b> — 64 Patterns, applied live, in the
+        <a href="/patterns">pattern gallery</a>.
+      </li>
+    </ul>
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/api/declarative', label: 'Declarative reference' },
+      { href: '/docs/api/imperative', label: 'Imperative reference' },
+      { href: '/docs/patterns', label: 'The Pattern model' },
+      { href: '/docs/api/parity', label: 'Platform parity matrix' },
+      { href: '/evidence', label: 'Invisible-field examples' },
+    ]}
+  />
+</DocsLayout>
+
+<style>
+  .next-card em {
+    font-style: normal;
+    color: var(--text-2, #cfd3df);
+  }
+  .api-row .d .rc-meta {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.78rem;
+    color: var(--text-4, #8a8fa0);
+  }
+</style>
