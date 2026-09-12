@@ -166,14 +166,36 @@ body:has(.lab) { align-items: flex-start; }
 .param input[type='range']::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 2px solid var(--fc); cursor: pointer; }
 /* quick-pick value bands under each control — jump to a named setting, then refire */
 .param .bands { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.05rem; }
-.param .band { font-family: var(--mono); font-size: 0.58rem; padding: 0.14rem 0.42rem; border-radius: 5px; border: 1px solid var(--line-2); background: transparent; color: var(--text-3); cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
-.param .band:hover { color: var(--text); border-color: color-mix(in srgb, var(--fc) 45%, transparent); }
-.param .band.on { color: var(--fc); border-color: color-mix(in srgb, var(--fc) 55%, transparent); background: color-mix(in srgb, var(--fc) 10%, transparent); }
+.param .band, .saved .band { font-family: var(--mono); font-size: 0.58rem; padding: 0.14rem 0.42rem; border-radius: 5px; border: 1px solid var(--line-2); background: transparent; color: var(--text-3); cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
+.param .band:hover, .saved .band:hover { color: var(--text); border-color: color-mix(in srgb, var(--fc) 45%, transparent); }
+.param .band.on, .saved .band.on { color: var(--fc); border-color: color-mix(in srgb, var(--fc) 55%, transparent); background: color-mix(in srgb, var(--fc) 10%, transparent); }
 
 .export-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 1rem; }
 .xbtn { flex: 1; min-width: 0; padding: 0.5rem 0.4rem; border: 1px solid var(--line-2); border-radius: var(--r-sm); background: none; cursor: pointer; font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); white-space: nowrap; transition: border-color 0.18s, color 0.18s; }
 .xbtn:hover { border-color: var(--fc); color: var(--fc); }
 .scenario-note { font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em; color: var(--text-4); line-height: 1.6; margin-top: 0.9rem; padding-top: 0.8rem; border-top: 1px solid var(--line); }
+
+/* saved configs (#694) — tagged, annotated snapshots of the tune state, under the export row */
+.saved { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px solid var(--line); }
+.saved-count { font-family: var(--mono); font-size: 11px; color: var(--fc); font-variant-numeric: tabular-nums; }
+.saved-form { display: grid; gap: 0.5rem; }
+.saved-form .bands { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.saved-note { width: 100%; padding: 0.45rem 0.6rem; border: 1px solid var(--line-2); border-radius: var(--r-sm); background: rgba(255, 255, 255, 0.02); color: var(--text); font-family: var(--mono); font-size: 0.78rem; }
+.saved-note::placeholder { color: var(--text-4); }
+.saved-note:focus { outline: none; border-color: color-mix(in srgb, var(--fc) 55%, transparent); }
+.saved-list { list-style: none; margin: 0.7rem 0 0; padding: 0; display: grid; gap: 0.45rem; }
+.saved-empty { font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em; color: var(--text-4); }
+.saved-item { border: 1px solid var(--line); border-radius: var(--r-md); padding: 0.55rem 0.7rem; display: grid; gap: 0.3rem; background: rgba(255, 255, 255, 0.012); font-family: var(--mono); font-size: 10px; color: var(--text-3); }
+.saved-item .row1 { display: flex; align-items: center; gap: 0.5rem; }
+.saved-item .tag { font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; border: 1px solid currentColor; border-radius: 99px; padding: 0.12rem 0.4rem; }
+.saved-item[data-cfg-tag='good'] .tag { color: var(--ok); }
+.saved-item[data-cfg-tag='bad'] .tag { color: var(--err); }
+.saved-item[data-cfg-tag='edge'] .tag { color: var(--warn); }
+.saved-item .force { color: var(--text); flex: 1; }
+.saved-item .when { color: var(--text-4); font-size: 9px; }
+.saved-item .sum { overflow-wrap: anywhere; }
+.saved-item .note { color: var(--text-2); line-height: 1.5; overflow-wrap: anywhere; }
+.saved-item .acts { display: flex; gap: 0.4rem; margin-top: 0.2rem; }
 
 /* copy/export toast */
 .lab-flash {

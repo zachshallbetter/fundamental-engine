@@ -1,7 +1,9 @@
 # e2e — the invisible-fields suite
 
 Playwright specs that pin the hand-verified invariants of the twelve example pages at
-`/evidence` and `/evidence/<slug>`.
+`/evidence` and `/evidence/<slug>`, plus the site's other interactive surfaces — e.g.
+`lab-saved-configs.spec.ts` covers the Lab's saved-config list (save with a tag + note,
+load, delete, persistence across reload under `fui:lab-configs`).
 
 Three projects share one webServer (see `playwright.config.ts`):
 
