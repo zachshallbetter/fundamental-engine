@@ -196,7 +196,13 @@ class SinkForce : Force {
     override val label = "Sink"
 
     override fun apply(body: Body, particle: Particle, env: Env) {
-        if (particle.cap != null || env.dist >= body.absorbR) return
+        // A PROBE pass (the streamlines / overlay sampler) is a READING, not a capture: it must never
+        // move a REAL body's accretion budget (#1172). An inert probe env cannot stop this on its own —
+        // the write goes straight to the body, through no service — so the marker is checked here.
+        // Capture is the integrator's business, and sink adds no velocity, so the field a probe reads is
+        // unchanged either way. Without this, drawing pushed a body past `capacity` and the integrator's
+        // next genuine capture detonated it, frames after the drawing that caused it.
+        if (env.isProbe || particle.cap != null || env.dist >= body.absorbR) return
         particle.cap = body
         body.accreted += 1f
         if (body.accreted >= body.capacity) env.supernova(body)
