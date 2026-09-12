@@ -80,9 +80,10 @@ result.compositing = (await rows(1)).map(([overlay, dprCap, particles, fpsMed, f
 
 for (const path of PAGES) {
   const p = await ctx.newPage();
+  const pc = await ctx.newCDPSession(p);
   await p.goto(SITE + path, { waitUntil: 'load' });
   await p.waitForTimeout(4000);
-  result.pages[path] = await p.evaluate((seconds) => new Promise((resolve) => {
+  const m = await p.evaluate((seconds) => new Promise((resolve) => {
     const deltas = []; const loaf = []; let tbt = 0; let last = performance.now();
     let po = null;
     const observe = (type) => { po = new PerformanceObserver((l) => { for (const e of l.getEntries()) if (e.duration >= 50) { loaf.push(e.duration); tbt += e.duration - 50; } }); po.observe({ type, buffered: false }); };
@@ -97,6 +98,13 @@ for (const path of PAGES) {
     };
     requestAnimationFrame(tick);
   }), SECONDS);
+  // The heap figure is read AFTER a forced full GC: without it "heap after 20 s" is whichever side of the
+  // next collection the 20 s mark happened to land on (a 20–40 MB swing on the same page), not retained memory.
+  try { await pc.send('HeapProfiler.enable'); await pc.send('HeapProfiler.collectGarbage'); await p.waitForTimeout(300); } catch { /* heap stays pre-GC; recorded as such */ }
+  m.heapEndRawMB = m.heapEndMB;
+  m.heapEndMB = await p.evaluate(() => (performance.memory ? performance.memory.usedJSHeapSize / 1048576 : null));
+  result.pages[path] = m;
+  await pc.detach().catch(() => {});
   await p.close();
 }
 mkdirSync(dirname(OUT), { recursive: true });

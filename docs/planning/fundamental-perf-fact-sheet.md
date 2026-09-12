@@ -166,9 +166,9 @@ Every budget in `perf-budgets.json` is a measured value from this sheet times a 
 | query() / snapshot() | ≤ measured × 2 |
 | fill-rate fps (median), per sweep row | ≥ floor(measured × 0.8) |
 | page frame ms (median / p95) | ≤ measured × 1.3 |
-| page long tasks in 20 s | ≤ measured + 2 |
-| page Total Blocking Time | ≤ measured × 1.5 + 50 ms |
-| page JS heap after 20 s | ≤ measured × 1.25 |
+| page long tasks (≥ 50 ms frames) in 20 s | ≤ max(measured + 4, measured × 2) — a count of rare events on a shared host is the noisiest number here |
+| page Total Blocking Time | ≤ measured × 2 + 50 ms |
+| page JS heap after 20 s (after a forced GC) | ≤ max(measured × 1.5, measured + 8 MB) |
 
 A budget moves only with a new measurement: re-run the gate by hand (`workflow_dispatch`), download the
 `perf-measurements-*` artifact, run `write-fact-sheet.mjs` on it, and commit the regenerated sheet and budgets

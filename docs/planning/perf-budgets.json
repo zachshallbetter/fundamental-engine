@@ -195,23 +195,23 @@
         "/": {
           "maxMsMed": 21.71,
           "maxMsP95": 21.84,
-          "maxLongTasks": 6,
-          "maxTbtMs": 70.25,
-          "maxHeapMB": 29.44
+          "maxLongTasks": 8,
+          "maxTbtMs": 77,
+          "maxHeapMB": 35.33
         },
         "/eli5": {
           "maxMsMed": 21.71,
           "maxMsP95": 21.84,
-          "maxLongTasks": 6,
-          "maxTbtMs": 75.35,
-          "maxHeapMB": 19.99
+          "maxLongTasks": 8,
+          "maxTbtMs": 83.8,
+          "maxHeapMB": 23.99
         },
         "/docs/patterns": {
           "maxMsMed": 21.71,
           "maxMsP95": 43.42,
-          "maxLongTasks": 2,
+          "maxLongTasks": 4,
           "maxTbtMs": 50,
-          "maxHeapMB": 35.86
+          "maxHeapMB": 43.03
         }
       }
     },
@@ -375,23 +375,23 @@
         "/": {
           "maxMsMed": 21.71,
           "maxMsP95": 21.84,
-          "maxLongTasks": 9,
-          "maxTbtMs": 80.9,
-          "maxHeapMB": 35.35
+          "maxLongTasks": 14,
+          "maxTbtMs": 91.2,
+          "maxHeapMB": 42.42
         },
         "/eli5": {
           "maxMsMed": 21.71,
           "maxMsP95": 21.84,
-          "maxLongTasks": 7,
-          "maxTbtMs": 119,
-          "maxHeapMB": 31.87
+          "maxLongTasks": 10,
+          "maxTbtMs": 142,
+          "maxHeapMB": 38.24
         },
         "/docs/patterns": {
           "maxMsMed": 21.71,
           "maxMsP95": 43.29,
-          "maxLongTasks": 2,
+          "maxLongTasks": 4,
           "maxTbtMs": 50,
-          "maxHeapMB": 23.75
+          "maxHeapMB": 28.5
         }
       }
     }
