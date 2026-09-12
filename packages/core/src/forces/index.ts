@@ -199,7 +199,10 @@ export const sink: Force = {
   token: 'sink',
   label: 'Sink',
   apply(b, p, e) {
-    if (p.cap || e.dist >= b.absorbR) return;
+    // A PROBE pass (the streamlines/overlay sampler) is a reading, not a capture: it must never move
+    // a real body's accretion budget or detonate it from a drawing (#1155). Capture is the
+    // integrator's business, and sink adds no velocity, so the field a probe reads is unchanged.
+    if (e.probe || p.cap || e.dist >= b.absorbR) return;
     p.cap = b;
     b.accreted += 1;
     if (b.accreted >= b.capacity) e.supernova(b);

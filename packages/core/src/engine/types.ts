@@ -529,6 +529,17 @@ export interface Env {
    * discontinuity, not an acceleration — the Verlet half-step average is skipped for that particle
    * that step. Never touched on the `'legacy'`/`'fixed'` paths. */
   kinTouch?: boolean;
+  /**
+   * INTERNAL (diagnostic samplers, #1155): this env belongs to a PROBE pass — a render or overlay
+   * sampler measuring the field with a fictitious test particle, not the integrator moving real
+   * matter. Every service that writes is inert on such an env (`spark`/`supernova`/`spawn` are
+   * no-ops, scalar grids drop their deposits) and `rng` is the probe's own stream, so drawing a
+   * diagnostic can never perturb the simulation or advance a seeded run. A force that writes ENGINE
+   * state *outside the probe particle* must skip that write when this is set — `sink`'s accretion
+   * (`b.accreted`, and the `supernova` at capacity) is the one such write today. Never set on the
+   * integrator's live env.
+   */
+  probe?: boolean;
 }
 
 /** The integration scheme for the field (see {@link Env.integrator}). */
