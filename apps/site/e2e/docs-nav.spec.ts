@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { DOCS_NAV } from "../src/lib/docs-nav";
 
 // Phase 1 of the navigation sweep — the docs cluster as signals-only fields:
 //   · sidebar HIERARCHY  → priority-well (current route pinned as the well)
@@ -27,7 +28,12 @@ test.describe("docs sidebar · Priority Well", () => {
     await page.goto("/docs/api/handle");
     const groups = page.locator(".docs-group");
     const count = await groups.count();
-    expect(count).toBe(8); // Start · Build · Reference · Substrate · Assurance · Research/Frontier · Field studies · Examples
+    // Derived from the nav tree the sidebar renders (the sidebar shows groups with ≥1 ready item),
+    // not hardcoded: a new section is a routine IA change and should not fail this test, whereas a
+    // group losing its glyph/color — what this test actually guards — still does.
+    expect(count).toBe(
+      DOCS_NAV.filter((g) => g.items.some((i) => i.ready)).length,
+    );
     // every group declares a decorative glyph + a per-section color (CSS custom props)
     for (let i = 0; i < count; i++) {
       expect((await groups.nth(i).evaluate((el) => el.style.getPropertyValue("--group-glyph"))).trim().length).toBeGreaterThan(0);
