@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
 const cls = `import { FieldField } from '@fundamental-engine/vanilla';
@@ -47,6 +48,7 @@ field.setVisible(false);`;
   <header class="docs-hero">
     <p class="kicker">Guides</p>
     <h1>The <span class="accent">TypeScript</span> wrapper</h1>
+    <StatusChip label="Shipped · frozen entry points" tone="stable" />
     <p class="lede">
       <code>@fundamental-engine/vanilla</code> is the framework-free door — a typed <code>FieldField</code>
       class for plain TypeScript apps, with no custom element to register and no framework
@@ -65,8 +67,8 @@ field.setVisible(false);`;
     <h2>The FieldField class</h2>
     <p>
       <code>new FieldField()</code> builds a fixed, full-viewport canvas behind your page and
-      starts the engine on it. It takes every <a href="/docs/api/options">FieldOptions</a> value,
-      implements the full <a href="/docs/api/handle">FieldHandle</a> surface, and exposes the
+      starts the engine on it. It takes every <a href="/docs/api/imperative#options">FieldOptions</a> value,
+      implements the full <a href="/docs/api/imperative#handle">FieldHandle</a> surface, and exposes the
       <code>canvas</code> it runs on. Importing the package has no side effects — it never
       registers a custom element.
     </p>
@@ -87,7 +89,7 @@ field.setVisible(false);`;
     <h2>mountField — the factory form</h2>
     <p>
       Prefer a plain function over a class? <code>mountField()</code> returns the bare
-      <a href="/docs/api/handle">FieldHandle</a>; its <code>destroy()</code> also removes the
+      <a href="/docs/api/imperative#handle">FieldHandle</a>; its <code>destroy()</code> also removes the
       canvas it made. <code>@fundamental-engine/vanilla</code> also re-exports a <b>browser-wired</b>
       <code>createField</code> (it injects <code>browserHost()</code> for you) for when you own the
       canvas. The lowest-level engine entry is <code>@fundamental-engine/core</code>'s <code>createField</code>

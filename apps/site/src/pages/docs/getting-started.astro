@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 
 const codeInstall = `npm install @fundamental-engine/vanilla`;
@@ -10,12 +11,13 @@ const codeCanvas = `<canvas id="field"></canvas>
   #field { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 </style>`;
 
-const codeField = `import { createField, browserHost } from '@fundamental-engine/vanilla';
+const codeField = `import { createField } from '@fundamental-engine/vanilla';
 
 const canvas = document.getElementById('field');
 
+// the vanilla door wires browserHost() for you — pass a host only when you
+// call createField from @fundamental-engine/core directly.
 const field = createField(canvas, {
-  host: browserHost(document.body),
   render: 'dots',   // draw particles — the default is 'none' (signals only)
   density: 0.8,
 });`;
@@ -27,10 +29,13 @@ const codeBody = `<h1 data-body="attract" data-strength="0.8" data-range="280">
 const codeSignalsHtml = `<!-- Add data-feedback to receive live CSS vars -->
 <div data-body="attract" data-feedback id="hero">Watch me</div>`;
 
-const codeSignalsCss = `/* Use them in CSS — no JavaScript polling needed */
+const codeSignalsCss = `/* Use them in CSS — no JavaScript polling needed.
+   --d is the canonical raw channel; --field-density is its namespaced twin
+   (same value). Both rest small, so scale before you drive anything. */
 #hero {
-  opacity: calc(0.4 + var(--field-density, 0) * 0.6);
-  scale: calc(1 + var(--field-attention, 0) * 0.08);
+  --d-amp: clamp(0, calc(var(--d, 0) * 12), 1);
+  opacity: calc(0.4 + var(--d-amp) * 0.6);
+  scale: calc(1 + var(--d-amp) * 0.08);
 }`;
 ---
 <DocsLayout
@@ -38,6 +43,7 @@ const codeSignalsCss = `/* Use them in CSS — no JavaScript polling needed */
   description="Install Fundamental, create a field, see particles move, and read the signals. No framework required."
 >
   <h1>Getting started</h1>
+  <StatusChip label="Shipped · install to a first field" tone="stable" />
   <p>
     Five minutes: install → canvas → field → particles → read the signals.
     No framework, no build step beyond what you already have.
@@ -62,23 +68,28 @@ const codeSignalsCss = `/* Use them in CSS — no JavaScript polling needed */
   <p>
     Bodies bend the field. <code>attract</code> gathers matter; <code>repel</code> pushes
     it away. Strength (0–1) scales the pull; range (px) sets how far it reaches.
-    See the <a href="/docs/api/attributes">data-* attribute reference</a> for all tokens.
+    See the <a href="/docs/api/declarative#body-contract">data-* attribute reference</a> for all tokens.
   </p>
 
   <h2>5. Read the signals (no drawing required)</h2>
   <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: codeSignalsHtml }]} />
   <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: codeSignalsCss }]} />
   <p>
-    The field writes <code>--field-density</code>, <code>--field-attention</code>, and
-    <code>--field-temperature</code> directly onto elements with <code>data-feedback</code>.
-    CSS reads them — zero JS event listeners required for basic reactivity.
+    A <code>data-feedback</code> body receives <code>--d</code> and <code>--field-density</code> (the
+    same value), plus <code>--load</code>, <code>--lit</code>, <code>--entropy</code>,
+    <code>--coherence</code> and <code>--temperature</code>. CSS reads them — zero JS event listeners
+    required for basic reactivity. The longer <code>--field-*</code> <em>metric</em> lane
+    (<code>--field-attention</code>, <code>--field-memory</code>, …) is a different family: those are
+    written when a <a href="/docs/patterns">pattern</a> declares the metric, not automatically. Both
+    families, and which is which, are on the
+    <a href="/docs/api/declarative#feedback">feedback-channels reference</a>.
   </p>
 
   <h2>Next steps</h2>
   <ul>
     <li><a href="/docs/tutorial">Full step-by-step tutorial</a> — all three authoring surfaces (web component, React, vanilla)</li>
-    <li><a href="/docs/api/options">FieldOptions reference</a> — density, formation, render modes, overlays, and more</li>
-    <li><a href="/docs/api/handle">FieldHandle reference</a> — <code>addBody</code>, <code>readParticles</code>, <code>addEdge</code>, <code>sampleScalar</code></li>
+    <li><a href="/docs/api/imperative#options">FieldOptions reference</a> — density, formation, render modes, overlays, and more</li>
+    <li><a href="/docs/api/imperative#handle">FieldHandle reference</a> — <code>addBody</code>, <code>readParticles</code>, <code>addEdge</code>, <code>sampleScalar</code></li>
     <li><a href="/docs/concepts">Concepts</a> — bodies, reciprocity, and why the field is a substrate</li>
     <li><a href="/lab">Interactive FieldLab</a> — try every force live without writing any code</li>
   </ul>

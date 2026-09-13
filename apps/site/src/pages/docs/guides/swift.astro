@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
 // docs-refactor Phase 3 (#998): the "44/44 FieldHandle methods — full parity" line this page used to
@@ -8,6 +9,10 @@ import CodeTabs from '../../../components/CodeTabs.astro';
 // drift again. Do not retype a number here.
 import parityData from '../../../../../../data/parity-matrix.json';
 const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'field-handle-methods')!;
+// Phase 6 (#1001): this page claimed "a 36-force golden test". The shared cross-plane golden covers
+// SIX canonical forces (scripts/gen-conformance-golden.mjs), not the whole catalog — read from the
+// generated matrix so the number cannot be retyped wrongly again.
+const golden = parityData.conformanceGolden as { forces: string[]; count: number };
 
 
 const localDep = `// Package.swift — depend on the package from source.
@@ -62,6 +67,7 @@ let field = FieldField(host: host)`;
   <header class="docs-hero">
     <p class="kicker">Guides</p>
     <h1>The <span class="accent">Swift</span> port</h1>
+    <StatusChip label="Preview · native port, counts generated" tone="planning" />
     <p class="lede">
       The same reciprocal field, native on <strong>Apple platforms</strong> — iOS 17+, macOS 14+, and
       visionOS 1+. It is a <strong>port of the JS engine, not a reinterpretation</strong>: the package
@@ -72,7 +78,8 @@ let field = FieldField(host: host)`;
 
   <div class="callout">
     <b>Status: broad, not complete.</b> The Swift port is conformance-checked against the JS engine
-    (a 36-force golden test asserts the two planes agree) and ships
+    (a shared golden pins {golden.forces.length} canonical forces — <code>{golden.forces.join(', ')}</code> —
+    to byte-identical output on both planes) and ships
     <strong>{handleDim.counts.swift}</strong> of the {handleDim.union.length} callable
     <code>FieldHandle</code> members any plane declares, against JS's
     <strong>{handleDim.counts.js}</strong> — generated from the port source, not typed here. The big
@@ -171,7 +178,7 @@ let field = FieldField(host: host)`;
       natively on Apple platforms behind one host seam — is in
       <a href="/writings/one-engine-four-runtimes">One Engine, Four Runtimes</a>. The seam itself is
       the <a href="/docs/platform">platform layer</a>; the runtime handle is the
-      <a href="/docs/api/handle">FieldHandle</a>.
+      <a href="/docs/api/imperative#handle">FieldHandle</a>.
     </p>
   </section>
 </DocsLayout>

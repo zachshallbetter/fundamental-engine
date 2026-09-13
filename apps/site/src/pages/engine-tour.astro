@@ -232,7 +232,7 @@ const chapters = [
           transformation. The runtime tokens below are engine expressions of that
           grammar (true 1/d², Lorentz, Langevin, diffusion, waves) —
           translations, not additional fundamental fields. See the
-          <a href="/docs/natural-fields">Natural Fields</a> model.</ChapterHeader>
+          <a href="/docs/concepts#natural-fields">Natural Fields</a> model.</ChapterHeader>
     {
       fieldGroups.map((g) => (
         <>
@@ -263,14 +263,14 @@ const chapters = [
     <!-- III · Forces (canonical nine) -->
     <ChapterHeader no="III" id="ch-forces" title="Forces">What a single body can do to the matter around it — designed UI verbs,
           stable and bounded. A designed verb is not a natural field: an attractor
-          is not gravity, a repeller is not charge. See the full <a href="/docs/api/forces">force catalog</a>.</ChapterHeader>
+          is not gravity, a repeller is not charge. See the full <a href="/docs/api/declarative#forces">force catalog</a>.</ChapterHeader>
 
     <Concept reverse data-form="wells">
       <span class="concept-no"
             ><i class="fg fg-attract" style="--fc:#4da3ff"></i>{String((n += 1)).padStart(2, "0")} — Attraction</span
           >
           <h2>A body can pull the field into orbit.</h2>
-          <a class="force-ref" href="/docs/api/forces#force-attract"><code>attract</code> in the force catalog →</a>
+          <a class="force-ref" href="/docs/api/declarative#force-attract"><code>attract</code> in the force catalog →</a>
           <p>
             An <strong>attractor</strong> defines a gravity well. The pull grows as
             distance falls, and a tangential component bends incoming particles into
@@ -311,7 +311,7 @@ const chapters = [
             ><i class="fg fg-repel" style="--fc:#ff9d5c"></i>{String((n += 1)).padStart(2, "0")} — Repulsion</span
           >
           <h2>A body can push the field away.</h2>
-          <a class="force-ref" href="/docs/api/forces#force-repel"><code>repel</code> in the force catalog →</a>
+          <a class="force-ref" href="/docs/api/declarative#force-repel"><code>repel</code> in the force catalog →</a>
           <p>
             A <strong>repeller</strong> is an inverted well — the force points <strong
               >outward</strong
@@ -351,7 +351,7 @@ const chapters = [
             ><i class="fg fg-wall" style="--fc:#c4b5fd"></i>{String((n += 1)).padStart(2, "0")} — Reflection</span
           >
           <h2>A body can be a wall.</h2>
-          <a class="force-ref" href="/docs/api/forces#force-wall"><code>wall</code> in the force catalog →</a>
+          <a class="force-ref" href="/docs/api/declarative#force-wall"><code>wall</code> in the force catalog →</a>
           <p>
             A <strong>wall</strong> is an axis-aligned box. A crossing particle has
             its perpendicular velocity reversed and scaled by elasticity, then is
@@ -383,7 +383,7 @@ const chapters = [
             ><i class="fg fg-swirl" style="--fc:#2dd4bf"></i>{String((n += 1)).padStart(2, "0")} — Swirl</span
           >
           <h2>A body can spin the field.</h2>
-          <a class="force-ref" href="/docs/api/forces#force-swirl"><code>swirl</code> in the force catalog →</a>
+          <a class="force-ref" href="/docs/api/declarative#force-swirl"><code>swirl</code> in the force catalog →</a>
           <p>
             A <strong>swirl</strong> applies a dominantly <strong
               >tangential</strong
@@ -430,7 +430,7 @@ const chapters = [
             ><i class="fg fg-stream" style="--fc:#7dd3fc"></i>{String((n += 1)).padStart(2, "0")} — Stream</span
           >
           <h2>A body can blow a current.</h2>
-          <a class="force-ref" href="/docs/api/forces#force-stream"><code>stream</code> in the force catalog →</a>
+          <a class="force-ref" href="/docs/api/declarative#force-stream"><code>stream</code> in the force catalog →</a>
           <p>
             A <strong>stream</strong> emits a constant force along a heading — a fan,
             a jet, a prevailing wind. The swarm combs into parallel flow.
@@ -469,7 +469,7 @@ const chapters = [
             ><i class="fg fg-tether" style="--fc:#86e57f"></i>{String((n += 1)).padStart(2, "0")} — Tether</span
           >
           <h2>A body can tether the field at a fixed distance.</h2>
-          <a class="force-ref" href="/docs/api/forces#force-tether"><code>tether</code> in the force catalog →</a>
+          <a class="force-ref" href="/docs/api/declarative#force-tether"><code>tether</code> in the force catalog →</a>
           <p>
             A <strong>tether</strong> has a <strong>rest length</strong>. Matter
             that crowds in is pushed out; matter that strays is reeled in — the
@@ -509,7 +509,7 @@ const chapters = [
             ><i class="fg fg-viscosity" style="--fc:#8da2c0"></i>{String((n += 1)).padStart(2, "0")} — Viscosity</span
           >
           <h2>A body can thicken the medium.</h2>
-          <a class="force-ref" href="/docs/api/forces#force-viscosity"><code>viscosity</code> in the force catalog →</a>
+          <a class="force-ref" href="/docs/api/declarative#force-viscosity"><code>viscosity</code> in the force catalog →</a>
           <p>
             A <strong>viscosity</strong> body neither pulls nor pushes — it <strong
               >bleeds momentum</strong
@@ -549,7 +549,7 @@ const chapters = [
             release</span
           >
           <h2>A body can hold matter — and give it back.</h2>
-          <a class="force-ref" href="/docs/api/forces#force-sink"><code>sink</code> in the force catalog →</a>
+          <a class="force-ref" href="/docs/api/declarative#force-sink"><code>sink</code> in the force catalog →</a>
           <p>
             A <strong>sink</strong> captures particles at its core. They aren’t deleted
             — they’re
@@ -595,7 +595,7 @@ const chapters = [
             ><i class="fg fg-jet" style="--fc:#a78bfa"></i>{String((n += 1)).padStart(2, "0")} — Emission</span
           >
           <h2>A body can be a fountain.</h2>
-          <a class="force-ref" href="/docs/api/forces#force-jet"><code>jet</code> in the force catalog →</a>
+          <a class="force-ref" href="/docs/api/declarative#force-jet"><code>jet</code> in the force catalog →</a>
           <p>
             A <strong>jet</strong> draws surrounding matter into its nozzle and relaunches
             it as a hot jet — the field is <strong
@@ -634,7 +634,7 @@ const chapters = [
     </Concept>
 
     <!-- IV · Designed-extended -->
-    <ChapterHeader no="IV" id="ch-extended" title="Designed-extended">Further designed forces, and the modifiers that wrap a sibling. See the full <a href="/docs/api/forces">force catalog</a>.</ChapterHeader>
+    <ChapterHeader no="IV" id="ch-extended" title="Designed-extended">Further designed forces, and the modifiers that wrap a sibling. See the full <a href="/docs/api/declarative#forces">force catalog</a>.</ChapterHeader>
     {
       extended.map((f: ManualEntry, i) => {
         n += 1;
@@ -643,7 +643,7 @@ const chapters = [
     }
 
     <!-- V · Presets -->
-    <ChapterHeader no="V" id="ch-presets" title="Presets">Cosmology as composition — named arrangements of the primitives. See the <a href="/docs/api/presets">preset reference</a>.</ChapterHeader>
+    <ChapterHeader no="V" id="ch-presets" title="Presets">Cosmology as composition — named arrangements of the primitives. See the <a href="/docs/api/declarative#presets">preset reference</a>.</ChapterHeader>
     {
       MANUAL_PRESETS.map((p: ManualPreset, i) => {
         n += 1;

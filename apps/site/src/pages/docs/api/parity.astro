@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
 import parityData from '../../../../../../data/parity-matrix.json';
 
@@ -26,6 +27,11 @@ import parityData from '../../../../../../data/parity-matrix.json';
 // it is 100% by construction (not separately tracked by the generator; there is no porting lag possible).
 
 const dim = parityData.dimensions.find((d: { id: string }) => d.id === 'field-handle-methods')!;
+// docs-refactor Phase 6 (#1001): this page carried "the 36-force conformance suite" in two places.
+// The shared cross-plane golden covers SIX canonical forces (scripts/gen-conformance-golden.mjs →
+// swift/Tests/.../conformance-golden.json, 120 cases); the 37-force catalog is a different thing, and
+// conflating them inflated the cross-plane proof six-fold. Read it from the artifact instead.
+const golden = parityData.conformanceGolden as { forces: string[]; count: number };
 const swiftSet = new Set<string>(dim.planes.swift);
 const kotlinSet = new Set<string>(dim.planes.kotlin);
 const jsSet = new Set<string>(dim.planes.js);
@@ -134,22 +140,26 @@ const total = METHODS.length;
   <header class="docs-hero">
     <p class="kicker">API reference</p>
     <h1>Platform <span class="accent">parity</span> matrix</h1>
+    <StatusChip label="Shipped · generated from the port sources" tone="stable" />
     <p class="lede">
-      Which <a href="/docs/api/handle">FieldHandle</a> methods ship on each surface.
+      Which <a href="/docs/api/imperative#handle">FieldHandle</a> methods ship on each surface.
       JS is the source of truth. <code>@fundamental-engine/three</code> delegates all {total} methods to
       the wrapped engine — {threeCount}/{total}. Swift ({swiftCount}/{total}) and Kotlin ({kotlinCount}/{total})
       are native ports, mirrored but currently trailing the newest additions (see the table below for
-      which methods and why). The cross-plane <em>physics</em> is identical (the 36-force conformance
-      suite asserts it) regardless of API-surface gaps. This matrix tracks <em>API surface</em> parity.
+      which methods and why). Where the planes share a force, the <em>physics</em> is identical — the
+      shared golden pins {golden.forces.length} canonical forces to byte-identical output on all three —
+      regardless of API-surface gaps. This matrix tracks <em>API surface</em> parity.
     </p>
     <div class="callout">
       <b>Three distinct axes — don't conflate them.</b>
       <b>API parity</b> (this matrix): the <code>FieldHandle</code> method surface — {threeCount}/{total} Three.js,
       {swiftCount}/{total} Swift, {kotlinCount}/{total} Kotlin.
-      <b>Conformance</b>: the force math matches, asserted by the shared cross-plane golden (the 36-force
-      suite). <b>Production readiness</b>: packaging, platform polish, and docs — this is
-      <em>Preview</em> and differs by host. Native ports are at <code>FieldHandle</code> API parity, but
-      packaging, platform polish, and production-readiness differ by host.
+      <b>Conformance</b>: the force math matches, asserted by the shared cross-plane golden —
+      {golden.forces.length} canonical forces (<code>{golden.forces.join(', ')}</code>), not the whole
+      catalog. <b>Production readiness</b>: packaging, platform polish, and docs — this is
+      <em>Preview</em> and differs by host. The native ports are <em>close to</em>, not at,
+      <code>FieldHandle</code> API parity — {swiftCount}/{total} Swift and {kotlinCount}/{total} Kotlin,
+      counted above — and production-readiness is a third question again.
     </div>
   </header>
 
@@ -213,9 +223,12 @@ const total = METHODS.length;
   <section class="docs-sec">
     <h2>Platform notes</h2>
     <p>
-      All three platforms briefly shipped the full 44-method surface as of June 2026 (<a href="https://github.com/zachshallbetter/fundamental-engine/pull/822">#822</a> Swift,
-      <a href="https://github.com/zachshallbetter/fundamental-engine/pull/823">#823</a> Kotlin) — the JS-side surface has grown since (now {total} methods; see the live counts above), and the ports have not fully caught up.
-      Some methods behave differently across platforms by design:
+      The big port catch-up landed in June 2026 (<a href="https://github.com/zachshallbetter/fundamental-engine/pull/822">#822</a> Swift,
+      <a href="https://github.com/zachshallbetter/fundamental-engine/pull/823">#823</a> Kotlin); the JS surface has grown since and the ports have not fully caught up.
+      The live counts above are the only honest statement of where that stands — every number on this
+      page is read from the generated matrix, and a fixed one written here would be stale within a
+      release (an earlier version of this paragraph named a method count that had not been true for
+      months). Some methods also behave differently across platforms by design:
     </p>
     <dl class="api-table">
       <div class="api-row">
@@ -280,7 +293,7 @@ const total = METHODS.length;
     links={[
       { href: '/docs/guides/swift', label: 'Swift guide' },
       { href: '/docs/guides/kotlin', label: 'Kotlin guide' },
-      { href: '/docs/api/handle', label: 'FieldHandle' },
+      { href: '/docs/api/imperative#handle', label: 'FieldHandle' },
       { href: '/docs/implementations', label: 'Implementations' },
     ]}
   />

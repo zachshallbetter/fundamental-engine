@@ -1,9 +1,21 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
+import StatusChip from '../../../components/StatusChip.astro';
+import { EXPERIMENTAL } from '../../../../../../scripts/api-surface.data.mjs';
 
 // Platform utilities — shipped APIs with no prior site docs.
 // All seven are exported from @fundamental-engine/dom (or @fundamental-engine/core for headlessHost + allocateAttention).
+//
+// docs-refactor Phase 6 (#1001) status sweep: this page used to say "all seven are part of the stable
+// platform surface". They are not. Six are listed EXPERIMENTAL in scripts/api-surface.data.mjs — the
+// same file `pnpm check:api` gates — and headlessHost is simply unlisted, which is silence rather than
+// a promise. None of the seven appears in PROTECTED_VALUES, and COMPAT_RULES is explicit that
+// anything unlisted carries no guarantee. The count below is read from that file, not typed.
+const UTILITY_PROBES = ['withFlip()', 'allocateAttention()', 'textBodies()', 'threadOverlay()', 'bindFieldNav()', 'QualityGovernor'];
+const experimentalUtilities = UTILITY_PROBES.filter((p) =>
+  EXPERIMENTAL.some((x: { item: string }) => x.item.includes(p)),
+).length;
 ---
 
 <DocsLayout
@@ -13,12 +25,22 @@ import SeeAlso from '../../../components/SeeAlso.astro';
   <header class="docs-hero">
     <p class="kicker">API reference</p>
     <h1>Platform <span class="accent">utilities</span></h1>
+    <StatusChip label={`Shipped · unfrozen — ${experimentalUtilities} are experimental`} tone="shipped" />
     <p class="lede">
-      Shipped helpers that sit below the main tutorial path but are load-bearing in real
-      applications. All seven are part of the stable platform surface. Most come from
-      <code>@fundamental-engine/dom</code>; <code>headlessHost</code> and
-      <code>allocateAttention</code> come from <code>@fundamental-engine/core</code>.
+      Shipped helpers that sit below the main tutorial path but are load-bearing in real applications.
+      Most come from <code>@fundamental-engine/dom</code>; <code>headlessHost</code> and
+      <code>allocateAttention</code> come from <code>@fundamental-engine/core</code>. They are
+      <strong>web-only</strong>, which is why nothing here carries a per-platform support row.
     </p>
+    <div class="callout">
+      <b>None of these is frozen.</b> {experimentalUtilities} of the seven are listed
+      <em>experimental</em> in <code>scripts/api-surface.data.mjs</code> — the file
+      <code>pnpm check:api</code> gates — and <code>headlessHost</code> is not listed at all, which is
+      silence rather than a promise. None appears in the protected surface, and the compatibility rules
+      say plainly that anything unlisted carries no guarantee. Use them: they ship, they are tested, and
+      the site itself runs on several. Just expect signatures to move before 1.0, and check
+      <a href="/docs/api/stability">API stability</a> for what <em>is</em> protected.
+    </div>
   </header>
 
   <div class="callout">
@@ -374,7 +396,7 @@ field.rescan();    // pick up the new spans immediately
   <section class="docs-sec" id="headlessHost">
     <h2>headlessHost</h2>
     <p>
-      The reference <a href="/docs/api/handle"><code>FieldHost</code></a> for
+      The reference <a href="/docs/api/imperative#handle"><code>FieldHost</code></a> for
       <strong>non-DOM, non-visual consumers</strong>: an agent reading the field as a salience
       substrate, a native sidecar, a Node.js service, or a deterministic test. Where
       <code>browserHost()</code> binds the engine to <code>window</code> / <code>document</code> /
@@ -439,7 +461,7 @@ for (let i = 0; i &lt; 10; i++) host.tick();</code></pre>
 
   <SeeAlso links={[
     { href: '/docs/api/imperative', label: 'Imperative reference (with platform rows)' },
-    { href: '/docs/api/handle', label: 'FieldHandle reference' },
+    { href: '/docs/api/imperative#handle', label: 'FieldHandle reference' },
     { href: '/docs/api/parity', label: 'Platform parity matrix' },
     { href: '/docs/authoring', label: 'Authoring guide' },
   ]} />
