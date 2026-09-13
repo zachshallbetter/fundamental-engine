@@ -7,7 +7,7 @@
   "scripts": {
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
+    "test": "pnpm -r test && node --test \"scripts/**/*.test.mjs\"",
     "check:dist": "node scripts/check-dist.mjs",
     "check:packaging": "node scripts/check-packaging.mjs",
     "check:api": "tsc -p scripts/tsconfig.api.json --noEmit && node scripts/check-api-surface.mjs",
