@@ -122,7 +122,7 @@ Router, render it from a Client Component (`'use client'`).
 
 To apply a named recipe or bind data to the field, use `applyRecipe()` / `bindData()` from
 [`@fundamental-engine/dom`](../dom) against a ref'd container. Browse all 64 recipes at
-[`/docs/gallery`](https://fundamental-engine.com/docs/gallery).
+[`/patterns`](https://fundamental-engine.com/patterns).
 
 ## Related
 

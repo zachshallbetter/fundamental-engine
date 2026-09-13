@@ -10,13 +10,13 @@ test.describe("breadcrumbs + pager", () => {
   test("docs page shows the Home › Docs › Group › Page trail and an N-of-M pager", async ({
     page,
   }) => {
-    await page.goto("/docs/api/handle");
+    await page.goto("/docs/api/imperative");
     const bc = page.locator(".breadcrumbs");
     await expect(bc).toBeVisible();
     await expect(bc.locator('a[href="/"]')).toHaveText("Home");
     await expect(bc.locator('a[href="/docs"]')).toHaveText("Docs");
     // last crumb is the current page, not a link
-    await expect(bc.locator('[aria-current="page"]')).toHaveText("FieldHandle");
+    await expect(bc.locator('[aria-current="page"]')).toHaveText("Imperative reference");
     // pager progress reads "N / M"
     await expect(page.locator(".docs-prevnext .pn-progress")).toHaveText(/\d+\s*\/\s*\d+/);
   });

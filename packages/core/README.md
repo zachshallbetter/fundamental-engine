@@ -109,7 +109,7 @@ const plan = compileRecipe(recipeById('priority-well')!);
 ```
 
 `applyRecipe()` (run a recipe on a live DOM platform) and `bindData()` (records → bodies) are in
-[`@fundamental-engine/dom`](../dom). Browse all 64 at [`/docs/gallery`](https://fundamental-engine.com/docs/gallery).
+[`@fundamental-engine/dom`](../dom). Browse all 64 at [`/patterns`](https://fundamental-engine.com/patterns).
 
 ## Renderer-agnostic
 

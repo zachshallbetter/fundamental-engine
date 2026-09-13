@@ -46,7 +46,7 @@ export interface FieldHost {
 }
 ```
 
-[`createField(canvas, opts)`](/docs/api/handle) builds the renderer-agnostic engine, then drives it
+[`createField(canvas, opts)`](/docs/api/imperative#handle) builds the renderer-agnostic engine, then drives it
 entirely through whatever host you give it. The interface is pure types — no globals — which is precisely why
 `field.ts` can import zero DOM and still know how to ask "how big is the surface?"
 

@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 
 // Reading Field — the flagship platform demo. A normal content page (sections, headings, citations,
 // a table of contents) wired to createFieldPlatform. It exercises every registry through the
@@ -23,6 +24,7 @@ const sections = [
   description="The flagship platform demo: an ordinary content page wired to createFieldPlatform. Sections are measured bodies; viewport proximity becomes attention; attention accumulates into memory; the table of contents reflects it; citations become relationships. Reduced motion loses no meaning."
 >
   <h1>Reading Field</h1>
+  <StatusChip label="Shipped · the demo runs on this page" tone="stable" />
   <p class="lede">
     An ordinary article, wired to the platform. Scroll: sections gather attention as they centre,
     accrue memory as you read, and the contents list remembers where you have been. The whole page is

@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
 // docs-refactor Phase 3 (#998): the "44/44 FieldHandle methods — full parity" line this page used to
@@ -8,6 +9,11 @@ import CodeTabs from '../../../components/CodeTabs.astro';
 // drift again. Do not retype a number here.
 import parityData from '../../../../../../data/parity-matrix.json';
 const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'field-handle-methods')!;
+// Phase 6 (#1001): this page claimed "the same 36-force golden" and "the 36-force catalog". The
+// shared golden covers SIX canonical forces and the catalog is 37 — both read from the generated
+// matrix now, so neither can be retyped wrongly again.
+const golden = parityData.conformanceGolden as { forces: string[]; count: number };
+const forceDim = parityData.dimensions.find((d: { id: string }) => d.id === 'force-tokens')!;
 
 
 const localDep = `// settings.gradle.kts — depend on the modules from source.
@@ -59,6 +65,7 @@ field.burst(tap.x, tap.y)             // a CGPoint analogue from a MotionEvent
   <header class="docs-hero">
     <p class="kicker">Guides</p>
     <h1>The <span class="accent">Kotlin</span> port</h1>
+    <StatusChip label="Preview · native port, counts generated" tone="planning" />
     <p class="lede">
       The same reciprocal field, native on <strong>Android</strong>. It is a
       <strong>port of the JS engine, not a reinterpretation</strong>: the package layout, the API
@@ -71,7 +78,7 @@ field.burst(tap.x, tap.y)             // a CGPoint analogue from a MotionEvent
 
   <div class="callout">
     <b>Status: broad, not complete.</b> The Kotlin port is conformance-checked against the JS engine
-    (the same 36-force golden the Swift port runs) and ships
+    (the same {golden.forces.length}-force shared golden the Swift port runs) and ships
     <strong>{handleDim.counts.kotlin}</strong> of the {handleDim.union.length} callable
     <code>FieldHandle</code> members any plane declares, against JS's
     <strong>{handleDim.counts.js}</strong> — generated from the port source, not typed here. The big
@@ -107,7 +114,7 @@ field.burst(tap.x, tap.y)             // a CGPoint analogue from a MotionEvent
         <tr><th>Gradle module</th><th>npm equivalent</th><th>What it is</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>:fundamental-core</code></td><td><code>@fundamental-engine/core</code></td><td>The pure physics — particles, bodies, the 36-force catalog, the integrator, formations, reactions. Zero platform imports.</td></tr>
+        <tr><td><code>:fundamental-core</code></td><td><code>@fundamental-engine/core</code></td><td>The pure physics — particles, bodies, the {forceDim.counts.kotlin}-force catalog, the integrator, formations, reactions. Zero platform imports.</td></tr>
         <tr><td><code>:fundamental-platform</code></td><td><code>@fundamental-engine/dom</code></td><td>The six-phase frame scheduler (<code>discover → read → compute → state → write → render</code>) and the six registries.</td></tr>
         <tr><td><code>:fundamental-android</code></td><td><code>@fundamental-engine/vanilla</code></td><td>The imperative host — <code>FieldFieldView</code>, a plain Android <code>View</code> / <code>Canvas</code> with no Compose dependency.</td></tr>
         <tr><td><code>:fundamental-compose</code></td><td><code>@fundamental-engine/react</code></td><td>The declarative adapter — <code>FieldView</code>, <code>Modifier.fieldBody()</code>, the <code>FieldHandle</code> exposed to descendants.</td></tr>
@@ -163,7 +170,7 @@ field.burst(tap.x, tap.y)             // a CGPoint analogue from a MotionEvent
       natively on Apple platforms and Android behind one host seam — is the same one the
       <a href="/docs/guides/swift">Swift port</a> tells. The seam itself is the
       <a href="/docs/platform">platform layer</a>; the runtime handle is the
-      <a href="/docs/api/handle">FieldHandle</a>.
+      <a href="/docs/api/imperative#handle">FieldHandle</a>.
     </p>
   </section>
 </DocsLayout>

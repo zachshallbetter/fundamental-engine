@@ -25,7 +25,9 @@ const atom = (kind, id, label, color, href, data) => ({ kind, id, label, color, 
 const atoms = [
   // 35 forces — the richest atoms.
   ...MANUAL_FORCES.map((f) =>
-    atom("force", `force:${f.token}`, f.label, f.color || "#4da3ff", `/docs/api/forces#force-${f.token}`, {
+    // docs-refactor Phase 6 (#1001): the force cards moved onto the consolidated declarative
+    // reference; /docs/api/declarative#forces now redirects there. The anchor id is unchanged.
+    atom("force", `force:${f.token}`, f.label, f.color || "#4da3ff", `/docs/api/declarative#force-${f.token}`, {
       token: f.token, family: f.family, formula: f.formula, desc: f.desc,
       summary: f.summary, effect: f.effect, example: f.example, symbol: f.symbol,
     }),
@@ -38,7 +40,7 @@ const atoms = [
   ),
   // 9 presets.
   ...MANUAL_PRESETS.map((p) =>
-    atom("preset", `preset:${p.token ?? p.name}`, p.label || p.name, KIND_COLOR.preset, `/docs/api/presets#preset-${p.name}`, {
+    atom("preset", `preset:${p.token ?? p.name}`, p.label || p.name, KIND_COLOR.preset, `/docs/api/declarative#preset-${p.name}`, {
       name: p.token ?? p.name, desc: p.desc, bodies: p.bodies?.length,
     }),
   ),
@@ -55,7 +57,7 @@ const atoms = [
     ["path-use", "how travelled the lanes through a body are"],
     ["related-attention", "focus reflected from threaded neighbours"],
   ].map(([m, measures]) =>
-    atom("metric", `metric:--field-${m}`, `--field-${m}`, KIND_COLOR.metric, "/docs/api/metrics", { var: `--field-${m}`, measures }),
+    atom("metric", `metric:--field-${m}`, `--field-${m}`, KIND_COLOR.metric, "/docs/api/declarative#feedback", { var: `--field-${m}`, measures }),
   ),
   // the six truth modes.
   ...[
@@ -70,7 +72,7 @@ const atoms = [
   ...[
     ["gravity", "importance"], ["electromagnetic", "polarity / signal"],
     ["strong", "binding"], ["weak", "transformation"],
-  ].map(([field, maps]) => atom("natural-field", `nf:${field}`, field, NF_COLOR[field] || "#86e57f", "/docs/natural-fields", { field, maps })),
+  ].map(([field, maps]) => atom("natural-field", `nf:${field}`, field, NF_COLOR[field] || "#86e57f", "/docs/concepts#natural-fields", { field, maps })),
   // the published packages.
   ...[
     ["@fundamental-engine/core", "the renderer-agnostic engine"],

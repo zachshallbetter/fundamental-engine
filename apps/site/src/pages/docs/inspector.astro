@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 import {
   systemReport,
   PASSPORTS,
@@ -34,6 +35,7 @@ const recipeOptions = FIELD_PATTERNS.map((r) => ({ id: r.id, name: r.name }));
   description="The Fundamental reciprocity inspector: live system report, the full contract catalog, the force passport table, and a live --field-density readback panel."
 >
   <h1>Inspector</h1>
+  <StatusChip label="Shipped · reads the live runtime" tone="stable" />
   <p class="lede">
     The system inspecting itself — the live platform runtime, coverage, contracts, passports, and a
     reciprocity readout. It proves the field is measured, related, and fed back, not magic.

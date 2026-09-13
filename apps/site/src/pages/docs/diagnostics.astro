@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 import { RENDER_MODES } from '@fundamental-engine/core';
 
 // Live diagnostic overlays: the C1 renderers draw the diagnostics data onto a canvas. The status
@@ -12,6 +13,7 @@ const table = RENDER_MODES;
   description="Live diagnostic render overlays drawn from the Fundamental diagnostics module: contours, potential, force and velocity vectors, energy, topology, inspector, causality, and prediction — all shipped."
 >
   <h1>Diagnostic overlays</h1>
+  <StatusChip label="Shipped · status table from the engine catalog" tone="stable" />
   <p class="lede">
     The diagnostics module computes the data; these overlays draw it. Every diagnostic mode now ships
     — contours, potential, force and velocity vectors, energy, topology, inspector, causality, and

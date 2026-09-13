@@ -163,7 +163,7 @@ import { FORCES, FORMATIONS } from '@fundamental-engine/vanilla';
 
 To apply a named recipe over your markup or bind data to the field, use `applyRecipe()` / `bindData()`
 from [`@fundamental-engine/dom`](../dom); browse all 64 recipes at
-[`/docs/gallery`](https://fundamental-engine.com/docs/gallery).
+[`/patterns`](https://fundamental-engine.com/patterns).
 
 ## Related
 

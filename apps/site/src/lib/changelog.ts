@@ -108,7 +108,7 @@ export const HIGHLIGHTS: Highlight[] = [
   {
     title: "Focus / attention substrate — the field reads and writes attention",
     blurb: "New (experimental): operator attention as an input, agent attention as an output, over one shared field. field.focus(target, { source }) deposits source-tagged, decaying focus onto any body by identity; field.focusState() is the ranked, thresholded digest an AI agent can read in a single turn; metrics.salience rides query()/snapshot(); the focus event is the write-back channel; and a focus well gathers the field toward whatever is currently focused. The agent view stays read-only. Signals-first — it runs with nothing drawn.",
-    href: "/docs/api/handle",
+    href: "/docs/api/imperative#handle",
   },
   {
     title: "“recipe” is now “Pattern”",
@@ -141,6 +141,6 @@ export const HIGHLIGHTS: Highlight[] = [
   {
     title: "The homepage is a full narrative now",
     blurb: "Substrate → natural fields → forces → system → gallery, end to end over the live engine — and every concept and all 36 forces link straight to their exact reference.",
-    href: "/docs/api/forces",
+    href: "/docs/api/declarative#forces",
   },
 ];

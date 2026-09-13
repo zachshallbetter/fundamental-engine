@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 import SeeAlso from '../../components/SeeAlso.astro';
 import VocabLegend from '../../components/VocabLegend.astro';
@@ -57,6 +58,7 @@ const tokenCount = new Set(FIELD_PATTERNS.flatMap((r) => r.primitives)).size;
   <header class="docs-hero">
     <p class="kicker">Patterns</p>
     <h1>The <span class="accent">pattern model</span></h1>
+    <StatusChip label="Shipped · catalog counts rendered live" tone="stable" />
     <p class="lede">
       A <code>FieldPattern</code> is a portable, serializable field program — the reusable unit that
       connects the natural-field model, engine primitives, DOM authoring, platform feedback, diagnostics,
@@ -148,7 +150,7 @@ const tokenCount = new Set(FIELD_PATTERNS.flatMap((r) => r.primitives)).size;
   <SeeAlso
     links={[
       { href: '/patterns', label: "Patterns" },
-      { href: '/docs/natural-fields', label: 'Natural fields' },
+      { href: '/docs/concepts#natural-fields', label: 'Natural fields' },
       { href: '/docs/authoring', label: 'Authoring across surfaces' },
     ]}
   />
