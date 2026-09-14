@@ -1,248 +1,248 @@
 {
-  "source": "Wikimedia pageviews API — en.wikipedia most-read, 2026/06/08 (trend vs 2026/06/07)",
+  "source": "Wikimedia pageviews API — en.wikipedia most-read, 2026/09/12 (trend vs 2026/09/11)",
   "license": "CC0",
-  "snapshotAt": "2026-06-10T00:38:26.143Z",
-  "day": "2026/06/08",
+  "snapshotAt": "2026-09-14T12:53:31.059Z",
+  "day": "2026/09/12",
   "articles": [
     {
-      "title": "Obsession (2025 film)",
-      "slug": "Obsession_(2025_film)",
-      "views": 291972,
+      "title": "Ben Shelton",
+      "slug": "Ben_Shelton",
+      "views": 434567,
       "rank": 4,
-      "priorViews": 303010,
-      "url": "https://en.wikipedia.org/wiki/Obsession_(2025_film)"
+      "priorViews": 80638,
+      "url": "https://en.wikipedia.org/wiki/Ben_Shelton"
     },
     {
-      "title": "2026 Peruvian general election",
-      "slug": "2026_Peruvian_general_election",
-      "views": 281754,
+      "title": "September 11 attacks",
+      "slug": "September_11_attacks",
+      "views": 430057,
       "rank": 5,
-      "priorViews": 34164,
-      "url": "https://en.wikipedia.org/wiki/2026_Peruvian_general_election"
+      "priorViews": 665793,
+      "url": "https://en.wikipedia.org/wiki/September_11_attacks"
     },
     {
-      "title": "2026 FIFA World Cup",
-      "slug": "2026_FIFA_World_Cup",
-      "views": 264644,
+      "title": "Elena Rybakina",
+      "slug": "Elena_Rybakina",
+      "views": 416703,
       "rank": 6,
-      "priorViews": 238040,
-      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup"
+      "priorViews": 231270,
+      "url": "https://en.wikipedia.org/wiki/Elena_Rybakina"
     },
     {
-      "title": "Backrooms (film)",
-      "slug": "Backrooms_(film)",
-      "views": 174832,
+      "title": "Michael Polansky",
+      "slug": "Michael_Polansky",
+      "views": 301297,
       "rank": 7,
-      "priorViews": 213709,
-      "url": "https://en.wikipedia.org/wiki/Backrooms_(film)"
+      "priorViews": null,
+      "url": "https://en.wikipedia.org/wiki/Michael_Polansky"
     },
     {
-      "title": "Alexander Zverev",
-      "slug": "Alexander_Zverev",
-      "views": 163973,
+      "title": "Aryna Sabalenka",
+      "slug": "Aryna_Sabalenka",
+      "views": 270730,
       "rank": 8,
-      "priorViews": 476702,
-      "url": "https://en.wikipedia.org/wiki/Alexander_Zverev"
+      "priorViews": 152768,
+      "url": "https://en.wikipedia.org/wiki/Aryna_Sabalenka"
     },
     {
-      "title": "Masters of the Universe (2026 film)",
-      "slug": "Masters_of_the_Universe_(2026_film)",
-      "views": 155937,
+      "title": "Lady Gaga",
+      "slug": "Lady_Gaga",
+      "views": 227999,
       "rank": 9,
-      "priorViews": 190411,
-      "url": "https://en.wikipedia.org/wiki/Masters_of_the_Universe_(2026_film)"
+      "priorViews": null,
+      "url": "https://en.wikipedia.org/wiki/Lady_Gaga"
     },
     {
-      "title": "Christian Eriksen",
-      "slug": "Christian_Eriksen",
-      "views": 139845,
+      "title": "United Airlines Flight 93",
+      "slug": "United_Airlines_Flight_93",
+      "views": 225536,
       "rank": 10,
-      "priorViews": 185631,
-      "url": "https://en.wikipedia.org/wiki/Christian_Eriksen"
+      "priorViews": 259863,
+      "url": "https://en.wikipedia.org/wiki/United_Airlines_Flight_93"
+    },
+    {
+      "title": "Frances Tiafoe",
+      "slug": "Frances_Tiafoe",
+      "views": 212467,
+      "rank": 11,
+      "priorViews": 49964,
+      "url": "https://en.wikipedia.org/wiki/Frances_Tiafoe"
+    },
+    {
+      "title": "Vishwanath & Sons",
+      "slug": "Vishwanath_&_Sons",
+      "views": 166365,
+      "rank": 12,
+      "priorViews": 113163,
+      "url": "https://en.wikipedia.org/wiki/Vishwanath_&_Sons"
+    },
+    {
+      "title": "Bryan Shelton",
+      "slug": "Bryan_Shelton",
+      "views": 162782,
+      "rank": 13,
+      "priorViews": 24153,
+      "url": "https://en.wikipedia.org/wiki/Bryan_Shelton"
+    },
+    {
+      "title": "Killing of the Clancy children",
+      "slug": "Killing_of_the_Clancy_children",
+      "views": 150439,
+      "rank": 14,
+      "priorViews": 165310,
+      "url": "https://en.wikipedia.org/wiki/Killing_of_the_Clancy_children"
+    },
+    {
+      "title": "Osama bin Laden",
+      "slug": "Osama_bin_Laden",
+      "views": 133250,
+      "rank": 15,
+      "priorViews": 133393,
+      "url": "https://en.wikipedia.org/wiki/Osama_bin_Laden"
+    },
+    {
+      "title": "Todd Beamer",
+      "slug": "Todd_Beamer",
+      "views": 132680,
+      "rank": 16,
+      "priorViews": 90308,
+      "url": "https://en.wikipedia.org/wiki/Todd_Beamer"
+    },
+    {
+      "title": "Hijackers in the September 11 attacks",
+      "slug": "Hijackers_in_the_September_11_attacks",
+      "views": 132030,
+      "rank": 17,
+      "priorViews": 149298,
+      "url": "https://en.wikipedia.org/wiki/Hijackers_in_the_September_11_attacks"
     },
     {
       "title": "Deaths in 2026",
       "slug": "Deaths_in_2026",
-      "views": 132986,
-      "rank": 11,
-      "priorViews": 126945,
+      "views": 124702,
+      "rank": 18,
+      "priorViews": 134319,
       "url": "https://en.wikipedia.org/wiki/Deaths_in_2026"
     },
     {
-      "title": "Peddi",
-      "slug": "Peddi",
-      "views": 128308,
-      "rank": 12,
-      "priorViews": 137665,
-      "url": "https://en.wikipedia.org/wiki/Peddi"
-    },
-    {
-      "title": "79th Tony Awards",
-      "slug": "79th_Tony_Awards",
-      "views": 127279,
-      "rank": 13,
-      "priorViews": 21517,
-      "url": "https://en.wikipedia.org/wiki/79th_Tony_Awards"
-    },
-    {
-      "title": "Killing of Rachel Nickell",
-      "slug": "Killing_of_Rachel_Nickell",
-      "views": 117991,
-      "rank": 14,
-      "priorViews": 164794,
-      "url": "https://en.wikipedia.org/wiki/Killing_of_Rachel_Nickell"
-    },
-    {
-      "title": "Spencer Pratt",
-      "slug": "Spencer_Pratt",
-      "views": 116916,
-      "rank": 15,
-      "priorViews": 40672,
-      "url": "https://en.wikipedia.org/wiki/Spencer_Pratt"
-    },
-    {
-      "title": "Scary Movie (2026 film)",
-      "slug": "Scary_Movie_(2026_film)",
-      "views": 114201,
-      "rank": 16,
-      "priorViews": 141030,
-      "url": "https://en.wikipedia.org/wiki/Scary_Movie_(2026_film)"
-    },
-    {
-      "title": "Stacey King",
-      "slug": "Stacey_King",
-      "views": 110003,
-      "rank": 17,
-      "priorViews": 128512,
-      "url": "https://en.wikipedia.org/wiki/Stacey_King"
-    },
-    {
-      "title": "Inde Navarrette",
-      "slug": "Inde_Navarrette",
-      "views": 105410,
-      "rank": 18,
-      "priorViews": 108420,
-      "url": "https://en.wikipedia.org/wiki/Inde_Navarrette"
-    },
-    {
-      "title": "ChatGPT",
-      "slug": "ChatGPT",
-      "views": 105017,
+      "title": "Trinity Rodman",
+      "slug": "Trinity_Rodman",
+      "views": 124635,
       "rank": 19,
-      "priorViews": 82585,
-      "url": "https://en.wikipedia.org/wiki/ChatGPT"
+      "priorViews": 34961,
+      "url": "https://en.wikipedia.org/wiki/Trinity_Rodman"
     },
     {
-      "title": "Ford Creek Patrol Cabin",
-      "slug": "Ford_Creek_Patrol_Cabin",
-      "views": 104947,
+      "title": "Hanuman Ansh",
+      "slug": "Hanuman_Ansh",
+      "views": 122944,
       "rank": 20,
-      "priorViews": null,
-      "url": "https://en.wikipedia.org/wiki/Ford_Creek_Patrol_Cabin"
+      "priorViews": 111060,
+      "url": "https://en.wikipedia.org/wiki/Hanuman_Ansh"
     },
     {
-      "title": "Nelly Korda",
-      "slug": "Nelly_Korda",
-      "views": 104138,
+      "title": "Mohamed Atta",
+      "slug": "Mohamed_Atta",
+      "views": 122741,
       "rank": 21,
-      "priorViews": 71061,
-      "url": "https://en.wikipedia.org/wiki/Nelly_Korda"
+      "priorViews": 138911,
+      "url": "https://en.wikipedia.org/wiki/Mohamed_Atta"
     },
     {
-      "title": "Nithya Raman",
-      "slug": "Nithya_Raman",
-      "views": 100163,
+      "title": "The Falling Man",
+      "slug": "The_Falling_Man",
+      "views": 113062,
       "rank": 22,
-      "priorViews": 24901,
-      "url": "https://en.wikipedia.org/wiki/Nithya_Raman"
+      "priorViews": 138822,
+      "url": "https://en.wikipedia.org/wiki/The_Falling_Man"
     },
     {
-      "title": "Michael Jackson",
-      "slug": "Michael_Jackson",
-      "views": 96378,
+      "title": "Casualties of the September 11 attacks",
+      "slug": "Casualties_of_the_September_11_attacks",
+      "views": 112002,
       "rank": 23,
-      "priorViews": 114842,
-      "url": "https://en.wikipedia.org/wiki/Michael_Jackson"
+      "priorViews": 159040,
+      "url": "https://en.wikipedia.org/wiki/Casualties_of_the_September_11_attacks"
     },
     {
-      "title": "2026 Armenian parliamentary election",
-      "slug": "2026_Armenian_parliamentary_election",
-      "views": 93251,
+      "title": "World Trade Center (1973–2001)",
+      "slug": "World_Trade_Center_(1973–2001)",
+      "views": 109549,
       "rank": 24,
-      "priorViews": 83116,
-      "url": "https://en.wikipedia.org/wiki/2026_Armenian_parliamentary_election"
+      "priorViews": 135890,
+      "url": "https://en.wikipedia.org/wiki/World_Trade_Center_(1973–2001)"
     },
     {
-      "title": ".xxx",
-      "slug": ".xxx",
-      "views": 90002,
+      "title": "Ben Delo",
+      "slug": "Ben_Delo",
+      "views": 104866,
       "rank": 25,
-      "priorViews": 48394,
-      "url": "https://en.wikipedia.org/wiki/.xxx"
+      "priorViews": 13255,
+      "url": "https://en.wikipedia.org/wiki/Ben_Delo"
     },
     {
-      "title": "Jalen Brunson",
-      "slug": "Jalen_Brunson",
-      "views": 87519,
+      "title": "Welles Crowther",
+      "slug": "Welles_Crowther",
+      "views": 103152,
       "rank": 26,
-      "priorViews": 78204,
-      "url": "https://en.wikipedia.org/wiki/Jalen_Brunson"
+      "priorViews": 83766,
+      "url": "https://en.wikipedia.org/wiki/Welles_Crowther"
     },
     {
-      "title": "Béla Pap",
-      "slug": "Béla_Pap",
-      "views": 86893,
+      "title": ".xyz",
+      "slug": ".xyz",
+      "views": 99453,
       "rank": 27,
-      "priorViews": null,
-      "url": "https://en.wikipedia.org/wiki/Béla_Pap"
+      "priorViews": 103272,
+      "url": "https://en.wikipedia.org/wiki/.xyz"
     },
     {
-      "title": "Robert Napper",
-      "slug": "Robert_Napper",
-      "views": 86007,
+      "title": "American Airlines Flight 11",
+      "slug": "American_Airlines_Flight_11",
+      "views": 98648,
       "rank": 28,
-      "priorViews": 120791,
-      "url": "https://en.wikipedia.org/wiki/Robert_Napper"
+      "priorViews": 178794,
+      "url": "https://en.wikipedia.org/wiki/American_Airlines_Flight_11"
     },
     {
-      "title": "Manav Suthar",
-      "slug": "Manav_Suthar",
-      "views": 84425,
+      "title": "Khalid Sheikh Mohammed",
+      "slug": "Khalid_Sheikh_Mohammed",
+      "views": 96775,
       "rank": 29,
-      "priorViews": 131908,
-      "url": "https://en.wikipedia.org/wiki/Manav_Suthar"
+      "priorViews": 74485,
+      "url": "https://en.wikipedia.org/wiki/Khalid_Sheikh_Mohammed"
     },
     {
-      "title": "Teach You a Lesson",
-      "slug": "Teach_You_a_Lesson",
-      "views": 83358,
+      "title": "Alexander Zverev",
+      "slug": "Alexander_Zverev",
+      "views": 96022,
       "rank": 30,
-      "priorViews": 88984,
-      "url": "https://en.wikipedia.org/wiki/Teach_You_a_Lesson"
+      "priorViews": 70114,
+      "url": "https://en.wikipedia.org/wiki/Alexander_Zverev"
     },
     {
-      "title": "FIFA World Cup",
-      "slug": "FIFA_World_Cup",
-      "views": 82434,
+      "title": "Elizabeth Holmes",
+      "slug": "Elizabeth_Holmes",
+      "views": 88686,
       "rank": 31,
-      "priorViews": 68616,
-      "url": "https://en.wikipedia.org/wiki/FIFA_World_Cup"
+      "priorViews": 112181,
+      "url": "https://en.wikipedia.org/wiki/Elizabeth_Holmes"
     },
     {
-      "title": "Lewis Hamilton",
-      "slug": "Lewis_Hamilton",
-      "views": 78769,
+      "title": "XXX (2002 film)",
+      "slug": "XXX_(2002_film)",
+      "views": 83921,
       "rank": 32,
-      "priorViews": 88231,
-      "url": "https://en.wikipedia.org/wiki/Lewis_Hamilton"
+      "priorViews": 87737,
+      "url": "https://en.wikipedia.org/wiki/XXX_(2002_film)"
     },
     {
-      "title": "2026 Gilgit Baltistan Assembly election",
-      "slug": "2026_Gilgit_Baltistan_Assembly_election",
-      "views": 77056,
+      "title": "Practical Magic 2",
+      "slug": "Practical_Magic_2",
+      "views": 83022,
       "rank": 33,
-      "priorViews": 32463,
-      "url": "https://en.wikipedia.org/wiki/2026_Gilgit_Baltistan_Assembly_election"
+      "priorViews": 70547,
+      "url": "https://en.wikipedia.org/wiki/Practical_Magic_2"
     }
   ]
 }
