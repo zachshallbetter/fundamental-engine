@@ -15,7 +15,7 @@
 //! particle-to-particle separation. The supernova *burst* (relaunching held matter outward) is also
 //! deferred — release currently just frees the shell back into the field (count-conserving).
 
-use super::{Body, Env, FieldStore, Force, Particle, Registry};
+use super::{Body, Effect, Env, FieldStore, Force, Particle, Registry};
 use crate::math::Vec3;
 
 /// Per-frame velocity damping (semi-implicit Euler). (JS `FRICTION`.)
@@ -26,7 +26,7 @@ pub const HEAT_DECAY: f64 = 0.972;
 pub const EDGE: f64 = 10.0;
 
 /// Tokens whose forces read the neighbour snapshot — the integrator only rebuilds it when one is used.
-const NEIGHBOR_TOKENS: [&str; 5] = ["align", "cohesion", "pressure", "link", "hunt"];
+const NEIGHBOR_TOKENS: [&str; 6] = ["align", "cohesion", "pressure", "link", "hunt", "collide"];
 
 /// Apply one force to a particle, honouring first-class mass (§21.3): an *additive* force's velocity
 /// change is scaled by `1/m` (a = F/m), while a `kinematic` force (reflection/rotation/relaunch)
@@ -186,6 +186,40 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
             }
         }
 
+        // The force pass ends here. Integration now happens in a SECOND pass, below, so that the
+        // impulses `collide` owes its neighbours (#1037) land on velocity BEFORE it is integrated
+        // into position — draining them after integration would delay every collision by a frame.
+        // Splitting is numerically inert for every other force: neighbours are read from the
+        // frame-start snapshot, body centres are fixed for the step, and `b.count` is written but
+        // never read during the pass, so no force observes another particle's integrated state.
+    }
+
+    // ── impulse drain (#1037) ──────────────────────────────────────────────────────────────────
+    // Apply the neighbour halves `collide` emitted, addressed by id. Equal-and-opposite pairs make
+    // this momentum-conserving; applying them here, between the force pass and integration, keeps a
+    // collision response within the frame that detected it. Captured matter is skipped — it is held
+    // by its sink and off the force path entirely.
+    if env.effects.iter().any(|e| matches!(e, Effect::Impulse { .. })) {
+        for eff in env.effects.iter() {
+            if let Effect::Impulse { particle_id, dv } = eff {
+                if let Some(q) = store
+                    .particles
+                    .iter_mut()
+                    .find(|q| q.id == *particle_id && q.cap.is_none())
+                {
+                    q.velocity.x += dv.x;
+                    q.velocity.y += dv.y;
+                    q.velocity.z += dv.z;
+                }
+            }
+        }
+    }
+
+    // ── integrate ─────────────────────────────────────────────────────────────────────────────
+    for p in store.particles.iter_mut() {
+        if p.cap.is_some() {
+            continue; // captured matter drifted to its sink core above and does not integrate
+        }
         // global safety cap (§20.10): no composite may drive a particle past `c` ("speed of light").
         let sp2 = p.velocity.length_sq();
         if sp2 > cap * cap {
