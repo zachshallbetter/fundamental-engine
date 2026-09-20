@@ -57,8 +57,11 @@ Each is a one-line summary; the detailed contract, types, and examples are in `s
   capability scoping. → [Agent permissions + snapshot profiles](substrate-api.md#agent-permissions--snapshot-profiles)
 - **Snapshot profiles** — `public` / `agent` / `debug` resolve to the tightest inclusion; opaque
   `data` is opt-in, never default. → [Snapshot + Diff](substrate-api.md#snapshot--diff--snapshotopts-fieldsnapshot--diffa-b-fielddiff)
-- **FieldPolicy + budgets** — the live, replaceable policy that limits what may be read; a closed
-  `budgets.agentRead` collapses the agent surface to ids + shape only. Returned as a frozen clone.
+- **FieldPolicy + budgets** — the live, replaceable policy that limits what may be read. A closed
+  `budgets.agentRead` collapses the agent surface to ids + shape only; a **fractional** `0 < b < 1`
+  grants a partial read of `b` of the body population, dropping every edge that names a withheld body
+  (#915). The admitted subset is deterministic and **stable**, so it cannot be unioned back to the whole
+  field by reading repeatedly. Returned as a frozen clone.
   → [Runtime Field Policy + Budgets](substrate-api.md#runtime-field-policy--budgets--createfield-policy---setpolicyp--fieldpolicy)
 - **Projection purity** — the `lintProjections`-style contract that keeps reveals from mutating the
   field. → [Projection Registry](substrate-api.md#projection-registry--fieldprojections-a-property)
