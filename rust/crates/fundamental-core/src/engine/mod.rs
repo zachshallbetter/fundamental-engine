@@ -5,6 +5,7 @@ pub mod field_store;
 pub mod integrator;
 pub mod registry;
 pub mod scalar_grid;
+pub mod solve;
 pub mod spatial_hash;
 pub mod types;
 
@@ -12,5 +13,6 @@ pub use field_store::FieldStore;
 pub use integrator::{step, EDGE, FRICTION, HEAT_DECAY};
 pub use registry::Registry;
 pub use scalar_grid::{GridMode, ScalarGrid};
+pub use solve::{solve, SolveOptions, SolveResult};
 pub use spatial_hash::{NeighborSample, Neighborhood};
 pub use types::{Body, Effect, Env, Force, ForceModification, Formation, Particle};
