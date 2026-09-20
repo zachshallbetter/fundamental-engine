@@ -48,6 +48,24 @@ impl FieldStore {
         }
     }
 
+    /// The id the next auto-assigned particle will take (#1043).
+    ///
+    /// Part of the field's state, not an implementation detail: a snapshot that restored the pool but
+    /// not this counter would hand a re-added particle a DIFFERENT id than the original run did, and
+    /// every id-keyed thing downstream — an impulse, a receipt, an attribution log — would then name
+    /// the wrong matter.
+    pub fn next_id(&self) -> u64 {
+        self.next_id
+    }
+
+    /// Rebuild a pool with an explicit id counter — the restore half of [`next_id`](Self::next_id).
+    pub fn from_parts(particles: Vec<Particle>, next_id: u64) -> Self {
+        FieldStore {
+            particles,
+            next_id: next_id.max(1),
+        }
+    }
+
     pub fn len(&self) -> usize {
         self.particles.len()
     }
