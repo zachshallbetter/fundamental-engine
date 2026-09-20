@@ -26,6 +26,41 @@ pub const HEAT_DECAY: f64 = 0.972;
 pub const EDGE: f64 = 10.0;
 
 /// Tokens whose forces read the neighbour snapshot — the integrator only rebuilds it when one is used.
+/// The net **structure field** at a world point (#1041) — the superposition of every visible body's
+/// [`Force::field`]. Mirrors the JS `netField`.
+///
+/// Public and standalone because it has two consumers with different needs: the integrator resolves
+/// it per particle into [`Env::field_here`] for `fieldflow` to follow, and a field-line tracer walks
+/// it over arbitrary points to draw the diagram. Both read the same function, which is what makes the
+/// drawn picture the engine's real field.
+///
+/// Uses the same ~1.6× range cull as the force pass, so a ranged body's structure stops where its
+/// force does.
+pub fn net_field(bodies: &[Body], forces: &Registry, x: f64, y: f64) -> (f64, f64) {
+    let (mut fx, mut fy) = (0.0, 0.0);
+    for b in bodies.iter() {
+        if !b.visible || b.tokens.is_empty() {
+            continue;
+        }
+        if b.range > 0.0 {
+            let dx = b.center.x - x;
+            let dy = b.center.y - y;
+            if dx * dx + dy * dy >= b.range * b.range * 2.56 {
+                continue;
+            }
+        }
+        for k in 0..b.tokens.len() {
+            if let Some(f) = forces.get(&b.tokens[k]) {
+                if let Some((vx, vy)) = f.field(b, x, y) {
+                    fx += vx;
+                    fy += vy;
+                }
+            }
+        }
+    }
+    (fx, fy)
+}
+
 const NEIGHBOR_TOKENS: [&str; 5] = ["align", "cohesion", "pressure", "link", "hunt"];
 
 /// Apply one force to a particle, honouring first-class mass (§21.3): an *additive* force's velocity
@@ -76,6 +111,13 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
         env.neighborhood.rebuild(&store.particles);
     }
 
+    // #1041: resolve the net structure field per particle only when something actually FOLLOWS it.
+    // Radiating is free (a body's `field()` is never called unless asked); the superposition is not,
+    // so a field with no follower pays nothing and `field_here` stays `None`.
+    let needs_field = bodies
+        .iter()
+        .any(|b| b.visible && b.tokens.iter().any(|t| t == "fieldflow"));
+
     let (w, h, d) = (env.volume.x, env.volume.y, env.volume.z);
     let cap = env.c;
     let has_bodies = !bodies.is_empty();
@@ -107,6 +149,14 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
             } else {
                 1.0
             };
+            // #1041: the net field at THIS particle, resolved before the body loop borrows `bodies`
+            // mutably — the same constraint that puts the `screen` pass here.
+            env.field_here = if needs_field {
+                Some(net_field(bodies, forces, p.position.x, p.position.y))
+            } else {
+                None
+            };
+
             for (i, b) in bodies.iter_mut().enumerate() {
                 if !b.visible || b.tokens.is_empty() {
                     continue;

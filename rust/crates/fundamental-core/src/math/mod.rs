@@ -1,8 +1,10 @@
 //! Scalar + vector math. Mirrors `packages/core/src/math` and `swift/.../Math`.
 
 mod color;
+mod geometry;
 mod vec3;
 pub use color::{hex_to_rgb, mix_hex, rgb_to_hex, DEFAULT_ACCENT};
+pub use geometry::{dipole_field, gravity_field, monopole_field, pole_pair, Pole, EPS};
 pub use vec3::Vec3;
 
 /// Clamp `v` into `[lo, hi]`.

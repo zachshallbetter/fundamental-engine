@@ -137,6 +137,10 @@ pub struct Body {
 
     // ── feedback / density (§8) ─────────────────────────────────────────
     /// Whether this body is an active force source this frame (JS `vis`).
+    /// `fieldflow`'s opt-in charge gate (#711): when set, only CHARGED matter follows the field lines
+    /// and neutral matter drifts free — the magnetized-plasma reading. Default `false` advects all
+    /// matter, the neutral-medium transport.
+    pub charge_gated: bool,
     pub visible: bool,
     /// Whether this body samples local density for two-way feedback.
     pub feedback: bool,
@@ -159,6 +163,7 @@ impl Default for Body {
             strength: 1.0,
             range: 300.0,
             absorb_r: 64.0,
+            charge_gated: false,
             capacity: 60.0,
             spin: 1.0,
             heading: Vec3::new(1.0, 0.0, 0.0),
@@ -218,6 +223,19 @@ pub struct Env {
     pub capture_request: bool,
     /// The frame-start neighbour snapshot (§20.1 class \[B\]). Rebuilt by the integrator each step when a
     /// neighbour force is in play; queried via [`neighbors`](Env::neighbors).
+    /// The net structure field at the CURRENT sample point (#1041) — the superposition of every
+    /// visible body's [`Force::field`], refreshed by the integrator once per particle, before the
+    /// body loop.
+    ///
+    /// Deliberately a resolved value rather than an `at(x, y)` accessor: the superposition needs
+    /// every body AND the force registry, and inside the particle loop the integrator already holds
+    /// `&mut Body` and `&mut Env`, so a force cannot ask the env to evaluate its siblings. A tracer
+    /// that needs the field somewhere else calls [`net_field`](crate::engine::net_field) directly.
+    ///
+    /// `None` when nothing radiates — the common case, and it lets a follower tell "no field here"
+    /// from "a field that is zero here". A true null point between two poles is a real, followable
+    /// feature; an empty field is not.
+    pub field_here: Option<(f64, f64)>,
     pub neighborhood: Neighborhood,
 }
 
@@ -236,6 +254,7 @@ impl Default for Env {
             scroll_v: 0.0,
             rng: Rng::default(),
             effects: Vec::new(),
+            field_here: None,
             capture_request: false,
             neighborhood: Neighborhood::default(),
         }
@@ -308,4 +327,17 @@ pub trait Force: Send + Sync {
     /// Apply this force to a free particle. Mutates the particle; reaches the world only through the
     /// [`Env`] seam (`env.rng()`, `env.spark(…)`, `env.request_capture()`).
     fn apply(&self, body: &Body, particle: &mut Particle, env: &mut Env);
+
+    /// The renderable/followable **structure field** this body radiates at a world point (#1041).
+    ///
+    /// Geometry, not a force law: `apply` is untouched by it, and a field line is not a particle
+    /// path — a sideways-moving particle orbits a gravity well rather than falling down its line.
+    /// [`net_field`](crate::engine::net_field) superposes every body's contribution, `fieldflow`
+    /// follows the result, and a field-line diagram traces the same function, so the picture IS the
+    /// engine's field rather than a hand-rolled stand-in.
+    ///
+    /// `None` (the default) means this force radiates no structure.
+    fn field(&self, _body: &Body, _x: f64, _y: f64) -> Option<(f64, f64)> {
+        None
+    }
 }

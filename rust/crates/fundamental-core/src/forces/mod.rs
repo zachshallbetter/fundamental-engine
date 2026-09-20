@@ -13,7 +13,7 @@ pub mod natural;
 pub use canonical::{Attract, Jet, Repel, Sink, Stream, Swirl, Tether, Viscosity, Wall};
 pub use extended::{
     Align, Buoyancy, Cohesion, Crystallize, Gate, Hunt, Lens, Link, Pigment, Pressure, Resonate,
-    Shear, Spotlight, Warp, Wind,
+    Fieldflow, Shear, Spotlight, Warp, Wind,
 };
 pub use natural::{Charge, Gravity, Magnetism, Thermal};
 
@@ -63,4 +63,5 @@ pub fn register_extended_forces(reg: &mut Registry) {
     // modifiers — bend their sibling forces (no force of their own)
     reg.force(Box::new(Resonate));
     reg.force(Box::new(Spotlight));
+    reg.force(Box::new(Fieldflow));
 }

@@ -11,6 +11,7 @@
 //! field-line/streamline layer.
 
 use crate::engine::{Body, Env, Force, Particle};
+use crate::math::{dipole_field, gravity_field, monopole_field, pole_pair, Pole};
 use std::f64::consts::PI;
 
 /// Clamp a particle's speed to the unit system's `c` — the hard velocity cap that IS the in-sim speed
@@ -39,6 +40,37 @@ fn inverse_square(b: &Body, p: &mut Particle, e: &Env, s: f64) {
     clamp_to_c(p, e.c);
 }
 
+/// Below this pole separation the body's rect gives no usable dipole axis (px).
+const DIPOLE_MIN_SEP: f64 = 8.0;
+/// Synthesized pole reach floor (px) — covers range-0 and point bodies.
+const DIPOLE_MIN_REACH: f64 = 60.0;
+
+/// The dipole a body radiates, with a synthesized axis when its rect gives none.
+///
+/// The pixel floors matter for a GLOBAL body (`range = 0`): `range*0.06` / `range*0.18` would both
+/// be 0, collapsing the dipole to a zero field. The floors keep it a readable dipole at any size.
+///
+/// NOTE — one deliberate omission against JS: JS scales this by `(1 + Q_GAIN·b.d)`, so a body
+/// radiates a stronger field as it charges up with gathered density. This plane's `Body` carries no
+/// eased density `d`, and its own `apply` omits the same gain, so the field hook omits it too rather
+/// than invent a value. A body's field here is its static structure.
+fn body_dipole(b: &Body, x: f64, y: f64, s: f64) -> (f64, f64) {
+    let (cx, cy) = (b.center.x, b.center.y);
+    let (ux, uy) = (b.heading.x, b.heading.y);
+    let mut poles = pole_pair(cx, cy, ux, uy, b.half_extents.x, b.half_extents.y, b.spin);
+    let sep = ((poles[0].x - poles[1].x).powi(2) + (poles[0].y - poles[1].y).powi(2)).sqrt();
+    if sep < (b.range * 0.06).max(DIPOLE_MIN_SEP) {
+        let half = (b.range * 0.18).max(DIPOLE_MIN_REACH);
+        let sgn = if b.spin < 0.0 { -1.0 } else { 1.0 };
+        poles = [
+            Pole { x: cx + ux * half, y: cy + uy * half, q: sgn },
+            Pole { x: cx - ux * half, y: cy - uy * half, q: -sgn },
+        ];
+    }
+    let (fx, fy) = dipole_field(&poles, x, y);
+    (fx * s, fy * s)
+}
+
 /// The Langevin noise amplitude `σ = √(2·k_B·T·γ)`; in sim units `k_B = γ = 1`, so `σ = √(2T)`.
 pub fn thermal_sigma(t: f64) -> f64 {
     (2.0 * t.max(0.0)).sqrt()
@@ -56,6 +88,11 @@ impl Force for Gravity {
     }
     fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
         inverse_square(b, p, e, e.g * b.source_mass); // GM, mass-sourced (M ≥ 0 → pulls in)
+    }
+    /// The inward radial gravitational well (#1041) — renderable structure that `fieldflow` can
+    /// follow. `apply` is unchanged: this only makes gravity visible and followable.
+    fn field(&self, b: &Body, x: f64, y: f64) -> Option<(f64, f64)> {
+        Some(gravity_field(b.center.x, b.center.y, b.source_mass, x, y))
     }
 }
 
@@ -77,6 +114,12 @@ impl Force for Charge {
         }
         // F = σ·q·GM/(d²+ε²); negated for the inward-pointing kernel so like signs repel.
         inverse_square(b, p, e, -(b.spin * q * e.g * b.source_mass));
+    }
+    /// The radial monopole (#1041): straight lines out of a `+` source, into a `−`. Unlike a magnet
+    /// — a dipole, because magnetic monopoles do not exist and `magnetism` therefore loops — a lone
+    /// electric charge radiates, so `charge` is the monopole of the pair.
+    fn field(&self, b: &Body, x: f64, y: f64) -> Option<(f64, f64)> {
+        Some(monopole_field(b.center.x, b.center.y, b.spin, b.source_mass, x, y))
     }
 }
 
@@ -107,6 +150,11 @@ impl Force for Magnetism {
         let vx0 = p.velocity.x;
         p.velocity.x = vx0 * cs - p.velocity.y * sn;
         p.velocity.y = vx0 * sn + p.velocity.y * cs;
+    }
+    /// The bar-magnet DIPOLE (#1041) — N→S loops, the shape `apply`'s cyclotron curl never shows.
+    /// Magnetic monopoles do not exist, so a magnet loops where a lone `charge` radiates.
+    fn field(&self, b: &Body, x: f64, y: f64) -> Option<(f64, f64)> {
+        Some(body_dipole(b, x, y, b.strength))
     }
 }
 
