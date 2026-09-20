@@ -780,6 +780,8 @@ final class FieldEngine: FieldHandle {
             ?? Vec3(0, -1, 0)
         let body = Body(tokens: spec.tokens, strength: spec.strength, range: spec.range,
                         spin: spec.spin, heading: heading, feedback: true)
+        // #1177: the capture horizon is settable through the spec; nil keeps the Body default.
+        if let r = spec.absorbR { body.absorbR = r }
         body.tint = spec.color
         body.rect = spec.rect
         body.box = spec.rect()
