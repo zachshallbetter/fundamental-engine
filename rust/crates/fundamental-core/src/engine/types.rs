@@ -63,7 +63,7 @@ impl Default for Formation {
 /// A free particle — the lightest agent.
 ///
 /// The integrator mutates particles in place. All positions/velocities are 3D; on 2D fields `z` = 0.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Particle {
     pub position: Vec3,
     pub velocity: Vec3,

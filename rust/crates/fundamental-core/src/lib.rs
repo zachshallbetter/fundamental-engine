@@ -41,5 +41,5 @@ pub use engine::{
     SolveOptions, SolveResult,
 };
 pub use math::Vec3;
-pub use record::Rng;
+pub use record::{replay, replay_recording, FieldSnapshot, Replayed, Rng};
 pub use version::FIELD_VERSION;
