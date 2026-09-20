@@ -142,6 +142,10 @@ class AgentFieldView internal constructor(
     val redactions: Set<String> = redactions.toSet()
 
     private fun has(cap: AgentCapability) = capabilities.contains(cap)
+
+    /** #915 — the share of the body population this view may consume (1 = the whole field). */
+    private fun agentReadShare(): Float = handle.controller.policy.budgets?.agentRead ?: 1f
+    private fun partial(): Boolean = agentReadShare() < 1f
     private fun redacted(path: String) = redactions.contains(path)
 
     /**
@@ -151,7 +155,9 @@ class AgentFieldView internal constructor(
     fun bodies(): List<AgentBodyReading> {
         val wantMetrics = has(AgentCapability.READ_METRICS)
         val wantData = has(AgentCapability.READ_BODY_DATA) && handle.controller.policyPermitsBodyData() && !redacted("body.data")
-        return handle.controller.bodies.map { b ->
+        // #915: a partial read admits only its share of the body population.
+        val share = agentReadShare()
+        return handle.controller.bodies.filter { AgentReadShare.admits(handle.controller.bodyIdentity(it).id, share) }.map { b ->
             val ident = handle.controller.bodyIdentity(b)
             val metrics: Map<String, Float> = if (wantMetrics) {
                 buildMap {
@@ -168,6 +174,11 @@ class AgentFieldView internal constructor(
     /** Relationships — present ONLY when `read:relationships` is granted (else empty). */
     fun relationships(): List<AgentRelationshipReading> {
         if (!has(AgentCapability.READ_RELATIONSHIPS)) return emptyList()
+        // #915: an `EdgeRecord` names its endpoints by the body's opaque `data`, not by identity, so a
+        // partial read has NO KEY to filter it on. Tighten-only closes the lane outright under a
+        // fractional budget; the endpoint-filtered graph is still available through `snapshot()`, whose
+        // relationship readings are keyed by id. Giving EdgeRecord real ids would lift this.
+        if (partial()) return emptyList()
         return handle.readEdges().map { AgentRelationshipReading(it.from, it.to, it.type, it.strength, it.active) }
     }
 
@@ -202,7 +213,17 @@ class AgentFieldView internal constructor(
         if (agentRead != null && agentRead <= 0f) {
             return handle.snapshot(FieldSnapshotOptions(profile = SnapshotProfile.PUBLIC))
         }
-        return handle.snapshot(scopeSnapshotOptions(opts, capabilities))
+        val snap = handle.snapshot(scopeSnapshotOptions(opts, capabilities))
+        // #915: narrow the capture to the admitted share. Edges survive only when EVERY body they name
+        // does — a relationship or influence naming a withheld body is itself a disclosure of that body.
+        val share = agentReadShare()
+        if (share >= 1f) return snap
+        val kept = snap.bodies.map { it.id }.filter { AgentReadShare.admits(it, share) }.toSet()
+        return snap.copy(
+            bodies = snap.bodies.filter { kept.contains(it.id) },
+            relationships = snap.relationships.filter { kept.contains(it.from) && kept.contains(it.to) },
+            influences = snap.influences.filter { kept.contains(it.source) && (it.target == null || kept.contains(it.target)) },
+        )
     }
 }
 
@@ -210,3 +231,42 @@ class AgentFieldView internal constructor(
 // controller's edge/data plumbing. The engine Body has no `data` slot, so the agent view exposes null
 // here unless a future data lane lands — kept explicit so the capability gate is still exercised.
 private fun com.fundamental.core.engine.Body.dataOf(): Any? = null
+
+/**
+ * #915 — the fractional `budgets.agentRead` gate.
+ *
+ * `budgets.agentRead` is a conservation law on the agent surface: `b` is the SHARE of the field's
+ * readable body population one agent view may consume. `null` or `b >= 1` is the whole field, `b <= 0`
+ * closes the surface entirely, and `0 < b < 1` grants a partial read.
+ *
+ * Selection is deterministic, stable per body id, and not positional — a random draw would be
+ * unreplayable, a subset resampled per call leaks the whole field to a caller that simply reads in a
+ * loop, and a positional prefix leaks scan order. **This digest must stay bit-identical to the JS and
+ * Swift implementations**, or the planes admit different bodies under the same policy.
+ */
+object AgentReadShare {
+    /**
+     * FNV-1a over the id's UTF-16 code units, then a murmur3 `fmix32` avalanche. The finalizer is not
+     * optional: real body ids are near-identical short strings (`body-0`, `body-1`, …) and raw FNV-1a
+     * barely mixes its high bits across them — which is the whole signal once read as `h / 2^32`.
+     */
+    fun coordinate(id: String): Double {
+        var h = -0x7ee3623b // 0x811c9dc5 as a signed Int
+        for (ch in id) {
+            h = h xor ch.code
+            h *= 0x01000193
+        }
+        h = h xor (h ushr 16)
+        h *= -0x7a143595 // 0x85ebca6b
+        h = h xor (h ushr 13)
+        h *= -0x3d4d51cb // 0xc2b2ae35
+        h = h xor (h ushr 16)
+        return (h.toLong() and 0xffffffffL).toDouble() / 4294967296.0
+    }
+
+    /** Whether a partial read at [share] admits the body with this id. */
+    fun admits(id: String, share: Float): Boolean {
+        if (!(share < 1f)) return true
+        return coordinate(id) < share.toDouble()
+    }
+}
