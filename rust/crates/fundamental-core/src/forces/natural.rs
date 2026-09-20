@@ -6,11 +6,12 @@
 //! feels them via its tokens, so registering them changes nothing on a body that doesn't ask.
 //!
 //! Ported here: the four that read only the per-particle `env` (`gravity`, `charge`, `magnetism`,
-//! `thermal`). Deferred with their subsystems: `collide` (neighbour query), `diffuse` / `propagate` /
-//! `memory` (scalar grid). The renderable `field()` structure hooks (dipole/monopole) land with the
+//! `thermal`), plus `collide` (§20.10) over the frame-start neighbour snapshot. Deferred with their
+//! subsystems: `diffuse` / `propagate` / `memory` (scalar grid). The renderable `field()` structure hooks (dipole/monopole) land with the
 //! field-line/streamline layer.
 
-use crate::engine::{Body, Env, Force, Particle};
+use crate::engine::{Body, Effect, Env, Force, Particle};
+use crate::math::Vec3;
 use std::f64::consts::PI;
 
 /// Clamp a particle's speed to the unit system's `c` — the hard velocity cap that IS the in-sim speed
@@ -160,5 +161,74 @@ impl Force for Thermal {
             p.heat = p.heat.max(falloff * 0.4);
         }
         clamp_to_c(p, e.c);
+    }
+}
+
+/// §20.10 — `collide`: elastic pairwise collision, the hard-sphere complement to `wall`.
+///
+/// The one class-\[B\] force that must move its **neighbour** as well as its own particle. The JS
+/// engine mutates the neighbour in place, because there `e.neighbors()` hands back live particle
+/// references; here the neighbourhood is a frame-start *snapshot*, so writing to it would be a no-op.
+/// The neighbour's half of the exchange is emitted as [`Effect::Impulse`] instead and applied by the
+/// integrator after the force pass (#1037).
+///
+/// **Each pair is resolved exactly once**, by the lower id. JS gets this for free in a different way —
+/// it mutates both halves immediately, so by the time the neighbour takes its own turn the pair is
+/// already separating and the `rel_n >= 0` guard skips it. That trick relies on live neighbour state,
+/// which a snapshot does not have: both particles would read frame-start velocities, both would see an
+/// approaching pair, and the impulse would be applied twice. Gating on `p.id < n.id` resolves it once
+/// and makes the result independent of the order particles are visited in — a stronger guarantee than
+/// the JS engine's, whose outcome depends on pool order when three or more bodies touch in one frame.
+///
+/// Equal-mass, matching JS: the `0.5` in the impulse is the reduced mass of two unit spheres, and the
+/// neighbour snapshot carries no mass to do better with.
+pub struct Collide;
+
+impl Force for Collide {
+    fn token(&self) -> &'static str {
+        "collide"
+    }
+
+    fn label(&self) -> &'static str {
+        "Collide"
+    }
+
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if e.dist >= b.range {
+            return; // collisions resolve within the body's region
+        }
+        let restitution = b.strength.clamp(0.0, 1.0);
+        let pr = p.size.max(1.0);
+        for n in e.neighbors(p.position, pr * 4.0) {
+            // the snapshot includes this particle; and the lower id owns the pair (see the type docs).
+            if p.id >= n.id {
+                continue;
+            }
+            let qr = n.size.max(1.0);
+            // spheres, not discs, in a volume (z-axis.md)
+            let nx = p.position.x - n.pos.x;
+            let ny = p.position.y - n.pos.y;
+            let nz = p.position.z - n.pos.z;
+            let d = (nx * nx + ny * ny + nz * nz).sqrt();
+            if d >= pr + qr || d < 1e-6 {
+                continue; // not in contact
+            }
+            let (ux, uy, uz) = (nx / d, ny / d, nz / d);
+            let rel_n = (p.velocity.x - n.vel.x) * ux
+                + (p.velocity.y - n.vel.y) * uy
+                + (p.velocity.z - n.vel.z) * uz;
+            if rel_n >= 0.0 {
+                continue; // separating already → no impulse
+            }
+            let j = (1.0 + restitution) * 0.5 * rel_n;
+            p.velocity.x -= j * ux;
+            p.velocity.y -= j * uy;
+            p.velocity.z -= j * uz;
+            // the neighbour's equal-and-opposite half, addressed by id
+            e.effects.push(Effect::Impulse {
+                particle_id: n.id,
+                dv: Vec3::new(j * ux, j * uy, j * uz),
+            });
+        }
     }
 }

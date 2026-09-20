@@ -43,7 +43,7 @@ impl Registry {
     }
 
     /// A registry with the standard catalog registered: the canonical nine plus the ported natural +
-    /// extended forces (21 total). Each is opt-in — a body only feels a force it names in its tokens —
+    /// extended forces (29 total: 9 canonical, 5 natural, 15 extended). Each is opt-in — a body only feels a force it names in its tokens —
     /// so a fuller registry never changes a body that doesn't ask.
     pub fn standard() -> Self {
         let mut r = Registry::new();

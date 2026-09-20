@@ -23,6 +23,17 @@ pub enum Effect {
         /// Spark tint (`#rrggbb`); `None` = the force's canon colour.
         color: Option<String>,
     },
+    /// A velocity change owed to a particle, addressed by id (#1037).
+    ///
+    /// The neighbour snapshot a class-\[B\] force reads is a frame-start *copy*, so a force that must
+    /// move its neighbour — `collide` is the only one — cannot simply mutate it the way the JS engine
+    /// does. It emits the neighbour's half of the exchange as data instead, and the integrator applies
+    /// it by id after the force pass. Equal-and-opposite pairs make the result momentum-conserving and
+    /// independent of the order particles are visited in.
+    Impulse {
+        particle_id: u64,
+        dv: Vec3,
+    },
 }
 
 /// The active, eased formation (§7) — ambient bias applied field-wide.
