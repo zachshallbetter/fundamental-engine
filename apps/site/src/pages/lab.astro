@@ -251,6 +251,7 @@ const FILTER_COLOR: Record<string, string> = {
             <button type="button" id="share" class="xbtn">⎘ Copy link</button>
             <button type="button" id="export" class="xbtn">↧ Export JSON</button>
             <button type="button" id="report" class="xbtn">≡ Copy report</button>
+            <button type="button" id="snippet" class="xbtn" title="Copy the markup + createField call that reproduces this configuration in a real page">&lt;/&gt; Copy snippet</button>
             <button type="button" id="resetParams" class="xbtn">⟲ Defaults</button>
           </div>
           <!-- saved configs (#694) — snapshot the current force + overrides with a tag and a note -->
@@ -277,6 +278,7 @@ const FILTER_COLOR: Record<string, string> = {
   <script>
     import { EXPERIMENTS, runScenario, allForces, forceAt, MANUAL_FORCES } from '@fundamental-engine/core';
     import { createLabConfigs, pickConfig, summarize, isConfigTag, type ConfigTag } from '../lib/lab-configs.ts';
+    import { labSnippet } from '../lib/lab-snippet.ts';
 
     type Any = Record<string, any>;
     const forces = allForces();
@@ -1087,6 +1089,30 @@ const FILTER_COLOR: Record<string, string> = {
         navigator.clipboard?.writeText(lines.join('\n')); flash('Report copied');
       }
 
+      // ── snippet export (#1184) ──
+      // The other three exports DESCRIBE the experiment — a measurement record, a text report, a link
+      // back to this state. None emits the code that reproduces the configuration, so everything
+      // learned here had to be hand-transcribed into a page, and `data-body` / tokens / strength /
+      // range / spin is exactly the surface that is easy to get subtly wrong by hand.
+      //
+      // The emitter itself lives in ../lib/lab-snippet.ts so it can be tested: this file is a script
+      // tag, and a snippet emitter whose output nobody asserts drifts from the attributes the scanner
+      // actually reads — emitting radians as degrees, or `data-absorb-r`, still looks like working
+      // code and quietly does nothing.
+      function copySnippet() {
+        const sc = buildScenario();
+        navigator.clipboard?.writeText(
+          labSnippet({
+            body: (sc.body ?? {}) as Any,
+            force: cur,
+            label: META[cur].label,
+            symbol: META[cur].symbol,
+            link: location.href.split('#')[0] + '#' + buildHash(),
+          }),
+        );
+        flash('Snippet copied');
+      }
+
       // ── saved configs (#694) ──
       // Save the current force + the shareable overrides (pickConfig mirrors buildHash: never the
       // free-run `frames`) with a tag and a note; the list is rebuilt from the store on every
@@ -1166,6 +1192,7 @@ const FILTER_COLOR: Record<string, string> = {
         $('sweepMetric')?.addEventListener('change', () => runSweep(), { signal: _ac.signal });
         $('export')?.addEventListener('click', exportJSON, { signal: _ac.signal });
         $('report')?.addEventListener('click', copyReport, { signal: _ac.signal });
+        $('snippet')?.addEventListener('click', copySnippet, { signal: _ac.signal });
         $('resetParams')?.addEventListener('click', () => { overrides = {}; setPreset('default'); evaluate(); }, { signal: _ac.signal });
         $('share')?.addEventListener('click', () => { location.hash = buildHash(); navigator.clipboard?.writeText(location.href); flash('Link copied'); }, { signal: _ac.signal });
         const presetSel = $('preset') as HTMLSelectElement | null;
