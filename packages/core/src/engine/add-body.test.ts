@@ -6,6 +6,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createField } from './field.ts';
+import { seededRng } from '../record/rng.ts';
 import type { FieldHost } from './host.ts';
 
 function drivableHost(): { host: FieldHost; step: (frames: number) => void } {
@@ -169,4 +170,30 @@ test('addField: a registered channel is sampled back; set() swaps it, remove() c
   } finally {
     field.destroy();
   }
+});
+
+test('addBody: absorbR reaches the sim — the capture horizon is what the spec says (#1177)', () => {
+  // `absorbR` had no BodySpec path on any plane, so a programmatic sink was pinned to the scanner
+  // default. It is not cosmetic: forces/index.ts gates capture on `dist < absorbR`, so the radius
+  // *is* the behaviour. Seeded, because accretion counts are small and an unseeded field varies
+  // run to run. Same everything else; only the declared horizon differs.
+  const load = (absorbR?: number): number => {
+    const { host, step } = drivableHost();
+    const field = createField({} as HTMLCanvasElement, { host, render: 'none', rng: seededRng(1) });
+    try {
+      const sink = field.addBody({ tokens: 'sink', rect: rectAt(500, 400), ...(absorbR == null ? {} : { absorbR }) });
+      step(120);
+      return sink.channels.load ?? 0;
+    } finally {
+      field.destroy();
+    }
+  };
+
+  const pinhole = load(1);
+  const wide = load(500);
+  assert.equal(pinhole, 0, `a 1px horizon captures nothing: ${pinhole}`);
+  assert.ok(wide > 0, `a 500px horizon captures matter: ${wide}`);
+
+  // Omitting it lands on the scanner default (64) — this addition is strictly additive on this plane.
+  assert.equal(load(undefined), load(64), 'omitted absorbR === the scanner default of 64');
 });

@@ -489,3 +489,112 @@ impl Force for Spotlight {
     }
     fn apply(&self, _b: &Body, _p: &mut Particle, _e: &mut Env) {} // pure modifier
 }
+
+/// workover v0.3 — `screen`: a quiet zone / shield (truth mode: designed).
+///
+/// The only **cross-body** modifier. `spotlight` and `resonate` bend their own body's siblings, so
+/// they compose inside that body's token loop; `screen` damps *other* bodies' forces on matter inside
+/// its range, which no per-body hook can express. Its `apply` and `modify` are therefore both no-ops —
+/// the whole force lives in the integrator, which is the only place per-particle, per-body forces
+/// compose. A screen never damps its own siblings.
+pub struct Screen;
+
+impl Force for Screen {
+    fn token(&self) -> &'static str {
+        "screen"
+    }
+    fn label(&self) -> &'static str {
+        "Screen"
+    }
+    fn is_modifier(&self) -> bool {
+        true
+    }
+    // No `modify`: this modifier acts on OTHER bodies, which the per-body hook cannot reach.
+    fn apply(&self, _b: &Body, _p: &mut Particle, _e: &mut Env) {} // pure modifier
+}
+
+/// Fraction of velocity turned onto the line per frame (× gain).
+const FIELDFLOW_STEER: f64 = 0.5;
+/// Streaming acceleration along the line (× gain).
+const FIELDFLOW_ACCEL: f64 = 0.12;
+
+/// §20.3 — `fieldflow`: follow the field lines. Steer onto the local net field line and stream down
+/// it — solar prominences, aurora, plasma streams, guided matter.
+///
+/// The one force that reads **existing field geometry** rather than sourcing its own: it consumes the
+/// superposition of every radiating body ([`Env::field_here`]) and transports matter along it. That
+/// makes it the consumer half of the structure-field hooks — `gravity`, `charge` and `magnetism`
+/// radiate, `fieldflow` follows, and a field-line diagram traces the same function.
+///
+/// Two distinct motions, and the distinction matters: the STEER turns velocity onto the tangent
+/// without spending it (speed-preserving, like `align`), while the STREAM accelerates along it and
+/// therefore does work. `magnetism` carries only charged matter; `fieldflow` carries neutral matter
+/// too, unless the opt-in charge gate says otherwise.
+pub struct Fieldflow;
+
+impl Force for Fieldflow {
+    fn token(&self) -> &'static str {
+        "fieldflow"
+    }
+    fn label(&self) -> &'static str {
+        "Field Flow"
+    }
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if b.range > 0.0 && e.dist >= b.range {
+            return; // range 0 ⇒ global
+        }
+        // Opt-in charge gate (#711): the magnetized-plasma reading follows only charged matter.
+        if b.charge_gated && p.charge == 0.0 {
+            return;
+        }
+        let Some((fx, fy)) = e.field_here else {
+            return; // nothing radiates — no line to follow
+        };
+        let mag = (fx * fx + fy * fy).sqrt();
+        if !(mag > 1e-9) {
+            return; // a true null point (or NaN) — no line here
+        }
+        // the field-line tangent, direction only: scale-free, so a faint dipole reads as clearly
+        // as a strong monopole.
+        let (ux, uy) = (fx / mag, fy / mag);
+        let falloff = if b.range > 0.0 {
+            1.0 - e.dist / b.range
+        } else {
+            1.0
+        };
+        let gain = b.strength * falloff;
+
+        // 1) STEER onto the line — turn velocity toward the tangent without spending it.
+        // The structure field is planar (bodies radiate in the page plane), so this also turns any
+        // z velocity onto the in-plane line: matter funnels back toward the plane.
+        let sp = (p.velocity.x * p.velocity.x
+            + p.velocity.y * p.velocity.y
+            + p.velocity.z * p.velocity.z)
+            .sqrt();
+        if sp > 1e-6 {
+            let k = (gain * FIELDFLOW_STEER).min(1.0);
+            p.velocity.x += (ux * sp - p.velocity.x) * k;
+            p.velocity.y += (uy * sp - p.velocity.y) * k;
+            if p.velocity.z != 0.0 {
+                p.velocity.z += -p.velocity.z * k; // the line's z tangent is 0
+            }
+        }
+        // 2) STREAM down the line — accelerate along it (the flare ejection; does work).
+        p.velocity.x += ux * gain * FIELDFLOW_ACCEL;
+        p.velocity.y += uy * gain * FIELDFLOW_ACCEL;
+
+        // bound by the unit system's speed of light (§20.10), as gravity/thermal do.
+        let s2 = p.velocity.x * p.velocity.x
+            + p.velocity.y * p.velocity.y
+            + p.velocity.z * p.velocity.z;
+        if s2 > e.c * e.c {
+            let inv = e.c / s2.sqrt();
+            p.velocity.x *= inv;
+            p.velocity.y *= inv;
+            p.velocity.z *= inv;
+        }
+        if b.engaged {
+            p.heat = p.heat.max(falloff * 0.4);
+        }
+    }
+}
