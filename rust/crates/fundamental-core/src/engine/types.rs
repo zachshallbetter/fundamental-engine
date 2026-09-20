@@ -137,6 +137,9 @@ pub struct Body {
 
     // ── feedback / density (§8) ─────────────────────────────────────────
     /// Whether this body is an active force source this frame (JS `vis`).
+    /// `screen`'s attenuation floor — the most a quiet zone may damp a neighbour's force to. 0 (the
+    /// default) lets a screen cancel a neighbour outright at its core; 0.25 leaves a quarter of it.
+    pub screen_min: f64,
     pub visible: bool,
     /// Whether this body samples local density for two-way feedback.
     pub feedback: bool,
@@ -159,6 +162,7 @@ impl Default for Body {
             strength: 1.0,
             range: 300.0,
             absorb_r: 64.0,
+            screen_min: 0.0,
             capacity: 60.0,
             spin: 1.0,
             heading: Vec3::new(1.0, 0.0, 0.0),

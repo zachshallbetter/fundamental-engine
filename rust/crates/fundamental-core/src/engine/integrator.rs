@@ -16,7 +16,7 @@
 //! deferred — release currently just frees the shell back into the field (count-conserving).
 
 use super::{Body, Env, FieldStore, Force, Particle, Registry};
-use crate::math::Vec3;
+use crate::math::{screen_factor, Vec3};
 
 /// Per-frame velocity damping (semi-implicit Euler). (JS `FRICTION`.)
 pub const FRICTION: f64 = 0.95;
@@ -26,6 +26,20 @@ pub const HEAT_DECAY: f64 = 0.972;
 pub const EDGE: f64 = 10.0;
 
 /// Tokens whose forces read the neighbour snapshot — the integrator only rebuilds it when one is used.
+/// A `screen` body's geometry, lifted out of `bodies` before the particle loop borrows it mutably.
+///
+/// NOTE — a cross-plane divergence, deliberate here: the distance is **3D**. The Swift integrator uses
+/// `simd_length(s.center - p.position)` (3D); the JS integrator uses only `sdx`/`sdy` and drops z. The
+/// two agree wherever `p.z == 0`, which is every conformance case and every flat field, so the
+/// divergence is latent. This port follows Swift and its own body geometry, which is 3D throughout.
+struct ScreenSource {
+    index: usize,
+    center: Vec3,
+    range: f64,
+    strength: f64,
+    min: f64,
+}
+
 const NEIGHBOR_TOKENS: [&str; 5] = ["align", "cohesion", "pressure", "link", "hunt"];
 
 /// Apply one force to a particle, honouring first-class mass (§21.3): an *additive* force's velocity
@@ -76,6 +90,26 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
         env.neighborhood.rebuild(&store.particles);
     }
 
+    // Visible `screen` bodies (workover v0.3): each damps OTHER bodies' forces on matter inside its
+    // range — quiet zones, text shielded from a noisy field. Their geometry is read ONCE here, before
+    // the particle loop takes a mutable borrow of `bodies`; the per-body loop below cannot look at its
+    // siblings, which is exactly why a cross-body modifier cannot live in the `modify` hook.
+    // No screens (the common case) ⇒ an empty vec, and the whole pass is skipped at zero cost.
+    let screens: Vec<ScreenSource> = bodies
+        .iter()
+        .enumerate()
+        .filter(|(_, b)| b.visible && b.tokens.iter().any(|t| t == "screen"))
+        .map(|(i, b)| ScreenSource {
+            index: i,
+            center: b.center,
+            range: b.range,
+            strength: b.strength,
+            min: b.screen_min,
+        })
+        .collect();
+    // reused across particles so the pass allocates nothing per particle
+    let mut screen_fall: Vec<f64> = vec![1.0; screens.len()];
+
     let (w, h, d) = (env.volume.x, env.volume.y, env.volume.z);
     let cap = env.c;
     let has_bodies = !bodies.is_empty();
@@ -107,6 +141,21 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
             } else {
                 1.0
             };
+            // per-particle screen factors: one distance per screen body, computed once here and
+            // reused across every body's pass below. 3D, matching the Swift port and this engine's own
+            // body geometry — see the note on `ScreenSource`.
+            for (j, s) in screens.iter().enumerate() {
+                let sdx = s.center.x - p.position.x;
+                let sdy = s.center.y - p.position.y;
+                let sdz = s.center.z - p.position.z;
+                screen_fall[j] = screen_factor(
+                    (sdx * sdx + sdy * sdy + sdz * sdz).sqrt(),
+                    s.range,
+                    s.strength,
+                    s.min,
+                );
+            }
+
             for (i, b) in bodies.iter_mut().enumerate() {
                 if !b.visible || b.tokens.is_empty() {
                     continue;
@@ -152,11 +201,22 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
                     continue; // spotlight cone excludes this particle from this body
                 }
 
-                // force pass. Scale the body's strength by the composed modifier for the applies, then
-                // restore it (the body object is shared across particles).
+                // `screen`: OTHER bodies' quiet zones damp this body's force on this particle. The
+                // factors were computed once per particle above; a screen never damps itself, which is
+                // what the index check enforces.
+                let mut screen_mul = 1.0;
+                for (j, s) in screens.iter().enumerate() {
+                    if s.index != i {
+                        screen_mul *= screen_fall[j];
+                    }
+                }
+
+                // force pass. Scale the body's strength by the composed multiplier for the applies,
+                // then restore it (the body object is shared across particles).
+                let mul = s_mul * screen_mul;
                 let orig_strength = b.strength;
-                if s_mul != 1.0 {
-                    b.strength = orig_strength * s_mul;
+                if mul != 1.0 {
+                    b.strength = orig_strength * mul;
                 }
                 // iterate tokens by index so the body can be mutated (accretion) after each apply
                 // without holding an immutable borrow of `b.tokens` across the mutation.
@@ -180,7 +240,7 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
                         }
                     }
                 }
-                if s_mul != 1.0 {
+                if mul != 1.0 {
                     b.strength = orig_strength;
                 }
             }
