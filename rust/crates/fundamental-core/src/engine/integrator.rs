@@ -222,6 +222,34 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
         }
     }
 
+    // ── class-[S] source pass (§20.1) ──────────────────────────────────────────────────────────
+    // A BODY-level pass after the per-particle loop, so a source acts once per frame rather than once
+    // per existing particle. `propagate` deposits its shock pulse here; spawn/morph will emit matter
+    // through the same hook (#1038).
+    for b in bodies.iter() {
+        if !b.visible || b.tokens.is_empty() {
+            continue;
+        }
+        for k in 0..b.tokens.len() {
+            if let Some(f) = forces.get(&b.tokens[k]) {
+                f.source(b, env);
+            }
+        }
+    }
+
+    // ── advance the scalar field buffers (§20.1 class [C]) ─────────────────────────────────────
+    // After the source pass, mirroring the JS frame order: forces READ the grids, sources DEPOSIT
+    // into them, then the buffers advance. A `held` grid's step is a no-op by construction.
+    for g in env.grids.values_mut() {
+        g.step();
+    }
+
+    // The frame counter a periodic source reads (`propagate`'s shock train fires on
+    // `frame_n % WAVE_PULSE_PERIOD`). It was declared on `Env` from the start and advanced by
+    // nothing, because until now nothing read it — left that way, a periodic source would fire on
+    // EVERY frame, since `0 % n == 0` forever.
+    env.frame_n = env.frame_n.wrapping_add(1);
+
     // release saturated sinks (§6.9): reset accretion and free the held shell back into the field.
     // (The outward burst is deferred; freeing is count-conserving.)
     for bi in supernova {

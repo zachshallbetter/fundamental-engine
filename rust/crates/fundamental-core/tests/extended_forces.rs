@@ -202,7 +202,7 @@ fn warp_relocates_matter_to_the_paired_throat() {
 #[test]
 fn standard_registry_has_the_ported_catalog() {
     let reg = Registry::standard();
-    assert_eq!(reg.len(), 28, "9 canonical + 4 natural + 15 extended");
+    assert_eq!(reg.len(), 31, "9 canonical + 7 natural + 15 extended");
     for tok in [
         "attract",
         "sink",
@@ -210,6 +210,9 @@ fn standard_registry_has_the_ported_catalog() {
         "charge",
         "magnetism",
         "thermal",
+        "diffuse",
+        "propagate",
+        "memory",
         "lens",
         "gate",
         "buoyancy",
@@ -231,9 +234,6 @@ fn standard_registry_has_the_ported_catalog() {
     // deferred forces are honestly absent (not silently stubbed).
     for tok in [
         "collide",
-        "diffuse",
-        "propagate",
-        "memory",
         "spawn",
         "morph",
         "screen",
