@@ -1,0 +1,3734 @@
+{
+  "generated": "scripts/gen-conformance-golden.mjs",
+  "forces": [
+    "attract",
+    "repel",
+    "swirl",
+    "stream",
+    "tether",
+    "viscosity"
+  ],
+  "count": 120,
+  "cases": [
+    {
+      "force": "attract",
+      "label": "rest",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.22222222222222227,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "rest",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": -0.125,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "rest",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.001156404453961551,
+        "y": -0.001156404453961551,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "rest",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "rest",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.1333333333333333,
+        "y": -0.1777777777777778,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "engaged",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.9074074074074074,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "engaged",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": -0.6666666666666667,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "engaged",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.14635307914962717,
+        "y": -0.14635307914962717,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "engaged",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.07407407407407407,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "engaged",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.5444444444444443,
+        "y": -0.7259259259259259,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "orbit",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.22222222222222227,
+        "y": -0.11111111111111113,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "orbit",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.0625,
+        "y": -0.125,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "orbit",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.0005782022269807755,
+        "y": -0.0017346066809423265,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "orbit",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "orbit",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.04444444444444429,
+        "y": -0.24444444444444446,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "strong",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.44999999999999996,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "strong",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": -0.20000000000000004,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "strong",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "strong",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "attract",
+      "label": "strong",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.27,
+        "y": -0.3599999999999999,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "rest",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.22222222222222227,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "rest",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0.125,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "rest",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.001156404453961551,
+        "y": 0.001156404453961551,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "rest",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "rest",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.1333333333333333,
+        "y": 0.1777777777777778,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "engaged",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.5804988662131518,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "engaged",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0.4132653061224489,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "engaged",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.07540917628248743,
+        "y": 0.07540917628248743,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "engaged",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.027777777777777766,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "engaged",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.3482993197278912,
+        "y": 0.4643990929705215,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "orbit",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.22222222222222227,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "orbit",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0.125,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "orbit",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.001156404453961551,
+        "y": 0.001156404453961551,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "orbit",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "orbit",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.1333333333333333,
+        "y": 0.1777777777777778,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "strong",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.44999999999999996,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "strong",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0.20000000000000004,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "strong",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "strong",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "repel",
+      "label": "strong",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.27,
+        "y": 0.36,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "rest",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.030610188015018986,
+        "y": 0.2550849001251582,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "rest",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.1705181137324198,
+        "y": -0.020462173647890373,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "rest",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.0064889415626800395,
+        "y": 0.005098454084962888,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "rest",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "rest",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.22243403290913788,
+        "y": 0.12856278966307977,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "engaged",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.0738048188427619,
+        "y": 0.6150401570230158,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "engaged",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.4848448341365165,
+        "y": -0.058181380096381984,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "engaged",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.14876575496341937,
+        "y": 0.11688737889982952,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "engaged",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.008790468154750564,
+        "y": 0.07325390128958803,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "engaged",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.5363150169240698,
+        "y": 0.30998023913960004,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "orbit",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.030610188015018986,
+        "y": 0.2550849001251582,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "orbit",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.1705181137324198,
+        "y": -0.020462173647890373,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "orbit",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.0064889415626800395,
+        "y": 0.005098454084962888,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "orbit",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "orbit",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.22243403290913788,
+        "y": 0.12856278966307977,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "strong",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.06603064187807973,
+        "y": 0.5502553489839979,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "strong",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.31191517941981595,
+        "y": -0.03742982153037791,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "strong",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "strong",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "swirl",
+      "label": "strong",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.4798226643140462,
+        "y": 0.27732869588793485,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "rest",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.3200881669307394,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "rest",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.23325824788420185,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "rest",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.02147979421836731,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "rest",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "rest",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.3200881669307396,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "engaged",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.7414651728388608,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "engaged",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.6150719491645922,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "engaged",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.2919890446166827,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "engaged",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.13932646701298942,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "engaged",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.7414651728388608,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "orbit",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.3200881669307394,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "orbit",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.23325824788420185,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "orbit",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.02147979421836731,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "orbit",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "orbit",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.3200881669307396,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "strong",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.7126501623792572,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "strong",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.4562217682777404,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "strong",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "strong",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "stream",
+      "label": "strong",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.7126501623792572,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "rest",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 1.4184,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "rest",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0.5319,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "rest",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -1.2893394185212521,
+        "y": -1.2893394185212521,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "rest",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -3.0141000000000004,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "rest",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.82104,
+        "y": 1.14972,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "engaged",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 3.7676250000000002,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "engaged",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 2.2605750000000002,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "engaged",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -1.232796264357661,
+        "y": -1.232796264357661,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "engaged",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -3.7676250000000002,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "engaged",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": 2.230575,
+        "y": 3.0291,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "orbit",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 1.4184,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "orbit",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0.5319,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "orbit",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -1.2893394185212521,
+        "y": -1.2893394185212521,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "orbit",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -3.0141000000000004,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "orbit",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0.82104,
+        "y": 1.14972,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "strong",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 1.773,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "strong",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "strong",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": -3.3308990308687534,
+        "y": -3.3308990308687534,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "strong",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "tether",
+      "label": "strong",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": 1.0337999999999998,
+        "y": 1.4334,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "rest",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "rest",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "rest",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "rest",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "rest",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.16000000000000014,
+        "y": 0.08000000000000007,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "engaged",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "engaged",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "engaged",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "engaged",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "engaged",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": true,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.2925714285714287,
+        "y": 0.14628571428571435,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "orbit",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "orbit",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "orbit",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "orbit",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "orbit",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 1,
+        "range": 300,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0.5
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.16000000000000014,
+        "y": 0.08000000000000007,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "strong",
+      "px": 100,
+      "py": 0,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -100,
+        "dy": 0,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "strong",
+      "px": 0,
+      "py": 150,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": 0,
+        "dy": -150,
+        "dz": 0,
+        "dist": 150,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "strong",
+      "px": 200,
+      "py": 200,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -200,
+        "dy": -200,
+        "dz": 0,
+        "dist": 282.842712474619,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "strong",
+      "px": 350,
+      "py": 0,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -350,
+        "dy": 0,
+        "dz": 0,
+        "dist": 350,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "dv": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "force": "viscosity",
+      "label": "strong",
+      "px": 60,
+      "py": 80,
+      "body": {
+        "strength": 2.5,
+        "range": 250,
+        "spin": 1,
+        "on": false,
+        "ux": 1,
+        "uy": 0
+      },
+      "env": {
+        "dx": -60,
+        "dy": -80,
+        "dz": 0,
+        "dist": 100,
+        "orbit": 0
+      },
+      "particle": {
+        "vx": 2,
+        "vy": -1,
+        "vz": 0
+      },
+      "dv": {
+        "x": -0.27,
+        "y": 0.135,
+        "z": 0
+      }
+    }
+  ]
+}
