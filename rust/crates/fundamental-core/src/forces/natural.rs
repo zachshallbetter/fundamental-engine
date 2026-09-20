@@ -6,11 +6,12 @@
 //! feels them via its tokens, so registering them changes nothing on a body that doesn't ask.
 //!
 //! Ported here: the four that read only the per-particle `env` (`gravity`, `charge`, `magnetism`,
-//! `thermal`). Deferred with their subsystems: `collide` (neighbour query), `diffuse` / `propagate` /
-//! `memory` (scalar grid). The renderable `field()` structure hooks (dipole/monopole) land with the
+//! `thermal`), `collide` (§20.10) over the frame-start neighbour snapshot, and the three class-\[C\]
+//! field-buffer forces (`diffuse`, `propagate`, `memory`) over the scalar grid. The renderable `field()` structure hooks (dipole/monopole) land with the
 //! field-line/streamline layer.
 
-use crate::engine::{Body, Env, Force, Particle};
+use crate::engine::{Body, Effect, Env, Force, Particle};
+use crate::math::Vec3;
 use crate::math::{dipole_field, gravity_field, monopole_field, pole_pair, Pole};
 use std::f64::consts::PI;
 
@@ -208,5 +209,190 @@ impl Force for Thermal {
             p.heat = p.heat.max(falloff * 0.4);
         }
         clamp_to_c(p, e.c);
+    }
+}
+
+/// §20.10 — `collide`: elastic pairwise collision, the hard-sphere complement to `wall`.
+///
+/// The one class-\[B\] force that must move its **neighbour** as well as its own particle. The JS
+/// engine mutates the neighbour in place, because there `e.neighbors()` hands back live particle
+/// references; here the neighbourhood is a frame-start *snapshot*, so writing to it would be a no-op.
+/// The neighbour's half of the exchange is emitted as [`Effect::Impulse`] instead and applied by the
+/// integrator after the force pass (#1037).
+///
+/// **Each pair is resolved exactly once**, by the lower id. JS gets this for free in a different way —
+/// it mutates both halves immediately, so by the time the neighbour takes its own turn the pair is
+/// already separating and the `rel_n >= 0` guard skips it. That trick relies on live neighbour state,
+/// which a snapshot does not have: both particles would read frame-start velocities, both would see an
+/// approaching pair, and the impulse would be applied twice. Gating on `p.id < n.id` resolves it once
+/// and makes the result independent of the order particles are visited in — a stronger guarantee than
+/// the JS engine's, whose outcome depends on pool order when three or more bodies touch in one frame.
+///
+/// Equal-mass, matching JS: the `0.5` in the impulse is the reduced mass of two unit spheres, and the
+/// neighbour snapshot carries no mass to do better with.
+pub struct Collide;
+
+impl Force for Collide {
+    fn token(&self) -> &'static str {
+        "collide"
+    }
+
+    fn label(&self) -> &'static str {
+        "Collide"
+    }
+
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if e.dist >= b.range {
+            return; // collisions resolve within the body's region
+        }
+        let restitution = b.strength.clamp(0.0, 1.0);
+        let pr = p.size.max(1.0);
+        for n in e.neighbors(p.position, pr * 4.0) {
+            // the snapshot includes this particle; and the lower id owns the pair (see the type docs).
+            if p.id >= n.id {
+                continue;
+            }
+            let qr = n.size.max(1.0);
+            // spheres, not discs, in a volume (z-axis.md)
+            let nx = p.position.x - n.pos.x;
+            let ny = p.position.y - n.pos.y;
+            let nz = p.position.z - n.pos.z;
+            let d = (nx * nx + ny * ny + nz * nz).sqrt();
+            if d >= pr + qr || d < 1e-6 {
+                continue; // not in contact
+            }
+            let (ux, uy, uz) = (nx / d, ny / d, nz / d);
+            let rel_n = (p.velocity.x - n.vel.x) * ux
+                + (p.velocity.y - n.vel.y) * uy
+                + (p.velocity.z - n.vel.z) * uz;
+            if rel_n >= 0.0 {
+                continue; // separating already → no impulse
+            }
+            let j = (1.0 + restitution) * 0.5 * rel_n;
+            p.velocity.x -= j * ux;
+            p.velocity.y -= j * uy;
+            p.velocity.z -= j * uz;
+            // the neighbour's equal-and-opposite half, addressed by id
+            e.effects.push(Effect::Impulse {
+                particle_id: n.id,
+                dv: Vec3::new(j * ux, j * uy, j * uz),
+            });
+        }
+    }
+}
+
+/// A shock train fires once every this many frames (body-level, via [`Force::source`]).
+const WAVE_PULSE_PERIOD: u64 = 12;
+/// How hard a passing wavefront shoves matter outward.
+const WAVE_PUSH: f64 = 7.0;
+
+/// §20.10 — `diffuse`: a pheromone field. Lay a mark, then follow the blurred trail up-gradient.
+///
+/// Class \[C\]: the state lives in a scalar grid, not in the particle or the body, so two particles
+/// influence each other only through what they have left behind. That indirection IS the force — it
+/// is what makes a trail a trail rather than an attraction.
+pub struct Diffuse;
+
+impl Force for Diffuse {
+    fn token(&self) -> &'static str {
+        "diffuse"
+    }
+    fn label(&self) -> &'static str {
+        "Diffuse"
+    }
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if e.dist >= b.range {
+            return;
+        }
+        let (x, y) = (p.position.x, p.position.y);
+        let g = e.grid("diffuse");
+        g.deposit(x, y, b.strength); // lay a mark
+        let (gx, gy) = g.gradient(x, y); // follow the blurred trail up-gradient
+        p.velocity.x += gx * b.strength;
+        p.velocity.y += gy * b.strength;
+    }
+}
+
+/// §20.10 — `propagate`: a travelling wave. A shock train expands from the source and sweeps matter
+/// OUTWARD — radiation pressure, not an inward pull.
+///
+/// The only force here with a body-level [`source`](Force::source): the pulse must be deposited once
+/// per frame at the body, not once per particle, or the emission would scale with how much matter
+/// happens to be nearby. The grid is named `wave-propagate`, and the `wave…` prefix is what selects
+/// leapfrog stepping — the naming convention is load-bearing, not cosmetic.
+///
+/// Matter rides the *gradient magnitude* (steep only where a front is passing) rather than the field
+/// value, which is why no standing bump builds at the source to pull matter back in.
+pub struct Propagate;
+
+impl Force for Propagate {
+    fn token(&self) -> &'static str {
+        "propagate"
+    }
+    fn label(&self) -> &'static str {
+        "Propagate"
+    }
+    fn source(&self, b: &Body, e: &mut Env) {
+        if !b.engaged {
+            return; // only an engaged body emits
+        }
+        if e.frame_n % WAVE_PULSE_PERIOD != 0 {
+            return; // a shock train, once per period
+        }
+        let (cx, cy, s) = (b.center.x, b.center.y, b.strength);
+        e.grid("wave-propagate").deposit(cx, cy, s);
+    }
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if e.dist >= b.range {
+            return;
+        }
+        let (x, y) = (p.position.x, p.position.y);
+        let (gx, gy) = e.grid("wave-propagate").gradient(x, y);
+        let act = (gx * gx + gy * gy).sqrt(); // wavefront activity — steep where a front is passing
+        if act < 1e-6 {
+            return; // no front here → coast (the wave has moved on, or not yet arrived)
+        }
+        // ride the front: pushed radially OUTWARD. `e.vector` points from the particle TOWARD the
+        // body, so it is negated.
+        let k = act * b.strength * WAVE_PUSH / e.dist;
+        p.velocity.x -= e.vector.x * k;
+        p.velocity.y -= e.vector.y * k;
+        if e.vector.z != 0.0 {
+            p.velocity.z -= e.vector.z * k;
+        }
+        clamp_to_c(p, e.c);
+    }
+}
+
+/// §20.10 — `memory`: the field remembers. Occupancy wears in paths, and a worn path pulls harder.
+///
+/// Rides a slow-decay grid (the `memory` name selects barely-blur, slowly-fade stepping), so the
+/// record of where matter has been outlives the matter itself.
+pub struct Memory;
+
+impl Force for Memory {
+    fn token(&self) -> &'static str {
+        "memory"
+    }
+    fn label(&self) -> &'static str {
+        "Memory"
+    }
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if e.dist >= b.range {
+            return;
+        }
+        let (x, y) = (p.position.x, p.position.y);
+        let s = b.strength;
+        let g = e.grid("memory");
+        g.deposit(x, y, s * 0.15); // wear the path where matter sits
+        let amp = 1.0 + 0.5 * g.sample(x, y); // worn paths pull harder (1 + μ·M)
+        let fall = 1.0 - e.dist / b.range;
+        let f = fall * fall * s * 0.5 * amp;
+        let k = f / e.dist;
+        p.velocity.x += e.vector.x * k;
+        p.velocity.y += e.vector.y * k;
+        if e.vector.z != 0.0 {
+            p.velocity.z += e.vector.z * k;
+        }
     }
 }

@@ -13,9 +13,9 @@ pub mod natural;
 pub use canonical::{Attract, Jet, Repel, Sink, Stream, Swirl, Tether, Viscosity, Wall};
 pub use extended::{
     Align, Buoyancy, Cohesion, Crystallize, Gate, Hunt, Lens, Link, Pigment, Pressure, Resonate,
-    Fieldflow, Shear, Spotlight, Warp, Wind,
+    Fieldflow, Screen, Shear, Spotlight, Warp, Wind,
 };
-pub use natural::{Charge, Gravity, Magnetism, Thermal};
+pub use natural::{Charge, Collide, Diffuse, Gravity, Magnetism, Memory, Propagate, Thermal};
 
 use crate::engine::Registry;
 
@@ -40,6 +40,10 @@ pub fn register_natural_forces(reg: &mut Registry) {
     reg.force(Box::new(Charge));
     reg.force(Box::new(Magnetism));
     reg.force(Box::new(Thermal));
+    reg.force(Box::new(Collide));
+    reg.force(Box::new(Diffuse));
+    reg.force(Box::new(Propagate));
+    reg.force(Box::new(Memory));
 }
 
 /// Register the ported extended forces (§20.3) — the class-\[A\] single-particle set plus the class-\[B\]
@@ -63,5 +67,6 @@ pub fn register_extended_forces(reg: &mut Registry) {
     // modifiers — bend their sibling forces (no force of their own)
     reg.force(Box::new(Resonate));
     reg.force(Box::new(Spotlight));
+    reg.force(Box::new(Screen));
     reg.force(Box::new(Fieldflow));
 }

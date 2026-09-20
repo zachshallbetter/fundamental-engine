@@ -490,6 +490,29 @@ impl Force for Spotlight {
     fn apply(&self, _b: &Body, _p: &mut Particle, _e: &mut Env) {} // pure modifier
 }
 
+/// workover v0.3 — `screen`: a quiet zone / shield (truth mode: designed).
+///
+/// The only **cross-body** modifier. `spotlight` and `resonate` bend their own body's siblings, so
+/// they compose inside that body's token loop; `screen` damps *other* bodies' forces on matter inside
+/// its range, which no per-body hook can express. Its `apply` and `modify` are therefore both no-ops —
+/// the whole force lives in the integrator, which is the only place per-particle, per-body forces
+/// compose. A screen never damps its own siblings.
+pub struct Screen;
+
+impl Force for Screen {
+    fn token(&self) -> &'static str {
+        "screen"
+    }
+    fn label(&self) -> &'static str {
+        "Screen"
+    }
+    fn is_modifier(&self) -> bool {
+        true
+    }
+    // No `modify`: this modifier acts on OTHER bodies, which the per-body hook cannot reach.
+    fn apply(&self, _b: &Body, _p: &mut Particle, _e: &mut Env) {} // pure modifier
+}
+
 /// Fraction of velocity turned onto the line per frame (× gain).
 const FIELDFLOW_STEER: f64 = 0.5;
 /// Streaming acceleration along the line (× gain).

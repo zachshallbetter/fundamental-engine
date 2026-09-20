@@ -15,8 +15,8 @@
 //! particle-to-particle separation. The supernova *burst* (relaunching held matter outward) is also
 //! deferred — release currently just frees the shell back into the field (count-conserving).
 
-use super::{Body, Env, FieldStore, Force, Particle, Registry};
-use crate::math::Vec3;
+use super::{Body, Effect, Env, FieldStore, Force, Particle, Registry};
+use crate::math::{screen_factor, Vec3};
 
 /// Per-frame velocity damping (semi-implicit Euler). (JS `FRICTION`.)
 pub const FRICTION: f64 = 0.95;
@@ -26,6 +26,21 @@ pub const HEAT_DECAY: f64 = 0.972;
 pub const EDGE: f64 = 10.0;
 
 /// Tokens whose forces read the neighbour snapshot — the integrator only rebuilds it when one is used.
+/// A `screen` body's geometry, lifted out of `bodies` before the particle loop borrows it mutably.
+///
+/// NOTE — a cross-plane divergence, deliberate here: the distance is **3D**. The Swift integrator uses
+/// `simd_length(s.center - p.position)` (3D); the JS integrator uses only `sdx`/`sdy` and drops z. The
+/// two agree wherever `p.z == 0`, which is every conformance case and every flat field, so the
+/// divergence is latent. This port follows Swift and its own body geometry, which is 3D throughout.
+struct ScreenSource {
+    index: usize,
+    center: Vec3,
+    range: f64,
+    strength: f64,
+    min: f64,
+}
+
+const NEIGHBOR_TOKENS: [&str; 6] = ["align", "cohesion", "pressure", "link", "hunt", "collide"];
 /// The net **structure field** at a world point (#1041) — the superposition of every visible body's
 /// [`Force::field`]. Mirrors the JS `netField`.
 ///
@@ -61,7 +76,6 @@ pub fn net_field(bodies: &[Body], forces: &Registry, x: f64, y: f64) -> (f64, f6
     (fx, fy)
 }
 
-const NEIGHBOR_TOKENS: [&str; 5] = ["align", "cohesion", "pressure", "link", "hunt"];
 
 /// Apply one force to a particle, honouring first-class mass (§21.3): an *additive* force's velocity
 /// change is scaled by `1/m` (a = F/m), while a `kinematic` force (reflection/rotation/relaunch)
@@ -111,6 +125,25 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
         env.neighborhood.rebuild(&store.particles);
     }
 
+    // Visible `screen` bodies (workover v0.3): each damps OTHER bodies' forces on matter inside its
+    // range — quiet zones, text shielded from a noisy field. Their geometry is read ONCE here, before
+    // the particle loop takes a mutable borrow of `bodies`; the per-body loop below cannot look at its
+    // siblings, which is exactly why a cross-body modifier cannot live in the `modify` hook.
+    // No screens (the common case) ⇒ an empty vec, and the whole pass is skipped at zero cost.
+    let screens: Vec<ScreenSource> = bodies
+        .iter()
+        .enumerate()
+        .filter(|(_, b)| b.visible && b.tokens.iter().any(|t| t == "screen"))
+        .map(|(i, b)| ScreenSource {
+            index: i,
+            center: b.center,
+            range: b.range,
+            strength: b.strength,
+            min: b.screen_min,
+        })
+        .collect();
+    // reused across particles so the pass allocates nothing per particle
+    let mut screen_fall: Vec<f64> = vec![1.0; screens.len()];
     // #1041: resolve the net structure field per particle only when something actually FOLLOWS it.
     // Radiating is free (a body's `field()` is never called unless asked); the superposition is not,
     // so a field with no follower pays nothing and `field_here` stays `None`.
@@ -149,6 +182,20 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
             } else {
                 1.0
             };
+            // per-particle screen factors: one distance per screen body, computed once here and
+            // reused across every body's pass below. 3D, matching the Swift port and this engine's own
+            // body geometry — see the note on `ScreenSource`.
+            for (j, s) in screens.iter().enumerate() {
+                let sdx = s.center.x - p.position.x;
+                let sdy = s.center.y - p.position.y;
+                let sdz = s.center.z - p.position.z;
+                screen_fall[j] = screen_factor(
+                    (sdx * sdx + sdy * sdy + sdz * sdz).sqrt(),
+                    s.range,
+                    s.strength,
+                    s.min,
+                );
+            }
             // #1041: the net field at THIS particle, resolved before the body loop borrows `bodies`
             // mutably — the same constraint that puts the `screen` pass here.
             env.field_here = if needs_field {
@@ -202,11 +249,22 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
                     continue; // spotlight cone excludes this particle from this body
                 }
 
-                // force pass. Scale the body's strength by the composed modifier for the applies, then
-                // restore it (the body object is shared across particles).
+                // `screen`: OTHER bodies' quiet zones damp this body's force on this particle. The
+                // factors were computed once per particle above; a screen never damps itself, which is
+                // what the index check enforces.
+                let mut screen_mul = 1.0;
+                for (j, s) in screens.iter().enumerate() {
+                    if s.index != i {
+                        screen_mul *= screen_fall[j];
+                    }
+                }
+
+                // force pass. Scale the body's strength by the composed multiplier for the applies,
+                // then restore it (the body object is shared across particles).
+                let mul = s_mul * screen_mul;
                 let orig_strength = b.strength;
-                if s_mul != 1.0 {
-                    b.strength = orig_strength * s_mul;
+                if mul != 1.0 {
+                    b.strength = orig_strength * mul;
                 }
                 // iterate tokens by index so the body can be mutated (accretion) after each apply
                 // without holding an immutable borrow of `b.tokens` across the mutation.
@@ -230,12 +288,46 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
                         }
                     }
                 }
-                if s_mul != 1.0 {
+                if mul != 1.0 {
                     b.strength = orig_strength;
                 }
             }
         }
 
+        // The force pass ends here. Integration now happens in a SECOND pass, below, so that the
+        // impulses `collide` owes its neighbours (#1037) land on velocity BEFORE it is integrated
+        // into position — draining them after integration would delay every collision by a frame.
+        // Splitting is numerically inert for every other force: neighbours are read from the
+        // frame-start snapshot, body centres are fixed for the step, and `b.count` is written but
+        // never read during the pass, so no force observes another particle's integrated state.
+    }
+
+    // ── impulse drain (#1037) ──────────────────────────────────────────────────────────────────
+    // Apply the neighbour halves `collide` emitted, addressed by id. Equal-and-opposite pairs make
+    // this momentum-conserving; applying them here, between the force pass and integration, keeps a
+    // collision response within the frame that detected it. Captured matter is skipped — it is held
+    // by its sink and off the force path entirely.
+    if env.effects.iter().any(|e| matches!(e, Effect::Impulse { .. })) {
+        for eff in env.effects.iter() {
+            if let Effect::Impulse { particle_id, dv } = eff {
+                if let Some(q) = store
+                    .particles
+                    .iter_mut()
+                    .find(|q| q.id == *particle_id && q.cap.is_none())
+                {
+                    q.velocity.x += dv.x;
+                    q.velocity.y += dv.y;
+                    q.velocity.z += dv.z;
+                }
+            }
+        }
+    }
+
+    // ── integrate ─────────────────────────────────────────────────────────────────────────────
+    for p in store.particles.iter_mut() {
+        if p.cap.is_some() {
+            continue; // captured matter drifted to its sink core above and does not integrate
+        }
         // global safety cap (§20.10): no composite may drive a particle past `c` ("speed of light").
         let sp2 = p.velocity.length_sq();
         if sp2 > cap * cap {
@@ -271,6 +363,34 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
             }
         }
     }
+
+    // ── class-[S] source pass (§20.1) ──────────────────────────────────────────────────────────
+    // A BODY-level pass after the per-particle loop, so a source acts once per frame rather than once
+    // per existing particle. `propagate` deposits its shock pulse here; spawn/morph will emit matter
+    // through the same hook (#1038).
+    for b in bodies.iter() {
+        if !b.visible || b.tokens.is_empty() {
+            continue;
+        }
+        for k in 0..b.tokens.len() {
+            if let Some(f) = forces.get(&b.tokens[k]) {
+                f.source(b, env);
+            }
+        }
+    }
+
+    // ── advance the scalar field buffers (§20.1 class [C]) ─────────────────────────────────────
+    // After the source pass, mirroring the JS frame order: forces READ the grids, sources DEPOSIT
+    // into them, then the buffers advance. A `held` grid's step is a no-op by construction.
+    for g in env.grids.values_mut() {
+        g.step();
+    }
+
+    // The frame counter a periodic source reads (`propagate`'s shock train fires on
+    // `frame_n % WAVE_PULSE_PERIOD`). It was declared on `Env` from the start and advanced by
+    // nothing, because until now nothing read it — left that way, a periodic source would fire on
+    // EVERY frame, since `0 % n == 0` forever.
+    env.frame_n = env.frame_n.wrapping_add(1);
 
     // release saturated sinks (§6.9): reset accretion and free the held shell back into the field.
     // (The outward burst is deferred; freeing is count-conserving.)
