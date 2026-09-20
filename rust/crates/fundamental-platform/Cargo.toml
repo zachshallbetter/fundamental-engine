@@ -1,0 +1,20 @@
+[package]
+name = "fundamental-platform"
+description = "The host / binding layer for the Fundamental field engine — a headless-first environment seam, the six-phase frame scheduler, and data-record binding."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords = ["simulation", "physics", "headless", "scheduler"]
+categories = ["simulation"]
+readme = "README.md"
+
+# Publishing is a maintainer-only act, exactly as for the core crate (RELEASING.md).
+publish = true
+
+# `fundamental-core` is the ONLY dependency, and the direction is one-way: core ← platform, never up.
+# The core stays host-free — it is the physics, and it must remain runnable with no environment at all.
+# `dep_direction.rs` is the test that keeps this honest.
+[dependencies]
+fundamental-core = { path = "../fundamental-core", version = "0.10.1" }

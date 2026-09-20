@@ -11,6 +11,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fundamental-platform"
+version = "0.10.1"
+dependencies = [
+ "fundamental-core",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
