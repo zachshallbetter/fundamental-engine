@@ -134,6 +134,11 @@ class BodySpec(
      * (unique `id` in the field, plus optional namespace/kind/host) so consumers can reference the body
      * by identity rather than the returned handle. Omitted ⇒ the engine derives a synthetic `body-N`.
      */
+    /**
+     * Capture radius in px — the horizon `sink` absorbs within, and the throat `warp` transports
+     * through. `null` keeps the [Body] default (10f). See #1177.
+     */
+    val absorbR: Float? = null,
     val identity: FieldBodyIdentity? = null,
     val rect: () -> Box,
 )
@@ -323,6 +328,8 @@ class FieldHandle(val controller: FieldController) {
         } ?: Vec3(0f, -1f, 0f)
         val body = Body(tokens = spec.tokens, strength = spec.strength, range = spec.range, spin = spec.spin, heading = heading)
         body.feedback = true // programmatic bodies measure density (§8) — Swift addBody parity (feedback: true)
+        // #1177: the capture horizon is settable through the spec; null keeps the Body default.
+        spec.absorbR?.let { body.absorbR = it }
         body.tint = spec.tint
         body.identity = spec.identity // supplied identity overrides derivation (JS #884)
         body.rect = spec.rect

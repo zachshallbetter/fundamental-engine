@@ -1090,6 +1090,12 @@ export interface BodySpec {
   color?: string;
   /** the {@link FieldHandle.addField} channel this body admits as a scalar potential, for `relief`
    *  (#443). Omitted ⇒ `'height'`. The programmatic mirror of `data-potential`. */
+  /**
+   * Capture radius in px — the horizon `sink` absorbs within, and the throat `warp` transports
+   * through. Mirrors `data-absorb`. Omitted, a programmatic body inherits the scanner default
+   * (64), which is NOT the default the Swift and Kotlin `Body` carry (10) — see #1177.
+   */
+  absorbR?: number;
   potential?: string;
   /** the body's box in field-pixel space, sampled each frame — the position source (a non-DOM
    *  host projects its mesh/view position through here). */
