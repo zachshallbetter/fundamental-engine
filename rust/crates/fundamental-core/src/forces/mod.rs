@@ -15,7 +15,7 @@ pub use extended::{
     Align, Buoyancy, Cohesion, Crystallize, Gate, Hunt, Lens, Link, Pigment, Pressure, Resonate,
     Shear, Screen, Spotlight, Warp, Wind,
 };
-pub use natural::{Charge, Gravity, Magnetism, Thermal};
+pub use natural::{Charge, Collide, Gravity, Magnetism, Thermal};
 
 use crate::engine::Registry;
 
@@ -40,6 +40,7 @@ pub fn register_natural_forces(reg: &mut Registry) {
     reg.force(Box::new(Charge));
     reg.force(Box::new(Magnetism));
     reg.force(Box::new(Thermal));
+    reg.force(Box::new(Collide));
 }
 
 /// Register the ported extended forces (§20.3) — the class-\[A\] single-particle set plus the class-\[B\]
