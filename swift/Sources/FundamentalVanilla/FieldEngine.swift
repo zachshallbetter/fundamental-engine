@@ -1084,10 +1084,13 @@ final class FieldEngine: FieldHandle {
             if let b = fieldPolicy.budgets?.agentRead { return b > 0 }
             return true
         }()
+        // #915: the fractional gradient. `nil` reads as the whole field (1).
+        let share: Float = fieldPolicy.budgets?.agentRead ?? 1
         return ScopedAgentView(engine: self,
                                capabilities: options.capabilities,
                                redactions: options.redactions,
-                               budgetOpen: budgetOpen)
+                               budgetOpen: budgetOpen,
+                               agentReadShare: share)
     }
 
     // ── substrate READ API: query (JS #837 / critical-path 02) ───────────────
@@ -1299,11 +1302,16 @@ final class ScopedAgentView: AgentFieldView {
     let redactions: [String]
     private let budgetOpen: Bool
 
-    init(engine: FieldEngine, capabilities: Set<AgentCapability>, redactions: [String], budgetOpen: Bool) {
+    /// #915 — the share of the body population this view may consume (1 = the whole field).
+    let agentReadShare: Float
+
+    init(engine: FieldEngine, capabilities: Set<AgentCapability>, redactions: [String], budgetOpen: Bool,
+         agentReadShare: Float = 1) {
         self.engine = engine
         self.capabilities = capabilities
         self.redactions = redactions
         self.budgetOpen = budgetOpen
+        self.agentReadShare = agentReadShare
     }
 
     // Shape is the base grant — always readable.
@@ -1314,6 +1322,12 @@ final class ScopedAgentView: AgentFieldView {
     // budget isn't pinned to 0). Tighten-only: caps can narrow this reading, never widen it.
     func readEdges() -> [EdgeRecord] {
         guard budgetOpen, capabilities.contains(.relationships) else { return [] }
+        // #915: an `EdgeRecord` names its endpoints by the body's opaque `data`, not by identity, so a
+        // partial read has NO KEY to filter it on — there is no honest way to return "the share of the
+        // edges whose endpoints you may see". Tighten-only therefore closes the lane outright under a
+        // fractional budget; the endpoint-filtered graph is still available through `snapshot()`, whose
+        // relationship readings are keyed by id. Giving EdgeRecord real ids would lift this.
+        guard !(agentReadShare < 1) else { return [] }
         return engine?.readEdges() ?? []
     }
 
@@ -1324,6 +1338,18 @@ final class ScopedAgentView: AgentFieldView {
     func snapshot(_ opts: FieldSnapshotOptions? = nil) -> FieldSnapshot? {
         guard capabilities.contains(.snapshots), let engine else { return nil }
         guard budgetOpen else { return engine.snapshot(FieldSnapshotOptions(profile: .public_)) }
-        return engine.snapshot(scopeSnapshotOptions(opts, capabilities: capabilities))
+        var snap = engine.snapshot(scopeSnapshotOptions(opts, capabilities: capabilities))
+        // #915: narrow the capture to the admitted share. Edges survive only when EVERY body they name
+        // does — a relationship or influence naming a withheld body is itself a disclosure of that body.
+        if agentReadShare < 1 {
+            var kept = Set<String>()
+            for b in snap.bodies where AgentReadShare.admits(b.id, share: agentReadShare) { kept.insert(b.id) }
+            snap.bodies = snap.bodies.filter { kept.contains($0.id) }
+            snap.relationships = snap.relationships.filter { kept.contains($0.from) && kept.contains($0.to) }
+            snap.influences = snap.influences.filter {
+                kept.contains($0.source) && ($0.target == nil || kept.contains($0.target!))
+            }
+        }
+        return snap
     }
 }
