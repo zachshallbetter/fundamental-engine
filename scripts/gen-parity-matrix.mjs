@@ -214,6 +214,26 @@ function jsBodyAttrs() {
   for (const m of src.matchAll(/getAttribute\('data-([\w-]+)'\)/g)) set.add(m[1]);
   for (const m of src.matchAll(/\[data-([\w-]+)\]/g)) set.add(m[1]);
   if (src.includes('dataset.color')) set.add('color');
+
+  // …and the attributes the ENGINE reads directly, which the scanner never sees (#1170).
+  //
+  // `scanner.ts` is not the whole declarative surface. `field.ts` sweeps the host root for reaction
+  // attributes (`data-move`, `data-on`, `data-class`, `data-emit`, `data-hot`, `data-formation`) and
+  // tests two behaviour flags on the body element itself (`data-dock`, `data-warp`). An author writes
+  // all of them in markup, so all of them are part of the declarative contract — but reading only the
+  // scanner made them invisible to every consumer of this set at once: the docs gate, the parity
+  // matrix, and the /docs/api/declarative drift check that resolves through it.
+  //
+  // These are JS-only today. That shows up as real gaps against Swift and Kotlin, which is the honest
+  // reading: the ports have no equivalent, and a matrix that omitted the capability reported parity it
+  // had not earned.
+  const engine = read('packages/core/src/engine/field.ts');
+  for (const m of engine.matchAll(/querySelectorAll\('\[data-([\w-]+)\]'\)/g)) set.add(m[1]);
+  for (const m of engine.matchAll(/hasAttribute\('data-([\w-]+)'\)/g)) set.add(m[1]);
+  // NB: do NOT drop `body` here. `bodyConceptSet` canonicalizes it to the concept `tokens`, and the
+  // scanner's `[data-body]` selector is its ONLY source — deleting it removes `tokens` from the JS
+  // plane entirely, producing a matrix that claims JS cannot do the one thing every body needs while
+  // Swift and Kotlin can. Every gate passes on that state; only diffing the emitted sets catches it.
   return set;
 }
 
