@@ -1,6 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
-import { ATTRS, WRITEBACK, FIELD_ROOT_ATTRS } from '../../../lib/docs-api.ts';
+import { ATTRS, ELEMENT_ATTRS, WRITEBACK, FIELD_ROOT_ATTRS } from '../../../lib/docs-api.ts';
 import SeeAlso from '../../../components/SeeAlso.astro';
 import ApiStamp from '../../../components/ApiStamp.astro';
 import { PROTECTED_BODY_ATTR } from '../../../../../../scripts/api-surface.data.mjs';
@@ -82,6 +82,26 @@ const families = [
         </>
       ))
     }
+  </section>
+
+  <section class="docs-sec">
+    <h2>What an element reads back</h2>
+    <p>
+      The other half of Body Matter Interaction. The attributes above make an element a <em>body</em> —
+      it pushes the field. These make an element a <em>consumer</em>: it reacts to matter arriving,
+      without exerting any force of its own. Every one of them needs <code>data-move</code>, which is
+      how an element opts in to being relocated at all.
+    </p>
+    <div class="api-table">
+      {
+        ELEMENT_ATTRS.map((a) => (
+          <div class="api-row">
+            <div class="k"><code>{a.name}</code></div>
+            <div class="d">{a.desc}</div>
+          </div>
+        ))
+      }
+    </div>
   </section>
 
   <section class="docs-sec">
