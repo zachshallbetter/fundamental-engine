@@ -409,7 +409,19 @@ function refreshBodyParams(b: Body): void {
   }
 }
 
-export function measureBodies(
+/**
+ * The GEOMETRY half of a measure (#689) — position, half-extents, and viewport visibility, all
+ * derived from the element's box.
+ *
+ * This is the expensive half and the only half that is expensive: `getBoundingClientRect` forces the
+ * browser to flush layout, once per body, every time it runs. It is split out from the attribute half
+ * below so a host that can OBSERVE geometry (`FieldHost.observeBodies`) can run this pass when
+ * something actually moved, while the cheap attribute pass keeps its steady cadence.
+ *
+ * The `0.15 * H` visibility margin is the engine's own, deliberately wider than the viewport: a body
+ * just off-screen still radiates into it, so culling exactly at the edge would pop the field.
+ */
+export function measureBodyGeometry(
   bodies: readonly Body[],
   W: number,
   H: number,
@@ -429,9 +441,39 @@ export function measureBodies(
     b.cy = top + r.height / 2;
     b.hw = r.width / 2;
     b.hh = r.height / 2;
-    b.on = b.el.dataset.active === '1';
     b.vis =
       top + r.height > -margin && top < H + margin && left + r.width > -margin && left < W + margin;
+  }
+}
+
+/**
+ * The ATTRIBUTE half of a measure (#689) — engagement (`data-active`) and the reactive force params
+ * (`data-strength` / `data-range` / `data-spin` / `data-angle`).
+ *
+ * Attribute reads do not touch layout, so this half is cheap and keeps its fixed cadence even when a
+ * host observes geometry. That is not an optimization detail, it is the contract: `BodyHandle.set`
+ * and live `data-*` edits are documented as applying "within a frame on the measure cadence, with no
+ * rescan", and slowing this pass down with the geometry pass would quietly make that a half-second.
+ */
+export function refreshBodyAttrs(bodies: readonly Body[]): void {
+  for (const b of bodies) {
+    b.on = b.el.dataset.active === '1';
     refreshBodyParams(b); // reactive force params (live, no rescan)
   }
+}
+
+/**
+ * Both halves, in the historical order — the full poll. Every caller that simply wants "measure
+ * everything now" (a scan, a resize, a fresh programmatic body) keeps calling this; only the frame
+ * loop separates the halves.
+ */
+export function measureBodies(
+  bodies: readonly Body[],
+  W: number,
+  H: number,
+  originX = 0,
+  originY = 0,
+): void {
+  measureBodyGeometry(bodies, W, H, originX, originY);
+  refreshBodyAttrs(bodies);
 }
