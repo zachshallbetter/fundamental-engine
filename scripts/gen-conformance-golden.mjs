@@ -84,7 +84,24 @@ for (const force of FORCES) {
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
-const out = join(here, '..', 'swift', 'Tests', 'FundamentalCoreTests', 'Fixtures', 'conformance-golden.json');
-mkdirSync(dirname(out), { recursive: true });
-writeFileSync(out, JSON.stringify({ generated: 'scripts/gen-conformance-golden.mjs', forces: FORCES, count: cases.length, cases }, null, 2) + '\n');
-console.log(`wrote ${cases.length} golden cases (${FORCES.length} forces × ${VARIANTS.length} variants × ${PROBES.length} probes) → ${out}`);
+const payload =
+  JSON.stringify({ generated: 'scripts/gen-conformance-golden.mjs', forces: FORCES, count: cases.length, cases }, null, 2) + '\n';
+
+// ONE payload, written to every plane that needs it (#1045). The Swift fixture is the historical
+// home; the Rust crate needs its own copy because a published crate has no monorepo around it to
+// reach into — an `include_str!` climbing out of the crate root only resolves inside this checkout.
+// Both are written from the same string, so they cannot drift from each other: a regeneration that
+// updated one and not the other would leave the planes conforming to different goldens, which is
+// exactly the failure the cross-plane gate exists to catch.
+const OUTPUTS = [
+  join(here, '..', 'swift', 'Tests', 'FundamentalCoreTests', 'Fixtures', 'conformance-golden.json'),
+  join(here, '..', 'rust', 'crates', 'fundamental-core', 'tests', 'fixtures', 'conformance-golden.json'),
+];
+for (const out of OUTPUTS) {
+  mkdirSync(dirname(out), { recursive: true });
+  writeFileSync(out, payload);
+}
+console.log(
+  `wrote ${cases.length} golden cases (${FORCES.length} forces × ${VARIANTS.length} variants × ${PROBES.length} probes) → ${OUTPUTS.length} planes:`,
+);
+for (const out of OUTPUTS) console.log(`  ${out}`);

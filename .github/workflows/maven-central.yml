@@ -68,7 +68,10 @@ jobs:
           java-version: '17'
 
       - name: set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          # Pinned explicitly for the same reason as android.yml's `build` job — see the note there.
+          packages: platform-tools
 
       - name: derive the version from the tag (must match the JS core — the cross-plane lockstep)
         id: version
