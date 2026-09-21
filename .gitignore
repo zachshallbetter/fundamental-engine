@@ -77,3 +77,14 @@ apps/llms-full-fe.txt
 
 # RC-7 gate output on the runner (scripts/perf, perf-hardware.yml); committed measurements live in docs/planning/perf-measurements/
 /perf/
+
+# --- added for Antigravity/indexer parity (auto) ---
+out/
+.next/
+.reports/
+__pycache__/
+.venv/
+venv/
+DerivedData/
+.gradle/
+.expo/
