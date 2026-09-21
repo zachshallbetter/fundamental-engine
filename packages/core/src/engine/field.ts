@@ -83,6 +83,7 @@ import { forceAt, netField } from './streamlines.ts';
 import { traceFieldLines } from './fieldlines.ts';
 import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
+import { makePointer, trackPointer, agePointer, pointerWakeInto, flingVelocity, type PointerOptions, type PointerState } from './pointer.ts';
 import type { FieldHost } from './host.ts';
 import { devWarnNoOp } from '../contracts/guards.ts';
 import { FIELD_VERSION } from '../version.ts';
@@ -98,6 +99,14 @@ import { clonePolicy, applyRedactions, resolveSnapshotInclusion } from './snapsh
 // Safe to share module-wide: each field's frame runs synchronously, and every read consumes the
 // scratch before the next write (no overlapping lifetimes, no cross-instance interleaving).
 const _flowB = { x: 0, y: 0 };
+/** shared scratch for the pointer wake — the per-particle path allocates nothing (#666). */
+const _pointerW = { x: 0, y: 0 };
+/**
+ * Converts the pointer's px/SECOND velocity into the per-frame velocity the integrator speaks
+ * (#666). 1/60 is the unit conversion; the extra 0.5 is taste — at a straight 1/60 a flick hands
+ * matter the cursor's full speed and the swarm shoots off ahead of the hand instead of trailing it.
+ */
+const POINTER_WAKE_GAIN = 0.5 / 60;
 const _rgb: RGB = [0, 0, 0];
 
 // ── Focus / attention substrate (experimental) constants ────────────────────────────────────────
@@ -756,6 +765,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const spawnCeiling = Math.round(130 * cfg.density) * 4;
   const pull: WavePull = { x: 0, y: 0, k: 0 }; // the "spine" — waves bend to the engaged body
   let flow: FlowFocus | null = null; // a movable flow focus the field bends toward (field.flowTo)
+  // the pointer (#666): a transient BODY at the cursor plus the wake its motion leaves. The body is
+  // a real programmatic body (so `query()` sees the cursor like anything else); the wake is a
+  // per-particle velocity nudge, applied beside the flow focus below.
+  let pointerState: PointerState | null = null;
+  let pointerBody: BodyHandle | null = null;
+  let pointerRect = { left: 0, top: 0, width: 1, height: 1 };
+  let lastPointerFrame = -1; // wall time of the previous frame, for the pointer's idle decay
+  let lastPointerAt = -1; // wall time of the previous `pointer()` call, for the velocity sample
   let focusP: Particle | null = null; // the hover-focused particle (field.focusAt): held still + lit
   let focusX = 0;
   let focusY = 0;
@@ -2910,6 +2927,27 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         p.vy += b.y;
       }
     }
+    // pointer wake (field.pointer, #666): matter near a MOVING cursor inherits its motion. Beside
+    // the flow focus deliberately — they compose, and the shapes match (linear falloff to the
+    // radius) so a host running both gets a predictable sum rather than two fighting influences.
+    // `agePointer` runs whether or not the field is animating: a cursor that stopped being reported
+    // must fade its wake out even on a frozen field, or it latches matter in one direction forever.
+    if (pointerState) {
+      // NB: a dedicated wall clock rather than a shared per-frame one. If #1210 (which adds a
+      // general `frameSeconds` to this loop for its own decay) lands first, this should use that
+      // instead of keeping a second timer — they measure exactly the same quantity.
+      const pSeconds = lastPointerFrame >= 0 ? Math.min((now - lastPointerFrame) / 1000, 1) : 1 / 60;
+      lastPointerFrame = now;
+      agePointer(pointerState, pSeconds);
+      if (env.dt && (pointerState.vx !== 0 || pointerState.vy !== 0)) {
+        for (const p of store.particles) {
+          if (p.cap) continue;
+          const w = pointerWakeInto(_pointerW, p.x, p.y, pointerState, POINTER_WAKE_GAIN);
+          p.vx += w.x;
+          p.vy += w.y;
+        }
+      }
+    }
     if (cfg.waveStyle === 'circular') {
       if (cfg.waveCenter) {
         resolvedWaveCenter = typeof cfg.waveCenter === 'function' ? cfg.waveCenter() : cfg.waveCenter;
@@ -3277,6 +3315,54 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     clearFlow: () => {
       flow = null;
+    },
+    pointer: (x: number, y: number, opts?: PointerOptions) => {
+      // The cursor is a real body. Building it through `addBody` is not a shortcut — it is what
+      // makes the claim true: the pointer goes through the same classification, measurement and
+      // reporting path as a `[data-body]`, so `query()` sees it, `data-affects` species filtering
+      // applies to it, and there is no second code path to keep in step with the first.
+      const now = wallNow();
+      const half = 0.5; // the cursor's own box is a point; its REACH is data-range, not its size
+      pointerRect = { left: x - half, top: y - half, width: half * 2, height: half * 2 };
+      if (!pointerState) {
+        pointerState = makePointer(x, y, opts);
+        lastPointerAt = now;
+      } else {
+        if (opts?.radius && opts.radius > 0) pointerState.radius = opts.radius;
+        if (opts?.strength !== undefined) pointerState.strength = opts.strength;
+        trackPointer(pointerState, x, y, (now - lastPointerAt) / 1000);
+        lastPointerAt = now;
+      }
+      if (!pointerBody) {
+        pointerBody = handle.addBody({
+          tokens: opts?.tokens ?? 'repel',
+          strength: opts?.bodyStrength ?? 1,
+          range: opts?.bodyRange ?? 160,
+          identity: 'pointer',
+          rect: () => pointerRect,
+        });
+      } else if (opts) {
+        // a host may re-dial the cursor mid-gesture (press harder, switch to a gathering cursor).
+        // `tokens` is NOT reactive — classification happens once — so it is deliberately not here.
+        pointerBody.set({ strength: opts.bodyStrength, range: opts.bodyRange });
+      }
+    },
+    clearPointer: () => {
+      pointerBody?.remove();
+      pointerBody = null;
+      pointerState = null;
+      lastPointerAt = -1;
+      lastPointerFrame = -1;
+    },
+    fling: (el: HTMLElement, vx: number, vy: number) => {
+      const mv = movers.find((m) => m.el === el);
+      if (!mv) return; // not a [data-move] mover on this field — the same silent no-op as elsewhere
+      if (mv.docked) return; // a docked element is held by a sink; a throw does not tear it loose
+      // px/second in, px/frame out. The element keeps its anchor spring and friction, so the throw
+      // arcs and settles into the layout slot instead of being animated somewhere and left there.
+      const v = flingVelocity(vx, vy);
+      mv.o.vx = v.x;
+      mv.o.vy = v.y;
     },
     seed: (atoms) => {
       seeded = atoms;
@@ -3759,6 +3845,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       host.cancelRaf(raf);
       clearInterval(idleTimer);
       for (const off of teardowns) off(); // release every host event subscription
+      pointerState = null; // drop the cursor's transient body + wake (#666)
+      pointerBody = null;
       // release the per-element [data-hot] engagement listeners, so repeated create/destroy
       // on the same DOM doesn't accumulate handlers (§18 teardown).
       for (const e of engaged) {
