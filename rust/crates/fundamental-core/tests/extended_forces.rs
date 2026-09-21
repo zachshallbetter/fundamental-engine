@@ -202,7 +202,7 @@ fn warp_relocates_matter_to_the_paired_throat() {
 #[test]
 fn standard_registry_has_the_ported_catalog() {
     let reg = Registry::standard();
-    assert_eq!(reg.len(), 34, "9 canonical + 8 natural + 17 extended");
+    assert_eq!(reg.len(), 36, "9 canonical + 8 natural + 19 extended");
     for tok in [
         "attract",
         "sink",
@@ -229,16 +229,18 @@ fn standard_registry_has_the_ported_catalog() {
         "hunt",
         "resonate",
         "spotlight",
+        "spawn",
+        "morph",
         "screen",
         "fieldflow",
     ] {
         assert!(reg.get(tok).is_some(), "registry is missing '{tok}'");
     }
-    // deferred forces are honestly absent (not silently stubbed).
-    for tok in [
-        "spawn",
-        "morph",
-    ] {
+    // Deferred forces are honestly absent, not silently stubbed. With spawn and morph ported this
+    // list is down to one: `relief` admits a host-declared scalar CHANNEL as a potential, and this
+    // plane has no channel concept for a host to register one through. 36 registered + 1 deferred is
+    // the whole 37-force catalog, so an empty list here would mean the catalog had grown unnoticed.
+    for tok in ["relief"] {
         assert!(
             reg.get(tok).is_none(),
             "'{tok}' should not be registered yet"

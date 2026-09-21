@@ -35,6 +35,12 @@ pub enum Effect {
         particle_id: u64,
         dv: Vec3,
     },
+    /// Matter a source emitted this frame (#1038), drained into the pool after the source pass.
+    ///
+    /// A value, like every other effect, so an emission is recordable and replayable: a receipt can
+    /// say which body produced which particle. Every spawned particle is MORTAL — `spawn` breaks
+    /// conservation deliberately, so the budget that bounds it has to travel with the matter.
+    Spawn(Box<Particle>),
 }
 
 /// The active, eased formation (§7) — ambient bias applied field-wide.
@@ -83,6 +89,20 @@ pub struct Particle {
     pub charge: f64,
     /// Species tag, for `hunt` and matter tagging (§20.3). 0 = the default species.
     pub species: i32,
+    /// Remaining life in frames, or `None` for IMMORTAL matter (#1038).
+    ///
+    /// `None` is the conserved base field — the pool the engine neither creates nor destroys. Only a
+    /// source's emissions carry an age, so "mortal" is exactly "spawned", and the distinction is a
+    /// type rather than a sentinel: there is no lifespan value that means "lives forever".
+    pub age: Option<f64>,
+    /// A fixed scatter fraction in [0,1), assigned once (#1038).
+    ///
+    /// `morph` hashes it to a target index so a given particle always aims at the SAME point. Without
+    /// a per-particle constant the assignment would rehash as the pool reorders and the assembled
+    /// mark would boil.
+    pub gx: f64,
+    pub gy: f64,
+    pub gz: f64,
     /// Carried pigment (`#rrggbb`), conserved colour transport (§20.8). `None` until a `pigment` body
     /// stains it.
     pub color: Option<String>,
@@ -100,6 +120,10 @@ impl Default for Particle {
             cap: None,
             charge: 0.0,
             species: 0,
+            age: None, // immortal — the conserved base field; only a source's emissions age
+            gx: 0.0,
+            gy: 0.0,
+            gz: 0.0,
             color: None,
         }
     }
@@ -155,6 +179,19 @@ pub struct Body {
     /// `fieldflow`'s opt-in charge gate (#711): when set, only CHARGED matter follows the field lines
     /// and neutral matter drifts free — the magnetized-plasma reading. Default `false` advects all
     /// matter, the neutral-medium transport.
+    /// The species tag this body stamps on matter it emits (`data-species`), so a downstream
+    /// `affects` body can act on it selectively. 0 is the default species (#1038).
+    pub species: i32,
+    /// `spawn`'s lifespan budget in frames — how long each emitted particle lives. `None` takes the
+    /// `SPAWN_LIFE` default (#1038).
+    pub life: Option<f64>,
+    /// `spawn`'s population clamp: the emission rate is limited to `source_cap / life` per frame, so
+    /// the body's live spawned population is bounded at about `source_cap` regardless of strength.
+    pub source_cap: Option<f64>,
+    /// Fractional-rate carry for `spawn`, so a sub-1-per-frame budget still flows (#1038).
+    pub emit_acc: f64,
+    /// `morph`'s assembly targets — marks on the page plane, never letterforms (§11).
+    pub targets: Vec<Vec3>,
     pub charge_gated: bool,
     pub visible: bool,
     /// Whether this body samples local density for two-way feedback.
@@ -179,6 +216,11 @@ impl Default for Body {
             range: 300.0,
             absorb_r: 64.0,
             screen_min: 0.0,
+            species: 0,
+            life: None,
+            source_cap: None,
+            emit_acc: 0.0,
+            targets: Vec::new(),
             charge_gated: false,
             capacity: 60.0,
             spin: 1.0,
@@ -364,10 +406,15 @@ pub trait Force: Send + Sync {
     fn apply(&self, body: &Body, particle: &mut Particle, env: &mut Env);
 
     /// Class-\[S\] **body-level** hook, run once per frame per body AFTER the particle loop — so a
-    /// source acts once per frame rather than once per existing particle. `propagate` uses it to
-    /// deposit a pulse into its wave grid; the spawn/morph sources (#1038) will emit matter through it.
-    /// Default: no-op, so a force that has nothing to say per body says nothing.
-    fn source(&self, _body: &Body, _env: &mut Env) {}
+    /// source acts once per frame rather than once per existing particle. `propagate` deposits a pulse
+    /// into its wave grid through it; `spawn` emits matter through it.
+    ///
+    /// Takes `&mut Body` because a source owns per-body emission state: `spawn` carries a fractional
+    /// rate across frames on `emit_acc`, and routing that through an effect would make the body's own
+    /// bookkeeping a message to the integrator about itself.
+    ///
+    /// Default: no-op, so a force with nothing to say per body says nothing.
+    fn source(&self, _body: &mut Body, _env: &mut Env) {}
     /// The renderable/followable **structure field** this body radiates at a world point (#1041).
     ///
     /// Geometry, not a force law: `apply` is untouched by it, and a field line is not a particle

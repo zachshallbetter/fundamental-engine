@@ -368,7 +368,7 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
     // A BODY-level pass after the per-particle loop, so a source acts once per frame rather than once
     // per existing particle. `propagate` deposits its shock pulse here; spawn/morph will emit matter
     // through the same hook (#1038).
-    for b in bodies.iter() {
+    for b in bodies.iter_mut() {
         if !b.visible || b.tokens.is_empty() {
             continue;
         }
@@ -376,6 +376,39 @@ pub fn step(store: &mut FieldStore, bodies: &mut [Body], env: &mut Env, forces: 
             if let Some(f) = forces.get(&b.tokens[k]) {
                 f.source(b, env);
             }
+        }
+    }
+
+    // ── mortal matter: age, then despawn (#1038) ───────────────────────────────────────────────
+    // Aging runs AFTER the source pass so a particle emitted this frame gets its full lifespan; if it
+    // aged first, every spawn would arrive one frame short. Immortal matter (`age: None`) is the
+    // conserved base field and is not touched — the distinction is a type, not a sentinel lifespan.
+    if store.particles.iter().any(|p| p.age.is_some()) {
+        for p in store.particles.iter_mut() {
+            if let Some(a) = p.age {
+                p.age = Some(a - 1.0);
+            }
+        }
+        // retain is O(n) and order-preserving, unlike the store's swap-remove: a spawned population
+        // that reshuffled on every despawn would make a seeded run's pool order irreproducible.
+        store.particles.retain(|p| p.age.is_none_or(|a| a > 0.0));
+    }
+
+    // ── drain emitted matter (#1038) ───────────────────────────────────────────────────────────
+    // After the source pass, so a body's emissions for this frame arrive together. Added through the
+    // store so each gets a real id: a particle with id 0 is invisible to `collide`'s pair gate and to
+    // every id-keyed attribution downstream.
+    if env.effects.iter().any(|e| matches!(e, Effect::Spawn(_))) {
+        let spawned: Vec<Particle> = env
+            .effects
+            .iter()
+            .filter_map(|e| match e {
+                Effect::Spawn(p) => Some((**p).clone()),
+                _ => None,
+            })
+            .collect();
+        for p in spawned {
+            store.add(p);
         }
     }
 

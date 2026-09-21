@@ -332,7 +332,7 @@ impl Force for Propagate {
     fn label(&self) -> &'static str {
         "Propagate"
     }
-    fn source(&self, b: &Body, e: &mut Env) {
+    fn source(&self, b: &mut Body, e: &mut Env) {
         if !b.engaged {
             return; // only an engaged body emits
         }

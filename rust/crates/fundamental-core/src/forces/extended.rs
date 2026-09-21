@@ -9,7 +9,7 @@
 //! scalar grid → (natural) `diffuse`/`propagate`/`memory`; integrator modifier pass → `resonate`,
 //! `spotlight`, `screen`; source/scatter state → `spawn`, `morph`; net field-line hook → `fieldflow`.
 
-use crate::engine::{Body, Env, Force, ForceModification, Particle};
+use crate::engine::{Body, Effect, Env, Force, ForceModification, Particle};
 use crate::math::{mix_hex, Vec3};
 
 const FREEZE: f64 = 0.5; // heat below which crystallize solidifies matter
@@ -595,6 +595,107 @@ impl Force for Fieldflow {
         }
         if b.engaged {
             p.heat = p.heat.max(falloff * 0.4);
+        }
+    }
+}
+
+/// Default lifespan in frames when a `spawn` body declares no `life`.
+pub const SPAWN_LIFE: f64 = 90.0;
+/// Within this many px of its target, a `morph` particle counts as arrived and its jitter fades.
+const MORPH_ARRIVE: f64 = 40.0;
+
+/// §20.1/§20.2 — `spawn`: a source. Emits matter along the heading, budgeted by a lifespan.
+///
+/// The one force that DELIBERATELY breaks conservation, which is why every particle it emits is
+/// mortal: the budget that bounds the population has to travel with the matter, or a fountain left
+/// running fills the pool.
+///
+/// A body-level source, not a per-particle force — `apply` is a no-op and the work is in
+/// [`source`](Force::source), so emission happens once per frame rather than once per existing
+/// particle. A source whose rate scaled with how much matter already surrounded it would run away.
+///
+/// The budget is `source_cap / life` per frame, so the live spawned population settles at about
+/// `source_cap` regardless of `strength`. Fractional rates accumulate on `emit_acc`, so a budget
+/// below one particle per frame still flows rather than rounding to nothing.
+pub struct Spawn;
+
+impl Force for Spawn {
+    fn token(&self) -> &'static str {
+        "spawn"
+    }
+    fn label(&self) -> &'static str {
+        "Spawn"
+    }
+    fn apply(&self, _b: &Body, _p: &mut Particle, _e: &mut Env) {} // a source; see source()
+    fn source(&self, b: &mut Body, e: &mut Env) {
+        let life = b.life.unwrap_or(SPAWN_LIFE);
+        let mut rate = (b.strength * 2.0).round().max(1.0);
+        if let Some(cap) = b.source_cap {
+            if cap > 0.0 && life > 0.0 {
+                rate = rate.min(cap / life);
+            }
+        }
+        // `emit_acc` lives on the body, so a fractional carry survives between frames.
+        b.emit_acc += rate;
+        let n = b.emit_acc.floor();
+        b.emit_acc -= n;
+        let (ux, uy) = (b.heading.x, b.heading.y);
+        for _ in 0..(n as i64) {
+            // rotate the heading by a small random angle → a soft emission cone
+            let j = (e.rng() - 0.5) * 0.6;
+            let (sn, cs) = j.sin_cos();
+            let hx = ux * cs - uy * sn;
+            let hy = ux * sn + uy * cs;
+            let speed = 2.0 + e.rng() * 2.0;
+            e.effects.push(Effect::Spawn(Box::new(Particle {
+                position: b.center,
+                velocity: Vec3::new(hx * speed, hy * speed, 0.0),
+                heat: 0.6,
+                age: Some(life),
+                species: b.species,
+                ..Default::default()
+            })));
+        }
+    }
+}
+
+/// §20.3 — `morph` (class \[D\]): matter assembles into a mark. Never words (§11).
+///
+/// Each particle springs toward ONE target, chosen by hashing its fixed scatter fraction to an index.
+/// That fraction is assigned once and never changes, which is the whole trick: assignment derived
+/// from pool position would rehash as the pool reorders and the assembled mark would boil.
+///
+/// The jitter fades as matter arrives, so the shape settles instead of vibrating at its own outline.
+pub struct Morph;
+
+impl Force for Morph {
+    fn token(&self) -> &'static str {
+        "morph"
+    }
+    fn label(&self) -> &'static str {
+        "Morph"
+    }
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if b.targets.is_empty() {
+            return; // no shape assigned → inert
+        }
+        let i = ((p.gx * b.targets.len() as f64).floor() as usize).min(b.targets.len() - 1);
+        let t = b.targets[i];
+        let dx = t.x - p.position.x;
+        let dy = t.y - p.position.y;
+        let d = (dx * dx + dy * dy).sqrt();
+        let k = b.strength;
+        p.velocity.x += dx * k * 0.02; // spring toward the target point
+        p.velocity.y += dy * k * 0.02;
+        // targets are marks on the page plane (z-axis.md): the same spring returns matter to z = 0.
+        if p.position.z != 0.0 {
+            p.velocity.z -= p.position.z * k * 0.02;
+        }
+        let arrived = if d < MORPH_ARRIVE { 1.0 - d / MORPH_ARRIVE } else { 0.0 };
+        let jit = (1.0 - arrived) * k * 0.3; // jitter that fades to zero on arrival
+        if jit > 0.0 {
+            p.velocity.x += (e.rng() - 0.5) * jit;
+            p.velocity.y += (e.rng() - 0.5) * jit;
         }
     }
 }
