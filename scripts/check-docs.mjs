@@ -167,6 +167,22 @@ function engineBodyAttrs() {
   return set;
 }
 
+/** Element-consumer attributes — collected by the engine with `querySelectorAll('[data-X]')` on the
+ *  host root in field.ts, and by `hasAttribute` on the body element. The body scanner never sees
+ *  them, so extracting from scanner.ts alone reported 100% while six attributes were undocumented
+ *  and one was documented only for a different surface (#1170). */
+function engineElementAttrs() {
+  const set = new Set();
+  const fieldSrc = read('packages/core/src/engine/field.ts');
+  for (const m of fieldSrc.matchAll(/querySelectorAll\('\[data-([\w-]+)\]'\)/g)) set.add(m[1]);
+  // NOT hasAttribute: `data-dock` and `data-warp` are read that way on the BODY element, so they are
+  // body attributes and live in ATTRS. This surface is the host-root sweep — elements that react to
+  // the field rather than push it. Mixing the two would demand each be documented in both places.
+  // `data-body` is the scanner's own surface, already covered by engineBodyAttrs().
+  set.delete('body');
+  return set;
+}
+
 /** The underlay render vocabulary `FieldHandle.setRender(mode:)` accepts — the same union
  *  `FieldOptions.render` and `<field-root render>` take. Scoped to the signature's `): void;` so a
  *  later string union in types.ts cannot leak in. */
@@ -209,7 +225,12 @@ function docRowNames(constName, key) {
   const start = docsApi.indexOf(`export const ${constName}`);
   if (start < 0) return new Set();
   const rest = docsApi.slice(start);
-  const block = rest.slice(0, rest.indexOf('\n];'));
+  let block = rest.slice(0, rest.indexOf('\n];'));
+  // Strip comments before scanning. A commented-out row still carries `name: '…'`, so without this a
+  // surface can be "documented" by a row nobody renders — the #1178 defect, in a second gate. Line
+  // comments only: `desc` strings legitimately contain `/*`-free prose, and block comments here are
+  // the JSDoc above the const, already excluded by slicing from `export const`.
+  block = block.replace(/^\s*\/\/.*$/gm, '');
   const set = new Set();
   const re = new RegExp(`${key}:\\s*['"]([^'"(]+)`, 'g');
   for (const m of block.matchAll(re)) set.add(m[1].trim());
@@ -257,6 +278,17 @@ function docHandleNames() {
 }
 
 /** Element attr names documented in a `{ name: 'x', … }` table for the given const. */
+/** ELEMENT_ATTRS rows, with the `data-` prefix stripped so they compare against what the engine
+ *  reads (`querySelectorAll('[data-move]')` yields `move`). Mirrors docBodyAttrs. */
+function docElementConsumerAttrs() {
+  const set = new Set();
+  for (const raw of docRowNames('ELEMENT_ATTRS', 'name')) {
+    const clean = raw.trim().replace(/^data-/, '');
+    if (clean) set.add(clean);
+  }
+  return set;
+}
+
 function docElementAttrs(constName) {
   return docRowNames(constName, 'name');
 }
@@ -288,6 +320,11 @@ const surfaces = [
     name: 'body attrs (data-*)',
     truth: engineBodyAttrs(),
     docs: docBodyAttrs(),
+  },
+  {
+    name: 'element-consumer attrs (data-*)',
+    truth: engineElementAttrs(),
+    docs: docElementConsumerAttrs(),
   },
   {
     name: '<field-root> attrs',
