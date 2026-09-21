@@ -202,6 +202,29 @@ function cemAttrs(tagName) {
   return set;
 }
 
+/**
+ * The `data-field-*` attributes the DOM PLATFORM LAYER reads from markup (#1190).
+ *
+ * Three files, not one — the same widening `engineElementAttrs` needed for `field.ts`. A gate that
+ * reads a single file and calls it the surface is how these six stayed invisible while every one of
+ * them was live: `metrics.ts` reads two, `lint.ts` two, `visual-bindings.ts` two.
+ *
+ * READS only. `bind-data.ts` also WRITES several of these names when a recipe generates them, and an
+ * extractor that collected writes would demand documentation for engine output — the opposite of a
+ * contract. Matching on `getAttribute` / `querySelectorAll` / `hasAttribute` keeps it to what an
+ * author can set and the engine will honour.
+ */
+function enginePlatformAttrs() {
+  const set = new Set();
+  for (const f of ['metrics.ts', 'lint.ts', 'visual-bindings.ts']) {
+    const src = read(`packages/dom/src/${f}`);
+    for (const m of src.matchAll(/(?:getAttribute|hasAttribute)\('(data-field-[\w-]+)'\)/g)) set.add(m[1]);
+    for (const m of src.matchAll(/querySelectorAll\('\[(data-field-[\w-]+)\]'\)/g)) set.add(m[1]);
+    for (const m of src.matchAll(/\[(data-field-[\w-]+)\]/g)) set.add(m[1]);
+  }
+  return set;
+}
+
 // ── docs extractors (apps/site/src/lib/docs-api.ts) ─────────────────────────────────────────────
 
 /** Names in a `{ name: 'x', … }` row array, scoped to `export const NAME: …[] = [ … ]`. */
@@ -288,6 +311,11 @@ const surfaces = [
     name: 'body attrs (data-*)',
     truth: engineBodyAttrs(),
     docs: docBodyAttrs(),
+  },
+  {
+    name: 'platform attrs (packages/dom)',
+    truth: enginePlatformAttrs(),
+    docs: docElementAttrs('PLATFORM_ATTRS'),
   },
   {
     name: '<field-root> attrs',

@@ -1,6 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
-import { ATTRS, WRITEBACK, FIELD_ROOT_ATTRS } from '../../../lib/docs-api.ts';
+import { ATTRS, WRITEBACK, FIELD_ROOT_ATTRS, PLATFORM_ATTRS } from '../../../lib/docs-api.ts';
 import SeeAlso from '../../../components/SeeAlso.astro';
 import ApiStamp from '../../../components/ApiStamp.astro';
 import { PROTECTED_BODY_ATTR } from '../../../../../../scripts/api-surface.data.mjs';
@@ -101,6 +101,30 @@ const families = [
               <span class="ty">on <b>{v.on}</b></span>
             </div>
             <div class="d">{v.desc}</div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Platform bindings (<code>@fundamental-engine/dom</code>)</h2>
+    <p>
+      A separate layer from the body contract above. These are read by the DOM package rather than the
+      engine core — a lint contract, two inputs to the grounded-recency metric, and a pair that binds a
+      drawn visual to the body it depicts. Several of these names are also <em>written</em> for you when
+      a recipe generates a binding; what is documented here is the authored side, the contract the
+      engine honours if you write it yourself.
+    </p>
+    <div class="api-table">
+      {
+        PLATFORM_ATTRS.map((a) => (
+          <div class="api-row">
+            <div class="k">
+              <code>{a.name}</code>
+              <span class="ty">read by <b>{a.reads.replace('packages/dom/src/', '')}</b></span>
+            </div>
+            <div class="d">{a.desc}</div>
           </div>
         ))
       }

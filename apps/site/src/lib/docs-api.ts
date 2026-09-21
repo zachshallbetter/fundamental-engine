@@ -159,6 +159,27 @@ export const ATTRS: AttrRow[] = [
 /** The CSS custom properties the field writes back onto bodies — the reciprocal half of the
  *  loop (the field measures, then writes state into the elements that made it). Read these in
  *  your own CSS to make an element answer the field. Written only to bodies that opt in. */
+/**
+ * The `packages/dom` platform layer's declarative surface (#1190).
+ *
+ * A third table rather than rows in `ATTRS` or `ELEMENT_ATTRS`, because these are neither. `ATTRS` is
+ * the `[data-body]` contract and `ELEMENT_ATTRS` is the element side of Body Matter Interaction —
+ * both `packages/core`. These six live in the DOM BINDING LAYER: a lint contract, two metrics inputs,
+ * and a visual-binding pair. Filing them under either existing table would misrepresent what they are.
+ *
+ * Read-side only. Several of these names are also WRITTEN by `bind-data.ts` when a recipe generates
+ * them; what is documented here is the authored contract — what the engine will read if you write it
+ * yourself.
+ */
+export const PLATFORM_ATTRS: { name: string; reads: string; desc: string }[] = [
+  { name: 'data-field-at', reads: 'packages/dom/src/metrics.ts', desc: 'Timestamp (ISO or epoch ms) the grounded-recency metric decays from. Without it an element has no age and contributes no recency signal.' },
+  { name: 'data-field-halflife', reads: 'packages/dom/src/metrics.ts', desc: 'Half-life in ms for the recency decay that `data-field-at` feeds — how fast the signal fades.' },
+  { name: 'data-field-relation', reads: 'packages/dom/src/lint.ts', desc: 'Declares a relationship from this element; the platform lint pairs it with `data-field-target` and warns when the target resolves to nothing.' },
+  { name: 'data-field-target', reads: 'packages/dom/src/lint.ts', desc: 'The selector a `data-field-relation` points at. A relation whose target does not resolve is a relation pointing at nothing, which the lint reports.' },
+  { name: 'data-field-visual-for', reads: 'packages/dom/src/visual-bindings.ts', desc: 'Binds a visual element to the body it depicts, so a drawn overlay tracks the right matter.' },
+  { name: 'data-field-visual-role', reads: 'packages/dom/src/visual-bindings.ts', desc: "The bound visual's role — what the visual is FOR, so the binding layer can treat a contour differently from a label." },
+];
+
 export const WRITEBACK: { name: string; on: string; desc: string }[] = [
   { name: '--d', on: 'data-feedback', desc: "The body's own gathered density ∈ [0,1], eased. The canonical reaction var." },
   { name: '--field-density', on: 'data-feedback', desc: 'Namespaced alias of --d (same value).' },
