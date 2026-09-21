@@ -26,6 +26,7 @@ import type { FeedbackSink } from './types.ts';
  * - density → `--d` (the established var) + `--field-density` — same value, three decimals.
  * - heatmapDensity → `--field-heatmap-density`.
  * - load → `--load` (the canonical author-facing var).
+ * - pulse → `--field-pulse` (the transient flare, #567) — written only while a flare is live.
  * - lit → `--lit`, plus the thresholded `field:lit` (rising past 0.5) / `field:dim` (falling past
  *   0.4) events, armed via `data-fx-lit` for hysteresis.
  *
@@ -53,6 +54,10 @@ export const defaultFeedbackSink: FeedbackSink = (el, ch) => {
   if (ch.entropy !== undefined) el.style.setProperty('--entropy', ch.entropy.toFixed(3));
   if (ch.coherence !== undefined) el.style.setProperty('--coherence', ch.coherence.toFixed(3));
   if (ch.temperature !== undefined) el.style.setProperty('--temperature', ch.temperature.toFixed(3));
+  // the transient flare (#567). Namespaced only — there is deliberately no bare `--pulse` alias:
+  // `--d` carries its short name for history, and a second short name in a crowded custom-property
+  // namespace is how a channel gets collided with by an author's own variable.
+  if (ch.pulse !== undefined) el.style.setProperty('--field-pulse', ch.pulse.toFixed(3));
   if (ch.lit !== undefined) {
     const lit = ch.lit;
     el.style.setProperty('--lit', lit.toFixed(3));

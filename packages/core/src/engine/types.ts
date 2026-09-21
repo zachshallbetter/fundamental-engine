@@ -405,6 +405,10 @@ export interface Body {
   /** the eased measured metrics (workover §"Metrics"): entropy / coherence / temperature
    *  ∈ [0,1], exported as `--entropy` / `--coherence` / `--temperature`. Lazily allocated. */
   metrics?: { entropy: number; coherence: number; temperature: number };
+  /** live transient flare ∈ [0,1] from {@link FieldHandle.pulse} (#567). Runtime state, and
+   *  `undefined` is meaningful: a body with no live flare carries no key at all, so the whole
+   *  pulse path costs an un-pulsed field one `!== undefined` check per body per frame. */
+  pulse?: number;
   /** target points for `morph` (§20.3 [D]) — a sampled mark / logo / chart / shape the
    *  matter assembles into. NEVER words or letterforms (§11); words glow/grow via `--d`. */
   targets?: readonly { x: number; y: number }[];
@@ -1037,6 +1041,11 @@ export interface FeedbackChannels {
   coherence?: number;
   /** measured local agitation ∈ [0,1] (heat + kinetic) → `--temperature`. */
   temperature?: number;
+  /** transient flare ∈ [0,1] from {@link FieldHandle.pulse} → `--field-pulse` (#567). Distinct from
+   *  `density`: density is a MEASUREMENT of gathered matter, pulse is an OCCURRENCE the host injected
+   *  and the field decays. Present only while a flare is live (plus one final exact `0`), so a body
+   *  that is never pulsed never carries the key. */
+  pulse?: number;
 }
 
 /** Receives a body's feedback channels in place of direct DOM writes (Phase D3). */
@@ -1733,6 +1742,26 @@ export interface FieldHandle {
   threads(list: ThreadLink[] | null): void;
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
   burst(x: number, y: number, hex?: string): void;
+  /**
+   * Flare a body — a transient, exponentially decaying one-shot on ONE body, surfaced on its own
+   * `pulse` feedback channel (`--field-pulse`), separate from the measured `density` (#567).
+   *
+   * This is the "something just happened *here*" primitive, and it is deliberately not `burst`:
+   * `burst(x, y)` is a render-surface blast that shoves and heats matter at screen coordinates,
+   * while `pulse` touches no matter at all. Nor is it `--d`, which is a *measurement* of gathered
+   * matter — a host that drives `--d` from an event is overwriting the channel the engine owns.
+   *
+   * The engine steps the decay in its own loop, so a consumer flares a body from an ordinary event
+   * handler and writes no animation driver of its own. `energy` is additive and saturates at 1, so
+   * two events in quick succession read as one brighter flare; a full-energy pulse falls under 5%
+   * in ~0.65s. Decay runs on wall time, so a reduced-motion field's flares still resolve to rest.
+   *
+   * `target` is a body element (`[data-body]`) or a {@link BodyHandle} from `addBody`. The body
+   * must opt into feedback (`data-feedback`, or any programmatic body) — that is the channel this
+   * rides; a pulse on a body with feedback off is a silent no-op, as every other channel is.
+   * Unknown targets are ignored. Shipped-but-unfrozen.
+   */
+  pulse(target: HTMLElement | BodyHandle, energy?: number): void;
   /**
    * Place or move a dynamic flow focus at `(x, y)` — a movable target the field bends toward: it
    * pulls free matter in, curves the streamlines, and eases the wave spine to it. Call repeatedly to

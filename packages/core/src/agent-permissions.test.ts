@@ -268,6 +268,9 @@ const AGENT_WITHHELD = new Set<string>([
   // mutators: matter / bodies / edges / flow / threads
   'threads', 'burst', 'flowTo', 'clearFlow', 'seed', 'addAgent', 'addBody', 'addEdge',
   'addField', 'registerOverlay',
+  // pulse() is a WRITE even though it moves no matter (#567): it drives a channel the page's own
+  // CSS reacts to, so an agent holding it could flash a body's UI. Read-only view ⇒ withheld.
+  'pulse',
   // point / particle / grid readers (raw substrate, not the scoped agent reading)
   'readEdges', 'atomAt', 'focusAt', 'clearFocus', 'sampleField', 'particleCount', 'readParticles',
   'readParticleIds', 'readParticleChannels', 'energy', 'sample', 'sampleScalar', 'sampleGradient',
