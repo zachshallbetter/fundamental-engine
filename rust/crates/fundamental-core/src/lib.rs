@@ -33,6 +33,7 @@ pub mod config;
 pub mod engine;
 pub mod forces;
 pub mod math;
+pub mod reading;
 pub mod record;
 pub mod version;
 
@@ -41,5 +42,6 @@ pub use engine::{
     SolveOptions, SolveResult,
 };
 pub use math::Vec3;
+pub use reading::{clusters, ranked, related_to, relations, scores, Cluster, Relation, Score};
 pub use record::{replay, replay_recording, FieldSnapshot, Replayed, Rng};
 pub use version::FIELD_VERSION;
