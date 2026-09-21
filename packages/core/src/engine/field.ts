@@ -18,7 +18,7 @@ import type { AgentCapability, AgentFieldView, AgentViewOptions, AtomPayload, Bo
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
-import { scanBodies, measureBodies, bodyFromElement } from './scanner.ts';
+import { scanBodies, measureBodies, measureBodyGeometry, refreshBodyAttrs, bodyFromElement } from './scanner.ts';
 import {
   ShadowRegistry,
   REGISTER_BODY,
@@ -83,7 +83,7 @@ import { forceAt, netField } from './streamlines.ts';
 import { traceFieldLines } from './fieldlines.ts';
 import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
-import type { FieldHost } from './host.ts';
+import type { BodyObserver, FieldHost } from './host.ts';
 import { devWarnNoOp } from '../contracts/guards.ts';
 import { FIELD_VERSION } from '../version.ts';
 import { energyReport } from '../diagnostics/energy.ts';
@@ -307,6 +307,22 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
   const host: FieldHost = opts.host;
   const teardowns: Array<() => void> = []; // host event unsubscribers, called on destroy
+
+  // ── body-geometry observation (#689) ──────────────────────────────────────────────────────────
+  // `getBoundingClientRect` forces layout, and the engine used to pay for one per body every 6th
+  // frame forever — on a page that is usually not moving at all. A host that can OBSERVE geometry
+  // (`observeBodies`; `browserHost` backs it with ResizeObserver + IntersectionObserver) lets the
+  // engine run that pass when something actually changed instead.
+  //
+  // The poll is SLOWED, never removed. Neither observer fires when an element merely MOVES — a
+  // sibling reflowing above it, a transform animation, a layout shift — so a safety cadence still
+  // catches what observation cannot see, and any observation pulls the cadence straight back to hot.
+  // With no observing host, `geometryDue()` is unconditionally true and this whole mechanism is a
+  // no-op: the historical every-6-frames poll, unchanged.
+  let bodyObserver: BodyObserver | null = null;
+  const observedEls = new Set<Element>();
+  let geometryDirty = true;
+  let lastGeometryFrame = -1;
 
   // Reduced-motion is an ACCESSIBILITY clamp: when the host/user asks for it, motion can only be
   // *removed*, never restored by policy. It's read live (not captured once) so it always reflects the
@@ -1085,6 +1101,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
     }
     measureBodies(bodies, W, H, originX, originY);
+    syncBodyObservation();
     bindEngagement();
     // Reconcile movers: carry forward offset + dock state for elements that persist across
     // rescans (shadow-DOM re-register, Astro nav re-mounts, explicit rescan()). An element that
@@ -1830,6 +1847,48 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // field:lit/dim with hysteresis via FeedbackRegistry (D3); the internal default sink writes
     // --lit and fires the same hysteretic events directly (byte-identical to the legacy path).
     cfg.feedbackSink(b.el, { lit });
+  }
+
+  /**
+   * How long the geometry pass may go unmeasured when nothing has been observed (#689). 30 frames is
+   * half a second at 60fps — long enough to be worth 5x fewer forced layouts, short enough that an
+   * un-observable move (a reflow above the body, a transform) self-corrects before a reader could
+   * attribute it to the field being wrong. The gate only runs on the every-6th-frame cadence, so the
+   * real choice is between measuring every 6 frames and every 30.
+   */
+  const GEOMETRY_SAFETY_FRAMES = 30;
+
+  /**
+   * Should the geometry pass run this tick? With no observing host this is unconditionally `true`,
+   * which is byte-identical to the historical poll — that equivalence is what keeps the conformance
+   * golden and every existing host untouched by this change.
+   */
+  function geometryDue(): boolean {
+    if (!bodyObserver) return true;
+    if (geometryDirty) return true;
+    // A body measured through a host-supplied `rect()` — a programmatic `addBody`, a Three.js mesh,
+    // a shadow-DOM body with a custom box — is neither observable nor cacheable: its provider can
+    // return something new on any frame and no browser observer will ever say so. One such body
+    // holds the whole geometry pass at the hot cadence. That is the correct trade: the alternative
+    // is a mesh lagging its own field by up to half a second.
+    for (const b of bodies) if (b.rect) return true;
+    return frameN - lastGeometryFrame >= GEOMETRY_SAFETY_FRAMES;
+  }
+
+  /** Bring the observed set in line with the live bodies — called after every scan/rescan. */
+  function syncBodyObservation(): void {
+    if (!bodyObserver) return;
+    const live = new Set<Element>();
+    // only DOM-scanned bodies. A body with a custom `rect` provider is backed by a synthetic element
+    // (`addBody`'s stub) or a box the DOM does not own, so handing it to a real ResizeObserver would
+    // throw — and observing it would be meaningless anyway (see `geometryDue`).
+    for (const b of bodies) if (b.el && !b.rect) live.add(b.el);
+    for (const el of live) if (!observedEls.has(el)) bodyObserver.observe(el);
+    for (const el of observedEls) if (!live.has(el)) bodyObserver.unobserve(el);
+    observedEls.clear();
+    for (const el of live) observedEls.add(el);
+    // a body set that just changed has geometry nobody has measured yet.
+    geometryDirty = true;
   }
 
   function writeFeedback(): void {
@@ -2848,7 +2907,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       w.offsetY += (target - w.offsetY) * 0.04;
     }
     if (bodies.length && frameN % 6 === 0) {
-      measureBodies(bodies, W, H, originX, originY);
+      // the two halves of a measure run on different clocks now (#689). Attributes are cheap and
+      // keep the fixed cadence — `data-strength` & co. are documented as live-within-a-frame, and
+      // slowing them to the geometry cadence would quietly make that a half-second. Geometry is the
+      // half that forces layout, so it runs when something was observed to change (or on the safety
+      // floor). With no observing host `geometryDue()` is always true and this is the old poll.
+      refreshBodyAttrs(bodies);
+      if (geometryDue()) {
+        measureBodyGeometry(bodies, W, H, originX, originY);
+        geometryDirty = false;
+        lastGeometryFrame = frameN;
+      }
       detectProximityEvents(bodies); // #441 enter/exit/met — on the measure cadence, lazy
       // attention-gated discharge (#365): an engagement-gated sink releases on the falling
       // edge of engagement — the same conserved supernova ritual as saturation.
@@ -3042,6 +3111,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   if (host.onScroll) teardowns.push(host.onScroll(scrollHandler));
   if (host.onVisibility) teardowns.push(host.onVisibility(onVisibility));
   if (host.onInput) teardowns.push(host.onInput(markInput));
+  // body-geometry observation (#689). Subscribed once; the callback is a pure dirty flag, so a
+  // storm of observer entries costs one boolean write and never a measure per entry.
+  if (host.observeBodies) {
+    bodyObserver = host.observeBodies(() => void (geometryDirty = true));
+    syncBodyObservation(); // bodies scanned before this point are observed from here
+  }
   // shadow-DOM body events: forces:* + field:* aliases share the same idempotent handlers, so a body
   // registers under either namespace; the controller dispatches both, the engine listens to both.
   if (host.onBodyEvent) {
@@ -3759,6 +3834,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       host.cancelRaf(raf);
       clearInterval(idleTimer);
       for (const off of teardowns) off(); // release every host event subscription
+      bodyObserver?.disconnect(); // and the geometry observers (#689)
+      bodyObserver = null;
+      observedEls.clear();
       // release the per-element [data-hot] engagement listeners, so repeated create/destroy
       // on the same DOM doesn't accumulate handlers (§18 teardown).
       for (const e of engaged) {
