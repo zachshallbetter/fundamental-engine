@@ -2895,10 +2895,11 @@
         "heatmapDensity",
         "lit",
         "load",
+        "next",
         "temperature"
       ],
       "counts": {
-        "js": 7,
+        "js": 8,
         "swift": 7,
         "kotlin": 7
       },
@@ -2910,6 +2911,7 @@
           "heatmapDensity",
           "lit",
           "load",
+          "next",
           "temperature"
         ],
         "swift": [
@@ -2967,6 +2969,12 @@
           "js": true,
           "swift": true,
           "kotlin": true
+        },
+        {
+          "symbol": "next",
+          "js": true,
+          "swift": false,
+          "kotlin": false
         },
         {
           "symbol": "temperature",

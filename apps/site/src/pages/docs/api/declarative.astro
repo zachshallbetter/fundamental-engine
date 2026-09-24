@@ -153,6 +153,7 @@ const CHANNEL_VARS: Record<string, string[]> = {
   entropy: ['--entropy'],
   coherence: ['--coherence'],
   temperature: ['--temperature'],
+  next: ['--field-next'],
 };
 const writebackBy = new Map(WRITEBACK.map((w) => [w.name, w]));
 // Every channel must map to at least one var the sink actually writes (WRITEBACK is itself gated by

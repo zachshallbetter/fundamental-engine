@@ -169,6 +169,7 @@ export const WRITEBACK: { name: string; on: string; desc: string }[] = [
   { name: '--entropy', on: 'data-feedback', desc: 'Measured local disorder ∈ [0,1] — velocity-direction dispersion, gated by agitation (physics workover v0.3). Engine-measured; distinct from the platform\'s inferred --field-entropy lane.' },
   { name: '--coherence', on: 'data-feedback', desc: 'Measured local order ∈ [0,1] (= 1 − entropy; velocity alignment). Numeric — not the --coherence palette color on :root.' },
   { name: '--temperature', on: 'data-feedback', desc: 'Measured local agitation ∈ [0,1] — half mean heat, half normalized kinetic energy.' },
+  { name: '--field-next', on: 'data-feedback + focus', desc: "Set to 1 on the ONE body Tab would reach next from the focused one (#943), and REMOVED (not zeroed) when it stops being that body — so a plain [style*=\"--field-next\"] selector works. A keyboard user travels a sequence the page never shows them; this makes the next stop styleable. It follows the real tab order (positive tabindex first, ascending, then natural document order), takes a [data-hot] card's place in that order from its focusable descendant rather than the container's own tabIndex, and never wraps: the last body's successor is the browser chrome. A VALUE, not a movement — it is the static equivalent the reduced-motion contract requires, and it works under render: 'none', which is the default and where the drawn current would be invisible." },
 ];
 
 export const RENDER_MODES: { name: string; desc: string }[] = [
