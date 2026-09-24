@@ -27,6 +27,9 @@ export * from './engine/projection-agent-json.ts';
 export * from './engine/query-lens.ts';
 export * from './engine/streamlines.ts';
 export * from './engine/flow.ts';
+// NavGrid (#439): obstacle-aware navigation and goal flow-fields — a subsystem beside the physics
+// field, not another force. Exported so a game/sim host can build and read one directly.
+export * from './engine/nav-grid.ts';
 export * from './engine/fieldlines.ts';
 export * from './engine/fieldline-seeds.ts';
 export * from './engine/reactions.ts';
