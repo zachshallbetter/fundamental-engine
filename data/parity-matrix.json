@@ -43,6 +43,7 @@
         "burst",
         "clearFlow",
         "clearFocus",
+        "clearNavigation",
         "destroy",
         "diff",
         "effectiveMotion",
@@ -55,6 +56,7 @@
         "focusState",
         "forAgent",
         "grid",
+        "navigate",
         "on",
         "particleCount",
         "pause",
@@ -97,7 +99,7 @@
         "tick"
       ],
       "counts": {
-        "js": 52,
+        "js": 54,
         "swift": 53,
         "kotlin": 59
       },
@@ -111,6 +113,7 @@
           "burst",
           "clearFlow",
           "clearFocus",
+          "clearNavigation",
           "destroy",
           "diff",
           "energy",
@@ -120,6 +123,7 @@
           "focusState",
           "forAgent",
           "grid",
+          "navigate",
           "on",
           "particleCount",
           "query",
@@ -329,6 +333,12 @@
           "kotlin": true
         },
         {
+          "symbol": "clearNavigation",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
           "symbol": "destroy",
           "js": true,
           "swift": true,
@@ -399,6 +409,12 @@
           "js": true,
           "swift": true,
           "kotlin": true
+        },
+        {
+          "symbol": "navigate",
+          "js": true,
+          "swift": false,
+          "kotlin": false
         },
         {
           "symbol": "on",

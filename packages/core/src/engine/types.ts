@@ -10,6 +10,7 @@
  * the integrator, and the conformance harness all build on these shapes.
  */
 import type { FlowOptions } from './flow.ts';
+import type { NavGrid, NavObstacle } from './nav-grid.ts';
 import type { FieldHost } from './host.ts';
 import type { ClassifiedTokens } from '../config/forces.config.ts';
 import type { FieldEventType, FieldEventMap } from './events.ts';
@@ -130,6 +131,9 @@ export interface Particle {
   // ── agent lane (FieldHandle.addAgent) ────────────────────────────────────
   /** top speed in field px/frame — the integrator clamps |v| to this each step. Agents only. */
   maxSpeed?: number;
+  /** Steering gain toward the {@link NavGrid} goal (#439), set from `AgentSpec.navigate`. Present
+   *  only on agents that opted in; absent leaves the agent purely force-driven, exactly as before. */
+  navGain?: number;
   /** an agent's per-step report: called with this particle after it integrates, so an external
    *  transform (a mesh) can follow it. Its presence marks the particle an AGENT — the integrator
    *  skips ambient wander and edge-bounces instead of toroidally wrapping it, and `readParticles`
@@ -517,6 +521,10 @@ export interface Env {
    * into a corner, even though only `linear` is populated today. Read-only contract: setting
    * `accum` never alters how matter moves. */
   accum?: FieldImpulseAccumulator;
+  /** The live {@link NavGrid} (#439), when the host has set one. Read by the integrator's AGENT
+   *  branch only — matter is unaffected, because navigation is a property of something with an
+   *  intention, not of the field. Absent ⇒ no agent navigates and the whole path is skipped. */
+  nav?: NavGrid | null;
   /**
    * OPT-IN declared-potential accessor (#443). A host channel registered with
    * {@link FieldHandle.addField} — terrain height, a cost surface — admitted as a scalar POTENTIAL
@@ -1055,6 +1063,15 @@ export interface AgentSpec {
   maxSpeed?: number;
   /** species tag — lets tagged bodies (`data-affects`) and `hunt` act on this agent selectively. */
   species?: number;
+  /**
+   * Follow the field's {@link NavGrid} toward its goal (#439) — `true` for the default gain, or a
+   * number to tune it. The agent still feels every force; navigation is steering ADDED to them, so
+   * a navigating agent is pushed out of a crowd and still finds its way round the fence.
+   *
+   * Requires `FieldHandle.navigate()` to have built a grid; without one this does nothing rather
+   * than failing, so an agent can opt in before the host has placed any geometry.
+   */
+  navigate?: boolean | number;
   /** called every step with the agent's live particle after it integrates — drive a mesh from here. */
   report: (p: Particle) => void;
 }
@@ -1741,6 +1758,25 @@ export interface FieldHandle {
   flowTo(x: number, y: number, opts?: FlowOptions): void;
   /** Remove the flow focus — the field relaxes back to its bodies-only shape. */
   clearFlow(): void;
+  /**
+   * Build the field's {@link NavGrid} and sweep it toward a goal (#439) — obstacle-aware navigation
+   * for agents that opt in with `AgentSpec.navigate`.
+   *
+   * This is NOT `flowTo`. A flow focus is a directed current: it pulls matter toward a point and
+   * reads the same whether you slid it there or teleported it, and an agent following one walks into
+   * the near side of a wall and stays. `navigate` runs a breadth-first sweep from the goal over an
+   * occupancy grid, so every reachable cell knows the distance to the goal AROUND obstacles — the
+   * first move out of a dead end is *away* from the destination, which no local rule can produce.
+   *
+   * One sweep serves every navigating agent. `obstacles` are impassable, not repulsive: an agent
+   * cannot enter one even if a force shoves it. Re-call to move the goal or change the geometry;
+   * `clearNavigation()` removes the grid and agents fall back to pure force-following.
+   *
+   * Shipped-but-unfrozen.
+   */
+  navigate(opts: { goal: { x: number; y: number }; obstacles?: readonly NavObstacle[]; cell?: number }): void;
+  /** Remove the nav grid (#439) — navigating agents revert to pure force-following. */
+  clearNavigation(): void;
   /**
    * Bind a data record to each base particle, round-robin (so every dot carries a piece of meaning).
    * Each record's `weight` (0..1) scales that particle's mass + size — richer records read as heavier,

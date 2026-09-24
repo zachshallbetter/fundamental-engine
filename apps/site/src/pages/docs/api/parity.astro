@@ -60,6 +60,8 @@ const ORDERED_METHODS: Array<{ method: string; note?: string }> = [
   { method: 'burst' },
   { method: 'flowTo' },
   { method: 'clearFlow' },
+  { method: 'navigate',             note: 'JS only — obstacle-aware navigation + goal flow-fields (#439)' },
+  { method: 'clearNavigation',      note: 'JS only (#439)' },
   { method: 'seed' },
   { method: 'addAgent',             note: 'AgentSpec / AgentHandle; Kotlin init-block wires tickAgents() via onAfterTick; Swift uses UUID-keyed agent list' },
   { method: 'addBody' },

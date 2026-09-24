@@ -268,6 +268,10 @@ const AGENT_WITHHELD = new Set<string>([
   // mutators: matter / bodies / edges / flow / threads
   'threads', 'burst', 'flowTo', 'clearFlow', 'seed', 'addAgent', 'addBody', 'addEdge',
   'addField', 'registerOverlay',
+  // navigate/clearNavigation place impassable geometry and a goal that every navigating agent
+  // follows (#439) — an agent holding them could wall the field's other agents in, or walk them
+  // somewhere. Read-only view ⇒ withheld.
+  'navigate', 'clearNavigation',
   // point / particle / grid readers (raw substrate, not the scoped agent reading)
   'readEdges', 'atomAt', 'focusAt', 'clearFocus', 'sampleField', 'particleCount', 'readParticles',
   'readParticleIds', 'readParticleChannels', 'energy', 'sample', 'sampleScalar', 'sampleGradient',
