@@ -727,6 +727,57 @@ export type OverlayMode =
   | 'path'
   | 'data';
 
+/**
+ * The underlay render vocabulary — every mode `FieldOptions.render` and `FieldHandle.setRender`
+ * accept (#1218). ONE declaration, where there used to be five hand-maintained copies: both unions
+ * here, the `<field-root>` getter's return type AND its runtime `v === '…'` chain, and
+ * `recipes/compile.ts`'s matter-layer set. A mode missing from any one of them failed silently and
+ * differently — rejected at construction, filtered out of the attribute and quietly downgraded to
+ * `none`, or dropped from a Pattern's plan with `check:recipes` green.
+ *
+ * The worst of those was the `<field-root>` pair: a declared return type and the runtime chain that
+ * produces the value, two independent lists on adjacent lines, free to disagree while type-checking.
+ */
+export type RenderModeName =
+  | 'dots'
+  | 'trails'
+  | 'links'
+  | 'metaballs'
+  | 'voronoi'
+  | 'streamlines'
+  | 'flow'
+  | 'knockout'
+  | 'redshift'
+  | 'blackbody'
+  | 'depth'
+  | 'none';
+
+/**
+ * The same vocabulary as DATA, in declaration order, for everything that has to iterate or test
+ * membership at runtime. `satisfies` proves list ⊆ union; {@link RenderListIsExhaustive} proves
+ * union ⊆ list, which `satisfies` cannot — and that is the direction the silent drop lives in.
+ */
+export const RENDER_MODE_LIST = [
+  'dots',
+  'trails',
+  'links',
+  'metaballs',
+  'voronoi',
+  'streamlines',
+  'flow',
+  'knockout',
+  'redshift',
+  'blackbody',
+  'depth',
+  'none',
+] as const satisfies readonly RenderModeName[];
+
+/** Compile-time proof that no `RenderModeName` is missing from {@link RENDER_MODE_LIST}. */
+type RenderListIsExhaustive =
+  Exclude<RenderModeName, (typeof RENDER_MODE_LIST)[number]> extends never ? true : never;
+const _renderListIsExhaustive: RenderListIsExhaustive = true;
+void _renderListIsExhaustive;
+
 /** One reading, or an additive stack of readings, for `setOverlay` / `FieldOptions.overlay`. */
 export type OverlayInput = OverlayMode | readonly OverlayMode[];
 
@@ -833,19 +884,7 @@ export interface FieldOptions {
    *  near body wells, #668), 'blackbody' (dots tinted by energy on a thermal ramp, ember
    *  → white → blue-white, #669), 'depth' (the z lane made visible: far-to-near painter's
    *  sorting, perspective parallax, defocus with distance — pairs with `depth > 0`, #670). */
-  render?:
-    | 'dots'
-    | 'trails'
-    | 'links'
-    | 'metaballs'
-    | 'voronoi'
-    | 'streamlines'
-    | 'flow'
-    | 'knockout'
-    | 'redshift'
-    | 'blackbody'
-    | 'depth'
-    | 'none';
+  render?: RenderModeName;
   /**
    * DECLARED render reference point (Wallpaper Rule, #975): the center of the cool→warm heat
    * vignette the `dots`/`depth` swarm is tinted against — a body far from this point reads warm,
@@ -1707,21 +1746,7 @@ export interface FieldHandle {
    * backing store (the no-allocation guarantee belongs to fields CREATED with `render: 'none'`);
    * switching FROM `'none'` acquires the context lazily and sizes the backing store at that moment.
    */
-  setRender(
-    mode:
-      | 'dots'
-      | 'trails'
-      | 'links'
-      | 'metaballs'
-      | 'voronoi'
-      | 'streamlines'
-      | 'flow'
-      | 'knockout'
-      | 'redshift'
-      | 'blackbody'
-      | 'depth'
-      | 'none',
-  ): void;
+  setRender(mode: RenderModeName): void;
   /**
    * Render field READINGS on the OVERLAY surface — in front of page content (Field Surfaces). Pairs
    * with `setRender` (the underlay); set both for an immersive look. No-op unless the field was created
