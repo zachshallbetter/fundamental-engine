@@ -31,6 +31,9 @@ export interface FieldFieldInit extends FieldOptions {
    *  bodies (scanned within `bounds`), and its canvas all live in the element's local coordinate
    *  space. The managed canvas is absolutely positioned inside it. The card-sized / component path. */
   bounds?: HTMLElement;
+  /** keep a contained field running while its `bounds` box is off-screen (default `false` — it
+   *  pauses entirely, #672 lane S2). See `createField`'s `runOffscreen`. Ignored without `bounds`. */
+  runOffscreen?: boolean;
 }
 
 export class FieldField implements FieldHandle {
@@ -42,12 +45,12 @@ export class FieldField implements FieldHandle {
 
   constructor(init: FieldFieldInit = {}) {
     assertBrowser(); // browser-only: fail loudly during SSR instead of a cryptic crash
-    const { canvas, target, bounds, ...opts } = init;
+    const { canvas, target, bounds, runOffscreen, ...opts } = init;
     this.managed = !canvas;
     // The managed canvas differs by mode (absolutely-positioned inside `bounds`, else full-viewport);
     // host resolution (container vs browser) is delegated to the one `createField` entry.
     this.canvas = canvas ?? (bounds ? makeContainedCanvas(bounds) : makeFieldCanvas(target));
-    this.field = createField(this.canvas, bounds ? { ...opts, bounds } : opts);
+    this.field = createField(this.canvas, bounds ? { ...opts, bounds, runOffscreen } : opts);
   }
 
   /** (re)scan the document for `[data-body]` bodies after a layout change. */
