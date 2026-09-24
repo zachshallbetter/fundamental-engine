@@ -46,6 +46,7 @@ export interface PatternRenderPlan {
 
 const MATTER_MODES = new Set([
   'particles', 'dots', 'trails', 'links', 'metaballs', 'voronoi', 'knockout', 'redshift', 'blackbody', 'depth',
+  'lic',
 ]);
 const OVERLAY_READINGS = new Set(['streamlines', 'force-vectors', 'field-lines', 'grid', 'temperature', 'energy', 'path', 'data']);
 

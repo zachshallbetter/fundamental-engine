@@ -83,6 +83,7 @@ import { forceAt, netField } from './streamlines.ts';
 import { traceFieldLines } from './fieldlines.ts';
 import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
+import { licSeeds, licStep, licAlpha, LIC_STEPS, LIC_STEP_PX, type LicSeed } from './lic.ts';
 import type { FieldHost } from './host.ts';
 import { devWarnNoOp } from '../contracts/guards.ts';
 import { FIELD_VERSION } from '../version.ts';
@@ -742,6 +743,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // on a cadence and DRAW from this cache every frame (so the arrows never flicker or step).
   let slSamples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] | null = null;
   let slQuiescent: { gx: number; gy: number }[] = [];
+  // LIC (#671): the seed lattice depends only on the viewport, the traced hairs on the field. Both
+  // are cached; `licSeedsFor` is the W×H the lattice was built for, so a resize rebuilds it and a
+  // scroll does not.
+  let licSeedCache: LicSeed[] | null = null;
+  let licSeedsFor = '';
+  let licHairs: { pts: number[]; n: number }[] | null = null;
   // Same cadence cache for the OVERLAY arrows (drawOverlayArrows) — the in-front Field-Surfaces
   // reading. Its grid is the same body-induced force field, so it had the same per-frame regrid
   // waste the underlay shed in #406; resample on the cadence, draw from this cache every frame.
@@ -2008,14 +2015,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     drawBound();
 
     // free particles — cool centre → warm edge, blended toward accent (§20.8).
-    // metaballs (a molten iso-surface skin) and streamlines (the bare force field) REPLACE
-    // the matter per §20.6, so suppress the dot swarm for those two; dots/trails/links/voronoi
-    // keep it (their overlays read against the particles). The four matter-swap modes
-    // (knockout / redshift / blackbody / depth, #667–#670) draw their own particle pass
-    // below — same suppression, different material.
+    // metaballs (a molten iso-surface skin), streamlines (the bare force field) and lic (the same
+    // field as texture, #671) REPLACE the matter per §20.6, so suppress the dot swarm for those;
+    // dots/trails/links/voronoi keep it (their overlays read against the particles). The four
+    // matter-swap modes (knockout / redshift / blackbody / depth, #667–#670) draw their own
+    // particle pass below — same suppression, different material.
     const showMatter =
       cfg.render !== 'metaballs' &&
       cfg.render !== 'streamlines' &&
+      cfg.render !== 'lic' &&
       cfg.render !== 'knockout' &&
       cfg.render !== 'redshift' &&
       cfg.render !== 'blackbody' &&
@@ -2427,6 +2435,65 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           ctx!.lineTo(ex - s.ux * ah - s.uy * ah * 0.6, ey - s.uy * ah + s.ux * ah * 0.6);
           ctx!.moveTo(ex, ey);
           ctx!.lineTo(ex - s.ux * ah + s.uy * ah * 0.6, ey - s.uy * ah - s.ux * ah * 0.6);
+          ctx!.stroke();
+        }
+      }
+    }
+
+    // ── LIC: the field as texture (#671) ────────────────────────────────────────────────────────
+    // Where `streamlines` draws one arrow per lattice cell, this traces a few hundred short
+    // streamlines and strokes each at a brightness drawn from a noise field. You stop reading
+    // individual vectors and start seeing the flow — iron filings rather than a list of gradients.
+    if (cfg.render === 'lic') {
+      const acc = curAccent;
+      const key = `${W}x${H}`;
+      if (licSeedCache === null || licSeedsFor !== key) {
+        licSeedCache = licSeeds(W, H);
+        licSeedsFor = key;
+        licHairs = null; // the lattice moved; every traced hair is stale
+      }
+      // RETRACE on the BODY cadence, not every frame, and not the streamlines' every-3rd. A hair is
+      // ~14 force evaluations against every body, so a full retrace is an order of magnitude dearer
+      // than the arrow lattice — and it buys nothing more often, because the field it traces only
+      // moves when the bodies are re-measured (every 6th frame) or a flow focus is live.
+      if (licHairs === null || flow || frameN % 6 === 0) {
+        const hairs: { pts: number[]; n: number }[] = [];
+        for (const seed of licSeedCache) {
+          const pts: number[] = [seed.x, seed.y];
+          let x = seed.x;
+          let y = seed.y;
+          for (let i = 1; i < LIC_STEPS; i++) {
+            let { fx, fy } = forceAt(bodies, reg.forces, env, x, y);
+            if (flow) {
+              const b = flowBiasInto(_flowB, x, y, flow, 0.04);
+              fx += b.x;
+              fy += b.y;
+            }
+            const next = licStep(x, y, fx, fy, LIC_STEP_PX);
+            if (!next.moved) break; // a dead zone ends the hair rather than drawing a straight lie
+            x = next.x;
+            y = next.y;
+            pts.push(x, y);
+          }
+          if (pts.length >= 4) hairs.push({ pts, n: seed.n });
+        }
+        licHairs = hairs;
+      }
+      // DRAW from the cache every frame — the canvas is cleared each frame, and the texture must not
+      // flicker on the five frames in six that do not retrace.
+      ctx!.lineCap = 'round';
+      ctx!.lineWidth = 1.15;
+      for (const hair of licHairs) {
+        const steps = hair.pts.length / 2;
+        // stroke segment by segment: the alpha taper along the hair is what makes it dissolve into
+        // the field instead of ending in a hard dash, and one stroke per hair cannot express it.
+        for (let i = 1; i < steps; i++) {
+          const a = licAlpha(hair.n, i, steps) * 0.55;
+          if (a <= 0.004) continue;
+          ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${a.toFixed(3)})`;
+          ctx!.beginPath();
+          ctx!.moveTo(hair.pts[(i - 1) * 2]!, hair.pts[(i - 1) * 2 + 1]!);
+          ctx!.lineTo(hair.pts[i * 2]!, hair.pts[i * 2 + 1]!);
           ctx!.stroke();
         }
       }
