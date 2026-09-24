@@ -250,11 +250,7 @@ Condition gating runs through the real condition registry (`active`, `fast`, `sl
 
 ## Coverage
 
-<<<<<<< HEAD
-- **37 forces**, each with an experiment (36 `EXPERIMENTS` + 4 `COMPOSITE_EXPERIMENTS`,
-=======
-- **37 forces**, each with an experiment (37 `EXPERIMENTS` + 3 `COMPOSITE_EXPERIMENTS`,
->>>>>>> 2ae0c080 (feat(core,swift,kotlin): height-aware fields — terrain as a declared potential (#443))
+- **37 forces**, each with an experiment (37 `EXPERIMENTS` + 4 `COMPOSITE_EXPERIMENTS`,
   ~79 invariant/exact checks), driven through the real engine and deterministic across
   runs, on top of the golden per-force unit tests and the integrator suite. A **safety
   sweep** then runs all 40 experiments through global finite/bounded/conserved invariants
