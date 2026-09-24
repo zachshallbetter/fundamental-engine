@@ -12,6 +12,8 @@
 //
 // The substrate is a base layer so it is pick-one; the overlays genuinely compose, so they toggle.
 
+import { OVERLAY_READING_LIST } from '@fundamental-engine/core';
+
 interface FieldLike {
   setRender(mode: string): void;
   setOverlay(mode: string | string[]): void;
@@ -61,7 +63,11 @@ const OVERLAYS: { mode: string; label: string; note: string }[] = [
   { mode: 'heatmap',       label: 'heatmap',     note: 'A density gradient — where matter concentrates, hot to cold.' },
 ];
 // overlay modes that go through setOverlay (everything except the special-cased heatmap)
-const SETOVERLAY_MODES = new Set(['force-vectors', 'field-lines', 'grid', 'temperature', 'energy', 'path', 'streamlines', 'data']);
+// Derived, never re-listed (#672 lane R0, C-17). A hand-kept copy here meant a new reading simply
+// never became a workbench control — the quietest of the four failures, since nothing looks broken.
+// `@fundamental-engine/core` is already in this lazy chunk (explore-preview.ts loads both in one
+// Promise.all), so the import costs nothing the page was not already paying.
+const SETOVERLAY_MODES: ReadonlySet<string> = new Set<string>(OVERLAY_READING_LIST);
 
 const SUBSTRATE_BY_MODE = new Map(SUBSTRATE.map((s) => [s.mode, s]));
 const OVERLAY_BY_MODE = new Map(OVERLAYS.map((o) => [o.mode, o]));

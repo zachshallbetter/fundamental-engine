@@ -727,6 +727,46 @@ export type OverlayMode =
   | 'path'
   | 'data';
 
+/**
+ * The overlay vocabulary as DATA, in declaration order (#672 lane R0, Field Surfaces program §6.1
+ * **C-17**). The union above is the contract; this is the same vocabulary a runtime can iterate,
+ * and it exists so the copies stop multiplying — before this there were four hand-maintained
+ * duplicates (`recipes/compile.ts`, the `<field-root>` attribute filter, the site's workbench, and
+ * the `check:docs` extractor's regex), and a new reading had to be added to every one of them or it
+ * failed SILENTLY: dropped from a Pattern's plan, filtered out of the attribute, missing its button.
+ *
+ * `satisfies` below proves list ⊆ union. `_overlayListIsExhaustive` proves union ⊆ list, which
+ * `satisfies` cannot — that is the "both directions" C-17 asks for, and without it a union member
+ * missing from the list is exactly the silent drop this is meant to end.
+ */
+export const OVERLAY_MODE_LIST = [
+  'off',
+  'streamlines',
+  'force-vectors',
+  'field-lines',
+  'grid',
+  'temperature',
+  'energy',
+  'path',
+  'data',
+] as const satisfies readonly OverlayMode[];
+
+/** Compile-time proof that no `OverlayMode` is missing from {@link OVERLAY_MODE_LIST}: if one is,
+ *  `Exclude` is not `never`, the type resolves to `never`, and assigning `true` fails `tsc`. */
+type OverlayListIsExhaustive =
+  Exclude<OverlayMode, (typeof OVERLAY_MODE_LIST)[number]> extends never ? true : never;
+const _overlayListIsExhaustive: OverlayListIsExhaustive = true;
+void _overlayListIsExhaustive;
+
+/**
+ * Every reading that actually DRAWS — the vocabulary minus `off`. This is the list a consumer wants
+ * nine times out of ten: `off` is the absence of a reading, not one of them, and every hand-written
+ * copy this replaces had already dropped it by hand.
+ */
+export const OVERLAY_READING_LIST: readonly Exclude<OverlayMode, 'off'>[] = OVERLAY_MODE_LIST.filter(
+  (m): m is Exclude<OverlayMode, 'off'> => m !== 'off',
+);
+
 /** One reading, or an additive stack of readings, for `setOverlay` / `FieldOptions.overlay`. */
 export type OverlayInput = OverlayMode | readonly OverlayMode[];
 
