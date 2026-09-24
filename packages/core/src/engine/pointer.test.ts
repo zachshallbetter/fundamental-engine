@@ -183,21 +183,26 @@ test('opts pick the cursor: attract gathers where repel pushes', () => {
   }
 });
 
-test('a MOVING cursor carries matter and a still one does not — measured on a real field', () => {
-  // Two identical fields (same seed, same pinned clock, so they are comparable at all). One cursor
-  // is dragged across the field; the other is parked at the end point. Same body, same forces, same
-  // final position — only the motion differs.
-  const run = (drag: boolean): number => {
+test('the wake is applied by the engine: same cursor, same path, wake strength 0 vs 1', () => {
+  // THE test for this feature, and the first version of it was VACUOUS — it compared a dragged
+  // cursor against a parked one, and that difference is fully explained by the repel BODY sweeping
+  // across the field. Deleting `pointerWakeInto` from the engine left it green.
+  //
+  // Two things had to change. The harness pinned the field clock with `now: () => 0` for
+  // reproducibility, which pinned the POINTER's sample clock too: every interval measured zero, the
+  // velocity estimate never left zero, and the wake never fired at all. That is what `opts.at` is
+  // for. And the comparison now varies ONLY the wake: identical fields, identical cursor body,
+  // identical path, identical timing — `strength: 0` versus `strength: 1`. Nothing but the wake can
+  // move the result, so the engine either applies it or this fails.
+  const run = (strength: number): number => {
     const { host, step } = drivableHost();
     const field = createField({} as HTMLCanvasElement, { host, render: 'none', rng: seededRng(5), now: () => 0 });
     try {
       field.scan();
-      if (drag) {
-        for (let i = 0; i <= 20; i++) { field.pointer(300 + i * 10, 400); step(1); }
-      } else {
-        for (let i = 0; i <= 20; i++) { field.pointer(500, 400); step(1); }
+      for (let i = 0; i <= 20; i++) {
+        field.pointer(300 + i * 10, 400, { strength, at: i * MS, radius: 160 });
+        step(1);
       }
-      // net rightward drift of the matter the cursor passed through
       const out = new Float32Array(5 * 600);
       field.readParticles(out);
       let sum = 0;
@@ -206,20 +211,45 @@ test('a MOVING cursor carries matter and a still one does not — measured on a 
         const x = out[i]!;
         const y = out[i + 1]!;
         if (x === 0 && y === 0) continue;
-        if (Math.abs(y - 400) < 100 && x > 250 && x < 600) { sum += x; n++; }
+        if (Math.abs(y - 400) < 120 && x > 250 && x < 650) { sum += x; n++; }
       }
       return n ? sum / n : 0;
     } finally {
       field.destroy();
     }
   };
-  const dragged = run(true);
-  const parked = run(false);
-  assert.ok(dragged > 0 && parked > 0, 'both runs found matter along the path');
+  const carried = run(1);
+  const none = run(0);
+  assert.ok(carried > 0 && none > 0, 'both runs found matter along the path');
+  assert.notEqual(carried, none, 'the wake reaches the particles at all — if this fails, nothing applies it');
   assert.ok(
-    dragged > parked,
-    `a dragged cursor leaves matter further along its travel than a parked one: ${dragged.toFixed(3)} vs ${parked.toFixed(3)}`,
+    carried > none,
+    `matter is carried ALONG the travel: ${carried.toFixed(4)} with the wake vs ${none.toFixed(4)} without`,
   );
+});
+
+test('a pinned simulation clock must not silently kill the wake (the bug that made the test above vacuous)', () => {
+  // `now` pins the SIM clock for reproducibility. It used to pin the pointer's sample clock with it,
+  // so a deterministic field had a permanently motionless cursor and no wake — with nothing to say
+  // so. Two identical pinned fields, identical path, identical everything: one supplies `at`, one
+  // does not. If `at` is ignored again, these come out bit-identical and this fails.
+  const run = (withAt: boolean): number[] => {
+    const { host, step } = drivableHost();
+    const field = createField({} as HTMLCanvasElement, { host, render: 'none', rng: seededRng(9), now: () => 0 });
+    try {
+      field.scan();
+      for (let i = 0; i <= 15; i++) {
+        field.pointer(300 + i * 12, 400, withAt ? { at: i * MS, radius: 200 } : { radius: 200 });
+        step(1);
+      }
+      const out = new Float32Array(5 * 600);
+      field.readParticles(out);
+      return [...out];
+    } finally {
+      field.destroy();
+    }
+  };
+  assert.notDeepEqual(run(true), run(false), 'supplying `at` makes the pointer move on a pinned clock');
 });
 
 test('fling seeds a mover\'s offset velocity: it travels under its own momentum, then comes home', () => {

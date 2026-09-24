@@ -61,6 +61,16 @@ export interface PointerOptions {
   bodyStrength?: number;
   /** the cursor body's force range in px (default 160). */
   bodyRange?: number;
+  /**
+   * Sample time in **milliseconds**, for the velocity estimate. Defaults to the field's own clock.
+   *
+   * Pass it when that clock is pinned — a field constructed with `now` (a deterministic test, a
+   * replay) reports the same instant forever, so every sample would measure a zero interval and the
+   * pointer would have no velocity and therefore **no wake at all**, silently. Pass it also to replay
+   * a recorded gesture at its original timing rather than at the rate you feed it. A host with a real
+   * clock can hand through `event.timeStamp`; omitting it is correct for the ordinary live case.
+   */
+  at?: number;
 }
 
 /** A live pointer: where it is, how fast it is going, and how long since anyone said so. */

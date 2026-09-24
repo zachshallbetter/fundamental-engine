@@ -3321,7 +3321,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // makes the claim true: the pointer goes through the same classification, measurement and
       // reporting path as a `[data-body]`, so `query()` sees it, `data-affects` species filtering
       // applies to it, and there is no second code path to keep in step with the first.
-      const now = wallNow();
+      // The sample clock is the HOST's, not the simulation's. A field constructed with `now` pins
+      // `wallNow()` to one instant, so without `at` every interval would measure zero, the velocity
+      // estimate would never leave zero, and the wake would be silently dead — on exactly the fields
+      // a caller pinned the clock to make reproducible (#666).
+      const now = opts?.at ?? wallNow();
       const half = 0.5; // the cursor's own box is a point; its REACH is data-range, not its size
       pointerRect = { left: x - half, top: y - half, width: half * 2, height: half * 2 };
       if (!pointerState) {
