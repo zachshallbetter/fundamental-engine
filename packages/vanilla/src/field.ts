@@ -17,7 +17,8 @@
  * ```
  */
 
-import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type EdgeHandle, type EdgeView, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
+import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions,
+  type PointerOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type EdgeHandle, type EdgeView, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
 import { createField } from './create-field.ts';
 import { makeFieldCanvas, makeContainedCanvas, assertBrowser } from './mount.ts';
 
@@ -133,6 +134,18 @@ export class FieldField implements FieldHandle {
   /** remove the flow focus. */
   clearFlow(): void {
     this.field.clearFlow();
+  }
+  /** place/move the pointer — the cursor as a transient body, plus the wake its motion leaves (#666). */
+  pointer(x: number, y: number, opts?: PointerOptions): void {
+    this.field.pointer(x, y, opts);
+  }
+  /** remove the pointer body and its wake (#666). */
+  clearPointer(): void {
+    this.field.clearPointer();
+  }
+  /** throw a `[data-move]` element with a release velocity in px/second (#666). */
+  fling(el: HTMLElement, vx: number, vy: number): void {
+    this.field.fling(el, vx, vy);
   }
   seed(atoms: readonly AtomPayload[]): void {
     this.field.seed(atoms);

@@ -268,6 +268,10 @@ const AGENT_WITHHELD = new Set<string>([
   // mutators: matter / bodies / edges / flow / threads
   'threads', 'burst', 'flowTo', 'clearFlow', 'seed', 'addAgent', 'addBody', 'addEdge',
   'addField', 'registerOverlay',
+  // pointer/clearPointer/fling are WRITES (#666): the first two put a real body in the field and
+  // stir matter with it, the third throws a page element. An agent reading the field never gets to
+  // move the user's cursor or their UI. Read-only view ⇒ withheld.
+  'pointer', 'clearPointer', 'fling',
   // point / particle / grid readers (raw substrate, not the scoped agent reading)
   'readEdges', 'atomAt', 'focusAt', 'clearFocus', 'sampleField', 'particleCount', 'readParticles',
   'readParticleIds', 'readParticleChannels', 'energy', 'sample', 'sampleScalar', 'sampleGradient',

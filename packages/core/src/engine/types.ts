@@ -10,6 +10,7 @@
  * the integrator, and the conformance harness all build on these shapes.
  */
 import type { FlowOptions } from './flow.ts';
+import type { PointerOptions } from './pointer.ts';
 import type { FieldHost } from './host.ts';
 import type { ClassifiedTokens } from '../config/forces.config.ts';
 import type { FieldEventType, FieldEventMap } from './events.ts';
@@ -1741,6 +1742,39 @@ export interface FieldHandle {
   flowTo(x: number, y: number, opts?: FlowOptions): void;
   /** Remove the flow focus — the field relaxes back to its bodies-only shape. */
   clearFlow(): void;
+  /**
+   * Place or move the **pointer** — the cursor as a transient participant in the field (#666). The
+   * host feeds screen coordinates (a `pointermove` handler is the whole integration) and the engine
+   * does two things with them:
+   *
+   * 1. keeps a real **body** at the cursor, carrying whatever force token you pick (`'repel'` by
+   *    default, so a finger pushes matter aside; `'attract'` gathers, `'swirl'` stirs). It is a
+   *    first-class body — `query()` reports it like any other.
+   * 2. tracks the cursor's **velocity** and lets nearby matter inherit it — a wake. This is what
+   *    `flowTo` cannot do: a flow focus is a *place* the field bends toward, so it behaves the same
+   *    whether you slid it there or teleported it. A pointer that is not moving leaves no wake at
+   *    all, and a flick pulls a streak of matter behind it.
+   *
+   * Call it as often as the host has positions; the engine smooths the velocity itself. A pointer
+   * that stops being reported keeps its position but fades its wake out within ~0.25s, so a cursor
+   * that left the window never drags matter forever. `clearPointer()` removes it outright — wire
+   * that to `pointerleave`. Shipped-but-unfrozen.
+   */
+  pointer(x: number, y: number, opts?: PointerOptions): void;
+  /** Remove the pointer body and its wake (#666) — the field forgets the cursor entirely. */
+  clearPointer(): void;
+  /**
+   * **Throw** a `[data-move]` element (#666): hand it the velocity it was travelling at when the
+   * user let go, in **px/second**, and the field carries it on. The element keeps its existing
+   * anchor spring and friction, so a fling arcs, decelerates, and settles back into its layout slot
+   * — it is a release into the field's own dynamics, not an animation played over the top of them.
+   *
+   * The unit is px/second because that is what a drag handler measures (Δpx / Δt). Velocity is
+   * clamped, so a release velocity computed from one bad sample cannot launch the element.
+   *
+   * No-op for an element that is not a `[data-move]` mover on this field. Shipped-but-unfrozen.
+   */
+  fling(el: HTMLElement, vx: number, vy: number): void;
   /**
    * Bind a data record to each base particle, round-robin (so every dot carries a piece of meaning).
    * Each record's `weight` (0..1) scales that particle's mass + size — richer records read as heavier,
