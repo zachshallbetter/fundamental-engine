@@ -126,6 +126,11 @@ export class FieldField implements FieldHandle {
   burst(x: number, y: number, hex?: string): void {
     this.field.burst(x, y, hex);
   }
+  /** Flare a body — the transient per-body one-shot, published as `--field-pulse` (#567). Takes a
+   *  `[data-body]` element or an `addBody` handle; unlike `burst` above it moves no matter. */
+  pulse(target: HTMLElement | BodyHandle, energy?: number): void {
+    this.field.pulse(target, energy);
+  }
   /** place/move a dynamic flow focus the field bends toward — pulls matter, curves the streamlines. */
   flowTo(x: number, y: number, opts?: FlowOptions): void {
     this.field.flowTo(x, y, opts);

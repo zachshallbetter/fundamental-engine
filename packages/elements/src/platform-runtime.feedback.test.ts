@@ -6,6 +6,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { makeFeedbackSink } from './platform-runtime.ts';
+import { cssFeedbackSink } from '@fundamental-engine/core';
 import type { FieldPlatform } from '@fundamental-engine/dom';
 
 function fakePlatform() {
@@ -74,4 +75,30 @@ test('a channel-less call writes nothing', () => {
   const { platform, sets, states, thresholds } = fakePlatform();
   makeFeedbackSink(platform)({} as HTMLElement, {});
   assert.equal(sets.length + states.length + thresholds.length, 0);
+});
+
+test('pulse routes to --field-pulse, and the platform route matches the engine default byte for byte (#567)', () => {
+  const { platform, sets } = fakePlatform();
+  const sink = makeFeedbackSink(platform);
+  const el = {} as HTMLElement;
+  sink(el, { pulse: 0.5 });
+  assert.deepEqual(Object.assign({}, ...sets.map((s) => s.vars)), { '--field-pulse': '0.500' });
+
+  // the parity that matters: the two sinks are meant to be interchangeable, so a channel added to
+  // one and forgotten in the other is the failure mode. Run the SAME channels through the engine's
+  // default sink and assert the same property/value pairs come out.
+  const direct: Array<[string, string]> = [];
+  const el2 = {
+    dataset: {},
+    style: { setProperty: (n: string, v: string) => void direct.push([n, v]) },
+  } as unknown as HTMLElement;
+  const { platform: p2, sets: s2 } = fakePlatform();
+  const channels = { density: 0.25, pulse: 0.75, load: 0.5, temperature: 0.1 };
+  cssFeedbackSink(el2, channels);
+  makeFeedbackSink(p2)(el2, channels);
+  assert.deepEqual(
+    Object.assign({}, ...s2.map((s) => s.vars)),
+    Object.fromEntries(direct),
+    'the platform sink and the engine default sink write the same variables',
+  );
 });

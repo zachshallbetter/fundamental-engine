@@ -260,6 +260,13 @@ export class FieldLayer implements FieldHandle {
   burst(x: number, y: number, hex?: string): void {
     this.field.burst(x, y, hex);
   }
+
+  /** Flare a body — the transient per-body one-shot (#567). A mesh-backed body's handle comes from
+   *  `addBody`, so a Three host flares its own geometry through the same call a DOM host uses; the
+   *  channel is delivered to that body's `onFeedback`, never to CSS (this layer installs no CSS sink). */
+  pulse(target: Parameters<FieldHandle['pulse']>[0], energy?: number): void {
+    this.field.pulse(target, energy);
+  }
   flowTo(x: number, y: number, flowOpts?: FlowOptions): void {
     this.field.flowTo(x, y, flowOpts);
   }

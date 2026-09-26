@@ -253,7 +253,7 @@ test('lintFeedbackEngineOwned covers every engine-owned var, and only those', ()
   assert.ok(codes.every((w) => !/--field-attention|--field-memory/.test(w.message)), 'author lanes are not flagged');
   assert.deepEqual(
     [...ENGINE_OWNED_FEEDBACK_VARS].sort(),
-    ['--coherence', '--d', '--entropy', '--field-density', '--field-heatmap-density', '--lit', '--load', '--mass', '--temperature'],
+    ['--coherence', '--d', '--entropy', '--field-density', '--field-heatmap-density', '--field-pulse', '--lit', '--load', '--mass', '--temperature'],
   );
 });
 

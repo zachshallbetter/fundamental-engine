@@ -10,8 +10,11 @@ test.describe("/patterns · solution-finder catalog", () => {
     await expect(page.locator(".ex-card")).toHaveCount(64);
     // All + nine problem domains + Platform & Teaching
     await expect(page.locator(".ex-pill")).toHaveCount(11);
-    // experimental patterns are preserved as a linked section (incl. the new focus-well)
-    await expect(page.locator(".ex-exp-list li")).toHaveCount(5);
+    // experimental patterns are preserved as a linked section (incl. the new completion-flare).
+    // This count is a deliberate pin, not a formality: EXPERIMENTAL_PATTERNS is the one catalog an
+    // addition can join without touching the frozen 64, so bumping it here is how a new experimental
+    // pattern gets acknowledged rather than slipping in unnoticed.
+    await expect(page.locator(".ex-exp-list li")).toHaveCount(6);
   });
 
   test("a domain filter narrows the result count and marks itself active", async ({ page }) => {

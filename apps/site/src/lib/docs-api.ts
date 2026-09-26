@@ -77,6 +77,7 @@ export const HANDLE: MethodRow[] = [
   { sig: 'setBackground(mode)', desc: "Switch the substrate live: 'transparent' clears to transparent so the underlay composites over light content; 'opaque' restores the near-black substrate. Additive." },
   { sig: 'threads(list | null)', desc: 'Wire glowing connector lines between an engaged set, or clear with null.' },
   { sig: 'burst(x, y, hex?)', desc: 'A one-shot shove + heat near a point, optionally tinting the matter.' },
+  { sig: 'pulse(target, energy?)', desc: 'Flare a BODY — a transient, exponentially decaying one-shot published on that body\'s own --field-pulse channel (energy defaults to 1, is additive, and saturates at 1; half-life 0.15s). target is a [data-body] element or an addBody handle. Not burst: burst is a blast at screen coordinates that shoves and heats matter, while pulse moves no matter at all and belongs to one body. Not --d either: --d MEASURES gathered matter, so driving it from an app event overwrites the channel the engine owns. The field loop steps the decay, so a host flares from an ordinary event handler and writes no animation driver. Decay runs on wall time, so flares resolve on a reduced-motion field. Withheld from the read-only agent view. Experimental.' },
   { sig: 'flowTo(x, y, opts?)', desc: 'Place/move a dynamic flow focus the field bends toward — pulls matter in and curves the streamlines. Retarget it each frame to follow the pointer, an element, or a path. opts: { strength?, radius? }.' },
   { sig: 'clearFlow()', desc: 'Remove the flow focus — the field relaxes back to its bodies-only shape.' },
   { sig: 'seed(atoms)', desc: "Bind a data record to each base particle, round-robin. Each record's weight ∈ [0,1] scales that particle's mass + size. Re-applied across resize/density rebuilds." },
@@ -169,6 +170,7 @@ export const WRITEBACK: { name: string; on: string; desc: string }[] = [
   { name: '--entropy', on: 'data-feedback', desc: 'Measured local disorder ∈ [0,1] — velocity-direction dispersion, gated by agitation (physics workover v0.3). Engine-measured; distinct from the platform\'s inferred --field-entropy lane.' },
   { name: '--coherence', on: 'data-feedback', desc: 'Measured local order ∈ [0,1] (= 1 − entropy; velocity alignment). Numeric — not the --coherence palette color on :root.' },
   { name: '--temperature', on: 'data-feedback', desc: 'Measured local agitation ∈ [0,1] — half mean heat, half normalized kinetic energy.' },
+  { name: '--field-pulse', on: 'data-feedback + pulse()', desc: 'Transient flare ∈ [0,1] from field.pulse(body) — the "something just happened here" channel, deliberately separate from --d. Starts at the pulse energy (no ease-in), halves every 0.15s, and is written only while a flare is live plus one final exact 0; an un-pulsed body never carries the property. The decay runs on WALL time, not the motion budget, so a reduced-motion field still resolves its flares to rest instead of latching. Energy is additive and saturates at 1.' },
 ];
 
 export const RENDER_MODES: { name: string; desc: string }[] = [
