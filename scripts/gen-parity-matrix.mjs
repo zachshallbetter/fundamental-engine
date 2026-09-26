@@ -197,6 +197,8 @@ const BODY_CONCEPT_ALIASES = {
   'on-feedback': 'feedback',      // JS/Swift: `onFeedback` callback == the feedback opt-in
   'field-role': 'role',           // JS: `data-field-role`
   'field-boundary': 'boundary',   // JS: `data-field-boundary` (engine-set ownership marker)
+  'twist-deg': 'twist',           // Kotlin: `twistDeg` — the `angleDeg` precedent, degrees in, radians held
+  'warp-scale': 'scale',          // Kotlin: `warpScale` == JS `data-scale`
 };
 const bodyConcept = (raw) => {
   const k = kebab(raw);
