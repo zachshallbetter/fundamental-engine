@@ -23,6 +23,17 @@ pub enum Effect {
         /// Spark tint (`#rrggbb`); `None` = the force's canon colour.
         color: Option<String>,
     },
+    /// A velocity change owed to a particle, addressed by id (#1037).
+    ///
+    /// The neighbour snapshot a class-\[B\] force reads is a frame-start *copy*, so a force that must
+    /// move its neighbour — `collide` is the only one — cannot simply mutate it the way the JS engine
+    /// does. It emits the neighbour's half of the exchange as data instead, and the integrator applies
+    /// it by id after the force pass. Equal-and-opposite pairs make the result momentum-conserving and
+    /// independent of the order particles are visited in.
+    Impulse {
+        particle_id: u64,
+        dv: Vec3,
+    },
 }
 
 /// The active, eased formation (§7) — ambient bias applied field-wide.
@@ -137,6 +148,9 @@ pub struct Body {
 
     // ── feedback / density (§8) ─────────────────────────────────────────
     /// Whether this body is an active force source this frame (JS `vis`).
+    /// `screen`'s attenuation floor — the most a quiet zone may damp a neighbour's force to. 0 (the
+    /// default) lets a screen cancel a neighbour outright at its core; 0.25 leaves a quarter of it.
+    pub screen_min: f64,
     pub visible: bool,
     /// Whether this body samples local density for two-way feedback.
     pub feedback: bool,
@@ -159,6 +173,7 @@ impl Default for Body {
             strength: 1.0,
             range: 300.0,
             absorb_r: 64.0,
+            screen_min: 0.0,
             capacity: 60.0,
             spin: 1.0,
             heading: Vec3::new(1.0, 0.0, 0.0),

@@ -84,6 +84,7 @@ import { traceFieldLines } from './fieldlines.ts';
 import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
+import { admits as admitsShare } from './agent-read-share.ts';
 import { devWarnNoOp } from '../contracts/guards.ts';
 import { FIELD_VERSION } from '../version.ts';
 import { energyReport } from '../diagnostics/energy.ts';
@@ -3163,12 +3164,50 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const redactions = (viewOpts.redactions ?? []).slice();
       const has = (c: AgentCapability): boolean => caps.has(c);
 
-      // If a future `budgets.agentRead` budget is 0, the agent surface is closed entirely: the most
-      // restricted view (empty caps → ids + shape only). SEAM: only the 0 boundary is wired today; the
-      // fractional 0<b<1 gradient (partial agent read) is DECLARED-not-yet-enforced (see FieldBudgets).
+      // `budgets.agentRead` is a CONSERVATION LAW on the agent surface (#915): `b` is the SHARE of the
+      // field's readable body population this view may consume. `b == null` or `b >= 1` is the whole
+      // field; `b <= 0` closes the surface entirely (ids + shape only); `0 < b < 1` grants a partial read.
       const agentReadOpen = (): boolean => {
         const b = policy.budgets?.agentRead;
         return b == null || b > 0;
+      };
+      const agentReadShare = (): number => {
+        const b = policy.budgets?.agentRead;
+        return b == null ? 1 : b;
+      };
+
+      // Which bodies a partial read admits. The selection is DETERMINISTIC, STABLE PER BODY ID, and
+      // NOT POSITIONAL — each property is load-bearing, and the obvious implementations fail one:
+      //   · deterministic, because a random draw makes an agent read unreplayable, and record/replay
+      //     is a contract this engine keeps everywhere else (it threads a seeded `rng` for exactly this);
+      //   · stable, because a subset RESAMPLED each frame leaks the whole field to a patient reader —
+      //     the union of enough independent 10% samples is 100%. A budget that can be defeated by
+      //     calling `query()` in a loop is not a budget. This is the security core of the gate;
+      //   · not positional, because `take the first ceil(n·b)` leaks scan order, hands every agent the
+      //     same prefix, and makes the withheld tail identical for everyone.
+      // FNV-1a over the body id gives a fixed [0,1) coordinate per body; admit those under the share.
+      // The expected admitted count is n·b, not exactly n·b — that is inherent to a per-body stable
+      // rule, and the alternative (an exact count) is necessarily positional or unstable.
+      /**
+       * Narrow a reading to the admitted share. Edges are filtered to SURVIVING ENDPOINTS: a
+       * relationship or influence naming a withheld body is itself a disclosure of that body's id and
+       * existence, so an edge survives only when every body it names does. Field-wide `metrics` are
+       * aggregates over the whole field, not per-body readings, and are left to `read:metrics`.
+       */
+      const sampleBodies = <T extends {
+        bodies: Array<{ id: string }>;
+        relationships?: Array<{ from: string; to: string }>;
+        influences?: Array<{ source: string; target?: string }>;
+      }>(res: T, share: number): T => {
+        if (!(share < 1)) return res;
+        const kept = new Set<string>();
+        for (const b of res.bodies) if (admitsShare(b.id, share)) kept.add(b.id);
+        res.bodies = res.bodies.filter((b) => kept.has(b.id));
+        if (res.relationships) res.relationships = res.relationships.filter((r) => kept.has(r.from) && kept.has(r.to));
+        if (res.influences) {
+          res.influences = res.influences.filter((i) => kept.has(i.source) && (i.target == null || kept.has(i.target)));
+        }
+        return res;
       };
 
       const scopeQuery = (q: FieldQuery = {}): FieldQueryResult => {
@@ -3195,6 +3234,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         if (!has('read:relationships')) res.relationships = [];
         if (!has('read:influences')) res.influences = [];
         if (!has('read:projections')) res.projections = [];
+        // #915: the fractional budget narrows the population AFTER capability scoping — tighten-only,
+        // and it composes with the caps rather than replacing them.
+        sampleBodies(res, agentReadShare());
         return applyRedactions(res as unknown as Record<string, unknown>, redactions) as unknown as FieldQueryResult;
       };
 
@@ -3216,6 +3258,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         if (!has('read:diagnostics')) scoped.includeParticles = false;
         const snap = handle.snapshot(scoped);
         if (!has('read:projections')) snap.projections = [];
+        // #915: the same share applies to a capture, or `snapshot()` would hand back the whole field
+        // that `query()` just withheld. The raw particle pool carries no body identity, so it has no
+        // stable key to sample by; it stays gated by `read:diagnostics` alone (documented boundary).
+        sampleBodies(snap, agentReadShare());
         return applyRedactions(snap as unknown as Record<string, unknown>, redactions) as unknown as FieldSnapshot;
       };
 
@@ -3400,6 +3446,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // the declared-potential channel (#443) — the programmatic mirror of data-potential, so a
       // non-DOM host (a game, an agent runtime) can declare terrain-coupled matter through addBody.
       if (spec.potential != null) attrs['data-potential'] = spec.potential;
+      // the capture horizon (#1177) — the programmatic mirror of data-absorb, so a non-DOM host can
+      // size a sink's or a warp throat's radius without reaching past the public API.
+      if (spec.absorbR != null) attrs['data-absorb'] = String(spec.absorbR);
       const toRect = (): DOMRect => {
         const r = spec.rect();
         return {
