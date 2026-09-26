@@ -1,4 +1,4 @@
-import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RestingMotion, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
+import { PALETTE, FIELD_VERSION, OVERLAY_READING_LIST, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RestingMotion, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
 import { createBrowserField, createOverlaySurface, normalizeOverlayBlend, normalizeOverlayZ, type FieldPlatform, type OverlaySurface } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -252,16 +252,10 @@ export class FieldField extends HTMLElementBase {
 
   /** Field Surfaces: the overlay reading(s) — one mode or a space-separated additive stack. Default `off`. */
   get overlay(): OverlayInput {
-    const KNOWN: readonly OverlayMode[] = [
-      'streamlines',
-      'force-vectors',
-      'field-lines',
-      'grid',
-      'temperature',
-      'energy',
-      'path',
-      'data',
-    ];
+    // Derived, never re-listed (#672 lane R0, C-17). A hand-kept copy here meant a new reading was
+    // filtered out of the attribute and the element fell back to `off` — silently, since an unknown
+    // token has never been an error here.
+    const KNOWN: readonly OverlayMode[] = OVERLAY_READING_LIST;
     const list = (this.getAttribute('overlay') ?? '')
       .split(/\s+/)
       .filter((t): t is OverlayMode => (KNOWN as readonly string[]).includes(t));

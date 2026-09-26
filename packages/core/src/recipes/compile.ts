@@ -10,6 +10,7 @@
  * bindings; diagnostics become inspector/render toggles; conditions become activation gates;
  * accessibility becomes a reduced-motion output plan.
  */
+import { OVERLAY_READING_LIST } from '../engine/types.ts';
 import type { BodyPattern, FieldRecipe } from './schema.ts';
 
 /** The CSS feedback variable a metric writes to (`attention` → `--field-attention`). */
@@ -47,7 +48,9 @@ export interface PatternRenderPlan {
 const MATTER_MODES = new Set([
   'particles', 'dots', 'trails', 'links', 'metaballs', 'voronoi', 'knockout', 'redshift', 'blackbody', 'depth',
 ]);
-const OVERLAY_READINGS = new Set(['streamlines', 'force-vectors', 'field-lines', 'grid', 'temperature', 'energy', 'path', 'data']);
+// Derived, never re-listed (#672 lane R0, C-17). A hand-kept copy here meant a new reading landed
+// in `unapplied` — a Pattern declaring it silently lost the layer, with `check:recipes` green.
+const OVERLAY_READINGS: ReadonlySet<string> = new Set<string>(OVERLAY_READING_LIST);
 
 /** Derive the render plan from a recipe's declared layers (pure; `particles` is the base matter
  *  layer and maps to `dots`). `streamlines` prefers the overlay (it reads over content) unless it
