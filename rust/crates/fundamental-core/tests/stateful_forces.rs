@@ -95,6 +95,7 @@ fn wall_bounces_fast_matter_and_sparks() {
                 "spark in the canon wall hue"
             );
         }
+        other => panic!("wall throws a spark, not {other:?}"),
     }
 }
 
