@@ -139,6 +139,9 @@ export function makeFeedbackSink(platform: FieldPlatform): FeedbackSink {
     if (ch.entropy !== undefined) platform.feedback.set(el, { '--entropy': f3(ch.entropy) });
     if (ch.coherence !== undefined) platform.feedback.set(el, { '--coherence': f3(ch.coherence) });
     if (ch.temperature !== undefined) platform.feedback.set(el, { '--temperature': f3(ch.temperature) });
+    // the tab-order cue (#943). Mirrored here or the channel works on a hand-wired createField and
+    // silently vanishes on a <field-root> page, which is the route every real site uses.
+    if (ch.next !== undefined) platform.feedback.set(el, { '--field-next': f3(ch.next) });
     // lit → --lit (continuous) + a thresholded field:lit/field:dim (discrete, hysteretic) via state
     if (ch.lit !== undefined) {
       platform.feedback.set(el, { '--lit': f3(ch.lit) });

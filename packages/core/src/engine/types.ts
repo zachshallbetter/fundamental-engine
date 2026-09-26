@@ -405,6 +405,10 @@ export interface Body {
   /** the eased measured metrics (workover §"Metrics"): entropy / coherence / temperature
    *  ∈ [0,1], exported as `--entropy` / `--coherence` / `--temperature`. Lazily allocated. */
   metrics?: { entropy: number; coherence: number; temperature: number };
+  /** was this body the Tab successor on the previous frame (#943)? Runtime state, and the reason
+   *  the channel can be REMOVED rather than left at 0: without it the engine cannot tell "stopped
+   *  being next" from "was never next", and would have to write to every body every frame. */
+  wasNext?: boolean;
   /** target points for `morph` (§20.3 [D]) — a sampled mark / logo / chart / shape the
    *  matter assembles into. NEVER words or letterforms (§11); words glow/grow via `--d`. */
   targets?: readonly { x: number; y: number }[];
@@ -1037,6 +1041,12 @@ export interface FeedbackChannels {
   coherence?: number;
   /** measured local agitation ∈ [0,1] (heat + kinetic) → `--temperature`. */
   temperature?: number;
+  /** `1` on the body Tab would reach NEXT from the focused one → `--field-next` (#943). Present only
+   *  on that one body, and only while something in the field has focus — so an author's CSS can show
+   *  a keyboard user where they are about to land. A VALUE, not a movement: it is the static
+   *  equivalent the reduced-motion contract requires, and it works under `render: 'none'`, which is
+   *  the default and where a drawn current would be invisible. */
+  next?: number;
 }
 
 /** Receives a body's feedback channels in place of direct DOM writes (Phase D3). */

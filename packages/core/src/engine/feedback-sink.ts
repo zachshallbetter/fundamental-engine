@@ -26,6 +26,7 @@ import type { FeedbackSink } from './types.ts';
  * - density → `--d` (the established var) + `--field-density` — same value, three decimals.
  * - heatmapDensity → `--field-heatmap-density`.
  * - load → `--load` (the canonical author-facing var).
+ * - next → `--field-next` on the body Tab reaches next (#943); REMOVED, not zeroed, when it is not.
  * - lit → `--lit`, plus the thresholded `field:lit` (rising past 0.5) / `field:dim` (falling past
  *   0.4) events, armed via `data-fx-lit` for hysteresis.
  *
@@ -53,6 +54,13 @@ export const defaultFeedbackSink: FeedbackSink = (el, ch) => {
   if (ch.entropy !== undefined) el.style.setProperty('--entropy', ch.entropy.toFixed(3));
   if (ch.coherence !== undefined) el.style.setProperty('--coherence', ch.coherence.toFixed(3));
   if (ch.temperature !== undefined) el.style.setProperty('--temperature', ch.temperature.toFixed(3));
+  // the tab-order cue (#943): written only to the ONE body Tab would reach next, and removed rather
+  // than zeroed when it stops being that body — an author styling on `var(--field-next)` wants the
+  // property absent, not `0.000`, so a plain `[style*="--field-next"]` selector works.
+  if (ch.next !== undefined) {
+    if (ch.next > 0) el.style.setProperty('--field-next', ch.next.toFixed(3));
+    else el.style.removeProperty('--field-next');
+  }
   if (ch.lit !== undefined) {
     const lit = ch.lit;
     el.style.setProperty('--lit', lit.toFixed(3));

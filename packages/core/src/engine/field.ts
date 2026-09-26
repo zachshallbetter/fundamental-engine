@@ -83,6 +83,7 @@ import { forceAt, netField } from './streamlines.ts';
 import { traceFieldLines } from './fieldlines.ts';
 import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
+import { tabSequence, tabSuccessor, tabCurrentInto } from './tab-order.ts';
 import type { FieldHost } from './host.ts';
 import { devWarnNoOp } from '../contracts/guards.ts';
 import { FIELD_VERSION } from '../version.ts';
@@ -97,6 +98,12 @@ import { clonePolicy, applyRedactions, resolveSnapshotInclusion } from './snapsh
 // active flow focus and the particle draw don't allocate a `{x,y}` / `[r,g,b]` each iteration.
 // Safe to share module-wide: each field's frame runs synchronously, and every read consumes the
 // scratch before the next write (no overlapping lifetimes, no cross-instance interleaving).
+/** What counts as a Tab stop inside a body (#943). The standard focusable set, minus anything
+ *  explicitly removed from the sequence with `tabindex="-1"`. */
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), ' +
+  'textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 const _flowB = { x: 0, y: 0 };
 const _rgb: RGB = [0, 0, 0];
 
@@ -788,6 +795,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // counterpart of the `data-on` CustomEvent binding (same trigger vocabulary, parsed identically).
   let classEls: { el: HTMLElement; body: Body | null; bindings: EventBinding[] }[] = [];
   let engaged: { el: HTMLElement; enter: () => void; leave: () => void }[] = []; // [data-hot] listeners, for teardown
+  // Tab-order current (#943): the element focus is on, and the one Tab reaches next. Both are
+  // ELEMENTS rather than indices, because the body list is rebuilt on every rescan and an index
+  // would silently point at a different card afterwards.
+  let tabFocused: HTMLElement | null = null;
+  let tabNext: HTMLElement | null = null;
+  const _tabC = { x: 0, y: 0 };
 
   // shadow-DOM participation (docs/engine-reference/shadow-dom.md): encapsulated components dispatch composed
   // register/unregister/update events; the field registers the HOST and never inspects the
@@ -1502,6 +1515,37 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // users. We bind the bubbling `focusin`/`focusout` instead, so tabbing into (or out of) any
   // focusable descendant engages the body exactly the way hover does — the RC-8 principle that
   // keyboard users get the same field reactions as the mouse.
+  /**
+   * Resolve where Tab goes next from `el` (#943). The sequence is computed over the ENGAGED bodies —
+   * the same set `focusin` fires for — because those are exactly the stops a keyboard user lands on.
+   *
+   * `pointerenter` calls this too, which is deliberate: a mouse user hovering a card sees the same
+   * cue a keyboard user gets on focus, which is the RC-8 parity principle read in the other
+   * direction. It costs one sequence build per engagement, over a handful of elements.
+   */
+  function setTabFocus(el: HTMLElement | null): void {
+    tabFocused = el;
+    tabNext = null;
+    if (!el) return;
+    const els = engaged.map((e) => e.el);
+    const at = els.indexOf(el);
+    if (at < 0) return;
+    const seq = tabSequence(
+      els.map((e) => {
+        // A [data-hot] card is usually a plain container — `tabIndex` -1 — whose <a> takes the
+        // focus. Its place in the sequence is therefore the CHILD's, not its own: reading the
+        // container's -1 would drop every such card out of the order entirely, which is most of
+        // them. Only a body that is focusable in its own right speaks for itself.
+        const own = e.tabIndex ?? -1;
+        if (own >= 0) return { tabIndex: own, focusable: true };
+        const child = e.querySelector?.(FOCUSABLE) as HTMLElement | null;
+        return { tabIndex: child?.tabIndex ?? 0, focusable: child != null };
+      }),
+    );
+    const next = tabSuccessor(seq, at);
+    if (next >= 0) tabNext = els[next] ?? null;
+  }
+
   function bindEngagement(): void {
     // Reconcile across rescans (mirrors the emitter prune above): a persistent field outlives the
     // [data-hot] elements swapped under it (Astro nav, dynamic content), so drop engagements whose
@@ -1526,6 +1570,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const enter = (): void => {
         el.dataset.active = '1';
         hoverAccent = el.dataset.color ?? null;
+        setTabFocus(el); // #943 — where Tab would take them from here
         const group = el.closest('[data-index][data-threads]');
         if (group) {
           const sibs = [...group.querySelectorAll('[data-hot]')].filter((s) => s !== el);
@@ -1536,6 +1581,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         el.dataset.active = '0';
         hoverAccent = null;
         setThreads(null);
+        if (tabFocused === el) setTabFocus(null); // focus left this body; the cue goes with it
       };
       el.addEventListener('pointerenter', enter);
       el.addEventListener('pointerleave', leave);
@@ -1869,6 +1915,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // (feedback-sink.ts), which performs the same direct writes the engine always made:
       // `--d`/`--field-density`, `--field-heatmap-density`, `--load`,
       // plus the measured `--entropy`/`--coherence`/`--temperature`.
+      // the tab-order cue (#943): 1 on the body Tab reaches next, 0 on the body that just stopped
+      // being it (so the sink can REMOVE the property), and absent for every body that is neither.
+      const isNext = tabNext !== null && (b.el === tabNext || b.writeTarget === tabNext);
+      const next = isNext ? 1 : b.wasNext ? 0 : undefined;
+      b.wasNext = isNext;
+
       const channels = {
         density: b.d,
         heatmapDensity,
@@ -1876,6 +1928,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         entropy: m.entropy,
         coherence: m.coherence,
         temperature: m.temperature,
+        next,
       };
       cfg.feedbackSink(writeEl, channels);
       // per-body feedback (addBody): demux this body's channels to its own callback.
@@ -2908,6 +2961,22 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         const b = flowBiasInto(_flowB, p.x, p.y, flow, 0.6);
         p.vx += b.x;
         p.vy += b.y;
+      }
+    }
+    // Tab-order current (#943): the field leans from the focused body toward the one Tab reaches
+    // next, so a keyboard user can SEE where they are about to go. Gated on `env.dt`, so a
+    // reduced-motion field contributes exactly nothing here and the cue falls back to the
+    // `--field-next` channel — a value, which is the static equivalent governance asks for.
+    if (env.dt && tabFocused && tabNext) {
+      const a = bodies.find((bd) => bd.el === tabFocused);
+      const z = bodies.find((bd) => bd.el === tabNext);
+      if (a && z) {
+        for (const p of store.particles) {
+          if (p.cap) continue;
+          const c = tabCurrentInto(_tabC, p.x, p.y, a.cx, a.cy, z.cx, z.cy);
+          p.vx += c.x;
+          p.vy += c.y;
+        }
       }
     }
     if (cfg.waveStyle === 'circular') {
