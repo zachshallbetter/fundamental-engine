@@ -172,9 +172,13 @@ function engineBodyAttrs() {
  *  later string union in types.ts cannot leak in. */
 function engineRenderModes() {
   const set = new Set();
-  const at = typesSrc.indexOf('  setRender(');
-  if (at < 0) throw new Error('check:docs: could not find FieldHandle.setRender in core/types.ts');
-  const block = typesSrc.slice(at, typesSrc.indexOf('): void;', at));
+  // Reads the TYPE declaration, deliberately — not `RENDER_MODE_LIST` (#1218). The list is what the
+  // code derives from, so pointing the gate at it would make the gate's truth the same artifact the
+  // code uses and stop it being independent. The exhaustiveness assertion in types.ts already proves
+  // the two agree, so reading the declaration loses nothing and keeps the check honest.
+  const at = typesSrc.indexOf('export type RenderModeName');
+  if (at < 0) throw new Error('check:docs: could not find RenderModeName in core/types.ts');
+  const block = typesSrc.slice(at, typesSrc.indexOf(';', at));
   for (const m of block.matchAll(/'([a-z][\w-]*)'/g)) set.add(m[1]);
   return set;
 }

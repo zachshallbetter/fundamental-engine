@@ -160,8 +160,8 @@ function jsForceTokens() {
   return set;
 }
 
-/** The UNDERLAY render vocabulary — the string union `FieldHandle.setRender(mode:)` accepts, which is
- *  also what `FieldOptions.render` and `<field-root render>` take. This is the set the Swift/Kotlin
+/** The UNDERLAY render vocabulary — `RenderModeName`, the one declaration `FieldHandle.setRender`,
+ *  `FieldOptions.render` and `<field-root render>` all take (#1218). This is the set the Swift/Kotlin
  *  `RenderMode` enums mirror, so it is the only JS set they can honestly be compared against.
  *
  *  NOT `passport.ts`'s `RenderMode` union, which this extractor used to read (fixed in Phase 2): that
@@ -171,10 +171,17 @@ function jsForceTokens() {
  *  host enums both invented two JS render modes that do not exist and HID the real five-mode gap. */
 function jsRenderModes() {
   const set = new Set();
-  const at = jsTypes.indexOf('  setRender(');
-  if (at < 0) throw new Error('gen:parity-matrix: could not find FieldHandle.setRender in core/types.ts');
-  // the union ends at the signature's `): void;` — scope to that, not to the next column-0 `}`.
-  const block = jsTypes.slice(at, jsTypes.indexOf('): void;', at));
+  // Reads the `RenderModeName` TYPE declaration (#1218). `setRender` used to carry the union inline
+  // and this extractor scoped to its signature; the vocabulary now has one declaration and the
+  // signature is just `(mode: RenderModeName)`, which has no string literals to find — scoping to it
+  // would silently yield an EMPTY set and report JS as having no render modes at all.
+  //
+  // Reading the declaration rather than `RENDER_MODE_LIST` is deliberate, as in check-docs.mjs: the
+  // list is what the code derives from, and the exhaustiveness assertion in types.ts already proves
+  // the two agree, so the generator keeps an independent source.
+  const at = jsTypes.indexOf('export type RenderModeName');
+  if (at < 0) throw new Error('gen:parity-matrix: could not find RenderModeName in core/types.ts');
+  const block = jsTypes.slice(at, jsTypes.indexOf(';', at));
   for (const m of block.matchAll(/'([a-z][\w-]*)'/g)) set.add(m[1]);
   return set;
 }
