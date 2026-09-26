@@ -4,53 +4,66 @@ package com.fundamental.lab
 class ForceEntry(val token: String, val label: String, val group: String, val blurb: String)
 
 /**
- * The full 36-force catalog, grouped as in the Swift FieldLab sidebar (canonical / natural / extended).
- * Labels mirror the engine's `Force.label`; blurbs are the one-line identities.
+ * The force catalog for the lab sidebar, assembled from two sources.
+ *
+ * `token`, `label` and `group` are GENERATED from the JS passport (see GeneratedForceCatalog.kt) — they
+ * are the fields that drift, and hand-maintaining them is why `relief` was missing here after it shipped
+ * on three planes, and why `fieldflow` had become "Field Flow". The generator now owns them.
+ *
+ * `blurb` stays hand-written. It is independent editorial prose, not a copy of the engine's `meta.desc`:
+ * of the tokens carrying both, none matches. Deleting it to generate the file would have thrown away 36
+ * curated lines. CatalogCoverageTest fails if a generated force has no blurb, or a blurb is orphaned.
  */
 object ForceCatalog {
     val groups = listOf("Canonical", "Natural", "Extended")
 
-    val entries: List<ForceEntry> = listOf(
+    /** token → one-line identity. Hand-written; must cover every entry in GENERATED_FORCES. */
+    val blurbs: Map<String, String> = mapOf(
         // ── canonical nine (§6) ──────────────────────────────────────────────────────
-        ForceEntry("attract", "Attract", "Canonical", "A soft gravity-like well; on-state adds orbital swirl."),
-        ForceEntry("jet", "Jet", "Canonical", "A conduit — draws matter in, jets it out along the heading."),
-        ForceEntry("tether", "Tether", "Canonical", "Holds matter at a rest-length shell radius."),
-        ForceEntry("wall", "Wall", "Canonical", "An axis-aligned bouncing box; sparks on hard impact."),
-        ForceEntry("stream", "Stream", "Canonical", "A steady directional current along the heading."),
-        ForceEntry("repel", "Repel", "Canonical", "Inverse-square outward push; carves a void."),
-        ForceEntry("viscosity", "Viscosity", "Canonical", "Bleeds momentum — drag, no redirection."),
-        ForceEntry("swirl", "Swirl", "Canonical", "Tangential spin with light inward retention."),
-        ForceEntry("sink", "Sink", "Canonical", "Captures matter, holds it, releases on saturation."),
+        "attract" to "A soft gravity-like well; on-state adds orbital swirl.",
+        "jet" to "A conduit — draws matter in, jets it out along the heading.",
+        "tether" to "Holds matter at a rest-length shell radius.",
+        "wall" to "An axis-aligned bouncing box; sparks on hard impact.",
+        "stream" to "A steady directional current along the heading.",
+        "repel" to "Inverse-square outward push; carves a void.",
+        "viscosity" to "Bleeds momentum — drag, no redirection.",
+        "swirl" to "Tangential spin with light inward retention.",
+        "sink" to "Captures matter, holds it, releases on saturation.",
         // ── natural primitives (§20.10) ──────────────────────────────────────────────
-        ForceEntry("gravity", "Gravity", "Natural", "True softened inverse-square pull, always attractive."),
-        ForceEntry("charge", "Charge", "Natural", "Signed inverse-square; like signs repel (needs charged matter)."),
-        ForceEntry("magnetism", "Magnetism", "Natural", "Lorentz turn — curves a charged path without doing work."),
-        ForceEntry("thermal", "Thermal", "Natural", "Langevin agitation — Brownian jitter, σ = √(2T)."),
-        ForceEntry("collide", "Collide", "Natural", "Elastic pairwise collision — granular momentum exchange."),
-        ForceEntry("diffuse", "Diffuse", "Natural", "Pheromone trails — deposit + follow the blurred gradient."),
-        ForceEntry("propagate", "Propagate", "Natural", "A travelling shock; matter rides the front outward."),
-        ForceEntry("memory", "Memory", "Natural", "Worn paths deepen and pull harder over time."),
+        "gravity" to "True softened inverse-square pull, always attractive.",
+        "charge" to "Signed inverse-square; like signs repel (needs charged matter).",
+        "magnetism" to "Lorentz turn — curves a charged path without doing work.",
+        "thermal" to "Langevin agitation — Brownian jitter, σ = √(2T).",
+        "collide" to "Elastic pairwise collision — granular momentum exchange.",
+        "diffuse" to "Pheromone trails — deposit + follow the blurred gradient.",
+        "propagate" to "A travelling shock; matter rides the front outward.",
+        "memory" to "Worn paths deepen and pull harder over time.",
         // ── designed extended set (§20.3) ────────────────────────────────────────────
-        ForceEntry("lens", "Lens", "Extended", "Rotates velocity, preserving speed — bends the path."),
-        ForceEntry("gate", "Gate", "Extended", "One-way membrane — reflects wrong-way crossers."),
-        ForceEntry("buoyancy", "Buoyancy", "Extended", "Lift/sink by density — hot/large matter rises."),
-        ForceEntry("shear", "Shear", "Extended", "A laminar velocity gradient (Couette flow)."),
-        ForceEntry("crystallize", "Crystallize", "Extended", "Cool matter snaps to a lattice and settles."),
-        ForceEntry("align", "Align", "Extended", "Steers toward the mean neighbour heading (boids)."),
-        ForceEntry("wind", "Wind", "Extended", "Divergence-free curl turbulence."),
-        ForceEntry("cohesion", "Cohesion", "Extended", "Short-range pressure + mid-range pull — surface tension."),
-        ForceEntry("pressure", "Pressure", "Extended", "SPH density relaxation — an even, incompressible fill."),
-        ForceEntry("link", "Link", "Extended", "Verlet distance constraint — rope / cloth / chain."),
-        ForceEntry("hunt", "Hunt", "Extended", "Two-species pursuit — predators chase, prey flee."),
-        ForceEntry("morph", "Morph", "Extended", "Matter assembles into a target shape."),
-        ForceEntry("spawn", "Spawn", "Extended", "The source — emits mortal matter in a cone."),
-        ForceEntry("resonate", "Resonate", "Extended", "Modifier — pulses siblings with 1 + sin(ωt)."),
-        ForceEntry("spotlight", "Spotlight", "Extended", "Modifier — gates siblings to a heading cone."),
-        ForceEntry("screen", "Screen", "Extended", "A quiet zone — damps other bodies' forces."),
-        ForceEntry("pigment", "Pigment", "Extended", "Conserved color transport — matter takes a tint."),
-        ForceEntry("fieldflow", "Field Flow", "Extended", "Follows the net structure field lines."),
-        ForceEntry("warp", "Warp", "Extended", "A wormhole throat — relocates matter to its pair."),
+        "lens" to "Rotates velocity, preserving speed — bends the path.",
+        "gate" to "One-way membrane — reflects wrong-way crossers.",
+        "buoyancy" to "Lift/sink by density — hot/large matter rises.",
+        "shear" to "A laminar velocity gradient (Couette flow).",
+        "crystallize" to "Cool matter snaps to a lattice and settles.",
+        "align" to "Steers toward the mean neighbour heading (boids).",
+        "wind" to "Divergence-free curl turbulence.",
+        "cohesion" to "Short-range pressure + mid-range pull — surface tension.",
+        "pressure" to "SPH density relaxation — an even, incompressible fill.",
+        "link" to "Verlet distance constraint — rope / cloth / chain.",
+        "hunt" to "Two-species pursuit — predators chase, prey flee.",
+        "morph" to "Matter assembles into a target shape.",
+        "spawn" to "The source — emits mortal matter in a cone.",
+        "resonate" to "Modifier — pulses siblings with 1 + sin(ωt).",
+        "spotlight" to "Modifier — gates siblings to a heading cone.",
+        "screen" to "A quiet zone — damps other bodies' forces.",
+        "pigment" to "Conserved color transport — matter takes a tint.",
+        "fieldflow" to "Follows the net structure field lines.",
+        "warp" to "A wormhole throat — relocates matter to its pair.",
+        "relief" to "Matter slides down a declared height field — terrain as a force.",
     )
+
+    val entries: List<ForceEntry> = GENERATED_FORCES.map { g ->
+        ForceEntry(g.token, g.label, g.group, blurbs[g.token] ?: "")
+    }
 
     fun group(g: String): List<ForceEntry> = entries.filter { it.group == g }
     fun entry(token: String): ForceEntry? = entries.firstOrNull { it.token == token }
