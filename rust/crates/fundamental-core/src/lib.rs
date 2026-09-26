@@ -36,7 +36,10 @@ pub mod math;
 pub mod record;
 pub mod version;
 
-pub use engine::{step, Body, Effect, Env, FieldStore, Force, Formation, Particle, Registry};
+pub use engine::{
+    solve, step, Body, Effect, Env, FieldStore, Force, Formation, Particle, Registry,
+    SolveOptions, SolveResult,
+};
 pub use math::Vec3;
-pub use record::Rng;
+pub use record::{replay, replay_recording, FieldSnapshot, Replayed, Rng};
 pub use version::FIELD_VERSION;

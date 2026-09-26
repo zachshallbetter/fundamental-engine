@@ -119,3 +119,40 @@ public protocol AgentFieldView: AnyObject {
     /// pins the whole capture to the most-restricted profile.
     func snapshot(_ opts: FieldSnapshotOptions?) -> FieldSnapshot?
 }
+
+// MARK: - #915 — the fractional `budgets.agentRead` gate
+
+/// `budgets.agentRead` is a conservation law on the agent surface: `b` is the SHARE of the field's
+/// readable body population one agent view may consume. `nil` or `b >= 1` is the whole field, `b <= 0`
+/// closes the surface entirely, and `0 < b < 1` grants a partial read.
+///
+/// Selection is deterministic, stable per body id, and not positional — see the JS engine's `forAgent`
+/// for why each property is load-bearing (in short: a random draw is unreplayable, a resampled subset
+/// leaks the whole field to a caller that simply reads in a loop, and a positional prefix leaks scan
+/// order). **The digest below must stay bit-identical to the JS and Kotlin implementations**, or the
+/// planes admit different bodies under the same policy and parity is silently broken.
+public enum AgentReadShare {
+    /// FNV-1a over the id's UTF-16 code units, then a murmur3 `fmix32` avalanche.
+    /// The finalizer is not optional: real body ids are near-identical short strings (`body-0`,
+    /// `body-1`, …) and raw FNV-1a barely mixes its high bits across them — which is the whole signal
+    /// once the digest is read as `h / 2^32`.
+    public static func coordinate(_ id: String) -> Double {
+        var h: UInt32 = 0x811c_9dc5
+        for c in id.utf16 {
+            h ^= UInt32(c)
+            h = h &* 0x0100_0193
+        }
+        h ^= h >> 16
+        h = h &* 0x85eb_ca6b
+        h ^= h >> 13
+        h = h &* 0xc2b2_ae35
+        h ^= h >> 16
+        return Double(h) / 4_294_967_296.0
+    }
+
+    /// Whether a partial read at `share` admits the body with this id.
+    public static func admits(_ id: String, share: Float) -> Bool {
+        if !(share < 1) { return true }
+        return coordinate(id) < Double(share)
+    }
+}

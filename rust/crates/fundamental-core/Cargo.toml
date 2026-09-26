@@ -17,12 +17,12 @@ authors.workspace = true
 # dispatch-only `crates-io.yml` workflow with `dry_run=false`, never a laptop.
 publish = true
 
-# The cross-plane golden conformance test reads the SHARED fixture
-# (swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json) by an include_str! path that
-# climbs out of the crate — it only exists inside the monorepo checkout. It is excluded from the
-# published tarball so `cargo test` on the crates.io source compiles; CI still runs it from the repo.
-# Follow-up: teach scripts/gen-conformance-golden.mjs to also emit a crate-local copy, then ship it.
-exclude = ["tests/golden_conformance.rs"]
+# The cross-plane golden conformance test now reads a CRATE-LOCAL fixture
+# (tests/fixtures/conformance-golden.json), written by scripts/gen-conformance-golden.mjs alongside
+# the Swift copy from the same payload (#1045). It used to reach out to the Swift fixture with an
+# include_str! path that climbed out of the crate root — resolvable only inside this monorepo — so
+# the test had to be excluded from the published tarball and a crates.io consumer could not run the
+# conformance suite at all. It ships now, so the published crate proves its own cross-plane parity.
 
 # The core imports ZERO runtime dependencies — same contract as the JS core
 # (packages/core, enforced by dom-boundary.test.ts) and the native ports.
