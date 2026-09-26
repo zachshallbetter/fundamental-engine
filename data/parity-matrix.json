@@ -2168,6 +2168,7 @@
         "dots",
         "flow",
         "knockout",
+        "lic",
         "links",
         "metaballs",
         "none",
@@ -2177,7 +2178,7 @@
         "voronoi"
       ],
       "counts": {
-        "js": 12,
+        "js": 13,
         "swift": 7,
         "kotlin": 7
       },
@@ -2188,6 +2189,7 @@
           "dots",
           "flow",
           "knockout",
+          "lic",
           "links",
           "metaballs",
           "none",
@@ -2242,6 +2244,12 @@
         },
         {
           "symbol": "knockout",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "lic",
           "js": true,
           "swift": false,
           "kotlin": false
@@ -2990,6 +2998,7 @@
         "dots",
         "flow",
         "knockout",
+        "lic",
         "links",
         "metaballs",
         "redshift",
@@ -2998,7 +3007,7 @@
         "voronoi"
       ],
       "counts": {
-        "js": 11,
+        "js": 12,
         "swift": 6,
         "kotlin": 6
       },
@@ -3009,6 +3018,7 @@
           "dots",
           "flow",
           "knockout",
+          "lic",
           "links",
           "metaballs",
           "redshift",
@@ -3060,6 +3070,12 @@
         },
         {
           "symbol": "knockout",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "lic",
           "js": true,
           "swift": false,
           "kotlin": false

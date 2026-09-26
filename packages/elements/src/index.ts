@@ -226,6 +226,7 @@ export class FieldField extends HTMLElementBase {
     | 'redshift'
     | 'blackbody'
     | 'depth'
+    | 'lic'
     | 'none' {
     const v = this.getAttribute('render');
     return v === 'dots' ||
@@ -238,7 +239,8 @@ export class FieldField extends HTMLElementBase {
       v === 'knockout' ||
       v === 'redshift' ||
       v === 'blackbody' ||
-      v === 'depth'
+      v === 'depth' ||
+      v === 'lic'
       ? v
       : 'none';
   }
