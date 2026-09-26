@@ -69,6 +69,12 @@ jobs:
 
       - name: set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # Pin the packages instead of taking the action's default, which still lists
+          # `tools` — withdrawn from the SDK repo, so sdkmanager exits 1 and every Android
+          # job dies at setup with `Warning: Failed to find package 'tools'`. These are what
+          # the modules actually declare (compileSdk 34, buildToolsVersion 34.0.0).
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
 
       - name: derive the version from the tag (must match the JS core — the cross-plane lockstep)
         id: version
