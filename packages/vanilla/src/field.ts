@@ -134,6 +134,15 @@ export class FieldField implements FieldHandle {
   clearFlow(): void {
     this.field.clearFlow();
   }
+  /** Build the nav grid and sweep it toward a goal — obstacle-aware navigation for agents that
+   *  opt in with `AgentSpec.navigate` (#439). Not `flowTo`: this routes AROUND geometry. */
+  navigate(opts: Parameters<FieldHandle['navigate']>[0]): void {
+    this.field.navigate(opts);
+  }
+  /** Remove the nav grid (#439) — navigating agents revert to pure force-following. */
+  clearNavigation(): void {
+    this.field.clearNavigation();
+  }
   seed(atoms: readonly AtomPayload[]): void {
     this.field.seed(atoms);
   }

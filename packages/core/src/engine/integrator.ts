@@ -35,6 +35,10 @@ import { accretionTarget } from './formations.ts';
 import { waveYat, waveSlope, waveDistance, type Wave } from './currents.ts';
 import { netField } from './streamlines.ts';
 import { screenFactor } from '../math/math.ts';
+import { navFlowAtInto, navBlockedAt } from './nav-grid.ts';
+
+/** shared scratch for nav steering — the per-agent path allocates nothing (#439). */
+const _navSteer = { x: 0, y: 0 };
 import { classifyBodyTokens, type ClassifiedTokens } from '../config/forces.config.ts';
 
 export const FRICTION = 0.95;
@@ -292,6 +296,12 @@ export function step(input: StepInput): void {
   const D = env.D ?? 0;
 
   for (const p of store.particles) {
+    // Pre-step position, kept only for a navigating agent: an impassable cell has to be able to
+    // UNDO a step, and the step is applied in several places below (#439). Two numbers, and only
+    // when the field has a nav grid at all.
+    const navOn = env.nav != null && p.navGain !== undefined;
+    const px0 = navOn ? p.x : 0;
+    const py0 = navOn ? p.y : 0;
     // captured matter is held inside a sink core, drifting to it (§6.9). The core
     // lives on the z = 0 plane, so held matter also settles flat.
     if (p.cap) {
@@ -695,6 +705,28 @@ export function step(input: StepInput): void {
       if (D > 0) {
         if (p.z! < 0) { p.z = 0; p.vz = Math.abs(p.vz!); }
         else if (p.z! > D) { p.z = D; p.vz = -Math.abs(p.vz!); }
+      }
+      // NAVIGATION (#439). Steering toward the nav grid's goal, ADDED to the forces rather than
+      // replacing them — so a navigating agent is still shoved out of a crowd, still feels a wall's
+      // repulsion, and still finds its way round the fence. Agents only: matter has no intention.
+      //
+      // Applied AFTER the edge bounce and before `report`, so the transform a host drives from
+      // `report` sees the position the agent actually ends the step at.
+      if (p.navGain && env.nav) {
+        navFlowAtInto(_navSteer, env.nav, p.x, p.y);
+        if (_navSteer.x !== 0 || _navSteer.y !== 0) {
+          p.vx += _navSteer.x * p.navGain * dt;
+          p.vy += _navSteer.y * p.navGain * dt;
+        }
+        // Impassable means impassable. Steering alone still lets a shove from a force carry an agent
+        // into geometry, and once inside, the flow field reads zero and it is stuck there — exactly
+        // the bug this subsystem exists to end. So a step that ends inside a blocked cell is undone
+        // and the velocity into it killed, which is what "cannot be entered" has to mean.
+        if (navBlockedAt(env.nav, p.x, p.y)) {
+          if (!navBlockedAt(env.nav, px0, p.y)) { p.x = px0; p.vx = 0; }
+          else if (!navBlockedAt(env.nav, p.x, py0)) { p.y = py0; p.vy = 0; }
+          else { p.x = px0; p.y = py0; p.vx = 0; p.vy = 0; }
+        }
       }
       // the agent integrated this step — let its bound transform (a mesh) follow.
       p.report(p);

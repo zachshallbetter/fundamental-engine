@@ -83,6 +83,7 @@ import { forceAt, netField } from './streamlines.ts';
 import { traceFieldLines } from './fieldlines.ts';
 import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
+import { navGrid, navFlowField, type NavObstacle } from './nav-grid.ts';
 import type { FieldHost } from './host.ts';
 import { devWarnNoOp } from '../contracts/guards.ts';
 import { FIELD_VERSION } from '../version.ts';
@@ -97,6 +98,10 @@ import { clonePolicy, applyRedactions, resolveSnapshotInclusion } from './snapsh
 // active flow focus and the particle draw don't allocate a `{x,y}` / `[r,g,b]` each iteration.
 // Safe to share module-wide: each field's frame runs synchronously, and every read consumes the
 // scratch before the next write (no overlapping lifetimes, no cross-instance interleaving).
+/** Default steering gain for a navigating agent (#439) — px/frame² toward the goal. Chosen to read
+ *  as purposeful without overwhelming the forces the agent is also feeling. */
+const NAV_AGENT_GAIN = 0.6;
+
 const _flowB = { x: 0, y: 0 };
 const _rgb: RGB = [0, 0, 0];
 
@@ -3278,6 +3283,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     clearFlow: () => {
       flow = null;
     },
+    navigate: (opts: { goal: { x: number; y: number }; obstacles?: readonly NavObstacle[]; cell?: number }) => {
+      // Rebuild rather than patch: the sweep is the cheap part (one BFS over a few thousand cells)
+      // and a grid that is partly stale routes agents into geometry that has moved, which is worse
+      // than any cost this saves.
+      env.nav = navFlowField(navGrid(W, H, opts.obstacles ?? [], opts.cell), opts.goal.x, opts.goal.y);
+    },
+    clearNavigation: () => {
+      env.nav = null;
+    },
     seed: (atoms) => {
       seeded = atoms;
       build(); // respawn fresh, then re-bind + re-scale (no compounding)
@@ -3382,6 +3396,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (spec.mass !== undefined) p.m = spec.mass;
       p.maxSpeed = spec.maxSpeed;
       p.report = spec.report;
+      // navigation opt-in (#439): `true` takes the default gain, a number tunes it. Left undefined
+      // when absent, so the integrator skips the whole path for a force-only agent.
+      if (spec.navigate) p.navGain = spec.navigate === true ? NAV_AGENT_GAIN : spec.navigate;
       store.add(p);
       return { particle: p, remove: () => store.remove(p) };
     },
