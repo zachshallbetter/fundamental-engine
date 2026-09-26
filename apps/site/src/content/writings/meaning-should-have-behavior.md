@@ -63,7 +63,7 @@ caused it?
 
 Ordinary interfaces cannot answer these questions, because the answer was never represented — the
 emphasis was hand-assigned in a stylesheet three files away. A field substrate can, because the
-causes *are* the state. The [read API](/docs/api/handle) — still labeled experimental, but shipped
+causes *are* the state. The [read API](/docs/api/imperative#handle) — still labeled experimental, but shipped
 and running on every plane — answers each one directly: `query()` returns what is acting at a
 point, including per-force attribution. `snapshot()` captures what the field was *doing*, not what
 it looked like. `diff()` compares two of those. `replay()` turns the difference into an ordered

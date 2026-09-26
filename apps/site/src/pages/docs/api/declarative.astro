@@ -4,8 +4,8 @@
 // One consolidated, generated, searchable surface for everything an author writes in MARKUP rather
 // than in code: the `[data-body]` body contract, the 37 forces, the feedback channels the field
 // writes back, the conditional gates, the global formations, the render/overlay vocabularies, and
-// the two custom elements. Previously this was spread across /docs/api/attributes (the attribute
-// table), /docs/api/forces (the force cards), /docs/api/catalog (conditions/formations/modes) and
+// the two custom elements. Previously this was spread across /docs/api/declarative#body-contract (the attribute
+// table), /docs/api/declarative#forces (the force cards), /docs/api/declarative#conditions (conditions/formations/modes) and
 // /docs/authoring (the prose) with NO per-platform information anywhere — a reader could not tell
 // what a Swift or Kotlin app actually gets.
 //
@@ -26,7 +26,17 @@ import {
   FIELD_ROOT_ATTRS,
   FIELD_CELL_ATTRS,
 } from '../../../lib/docs-api.ts';
-import { MANUAL_FORCES, CONDITIONS, FORMATIONS } from '@fundamental-engine/core';
+import {
+  MANUAL_FORCES,
+  MANUAL_PRESETS,
+  CONDITIONS,
+  FORMATIONS,
+  PALETTES,
+  PALETTE_NAMES,
+  FIELD_OUTPUT_VARS,
+  classifyForce,
+} from '@fundamental-engine/core';
+import { METRIC_DOCS, METRIC_GROUPS, metricsOf } from '../../../lib/docs-metrics.ts';
 import parityData from '../../../../../../data/parity-matrix.json';
 import '../../../styles/force-glyphs.css';
 
@@ -166,10 +176,84 @@ for (const ch of feedbackDim.union) {
 }
 
 const FORCE_FAMILIES = [
-  { key: 'canonical', label: 'Canonical nine' },
-  { key: 'natural', label: 'Natural & derived' },
-  { key: 'extended', label: 'Designed extended' },
+  {
+    key: 'canonical',
+    label: 'Canonical nine',
+    blurb:
+      'The bounded, UI-legible verbs — what a body does to nearby matter. Designed runtime tokens, not natural translations.',
+  },
+  {
+    key: 'natural',
+    label: 'Natural & derived',
+    blurb:
+      'Runtime tokens drawn from physics: some express a fundamental field (gravity, charge, magnetism), others are derived behaviors (thermal, diffuse, collide), a transport (propagate), or a metric (memory). The per-card badge tells you which.',
+  },
+  {
+    key: 'extended',
+    label: 'Designed extended',
+    blurb:
+      'Pure per-particle effects — bends, gates, transitions, modifiers, and strong/weak analogues.',
+  },
 ] as const;
+
+// ── the force cards (merged from the retired /docs/api/declarative#forces, Phase 6 #1001) ────────────────────
+// The natural-field badge per force comes from the engine's own classification (config/manual.ts), so
+// a re-classified token re-badges itself here with no edit.
+const FIELD_COLOR: Record<string, string> = {
+  gravity: '#4da3ff',
+  electromagnetic: '#2dd4bf',
+  strong: '#a78bfa',
+  weak: '#ff9d5c',
+};
+const FIELD_LABEL: Record<string, string> = {
+  gravity: 'gravity',
+  electromagnetic: 'EM',
+  strong: 'strong',
+  weak: 'weak',
+};
+const badgeFor = (token: string) => {
+  const { kind, field } = classifyForce(token);
+  return field
+    ? { text: FIELD_LABEL[field] ?? field, color: FIELD_COLOR[field], title: `${kind} · ${field} field` }
+    : { text: kind ?? '', color: '', title: kind ?? '' };
+};
+// The forces the <field-cell> poster engine can render live (packages/elements cell-force.ts).
+const CELL_FORCES = new Set(['attract', 'repel', 'swirl', 'gravity', 'stream', 'buoyancy', 'tether']);
+
+// ── the preset catalog (merged from the retired /docs/api/declarative#presets, Phase 6 #1001) ────────────────
+// `data-preset` is part of the markup contract (it is in ATTRS above), so the composites it names
+// belong on this page rather than on one of their own.
+const PRESET_COLORS: Record<string, string> = {
+  blackhole: '#fbbf24', whitehole: '#e0f2fe', wormhole: '#8b5cf6', star: '#6366f1', quasar: '#fbbf24',
+  galaxy: '#a78bfa', nebula: '#38bdf8', tornado: '#2dd4bf', fountain: '#7dd3fc',
+};
+const presetUsage = `<div data-preset="blackhole"></div>`;
+
+// ── the --field-* metric lane (merged from the retired /docs/api/declarative#feedback, Phase 6 #1001) ─────────
+// Membership is asserted against the engine's own enumeration: a metric the platform writes but
+// nobody documented fails the build here rather than reaching a reader as a mystery variable.
+const undocumentedMetrics = FIELD_OUTPUT_VARS.filter((v: string) => !METRIC_DOCS[v]);
+if (undocumentedMetrics.length) {
+  throw new Error(
+    `docs/api/declarative: FIELD_OUTPUT_VARS carries metrics with no entry in lib/docs-metrics.ts: ${undocumentedMetrics.join(', ')}.\n` +
+      '  Document them (range, cadence, what it measures, what to use it for) — do not delete this check.',
+  );
+}
+const metricGroups = METRIC_GROUPS.map((g) => ({ ...g, vars: metricsOf(g.source, FIELD_OUTPUT_VARS) }));
+
+const densityAmpCss = `/* --d (and its namespaced twin --field-density) rests SMALL by design —
+   fractions of 1. Scale it once, here, instead of sprinkling a magic
+   multiplier through every consumer. clamp() gives a calm floor and a
+   hard ceiling. */
+[data-feedback] {
+  --d-amp: clamp(0, calc(var(--d, 0) * 12), 1);   /* raw fraction → ~0..1 */
+}
+
+/* drive the visible reaction off the amplified value, not the raw one */
+.hero-mass {
+  transform: translateY(calc(var(--d-amp) * -8px));
+  opacity: calc(0.4 + var(--d-amp) * 0.6);
+}`;
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const golden = parityData.conformanceGolden as { forces: string[]; count: number };
@@ -385,11 +469,26 @@ article[data-feedback] h2 {
     <p>
       Compose them on any <code>data-body</code> element, space-separated. Every token is a real, passported
       engine token and every one of them ships on all three planes — this is the part of the surface with no
-      parity story to tell, and the conformance golden proves the math agrees, not just the names. The
-      per-force <em>law</em>, glyph, live cell and worked example live on the
-      <a href="/docs/api/forces">force cards</a>; this table is the contract summary: what each token reads,
-      and where it runs.
+      parity story to tell, and the conformance golden proves the math <em>agrees</em>, not just that the names
+      match. Each card is generated from the engine's own catalog: the per-frame law, the attributes it reads,
+      a real-world use, and its support row.
     </p>
+    <div class="callout">
+      <b>Runtime tokens only.</b> Each card carries a badge from the engine's classification — either a
+      fundamental-field parent (<span class="rc-kind" style="--kc:#4da3ff">gravity</span>
+      <span class="rc-kind" style="--kc:#2dd4bf">EM</span>
+      <span class="rc-kind" style="--kc:#a78bfa">strong</span>
+      <span class="rc-kind" style="--kc:#ff9d5c">weak</span>) or a kind
+      (<span class="rc-kind">designed</span>, <span class="rc-kind">derived</span>,
+      <span class="rc-kind">transport</span>, <span class="rc-kind">metric</span>). Only
+      <b>gravity / electromagnetic / strong / weak</b> are conceptual natural fields;
+      <code>charge</code> and <code>magnetism</code> are electromagnetic <em>expressions</em>, while
+      <code>thermal</code>, <code>diffuse</code>, and <code>collide</code> are derived behaviors. Concepts
+      (<code>spring</code>, <code>orbit</code>), metrics (<code>mass</code>) and diagnostics
+      (<code>potential</code>) are <em>not</em> tokens and do not appear here — see the
+      <a href="/docs/concepts#natural-fields">four-field model</a> and the
+      <a href="/docs/patterns">pattern model</a>.
+    </div>
     {
       FORCE_FAMILIES.map((fam) => {
         const list = MANUAL_FORCES.filter((f) => f.family === fam.key);
@@ -398,31 +497,77 @@ article[data-feedback] h2 {
             <h3>
               {fam.label} <span style="color:var(--text-4)">({list.length})</span>
             </h3>
-            <dl class="api-table">
+            <p>{fam.blurb}</p>
+            <div class="ref-grid">
               {list.map((f) => (
-                <div class="api-row" id={`force-${f.token}`}>
-                  <dt class="k">
+                <article class="ref-card" id={`force-${f.token}`} style={`--c:${f.color}`}>
+                  <div class="rc-head">
                     <i class={`fg fg-${f.token}`} style={`--fc:${f.color}`} />
                     <code>{f.token}</code>
+                    {(() => {
+                      const b = badgeFor(f.token);
+                      return b.text ? (
+                        <span class="rc-kind" style={b.color ? `--kc:${b.color}` : ''} title={b.title}>
+                          {b.text}
+                        </span>
+                      ) : null;
+                    })()}
+                    {CELL_FORCES.has(f.token) && <span class="rc-live">live</span>}
+                  </div>
+                  {CELL_FORCES.has(f.token) && (
+                    <div class="rc-cell">
+                      <field-cell force={f.token} color={f.color} />
+                    </div>
+                  )}
+                  <code class="rc-formula">{f.formula}</code>
+                  <p class="rc-desc">{cap(f.desc)}.</p>
+                  <div class="rc-meta">
+                    {f.attrs.length ? (
+                      f.attrs.map((a) => <span class="chip">data-{a}</span>)
+                    ) : (
+                      <span class="chip">box-sized — no params</span>
+                    )}
+                  </div>
+                  <p class="rc-eg">{f.example}</p>
+                  <div class="rc-support">
                     <PlatformSupport dimension="force-tokens" symbol={f.token} />
-                  </dt>
-                  <dd class="d">
-                    {cap(f.desc)}.
-                    <span class="rc-meta">
-                      {f.attrs.length ? (
-                        f.attrs.map((a) => <span class="chip">data-{a}</span>)
-                      ) : (
-                        <span class="chip">box-sized — no params</span>
-                      )}
-                    </span>
-                  </dd>
-                </div>
+                  </div>
+                </article>
               ))}
-            </dl>
+            </div>
           </>
         );
       })
     }
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="presets">Presets — composites, not new engine code</h2>
+    <p>
+      <code>data-preset</code> expands to several <em>co-located bodies</em> — one primitive each, sharing the
+      element's rectangle. It is pure composition: the engine never grows to add one, which is why a preset
+      needs no support row of its own beyond the tokens it composes (all of which ship on all three planes).
+    </p>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: presetUsage }]} />
+    <div class="ref-grid">
+      {
+        MANUAL_PRESETS.map((p) => (
+          <article class="ref-card" id={`preset-${p.name}`} style={`--c:${PRESET_COLORS[p.name]}`}>
+            <div class="rc-head">
+              <i class={`fgp fgp-${p.name}`} style={`--fc:${PRESET_COLORS[p.name]}`} />
+              <code>{p.name}</code>
+            </div>
+            <p class="rc-desc">{cap(p.desc)}.</p>
+            <div class="rc-meta">
+              {p.tokens.map((t) => (
+                <span class="chip">{t}</span>
+              ))}
+            </div>
+            <p class="rc-eg">{p.example}</p>
+          </article>
+        ))
+      }
+    </div>
   </section>
 
   <section class="docs-sec">
@@ -477,6 +622,85 @@ article[data-feedback] h2 {
       <code>lintFeedbackEngineOwned</code> rule still reserves it so an old stylesheet that
       <em>sets</em> it is flagged. Style off <code>--load</code>.
     </div>
+
+    <h3 id="density">Reading <code>--d</code>: the density signal, and how to scale it</h3>
+    <p>
+      Density is the channel most pages reach for first, and the one most often read wrongly — so this is the
+      one place the story is told in full (it used to be told, inconsistently, on six pages).
+      <strong>Resting <code>--d</code> is small by design.</strong> The value is an eased density in
+      <code>0..1</code>, but at rest it sits in the <em>low fractions</em> — often around
+      <code>0.04–0.05</code>. It is not a normalized "how lit is this body" gauge you can map straight onto
+      <code>0..1</code> opacity; it is the raw fraction of the pool a body has gathered, kept calm on purpose
+      so ambient drift doesn't flicker your type.
+    </p>
+    <p>
+      What moves it: the body's per-frame matter <strong>count</strong> within range (driven by the field's
+      <code>density</code> option and the body's <code>strength</code> / <code>range</code> — a stronger,
+      wider body gathers more), plus a fixed bump while the body is <strong>engaged</strong>
+      (<code>data-active</code> / hover adds a large step). Concretely the eased target is roughly
+      <code>count / 20 + (engaged ? 0.45 : 0)</code>, clamped to <code>0..1</code> — so a resting body with a
+      handful of nearby particles lands near <code>0.05</code>, and engagement is what pushes it toward the
+      top of the range. Raising the field's <code>density</code> or the body's <code>strength</code> lifts the
+      resting floor, but only so far: the design intent is a quiet baseline, not a hot one.
+    </p>
+    <p>
+      So <strong>amplify in CSS</strong> rather than expecting a pre-scaled <code>0..1</code>. Scale
+      <code>--d</code> once into a derived variable, then drive every reaction off that — the magic number
+      lives in one place instead of being sprinkled through the stylesheet:
+    </p>
+    <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: densityAmpCss }]} />
+    <p>
+      Tune the multiplier to the resting <code>--d</code> you actually observe for your field's
+      <code>density</code> and body parameters — there is no universal constant, because the resting count
+      depends on your scene. For a binary "is this body engaged" gate that needs no scaling, read the
+      engine's thresholded <code>data-field-density="high"</code> state attribute instead of the numeric var.
+    </p>
+
+    <h3 id="metrics">The <code>--field-*</code> metric lane</h3>
+    <p>
+      Beside the channels above there is a second family of custom property: the <code>--field-*</code>
+      <strong>metrics</strong>, {FIELD_OUTPUT_VARS.length} names enumerated from the engine's own
+      <code>FIELD_OUTPUT_VARS</code> (this page fails its build if one of them is undocumented). They are
+      <strong>web-only</strong> — the ports have no equivalent lane — which is why these rows carry no
+      support chips.
+    </p>
+    <div class="callout callout--warn">
+      <b>Not all of these are live, and the difference matters.</b> The channels above are written on any
+      <code>[data-feedback]</code> body with nothing else attached. Of the metric lane, exactly
+      <strong>one</strong> behaves that way: <code>--field-density</code>, which is the namespaced twin of
+      <code>--d</code>. Five more are written by the <em>pattern metric pipeline</em> — only while a
+      pattern, a <code>bindData</code> binding or <code>bindFieldNav</code> is attached. The remaining
+      {metricGroups.find((g) => g.source === 'reserved')!.vars.length} are <strong>reserved names that
+      nothing writes yet</strong>. This page said otherwise until Phase 6 (#1001): it described the whole
+      lane as written every frame, which sent readers to style off variables that are permanently
+      undefined. Each group below says which it is.
+    </div>
+    {
+      metricGroups.map((g) => (
+        <>
+          <h4>{g.title}</h4>
+          <p>{g.blurb}</p>
+          <dl class="api-table">
+            {g.vars.map((v) => (
+              <div class="api-row" id={v.slice(2)}>
+                <dt class="k">
+                  <code>{v}</code>
+                  <span class="ty">
+                    {METRIC_DOCS[v]!.range} · {METRIC_DOCS[v]!.written}
+                  </span>
+                </dt>
+                <dd class="d">
+                  {METRIC_DOCS[v]!.summary}
+                  <span class="m-use">
+                    <b>Use for</b> {METRIC_DOCS[v]!.use}
+                  </span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </>
+      ))
+    }
   </section>
 
   <section class="docs-sec">
@@ -502,8 +726,11 @@ article[data-feedback] h2 {
     </dl>
     <p>
       An empty gate (the default) always passes, and an <em>unknown</em> gate name also passes — a typo weakens
-      nothing silently, it just stops gating. Author your own with the condition registry (see
-      <a href="/docs/api/catalog">the catalog</a>).
+      nothing silently, it just stops gating. <b>The built-in set is the whole set:</b> there is no public API
+      for registering a condition of your own. <code>createRegistry().condition()</code> exists, but
+      <code>createField</code> builds its registry internally and takes no registry option, so a custom gate
+      cannot reach a field you created. Gate on state you already control instead — toggle
+      <code>data-when</code>, or swap the token list.
     </p>
   </section>
 
@@ -617,6 +844,34 @@ article[data-feedback] h2 {
   </section>
 
   <section class="docs-sec">
+    <h2 id="palettes">Palettes</h2>
+    <p>
+      The color template the travelling accent journeys through — set it declaratively as
+      <code>&lt;field-root palette&gt;</code> or live with <code>setPalette(name)</code>. A palette is
+      presentation, not physics; a plane whose host collapses one to a single accent is a host gap, which is
+      exactly the class of drift the parity matrix now tracks.
+    </p>
+    <dl class="api-table">
+      {
+        PALETTE_NAMES.map((name: string) => (
+          <div class="api-row" id={`palette-${name}`}>
+            <dt class="k">
+              <code>{name}</code>
+            </dt>
+            <dd class="d rc-meta">
+              {PALETTES[name].map((hex: string) => (
+                <span class="chip" style={`border-color:${hex}; color:${hex}`}>
+                  {hex}
+                </span>
+              ))}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="docs-sec">
     <h2 id="elements">The custom elements</h2>
     <p>
       Two elements ship. <code>&lt;field-root&gt;</code> is the page field — it mirrors every
@@ -663,11 +918,10 @@ article[data-feedback] h2 {
 
   <SeeAlso
     links={[
-      { href: '/docs/api/forces', label: 'Force cards (law, glyph, live cell)' },
       { href: '/docs/api/imperative', label: 'The imperative API reference' },
       { href: '/docs/api/parity', label: 'Platform parity matrix' },
-      { href: '/docs/api/options', label: 'createField & options' },
       { href: '/docs/authoring', label: 'Authoring across surfaces' },
+      { href: '/docs/concepts#natural-fields', label: 'The four-field model' },
       { href: '/docs/guides/swift', label: 'Swift guide' },
       { href: '/docs/guides/kotlin', label: 'Kotlin guide' },
     ]}
@@ -706,5 +960,44 @@ article[data-feedback] h2 {
   .api-row .d .rc-meta {
     display: block;
     margin-top: 0.4rem;
+  }
+  /* the force / preset cards, merged in from the retired /docs/api/declarative#forces + /docs/api/declarative#presets.
+     .ref-grid / .ref-card themselves are global (styles/docs.css); these are the bits that were
+     local to those pages. */
+  .rc-kind {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--kc, var(--text-4)) 55%, var(--line));
+    color: var(--kc, var(--text-3));
+    background: color-mix(in srgb, var(--kc, transparent) 12%, transparent);
+    white-space: nowrap;
+  }
+  .rc-head {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+  .ref-card .rc-support {
+    margin-top: 0.6rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid var(--line);
+  }
+  /* the --field-* metric rows */
+  .api-row .d .m-use {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.84rem;
+    color: var(--text-3);
+  }
+  .api-row .d .m-use b {
+    color: var(--text-2);
+    margin-right: 0.3rem;
+  }
+  .docs-sec h4 {
+    margin-top: 1.4rem;
   }
 </style>

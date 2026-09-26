@@ -86,7 +86,7 @@ all render modes (incl. topology, inspector, causality, prediction)
 field.flowTo() / clearFlow() controlled flow-field API
 Reading Field demo · Accessibility Preview · Narrative Reveal · PNG/SVG diagnostic export
 native HTML / web component / React authoring examples
-the Natural Field Translation System (four-field classification + /docs/natural-fields)
+the Natural Field Translation System (four-field classification + /docs/concepts#natural-fields)
 ```
 
 `Fundamental` imports **zero DOM** — the engine routes the environment through an injected

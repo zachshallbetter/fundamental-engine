@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 
 const register = `import { createField } from '@fundamental-engine/core';
@@ -48,6 +49,7 @@ const amplify = `/* --d (the canonical raw density channel; --field-density is i
   <header class="docs-hero">
     <p class="kicker">Build</p>
     <h1>Field <span class="accent">channels</span></h1>
+    <StatusChip label="Shipped · addField / sampleField, all three planes" tone="stable" />
     <p class="lede">
       A field is more than its own forces. <code>addField(name, sampler)</code> lets you register an
       <strong>external scalar field</strong> you already own — terrain height, soil moisture, a
@@ -66,10 +68,10 @@ const amplify = `/* --d (the canonical raw density channel; --field-density is i
 
   <div class="callout">
     <b>The input mirror of the surfaces.</b> The render surfaces are bundled <em>output</em> layers —
-    <a href="/docs/api/handle"><code>setRender</code></a> draws the underlay,
+    <a href="/docs/api/imperative#handle"><code>setRender</code></a> draws the underlay,
     <code>setOverlay</code> the overlay. A channel is the open <em>input</em> analog: you hand the
     field a sampler and it becomes part of what the field can read. Same shape as the host-authorable
-    <a href="/docs/api/handle"><code>grid(name)</code></a> buffer, but for a field you already
+    <a href="/docs/api/imperative#handle"><code>grid(name)</code></a> buffer, but for a field you already
     compute yourself.
   </div>
 
@@ -182,7 +184,7 @@ const amplify = `/* --d (the canonical raw density channel; --field-density is i
         engine samples it. Pull-based, never cached.
       </li>
       <li>
-        <b>Grids</b> (<a href="/docs/api/handle"><code>grid(name)</code></a>) — a host-authorable
+        <b>Grids</b> (<a href="/docs/api/imperative#handle"><code>grid(name)</code></a>) — a host-authorable
         engine buffer (the same primitive <code>diffuse</code>/<code>memory</code> run on): you
         <code>deposit</code> into it and the engine advances it each frame. A scent map, a wear layer.
       </li>
@@ -193,7 +195,7 @@ const amplify = `/* --d (the canonical raw density channel; --field-density is i
     </ul>
     <p>
       For the hard contract a channel sampler obeys, see
-      <a href="/docs/api/handle">the FieldHandle reference</a>.
+      <a href="/docs/api/imperative#handle">the FieldHandle reference</a>.
     </p>
   </section>
 </DocsLayout>

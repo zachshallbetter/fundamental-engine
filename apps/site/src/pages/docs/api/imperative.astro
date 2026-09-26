@@ -5,8 +5,8 @@
 // consolidated page for `createField` and its options, the whole `FieldHandle` (every callable and
 // every property), the sampling and observable reads (`sample*` / `query` / `snapshot` / `diff` /
 // `replay` / `projections`), the agent view and its capability grants, policy and budgets, identity,
-// the body handle, and the discrete event bus. Previously this was spread across /docs/api/options,
-// /docs/api/handle, /docs/api/metrics, /docs/api/types and /docs/api/utilities with NO per-platform
+// the body handle, and the discrete event bus. Previously this was spread across /docs/api/imperative#options,
+// /docs/api/imperative#handle, /docs/api/declarative#feedback, /docs/api/imperative#types and /docs/api/utilities with NO per-platform
 // information anywhere and, on the handle page, a hand-typed "44/44/44 full parity" claim the
 // generated parity matrix has contradicted for months.
 //
@@ -73,7 +73,114 @@ const memberOf = (sig: string): string =>
 // a method row, and the property section below carries `policy` on its own.)
 const PROPERTY_SIGS = new Set(['guarantees', 'version (property)', 'projections']);
 
-// Provenance: the same freeze-data lookup /docs/api/handle uses — a member gets an "experimental"
+// ── the type contracts (merged from the retired /docs/api/imperative#types, Phase 6 #1001) ──────────────────
+// The shapes you implement or receive when you reach past the handle: a custom force, a body you
+// supply programmatically, the particle it acts on, and the per-frame environment. They are the code
+// surface, so they live with the code surface. Transcribed from packages/core/src/engine/types.ts.
+const forceType = `interface Force {
+  token: string;                       // unique id, used in data-body
+  label: string;
+  apply(b: Body, p: Particle, env: Env): void;   // the per-frame law
+  kinematic?: boolean;                 // replaces velocity (wall/jet/lens/gate) — not mass-scaled
+  modify?(b: Body, p: Particle, env: Env):        // optional (resonate, spotlight)
+    { strength?: number; gate?: boolean };
+  source?(b: Body, env: Env): void;    // class [S] — create matter (spawn), once per body per frame
+  field?(b: Body, x: number, y: number): Vec2;    // the visual/structure field at a point:
+                                       // draws field lines + the streamlines field-flow view
+}`;
+
+const bodyType = `interface Body {
+  el: HTMLElement;
+  tokens: string[];      // composed force ids
+  strength: number;      // S       (data-strength)
+  range: number;         // d_max   (data-range, px)
+  spin: number;          // ±        (data-spin)
+  angle: number;         // radians  (data-angle)
+  ux: number; uy: number;// heading unit vector
+  when: string;          // condition gate id
+  feedback: boolean;     // density write-back opt-in
+  shaped?: boolean;      // sample the box surface, not the centre (data-shaped)
+  rect?: () => DOMRect;  // custom rect provider (shadow-DOM body whose box ≠ host box)
+  writeTarget?: HTMLElement; // element that receives the CSS write-back (defaults to el)
+  // runtime state, refreshed each frame:
+  cx: number; cy: number;// rect centre (canvas space)
+  hw: number; hh: number;// half-extents
+  on: boolean;           // engaged (data-active)
+  vis: boolean;          // on-screen
+  count: number; d: number; // density tally + eased value ∈ [0,1] (also the charge Q)
+}`;
+
+const particleType = `interface Particle {
+  x: number; y: number;      // position
+  vx: number; vy: number;    // velocity
+  m: number;                 // mass (1 = nominal)
+  heat: number;              // ∈ [0,1] → color, size, glow
+  size: number;
+  cap: Body | null;          // the sink body that captured it
+  color?: string;            // carried pigment
+}`;
+
+const envType = `interface Env {
+  dx: number; dy: number;    // vector body → particle
+  dist: number;              // its length, clamped ≥ 1
+  form: Formation;           // active eased formation
+  W: number; H: number;      // canvas size
+  t: number; frameN: number; dt: number;  // time, frame, step (0 under reduced motion)
+  neighbors(p: Particle, r: number): Particle[];  // spatial query
+  grid(name: string): ScalarGrid;                 // persistent field buffer
+  spark(x, y, power, color?): void;               // micro-reaction
+}`;
+
+const platformType = `// @fundamental-engine/dom — DOM participation (createFieldPlatform(root))
+// Phase = the SCHEDULER phase (a runtime loop step) — not a particle or transition phase.
+type Phase = 'discover' | 'read' | 'compute' | 'state' | 'write' | 'render';
+
+interface FieldPlatform {
+  measure: MeasurementRegistry;        // frame-stable geometry (read phase)
+  state: StateRegistry;                // typed element state (number/boolean/string/vector2)
+  feedback: FeedbackRegistry;          // CSS vars + thresholded events (write phase)
+  relationships: RelationshipRegistry; // native href/aria/data-field-relation graph
+  visuals: VisualBindingRegistry;      // visual ↔ semantic pairing (a11y)
+  overlays: OverlayRegistry;           // render layers — read-only, never mutate physics
+  scheduler: FrameScheduler;           // the six-phase loop
+  on(phase: Phase, fn: (ctx: FrameContext) => void): () => void;
+  tick(now?: number, viewport?: Viewport): FrameReport;
+}
+
+// lintPlatform(platform): PlatformLintWarning[]  — the field-system guardrails`;
+
+// ── coordinate space (merged from the retired handle page, Phase 6 #1001) ───────────────────
+// The single most common way a correct call goes to the wrong place. Kept whole, and kept at the
+// anchor the canonical coordinate-spaces.md deep-links (#coordinate-space).
+const coordWindow = `// WINDOW field (browserHost / <field-root>): args are VIEWPORT pixels — the same
+// space as a pointer event. clientX/clientY drop straight in.
+addEventListener('pointermove', (e) => field.flowTo(e.clientX, e.clientY));
+
+// To track a DOM element, read its viewport rect — and recompute on scroll, because
+// getBoundingClientRect() is relative to the viewport, which moves as the page scrolls.
+function focusOn(el) {
+  const r = el.getBoundingClientRect();
+  field.flowTo(r.left + r.width / 2, r.top + r.height / 2);
+}
+addEventListener('scroll', () => focusOn(target), { passive: true });`;
+
+const coordContained = `// CONTAINED field (containerHost / new FieldField({ bounds: el })): args are
+// CONTAINER-LOCAL pixels — measured from the container's top-left, NOT the viewport.
+// Subtract the container's rect; these coords are scroll-invariant (container and its
+// contents move together), so no recompute on scroll of the page.
+const box = container.getBoundingClientRect();
+container.addEventListener('pointermove', (e) => {
+  field.flowTo(e.clientX - box.left, e.clientY - box.top);
+});
+
+// To focus a child element inside the contained field, take both rects local-relative:
+function focusChild(child) {
+  const c = container.getBoundingClientRect();
+  const r = child.getBoundingClientRect();
+  field.flowTo(r.left - c.left + r.width / 2, r.top - c.top + r.height / 2);
+}`;
+
+// Provenance: the same freeze-data lookup /docs/api/imperative#handle uses — a member gets an "experimental"
 // stamp when, and only when, scripts/api-surface.data.mjs (the file `pnpm check:api` gates) says so.
 const expItem = (sig: string): string | undefined => {
   const fn = `${sig.split('(')[0]}()`;
@@ -409,7 +516,8 @@ body.remove();`;
     <h1>The <span class="accent">imperative</span> API reference</h1>
     <StatusChip label="Shipped · support rows generated · substrate reads experimental" tone="stable" />
     <p class="lede">
-      The half of Fundamental you reach from code. <code>createField</code> and its {OPTIONS.length} options,
+      The half of Fundamental you reach from code. <code>createField</code>
+      <ApiStamp name="createField" pkg="@fundamental-engine/core" /> and its {OPTIONS.length} options,
       the <code>FieldHandle</code> — all {HANDLE.length} entries — the sampling and observable reads, the
       capability-scoped agent view, policy and budgets, the body handle, and the event bus.
       <strong>Every entry carries a per-platform support row</strong>, rendered from the generated
@@ -813,6 +921,137 @@ body.remove();`;
     </div>
   </section>
 
+  <section class="docs-sec" id="coordinate-space">
+    <h2>Coordinate space: <code>flowTo</code>, <code>burst</code>, and <code>sample</code></h2>
+    <p>
+      The position-taking methods — <code>flowTo(x, y)</code>, <code>burst(x, y)</code>, and the
+      sampling reads (<code>sample(x, y)</code>, <code>sampleField(name, x, y)</code>,
+      <code>atomAt</code>, <code>focusAt</code>) — all take coordinates in the <strong>field's own
+      pixel space</strong>, the same space its particles and bodies live in. What that space
+      <em>is</em> depends on how the field was created:
+    </p>
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k">Window field — <code>browserHost</code> / <code>&lt;field-root&gt;</code></dt>
+        <dd class="d">
+          Field space <strong>equals viewport space</strong> (the canvas is fixed and full-viewport, so
+          the origin is <code>0,0</code>). Pass <strong>viewport pixels</strong> — a pointer event's
+          <code>clientX</code>/<code>clientY</code> work directly. To track a document element, read its
+          <code>getBoundingClientRect()</code>; because that rect is viewport-relative, you must
+          <strong>recompute on scroll</strong> as the element moves under the fixed field.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k">Contained field — <code>containerHost(el)</code> / <code>new FieldField(&#123; bounds: el &#125;)</code></dt>
+        <dd class="d">
+          The field, its bodies, and its canvas all live in the <strong>container's local space</strong>:
+          the engine subtracts the container's origin when it measures bodies, so the args you pass must
+          be <strong>container-local</strong> (<code>clientX − rect.left</code>), not viewport. These
+          local coordinates are <strong>scroll-invariant</strong> — the container and its contents move
+          together, so a focus pinned to a child stays put without recompute as the page scrolls.
+        </dd>
+      </div>
+    </dl>
+    <div class="callout">
+      <b>The methods don't translate for you.</b> <code>flowTo</code>/<code>burst</code> store the raw
+      <code>(x, y)</code> and compare them against particle positions directly — there is no
+      viewport→local conversion inside the engine. A window field has a zero origin so viewport pixels
+      happen to be correct; a contained field does not, so passing viewport pixels there places the
+      focus in the wrong spot. Convert to the field's space before you call.
+    </div>
+    <CodeTabs
+      variants={[
+        { label: 'Window field', lang: 'js', code: coordWindow },
+        { label: 'Contained field', lang: 'js', code: coordContained },
+      ]}
+    />
+    <p>
+      The vocabulary behind this — <em>host space</em>, <em>field space</em>, and the one-way adapter
+      that carries one into the other — is the canonical
+      <a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/coordinate-spaces.md">coordinate-spaces</a>
+      doc.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="types">The type contracts</h2>
+    <p>
+      For authoring your own force, supplying a body without an element, or writing a host. <strong>Core
+      types</strong> describe field computation and are renderer-agnostic; <strong>platform types</strong>
+      describe DOM participation. A force is just an object implementing the <code>Force</code> contract —
+      the engine never special-cases any single one, which is why the catalog is data and not a switch
+      statement.
+    </p>
+
+    <h3><code>Force</code></h3>
+    <p>
+      The contract every force implements. <code>apply</code> nudges one particle given one body and the
+      shared env; the optional members are how the handful of non-standard forces (modifiers, sources,
+      field-drawing forces) express themselves without the engine growing a special case for them.
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: forceType }]} />
+
+    <h3><code>Body</code></h3>
+    <p>
+      An addressable field participant. On the web a body is usually parsed from the
+      <a href="/docs/api/declarative#body-contract"><code>data-*</code> contract</a> on a DOM element and
+      refreshed each frame; in headless, native, or custom hosts it is supplied programmatically with
+      <a href="#bodies"><code>addBody()</code></a>.
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: bodyType }]} />
+
+    <h3><code>Particle</code></h3>
+    <p>A point-mass in the conserved pool.</p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: particleType }]} />
+
+    <h3><code>Env</code></h3>
+    <p>
+      The shared per-frame environment handed to every force — precomputed vectors plus the engine
+      services (the neighbour query, the persistent grids, the spark channel).
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: envType }]} />
+
+    <h3>Platform types</h3>
+    <p>
+      The core types above import zero DOM. <code>@fundamental-engine/dom</code> adds the participation
+      layer: <code>createFieldPlatform(root)</code> returns a <code>FieldPlatform</code> binding the six
+      registries to the <code>FrameScheduler</code>. Web-only by construction — see
+      <a href="/docs/platform">the platform layer</a> for the registries, the phases, and
+      <code>lintPlatform()</code>.
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: platformType }]} />
+
+    <h3>Three words that mean different things</h3>
+    <p>A few terms recur across lanes; they are disambiguated here so a type is never misread:</p>
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k"><code>phase</code></dt>
+        <dd class="d">
+          <b>Scheduler phase</b> — a runtime loop step (<code>discover → read → compute → state → write →
+          render</code>), the <code>Phase</code> type above. A <b>transition phase</b> (a weak-field state
+          change, expressed by the <code>morph</code> token) and a <b>particle phase</b> (a particle
+          property) are different things. There is no <code>phase</code> force token.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>mass</code></dt>
+        <dd class="d">
+          A <b>property / metric</b> — the particle field <code>m</code>, or a pattern metric. It is not a
+          runtime token; weight comes from <code>gravity</code> / <code>attract</code>. (The CSS
+          <code>--mass</code> is a retired channel name — see
+          <a href="/docs/api/declarative#feedback">the feedback channels</a>.)
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>potential</code></dt>
+        <dd class="d">
+          A <b>diagnostic</b> (a sampled scalar field), not a token — see
+          <a href="/docs/diagnostics">diagnostic overlays</a>.
+        </dd>
+      </div>
+    </dl>
+  </section>
+
   <section class="docs-sec">
     <h2 id="reverse-gaps">What each plane has that the others do not</h2>
     <p>
@@ -860,9 +1099,8 @@ body.remove();`;
     links={[
       { href: '/docs/api/declarative', label: 'The declarative authoring reference' },
       { href: '/docs/api/parity', label: 'Platform parity matrix' },
-      { href: '/docs/api/metrics', label: 'Metrics & diagnostics' },
+      { href: '/docs/api/declarative#feedback', label: 'Feedback channels & the --field-* metrics' },
       { href: '/docs/api/utilities', label: 'Platform utilities' },
-      { href: '/docs/api/types', label: 'Types' },
       { href: '/docs/api/stability', label: 'API stability' },
     ]}
   />

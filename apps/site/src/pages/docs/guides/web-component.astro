@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 import { MANUAL_FORCES } from '@fundamental-engine/core';
 
@@ -44,6 +45,7 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
   <header class="docs-hero">
     <p class="kicker">Guides</p>
     <h1>The <span class="accent">web component</span></h1>
+    <StatusChip label="Shipped · both element tags are frozen" tone="stable" />
     <p class="lede">
       <code>&lt;field-root&gt;</code> is the keystone — a custom element that drops into any
       framework (or plain HTML) unchanged. "Every element is a body" is a web-components-shaped
@@ -99,19 +101,19 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
       <li><b>waves</b> — draw the background Currents (opt-in: add the attribute to enable; absent = off, the bare field).</li>
       <li><b>wave-style</b> — the wave current pattern: <code>linear</code> (default) or <code>circular</code>.</li>
       <li><b>wave-center</b> — custom coordinate string space-separated, e.g. <code>"200 300"</code> (default matches star/vortex bodies or center).</li>
-      <li><b>render</b> — <code>dots</code> · <code>trails</code> · <code>links</code> · <code>metaballs</code> · <code>voronoi</code> · <code>streamlines</code>.</li>
+      <li><b>render</b> — the matter modes <code>dots</code> · <code>trails</code> · <code>links</code> · <code>metaballs</code> · <code>voronoi</code>, the diagnostic <code>streamlines</code> / <code>flow</code>, the treatments <code>knockout</code> · <code>redshift</code> · <code>blackbody</code> · <code>depth</code>, and the default <code>none</code> (signals only, nothing drawn). All twelve, with what each costs, are on the <a href="/docs/api/declarative#render">declarative reference</a>.</li>
       <li><b>depth</b> — optional z-volume (default <code>0</code>, the flat field); <code>&gt; 0</code> opens a shallow depth matter drifts through, projected as a size/alpha recession.</li>
       <li><b>palette</b> — <code>ours</code> · <code>heatmap</code> · <code>infrared</code> · <code>spectrum</code>.</li>
       <li><b>attention</b> — opt into conserved attention (one finite strength budget).</li>
       <li><b>causality</b> — opt into cross-boundary causality (density spills to neighbours).</li>
     </ul>
-    <p>Full details in the <a href="/docs/api/options">options reference</a>.</p>
+    <p>Full details in the <a href="/docs/api/imperative#options">options reference</a>.</p>
   </section>
 
   <section class="docs-sec">
     <h2>Methods</h2>
     <p>
-      The full <a href="/docs/api/handle">FieldHandle</a> is proxied onto the element, so any
+      The full <a href="/docs/api/imperative#handle">FieldHandle</a> is proxied onto the element, so any
       page can drive the field after it mounts:
     </p>
     <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: methods }]} />
@@ -137,7 +139,7 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
       <b>Supported forces.</b> The cell is a simplified poster engine — it runs
       <code>attract</code>, <code>repel</code>, <code>swirl</code>, <code>gravity</code>,
       <code>stream</code>, <code>buoyancy</code>, and <code>tether</code>. For the full {''}
-      <a href="/docs/api/forces">catalog of {MANUAL_FORCES.length}</a> against the canonical math, use the page field
+      <a href="/docs/api/declarative#forces">catalog of {MANUAL_FORCES.length}</a> against the canonical math, use the page field
       or <a href="/lab">the Lab</a>.
     </div>
   </section>

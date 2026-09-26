@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
 const basic = `import { FieldField } from '@fundamental-engine/react';
@@ -39,6 +40,7 @@ function Background() {
   <header class="docs-hero">
     <p class="kicker">Guides</p>
     <h1>The <span class="accent">React</span> adapter</h1>
+    <StatusChip label="Shipped · React is a peer dependency" tone="stable" />
     <p class="lede">
       A reciprocal field as a React component. React is a <strong>peer dependency</strong> — the
       one approved framework dep; the core engine stays zero-dependency.
@@ -68,7 +70,7 @@ function Background() {
     </p>
     <CodeTabs variants={[{ label: 'React', lang: 'tsx', code: basic }]} />
     <p>
-      It accepts every <a href="/docs/api/options">FieldOptions</a> prop
+      It accepts every <a href="/docs/api/imperative#options">FieldOptions</a> prop
       (<code>accent</code>, <code>density</code>, <code>waves</code>, <code>waveStyle</code>, <code>waveCenter</code>, <code>render</code>,
       <code>palette</code>, <code>mass</code>, <code>attention</code>, <code>causality</code>, <code>separation</code>) plus
       <code>className</code> / <code>style</code>.
@@ -80,7 +82,7 @@ function Background() {
     <p>
       Because React renders bodies after the field mounts, call <code>field.scan()</code> once
       your elements are in the DOM. <code>onReady</code> hands you the live
-      <a href="/docs/api/handle">FieldHandle</a>:
+      <a href="/docs/api/imperative#handle">FieldHandle</a>:
     </p>
     <CodeTabs variants={[{ label: 'React', lang: 'tsx', code: onReady }]} />
   </section>

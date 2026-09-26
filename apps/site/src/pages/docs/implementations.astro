@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 
 // docs-refactor Phase 3 (#998): the "44/44 FieldHandle methods — full parity" line this page used to
 // carry was FALSE and had been for months — `pnpm gen:parity-matrix` reads the ports directly and has
@@ -7,6 +8,9 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
 // drift again. Do not retype a number here.
 import parityData from '../../../../../data/parity-matrix.json';
 const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'field-handle-methods')!;
+// Phase 6 (#1001): "the full 36-force core" was stale — the catalog is 37 and the Kotlin port carries
+// all of them. Read it from the generated matrix rather than retyping.
+const forceDim = parityData.dimensions.find((d: { id: string }) => d.id === 'force-tokens')!;
 ---
 
 <DocsLayout
@@ -16,6 +20,7 @@ const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'fi
   <header class="docs-hero">
     <p class="kicker">Reference</p>
     <h1>One engine, many <span class="accent">surfaces</span></h1>
+    <StatusChip label="Shipped on web · preview on the native ports" tone="shipped" />
     <p class="lede">
       Fundamental’s core (<code>@fundamental-engine/core</code>) computes the field against plain data
       and imports <strong>zero DOM</strong> — it’s renderer-agnostic. A thin host binds it to a surface.
@@ -53,7 +58,7 @@ const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'fi
     </p>
     <p>
       A <strong>Kotlin port</strong> mirrors the JS (and Swift) packages 1:1 on Android — the full
-      36-force core plus the integrator, held to the same <strong>cross-plane conformance gate</strong>
+      {forceDim.counts.kotlin}-force core plus the integrator, held to the same <strong>cross-plane conformance gate</strong>
       (one shared golden, JS / Swift / Kotlin), and the <code>FieldHandle</code> public API (relationship
       edges included). It ships a <code>:fundamental-platform</code> module (the six-phase
       discover→read→compute→state→write→render scheduler + the six registries), a
@@ -96,7 +101,12 @@ const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'fi
       the field to anything that draws, on your own loop. <a href="https://github.com/zachshallbetter/habitat">Habitat</a>
       (a simulation garden) is this surface in production.
     </p>
-    <p><b>Get it:</b> <code>npm i @fundamental-engine/three three</code>. Status: <b>stable, 0.x frozen.</b></p>
+    <p>
+      <b>Get it:</b> <code>npm i @fundamental-engine/three three</code>. Status: <b>shipped, unfrozen</b> —
+      no <code>@fundamental-engine/three</code> export is covered by <code>pnpm check:api</code>, so
+      nothing on this surface is protected from removal the way the web door's entry points are. It is
+      in production use; its signatures may still change before 1.0.
+    </p>
   </section>
 
   <section class="docs-sec">
@@ -107,7 +117,7 @@ const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'fi
         <tr><td><b>Web</b></td><td><code>@fundamental-engine/dom</code> → <code>--field-*</code></td><td><code>npm i @fundamental-engine/vanilla</code></td><td>stable</td></tr>
         <tr><td><b>Native — Apple</b></td><td>Swift port (Metal / SwiftUI) → the Field Lab</td><td>build from source (<code>.dmg</code> soon)</td><td>preview · behind on newest primitives</td></tr>
         <tr><td><b>Native — Android</b></td><td>Kotlin port (Compose + <code>View</code>/<code>Canvas</code>) → the Field Lab</td><td>build from source (<code><a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/android/README.md">android/</a></code>)</td><td>preview · running on-device</td></tr>
-        <tr><td><b>Your renderer</b></td><td><code>@fundamental-engine/three</code> / the read primitives</td><td><code>npm i @fundamental-engine/three</code></td><td>stable</td></tr>
+        <tr><td><b>Your renderer</b></td><td><code>@fundamental-engine/three</code> / the read primitives</td><td><code>npm i @fundamental-engine/three</code></td><td>shipped · unfrozen</td></tr>
       </tbody>
     </table>
   </section>

@@ -12,12 +12,18 @@ import { DOCS_NAV } from "../src/lib/docs-nav";
 //     status line into [data-cb-status]. Asserting that status proves the field, binding or nav
 //     really booted, rather than that a <figure> is on the page.
 
-const COOKBOOK = DOCS_NAV.find((g) => g.title === "Cookbook")!;
+// Derived by ROUTE FAMILY, not by group title. This spec broke when docs-refactor Phase 6 (#1001)
+// folded the "Cookbook" group into "Build" — a group title is editorial and will be renamed again,
+// whereas /docs/cookbook is the thing this suite is actually about. Deriving from the route means a
+// future regroup cannot rot it, and adding a cookbook page still adds its coverage automatically.
+const COOKBOOK_PAGES = DOCS_NAV.flatMap((g) => g.items).filter(
+  (i) => i.ready && !i.external && /^\/docs\/cookbook(\/|$)/.test(i.href),
+);
 
 test.describe("cookbook · the section", () => {
   test("every cookbook route in the nav resolves", async ({ page }) => {
     await page.goto("/docs/cookbook");
-    const hrefs = COOKBOOK.items.map((i) => i.href);
+    const hrefs = COOKBOOK_PAGES.map((i) => i.href);
     expect(hrefs.length).toBeGreaterThan(5);
     const statuses = await page.evaluate(
       async (urls) => Promise.all(urls.map(async (u) => ({ u, s: (await fetch(u)).status }))),
@@ -29,7 +35,7 @@ test.describe("cookbook · the section", () => {
   test("the index lists every pattern and folds the six field studies in", async ({ page }) => {
     await page.goto("/docs/cookbook");
     // one card per pattern page (the index's own roster, minus the index itself)
-    await expect(page.locator(".next-grid .next-card")).toHaveCount(COOKBOOK.items.length - 1);
+    await expect(page.locator(".next-grid .next-card")).toHaveCount(COOKBOOK_PAGES.length - 1);
     // the studies are worked patterns here, each resolved against the Pattern catalog
     const studies = page.locator(".api-table .api-row");
     await expect(studies).toHaveCount(6);
@@ -41,7 +47,7 @@ test.describe("cookbook · the section", () => {
   // The docs shell measures each page's own internal references and reports honestly. A cookbook
   // that cross-links heavily (its whole job is sending readers to the reference) is exactly where a
   // rotted anchor hides, so every page in the section is held to N/N.
-  for (const item of COOKBOOK.items) {
+  for (const item of COOKBOOK_PAGES) {
     test(`${item.label}: every internal reference resolves`, async ({ page }) => {
       await page.goto(item.href);
       const chip = page.locator("[data-docs-integrity]");

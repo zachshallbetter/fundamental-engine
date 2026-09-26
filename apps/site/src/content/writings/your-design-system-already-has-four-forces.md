@@ -25,7 +25,7 @@ You've been faking them by hand. The engine just makes them explicit.
 ## The four you already use
 
 Physics has a compact language for exactly these relationships. Fundamental borrows the language,
-not the literal physics, and maps it onto interface meaning. [Four fields](/docs/natural-fields):
+not the literal physics, and maps it onto interface meaning. [Four fields](/docs/concepts#natural-fields):
 
 **Gravity is importance.** What matters pulls. A primary button, a hero headline, the one number
 on the dashboard that decides whether today was good — they all sit at the bottom of a well, and
@@ -136,4 +136,4 @@ you say so.
 - [The Silent Contract Gap](/writings/the-silent-contract-gap) — the bug class when your CSS never reads the signals the field writes.
 - [The Field Translation Runtime](/writings/01-field-translation-runtime) — the flagship paper on translating physics into interface meaning.
 - [Fundamental Explained Simply](/writings/fundamental-explained-simply) — the plain-language companion for non-physicists.
-- [Natural Fields](/docs/natural-fields) — the canon for the four fields and their token translations.
+- [Natural Fields](/docs/concepts#natural-fields) — the canon for the four fields and their token translations.

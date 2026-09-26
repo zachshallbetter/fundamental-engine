@@ -1,19 +1,25 @@
 // The developer-portal navigation tree — the single source for the sidebar, prev/next,
 // and the docs shell's reference-integrity check (DocsRuntime.ts).
 //
-// Grouping (reader's journey): Start → Build → Reference → Substrate → Assurance →
-// Research/Frontier → Examples. The normal developer path (install → build → API) comes
-// first; the substrate model is a first-class group, not the entrance. Every route that
-// existed before the regroup is preserved — grouping only, no page moves. Items that leave
-// the docs shell (the invisible-fields example family, the recipe gallery, canonical/planning
-// docs on GitHub) are marked `external` and are excluded from DOCS_FLAT so prev/next never
-// walks a reader out of the shell.
+// THE FIVE-SECTION SPINE (docs-refactor Phase 6, #1001 — plan §6):
+//   Learn → Understand → Build → Reference → Platforms
+// plus two trailing rails that leave the docs shell (Research / Frontier, Examples). The spine is
+// task-shaped rather than module-shaped: a reader arrives at Learn, forms the model in Understand,
+// looks up a task in Build, looks up a symbol in Reference, and checks their own plane in Platforms.
 //
-// Substrate/Research entries that have no dedicated site page yet link the authoritative
-// canonical or planning markdown on GitHub via GH_DOC() — the same blob pattern the site
-// already uses for canon links. `ready: true` marks a page that exists; the sidebar renders
-// only ready items (groups with none are hidden), so the tree can describe the whole portal
-// while it fills in.
+// Before this phase the tree was grouped by artifact (Start · Build · Cookbook · Reference ·
+// Substrate · Assurance · Research · Field studies · Examples) and the same topic was split across
+// several thin pages. Phase 6 merged the pages Phases 2 (#997) and 3 (#998) superseded and folded
+// the concepts pages into one narrative. **Every retired URL redirects** — the map lives in
+// `src/lib/docs-redirects.mjs`, and `docs-redirects.test.ts` fails the build if a route enumerated
+// here has been retired, or a retired route lost its redirect.
+//
+// Items that leave the docs shell (the invisible-fields example family, the recipe gallery,
+// canonical/planning docs on GitHub) are marked `external` and are excluded from DOCS_FLAT so
+// prev/next never walks a reader out of the shell. Substrate/Research entries with no dedicated site
+// page link the authoritative canonical or planning markdown on GitHub via GH_DOC() — the same blob
+// pattern the site already uses for canon links. `ready: true` marks a page that exists; the sidebar
+// renders only ready items (groups with none are hidden).
 
 import { INVISIBLE_FIELDS } from './invisible-fields.ts';
 
@@ -47,7 +53,9 @@ const flagships: DocLink[] = INVISIBLE_FIELDS.filter((f) =>
 
 export const DOCS_NAV: DocGroup[] = [
   {
-    title: 'Start',
+    // 1 · LEARN — one guided path, in textbook order. Install → a first field → a reacting
+    // component → the model. Each step is runnable and reference is always one click away.
+    title: 'Learn',
     color: '#4da3ff',
     glyph: '▸',
     items: [
@@ -55,77 +63,21 @@ export const DOCS_NAV: DocGroup[] = [
       { href: '/docs/getting-started', label: 'Getting started', ready: true },
       { href: '/docs/tutorial', label: 'Your first field', ready: true },
       { href: '/docs/reactive-component', label: 'A reactive component', ready: true },
-      { href: '/docs/concepts', label: 'Concepts', ready: true },
-      { href: '/docs/natural-fields', label: 'Natural fields', ready: true },
-      { href: '/docs/narrative', label: 'Narrative walkthrough', ready: true },
+      { href: '/docs/concepts', label: 'Concepts — the field model', ready: true },
     ],
   },
   {
-    title: 'Build',
-    color: '#2dd4bf',
-    glyph: '▦',
-    items: [
-      { href: '/docs/guides/typescript', label: 'Vanilla / TypeScript', ready: true },
-      { href: '/docs/guides/react', label: 'React', ready: true },
-      { href: '/docs/guides/web-component', label: 'Web component', ready: true },
-      { href: '/docs/guides/three', label: 'Three.js', ready: true },
-      { href: '/docs/guides/swift', label: 'Swift (Apple platforms)', ready: true },
-      { href: '/docs/guides/kotlin', label: 'Kotlin (Android)', ready: true },
-      { href: '/docs/guides/core', label: 'Core engine', ready: true },
-      { href: '/docs/authoring', label: 'Authoring across surfaces', ready: true },
-      { href: '/docs/patterns', label: 'Pattern model', ready: true },
-      { href: '/docs/field-channels', label: 'Data binding & channels', ready: true },
-      { href: '/docs/implementations', label: 'Implementations', ready: true },
-      { href: '/docs/contour-typography', label: 'Contour typography', ready: true },
-      { href: '/docs/reading-field', label: 'Reading Field demo', ready: true },
-      { href: '/docs/showcase', label: 'Showcase & examples', ready: true },
-    ],
-  },
-  {
-    // The task-shaped depth layer (docs-refactor Phase 5, #1000). Sits between Build (how to use
-    // each surface) and Reference (what every symbol is): "what people actually build".
-    title: 'Cookbook',
-    color: '#facc15',
-    glyph: '◆',
-    items: [
-      { href: '/docs/cookbook', label: 'Patterns by task', ready: true },
-      { href: '/docs/cookbook/signals-first', label: 'Signals-first fields', ready: true },
-      { href: '/docs/cookbook/contained-fields', label: 'Contained fields', ready: true },
-      { href: '/docs/cookbook/data-driven', label: 'Data-driven fields', ready: true },
-      { href: '/docs/cookbook/reading-the-field', label: 'Reading & instrumenting', ready: true },
-      { href: '/docs/cookbook/conditions-and-formations', label: 'Conditions & formations', ready: true },
-      { href: '/docs/cookbook/workbench', label: 'The visualization workbench', ready: true },
-      { href: '/docs/cookbook/performance-tuning', label: 'Performance tuning', ready: true },
-      { href: '/docs/cookbook/interface-chrome', label: 'Chrome & accessibility', ready: true },
-      { href: '/docs/cookbook/framework-interop', label: 'Framework interop', ready: true },
-    ],
-  },
-  {
-    title: 'Reference',
-    color: '#ff9d5c',
-    glyph: '§',
-    items: [
-      { href: '/docs/api', label: 'API overview', ready: true },
-      { href: '/docs/api/options', label: 'createField / Options', ready: true },
-      { href: '/docs/api/handle', label: 'FieldHandle', ready: true },
-      { href: '/docs/api/declarative', label: 'Declarative reference', ready: true },
-      { href: '/docs/api/imperative', label: 'Imperative reference', ready: true },
-      { href: '/docs/api/attributes', label: 'Attributes', ready: true },
-      { href: '/docs/api/metrics', label: 'Metrics', ready: true },
-      { href: '/docs/api/types', label: 'Types', ready: true },
-      { href: '/docs/api/forces', label: 'Forces', ready: true },
-      { href: '/docs/api/presets', label: 'Presets', ready: true },
-      { href: '/docs/api/catalog', label: 'Conditions & formations', ready: true },
-      { href: '/docs/api/stability', label: 'API stability', ready: true },
-      { href: '/docs/api/parity', label: 'Platform parity matrix', ready: true },
-      { href: '/docs/api/utilities', label: 'Platform utilities', ready: true },
-    ],
-  },
-  {
-    title: 'Substrate',
+    // 2 · UNDERSTAND — the model and the substrate beneath it, then the studies that put the model
+    // under load. The concepts narrative itself lives in Learn as the on-ramp's last step; these are
+    // what it opens onto.
+    title: 'Understand',
     color: '#a78bfa',
     glyph: '◈',
     items: [
+      { href: '/docs/patterns', label: 'Pattern model', ready: true },
+      { href: '/docs/platform', label: 'Host model & platform layer', ready: true },
+      { href: '/docs/inspector', label: 'Inspector & agent JSON', ready: true },
+      { href: '/docs/diagnostics', label: 'Diagnostic overlays', ready: true },
       {
         href: GH_DOC('docs/canonical/substrate-overview.md'),
         label: 'Substrate overview',
@@ -138,7 +90,6 @@ export const DOCS_NAV: DocGroup[] = [
         ready: true,
         external: true,
       },
-      { href: '/docs/platform', label: 'Host model & platform layer', ready: true },
       {
         href: GH_DOC('docs/canonical/coordinate-spaces.md'),
         label: 'Coordinate spaces',
@@ -163,21 +114,79 @@ export const DOCS_NAV: DocGroup[] = [
         ready: true,
         external: true,
       },
-      { href: '/docs/inspector', label: 'Inspector & agent JSON', ready: true },
-      { href: '/docs/diagnostics', label: 'Diagnostic overlays', ready: true },
+      { href: '/docs/studies/reading-field', label: 'Study — Reading Field', ready: true },
+      { href: '/docs/studies/review-field', label: 'Study — Review Field', ready: true },
+      { href: '/docs/studies/search-field', label: 'Study — Search Field', ready: true },
+      { href: '/docs/studies/system-weather', label: 'Study — System Weather', ready: true },
+      { href: '/docs/studies/evidence-field', label: 'Study — Evidence Field', ready: true },
+      { href: '/docs/studies/visual-binding', label: 'Study — Visual Binding', ready: true },
     ],
   },
   {
-    title: 'Assurance',
-    color: '#f472b6',
-    glyph: '✦',
+    // 3 · BUILD — lookup by task. The cookbook (Phase 5, #1000) is the spine of this section; the
+    // authoring narrative, the channel and typography surfaces, and the assurance pages
+    // (accessibility, performance, conformance, troubleshooting) are the rest of "what you do next".
+    title: 'Build',
+    color: '#2dd4bf',
+    glyph: '▦',
     items: [
+      { href: '/docs/cookbook', label: 'Patterns by task', ready: true },
+      { href: '/docs/cookbook/signals-first', label: 'Signals-first fields', ready: true },
+      { href: '/docs/cookbook/contained-fields', label: 'Contained fields', ready: true },
+      { href: '/docs/cookbook/data-driven', label: 'Data-driven fields', ready: true },
+      { href: '/docs/cookbook/reading-the-field', label: 'Reading & instrumenting', ready: true },
+      { href: '/docs/cookbook/conditions-and-formations', label: 'Conditions & formations', ready: true },
+      { href: '/docs/cookbook/workbench', label: 'The visualization workbench', ready: true },
+      { href: '/docs/cookbook/performance-tuning', label: 'Performance tuning', ready: true },
+      { href: '/docs/cookbook/interface-chrome', label: 'Chrome & accessibility', ready: true },
+      { href: '/docs/cookbook/framework-interop', label: 'Framework interop', ready: true },
+      { href: '/docs/authoring', label: 'Authoring across surfaces', ready: true },
+      { href: '/docs/field-channels', label: 'Data binding & channels', ready: true },
+      { href: '/docs/contour-typography', label: 'Contour typography', ready: true },
+      { href: '/docs/reading-field', label: 'Reading Field demo', ready: true },
+      { href: '/docs/showcase', label: 'Showcase & examples', ready: true },
       { href: '/docs/accessibility', label: 'Accessibility', ready: true },
       { href: '/docs/accessibility-preview', label: 'Accessibility preview', ready: true },
       { href: '/docs/performance', label: 'Performance', ready: true },
       { href: '/docs/snapshots', label: 'Testing & conformance', ready: true },
       { href: '/docs/troubleshooting', label: 'Troubleshooting', ready: true },
+    ],
+  },
+  {
+    // 4 · REFERENCE — one consolidated, generated, searchable surface. TWO pages carry the whole
+    // API: what you write in markup, and what you reach from code. Everything that used to be a
+    // thin per-topic page under /docs/api/ was merged into one of them by Phase 6 and redirects
+    // there (see src/lib/docs-redirects.mjs). What remains beside them is genuinely separate: the
+    // web-only utilities, the freeze contract, and the support policy.
+    title: 'Reference',
+    color: '#ff9d5c',
+    glyph: '§',
+    items: [
+      { href: '/docs/api', label: 'API overview', ready: true },
+      { href: '/docs/api/declarative', label: 'Declarative reference', ready: true },
+      { href: '/docs/api/imperative', label: 'Imperative reference', ready: true },
+      { href: '/docs/api/utilities', label: 'Platform utilities', ready: true },
+      { href: '/docs/api/stability', label: 'API stability', ready: true },
       { href: '/docs/support', label: 'Support & stability', ready: true },
+    ],
+  },
+  {
+    // 5 · PLATFORMS — the honest per-platform story, anchored by the generated parity matrix. No
+    // implied uniformity: each door documents its actual surface, and the matrix says what a plane
+    // does not have.
+    title: 'Platforms',
+    color: '#facc15',
+    glyph: '◆',
+    items: [
+      { href: '/docs/implementations', label: 'One engine, many surfaces', ready: true },
+      { href: '/docs/guides/typescript', label: 'Vanilla / TypeScript', ready: true },
+      { href: '/docs/guides/react', label: 'React', ready: true },
+      { href: '/docs/guides/web-component', label: 'Web component', ready: true },
+      { href: '/docs/guides/three', label: 'Three.js', ready: true },
+      { href: '/docs/guides/swift', label: 'Swift (Apple platforms)', ready: true },
+      { href: '/docs/guides/kotlin', label: 'Kotlin (Android)', ready: true },
+      { href: '/docs/guides/core', label: 'Core engine', ready: true },
+      { href: '/docs/api/parity', label: 'Platform parity matrix', ready: true },
     ],
   },
   {
@@ -210,19 +219,6 @@ export const DOCS_NAV: DocGroup[] = [
         ready: true,
         external: true,
       },
-    ],
-  },
-  {
-    title: 'Field studies',
-    color: '#c084fc',
-    glyph: '❖',
-    items: [
-      { href: '/docs/studies/reading-field', label: 'Reading Field Study', ready: true },
-      { href: '/docs/studies/review-field', label: 'Review Field Study', ready: true },
-      { href: '/docs/studies/search-field', label: 'Search Field Study', ready: true },
-      { href: '/docs/studies/system-weather', label: 'System Weather Study', ready: true },
-      { href: '/docs/studies/evidence-field', label: 'Evidence Field Study', ready: true },
-      { href: '/docs/studies/visual-binding', label: 'Visual Binding Study', ready: true },
     ],
   },
   {

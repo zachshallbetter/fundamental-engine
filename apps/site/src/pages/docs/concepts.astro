@@ -5,7 +5,134 @@ import ForceCell from '../../components/ForceCell.astro';
 import FieldLoopDemo from '../../components/FieldLoopDemo.astro';
 import ApiStamp from '../../components/ApiStamp.astro';
 import SeeItLive from '../../components/SeeItLive.astro';
-import { MANUAL_FORCES } from '@fundamental-engine/core';
+import StatusChip from '../../components/StatusChip.astro';
+import VocabBadge from '../../components/VocabBadge.astro';
+import VocabLegend from '../../components/VocabLegend.astro';
+import { MANUAL_FORCES, NATURAL_FIELDS, FORCE_KIND, FORCE_FIELD } from '@fundamental-engine/core';
+
+// ── docs-refactor Phase 6 (#1001): ONE concepts narrative ─────────────────────────────────────────
+// This page absorbed /docs/concepts#natural-fields (the four-field translation model) and /docs/concepts#walkthrough (the
+// layer-by-layer walkthrough); both redirect here, to #natural-fields and #walkthrough. The plan
+// (§6.2) asks for concepts as one connected narrative rather than a page-per-idea pile, and these
+// three were the pile: the model, the translation table, and the walkthrough were each half of an
+// argument the reader had to assemble from three URLs.
+
+// The data-attribute pattern per natural field — honest runtime tokens only. A token's field is its
+// classification, not a separate API.
+//
+// Phase 6 status sweep: these samples used to carry `data-field-role="priority"` and
+// `data-field-role="revising"`. Neither is a field role — FIELD_ROLES (core/visual/tokens.ts) is
+// source · sink · anchor · boundary · sensor · display, and the scanner ignores anything else, so the
+// attribute was silently inert in published sample code.
+const patGravity = `<!-- Gravity → priority: the element converges attention -->
+<section data-body="gravity" data-field-role="source" data-strength="0.9">
+  <h2>What matters most</h2>
+</section>`;
+const patEm = `<!-- Electromagnetic → polarity / signal. Electric pushes, magnetic bends. -->
+<button data-body="charge" data-spin="1" data-range="280">positive</button>
+<button data-body="charge" data-spin="-1" data-range="280">negative</button>
+<!-- magnetism bends matter along the field; fieldflow carries it along the lines -->`;
+const patStrong = `<!-- Strong → binding. A native link IS the relationship — no new API. -->
+<p id="claim">The runtime is renderer-agnostic.</p>
+<a href="#claim" data-field-relation="supports" data-field-target="#claim">
+  Evidence: the boundary test
+</a>`;
+const patWeak = `<!-- Weak → transformation / decay. Not a fake force — state that ages. -->
+<article data-body="morph">
+  <!-- or: a memory metric that decays, or a pattern that releases over time -->
+</article>`;
+
+const FIELD_COLOR: Record<string, string> = {
+  gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c',
+};
+const KIND_LABEL: Record<string, string> = {
+  designed: 'Designed UI verb', primitive: 'Field primitive', derived: 'Derived behavior',
+  analogue: 'Material analogue', transport: 'Transport', metric: 'Metric',
+};
+const KIND_ORDER = ['primitive', 'analogue', 'transport', 'derived', 'metric', 'designed'] as const;
+// group every catalog token by its translation kind (from the engine's classification)
+const byKind = KIND_ORDER.map((kind) => ({
+  kind,
+  label: KIND_LABEL[kind],
+  tokens: MANUAL_FORCES.filter((f) => FORCE_KIND[f.token] === kind).map((f) => ({ token: f.token, field: FORCE_FIELD[f.token] })),
+})).filter((g) => g.tokens.length);
+
+// Each row separates the lanes: runtime tokens (strict), metrics (measured state), diagnostics
+// (inspection modes). They are deliberately NOT merged into one "primitives" column.
+const TRANSLATION: [string, string, string, string, string][] = [
+  ['Show importance', 'Gravity', 'gravity, attract', 'mass, priority, attention', 'potential, prediction'],
+  ['Route signal', 'Electromagnetic', 'charge, propagate, fieldflow, stream', 'signal, strength', 'field-lines, force-vectors'],
+  ['Show relationship', 'Strong + EM', 'link, cohesion', 'relation-strength', 'topology, causality'],
+  ['Keep things grouped', 'Strong', 'cohesion, crystallize, align', 'cluster, density', 'topology, heatmap'],
+  ['Show change / decay', 'Weak', 'morph, memory', 'decay, age', 'causality, contours'],
+  ['Show flow through structure', 'EM + transport', 'fieldflow, stream', 'flow, velocity', 'field-lines, prediction'],
+  ['Show reading history', 'Memory (metric)', 'memory', 'attention, recency', 'heatmap, inspector'],
+];
+const DIAG = [
+  ['Potential', 'wells and energy landscape', 'Gravity'],
+  ['Field lines', 'electromagnetic structure', 'Electromagnetic'],
+  ['Topology', 'binding and relationships', 'Strong'],
+  ['Causality', 'which primitive caused change', 'any'],
+  ['Prediction', 'near-future path', 'Gravity / flow'],
+  ['Contours', 'scalar fields', 'derived'],
+];
+
+// ── the walkthrough (merged from /docs/concepts#walkthrough) ────────────────────────────────────────────────
+// One ordinary element, revealed as a field participant one layer at a time: semantic DOM → data
+// attributes → registered body → runtime token → metric → feedback → relationships → diagnostics →
+// reduced motion. At the feedback stage it is driven deterministically by applyPattern (no canvas, no
+// cursor needed), so the number the reader sees is one the field actually wrote.
+const stages = [
+  {
+    title: 'Semantic DOM',
+    body: 'Start with real, accessible HTML — a heading and a note. No field yet, nothing to undo. Whatever happens next, this stays selectable, focusable, and readable.',
+    markup: '<article>\n  <h3>Reciprocal interfaces</h3>\n</article>',
+  },
+  {
+    title: 'Data attributes',
+    body: 'Mark the element a body with one attribute. This is the entire authoring contract — there is no special element, you add attributes to the HTML you already have.',
+    markup: '<article\n  data-body="attract"\n  data-strength="0.8"\n  data-range="280"\n>\n  <h3>Reciprocal interfaces</h3>\n</article>',
+  },
+  {
+    title: 'A registered body',
+    body: 'The platform scanner discovers every [data-body] element each frame and registers its box for measurement. The element is now a body in the one shared field — no JS wiring required.',
+    markup: '// platform scanner (per frame)\nBODY_SELECTOR // [data-body], [data-preset],\n              // [data-intent], [data-field-role]\n→ MeasurementRegistry.register(el)',
+  },
+  {
+    title: 'A runtime token',
+    body: 'The value of data-body is a runtime token — attract — and only real tokens execute. A concept (priority, polarity) describes; it never runs. attract pulls matter toward the element each frame.',
+    markup: 'data-body="attract"\n// attract: a designed force token\n// (a concept like "priority" is NOT a token —\n//  it is translated to one)',
+  },
+  {
+    title: 'Metrics',
+    body: 'From the body and its neighbours the field computes metrics — attention, priority, coherence, entropy. Metrics are measured numbers, not forces. A pattern declares which metrics a field tracks.',
+    markup: '// computeMetrics(body, neighbours, relationships)\n→ { attention: 0.7, priority: 0.85, … }\n// a metric measures; it does not push',
+  },
+  {
+    title: 'Feedback',
+    body: 'Add data-feedback and the field writes a metric back as a --field-* custom property on the element. CSS reads it — the heading gains weight. The value below is written by applyPattern, deterministically.',
+    markup: 'data-feedback\n// → element.style[\'--field-priority\'] = 0.85\n.h3 { font-weight: calc(400 + var(--field-priority) * 320) }',
+    feedback: true,
+  },
+  {
+    title: 'Relationships',
+    body: 'A native link — an href, aria-controls, or data-field-relation/-target — becomes an edge in the relationship graph. The graph is discovered from the DOM, never declared in JS.',
+    markup: '<a href="#claim"\n   data-field-relation="supports"\n   data-field-target="#claim">evidence</a>\n// RelationshipRegistry → one typed graph',
+    rel: true,
+  },
+  {
+    title: 'Diagnostics',
+    body: 'A diagnostic reveals the invisible structure — potential, topology, causality. It inspects behaviour; it never causes it. Open the Inspector to read the live registries each frame.',
+    markup: '// diagnostics EXPLAIN, they do not execute\npotential · topology · causality · prediction\n→ /docs/inspector (read-only)',
+    link: '/docs/inspector',
+  },
+  {
+    title: 'Reduced motion',
+    body: 'Under prefers-reduced-motion the field freezes and the element holds a static, emphasised baseline. The point the motion made — which element carries weight — survives with the motion off.',
+    markup: '@media (prefers-reduced-motion: reduce) {\n  /* hold the last value, no travel */\n  .h3 { font-weight: 560; transition: none }\n}',
+    reduced: true,
+  },
+];
 
 const bodySnippet = `<a
   data-body="attract swirl"  // forces compose, space-separated
@@ -51,6 +178,7 @@ const DEMOS = [
   <header class="docs-hero">
     <p class="kicker">Concepts</p>
     <h1>How the field <span class="accent">thinks</span>.</h1>
+    <StatusChip label="Shipped · every claim here runs on this page" tone="stable" />
     <p class="lede">
       Fundamental is a platform-native relational field runtime; the DOM is its first host. Elements
       are bodies in one <strong>shared field context</strong> — they bend the field; its density bends
@@ -72,7 +200,7 @@ const DEMOS = [
       Common attributes — <code>data-strength</code>, <code>data-range</code>,
       <code>data-color</code>, <code>data-spin</code>, <code>data-angle</code> — are read by the
       forces that use them; each force ignores the ones it doesn't. See the
-      <a href="/docs/api/attributes">attribute reference</a> for the full matrix.
+      <a href="/docs/api/declarative#body-contract">attribute reference</a> for the full matrix.
     </p>
     <div class="callout">
       <b>Data attributes are the contract.</b> You make semantic HTML participate in the field by adding
@@ -201,15 +329,15 @@ const DEMOS = [
     <ul class="model">
       <li>
         <b>Forces</b> — <em>what</em> a body does to nearby matter (attract, swirl, gravity,
-        lens…). They compose. <a href="/docs/api/forces">Reference →</a>
+        lens…). They compose. <a href="/docs/api/declarative#forces">Reference →</a>
       </li>
       <li>
         <b>Conditions</b> — <em>when</em> a force acts, via <code>data-when</code> (active, fast,
-        slow, hot, cool, scrolling). <a href="/docs/api/catalog">Reference →</a>
+        slow, hot, cool, scrolling). <a href="/docs/api/declarative#conditions">Reference →</a>
       </li>
       <li>
         <b>Formations</b> — a single global bias applied to <em>every</em> particle at once
-        (ambient, wells, lanes, scatter, accretion). <a href="/docs/api/catalog">Reference →</a>
+        (ambient, wells, lanes, scatter, accretion). <a href="/docs/api/declarative#conditions">Reference →</a>
       </li>
       <li>
         <b>Render modes</b> — the same physics drawn differently. Matter/structure: dots, trails,
@@ -220,24 +348,170 @@ const DEMOS = [
     </ul>
   </section>
 
-  <section class="docs-sec">
+  <section class="docs-sec" id="natural-fields">
     <h2>The natural model: four fields</h2>
     <p>
-      Fundamental does not copy physics into the interface — it <strong>translates</strong> the four
+      Fundamental does not copy physics into the interface. It <strong>translates</strong> the four
       fundamental fields into interface behavior. Every interface already has priority, polarity,
-      binding, and transformation:
+      binding, and transformation — physics already has a language for those relations.
     </p>
-    <ul class="model">
-      <li><b>Gravity</b> → priority, convergence, hierarchy (<code>gravity</code>, potential).</li>
-      <li><b>Electromagnetic</b> → polarity, signal, field lines, flow (<code>charge</code>, <code>magnetism</code>, <code>propagate</code>, <code>fieldflow</code>).</li>
-      <li><b>Strong</b> → binding, cohesion, structure (<code>cohesion</code>, <code>link</code>, <code>crystallize</code>).</li>
-      <li><b>Weak</b> → transformation, decay, release (<code>morph</code>, <code>memory</code> decay).</li>
-    </ul>
-    <p class="note">
-      Natural fields are conceptual; engine primitives are translations; canonical forces
-      (<code>attract</code>, <code>repel</code>, …) are designed verbs, not natural translations. The
-      full model is on the <a href="/docs/natural-fields">Natural Fields</a> page.
+    <p class="nf-doctrine">
+      Natural fields are conceptual. Engine primitives are translations. Canonical forces are designed
+      verbs. <strong>Natural fields are not tokens; tokens are translations.</strong> This reframe
+      changes nothing the particles do — it only gives each behavior a clean place in the hierarchy:
     </p>
+    <div class="formula" style="--c:#4da3ff">field → translation → runtime token → metric → diagnostic → pattern</div>
+
+    <h3>The vocabulary lanes</h3>
+    <p>
+      Fundamental keeps these categories separate on purpose. A reader should never have to guess whether
+      a word is a runtime token, a metric, or a diagnostic — the lane says so:
+    </p>
+    <VocabLegend />
+
+    <h3>The four fields</h3>
+    <div class="nf-grid">
+      {NATURAL_FIELDS.map((f) => (
+        <article class="nf-card" id={f.field} style={`--fc:${FIELD_COLOR[f.field]}`}>
+          <h4>{f.title}</h4>
+          <p class="nf-translation">{f.translation}</p>
+          <p class="nf-summary">{f.summary}</p>
+          <p class="nf-uses"><b>Use for</b> {f.interfaceUses.join(' · ')}</p>
+          <p class="nf-expr">
+            <b>Expressions</b>{' '}
+            {f.expressions.length ? f.expressions.map((t) => <code>{t}</code>) : <span class="nf-none">conceptual — closest shipped analogue is <code>memory</code> decay</span>}
+          </p>
+        </article>
+      ))}
+    </div>
+
+    <div class="callout">
+      <b>Electric fields push. Magnetic fields bend. Fieldflow carries.</b> Do not make
+      <code>magnetism.apply()</code> follow magnetic field lines — field-aligned transport belongs to
+      <code>fieldflow</code>. And <code>attract</code> is not gravity; <code>repel</code> is not charge —
+      those are designed UI verbs.
+    </div>
+
+    <h3>Author each field — the data-attribute patterns</h3>
+    <p>
+      You express a field's translation with <strong>data attributes on semantic HTML</strong>, using
+      honest runtime tokens only. A token's field is its classification, not a separate API — there is no
+      <code>&lt;gravity&gt;</code> element, only <code>data-body="gravity"</code>. Strong binding is the
+      clearest case: a native <code>href</code> (or <code>data-field-relation</code> /
+      <code>data-field-target</code>) <em>is</em> the relationship — the graph is discovered from the DOM,
+      not declared in code.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'Gravity → priority', lang: 'html', code: patGravity },
+        { label: 'EM → polarity', lang: 'html', code: patEm },
+        { label: 'Strong → binding', lang: 'html', code: patStrong },
+        { label: 'Weak → decay', lang: 'html', code: patWeak },
+      ]}
+    />
+    <p>
+      Live — gravity bodies carrying a supplied <code>priority</code>; <code>applyPattern()</code>
+      <ApiStamp name="applyPattern" /> writes it back as <code>--field-priority</code> and the CSS reads
+      it (gravity's interface translation, running):
+    </p>
+    <FieldLoopDemo
+      token="gravity"
+      pattern="priority-well"
+      metric="priority"
+      items={[
+        { text: 'Headline — converges attention', value: 0.9 },
+        { text: 'Supporting detail', value: 0.45 },
+        { text: 'Fine print', value: 0.15 },
+      ]}
+    />
+
+    <SeeItLive
+      slug="market"
+      why="three translations on one page of real data: market cap is mass (gravity), the day's move polarizes (EM), correlated assets thread (strong)"
+    />
+
+    <h3>Fields vs primitives vs forces</h3>
+    <p>Every catalog token has a place. This grouping is read straight from the engine's classification:</p>
+    <div class="nf-kinds">
+      {byKind.map((g) => (
+        <div class="nf-kind">
+          <span class="nf-kind-label">{g.label}</span>
+          <div class="nf-tokens">
+            {g.tokens.map((t) => (
+              <code class="nf-token" style={t.field ? `--fc:${FIELD_COLOR[t.field]}` : ''} data-field={t.field ?? ''}>{t.token}</code>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <h3>Interface translation table</h3>
+    <p>One need, separated into lanes: the runtime tokens that execute it, the metrics it measures, and the diagnostics that reveal it.</p>
+    <table class="nf-table">
+      <thead><tr><th>Interface need</th><th>Natural field</th><th>Runtime tokens</th><th>Metrics</th><th>Diagnostics</th></tr></thead>
+      <tbody>
+        {TRANSLATION.map(([need, field, tokens, metrics, diags]) => (
+          <tr>
+            <td>{need}</td>
+            <td>{field}</td>
+            <td class="nf-lane">{tokens.split(', ').map((t) => <VocabBadge kind="token" label={t} />)}</td>
+            <td class="nf-lane">{metrics.split(', ').map((m) => <VocabBadge kind="metric" label={m} />)}</td>
+            <td class="nf-lane">{diags.split(', ').map((d) => <VocabBadge kind="diagnostic" label={d} />)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    <h3>Diagnostics by field</h3>
+    <p>Each diagnostic answers “which invisible relation am I revealing?” — all shipped (<a href="/docs/diagnostics">see them live</a>). Diagnostics are inspection modes, not runtime tokens.</p>
+    <table class="nf-table">
+      <thead><tr><th>Diagnostic</th><th>Reveals</th><th>Field</th></tr></thead>
+      <tbody>
+        {DIAG.map(([d, reveals, field]) => (<tr><td><VocabBadge kind="diagnostic" label={d} /></td><td>{reveals}</td><td>{field}</td></tr>))}
+      </tbody>
+    </table>
+
+    <div class="callout nf-final">
+      <b>Four fields. Many expressions. One DOM runtime.</b> Every interface has priority, polarity,
+      binding, and transformation. Fundamental gives those relations a field model.
+    </div>
+  </section>
+
+  <section class="docs-sec" id="walkthrough">
+    <h2>One element, revealed as a field participant</h2>
+    <p>
+      Everything above, on a single element, one layer at a time — the way the runtime sees it. The same
+      ordinary HTML gains a layer per step, from plain markup to a body the field measures, drives and
+      feeds back. Step through it; the feedback stage prints the value the field actually wrote.
+    </p>
+
+    <div class="nr-stage" aria-live="polite">
+      <div class="nr-progress" id="nr-progress"></div>
+      <div class="nr-grid">
+        <div class="nr-text">
+          <p class="nr-step"><span id="nr-step">1</span> / {stages.length}</p>
+          <h3 id="nr-title">{stages[0].title}</h3>
+          <p id="nr-body">{stages[0].body}</p>
+          <a class="nr-link" id="nr-link" href="/docs/inspector" hidden>Open the Inspector →</a>
+        </div>
+        <div class="nr-show">
+          <pre class="nr-markup"><code id="nr-markup">{stages[0].markup}</code></pre>
+          <div class="nr-demo-wrap" id="nr-demo-root">
+            <article class="nr-demo" id="nr-demo" data-body="attract" data-strength="0.8" data-range="280">
+              <span class="nr-demo-h">Reciprocal interfaces</span>
+              <span class="nr-demo-p">An ordinary element, participating.</span>
+              <a class="nr-demo-rel" id="nr-demo-rel" href="#nr-demo" data-field-relation="supports" data-field-target="#nr-demo" hidden>supporting evidence</a>
+            </article>
+            <span class="nr-readout" id="nr-readout" aria-hidden="true"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nr-controls">
+      <button id="nr-prev" disabled>← Back</button>
+      <button id="nr-next">Next →</button>
+    </div>
   </section>
 
   <section class="docs-sec">
@@ -292,7 +566,7 @@ const DEMOS = [
     </p>
     <div class="callout">
       <b>Composites, not new code.</b> Bigger ideas — <code>blackhole</code>, <code>galaxy</code>,
-      <code>tornado</code> — are <a href="/docs/api/presets">presets</a> that expand to several
+      <code>tornado</code> — are <a href="/docs/api/declarative#presets">presets</a> that expand to several
       co-located bodies, one primitive each. The engine never grows to add a preset.
     </div>
   </section>
@@ -331,7 +605,7 @@ const DEMOS = [
     <p class="note">
       These extend the consumption model rather than adding forces: an agent is a particle the engine
       drives, tagging scopes <em>which</em> matter a force sees, and the scalar is a read channel —
-      no new <code>data-body</code> verb. The <a href="/docs/api/handle">FieldHandle reference</a> has
+      no new <code>data-body</code> verb. The <a href="/docs/api/imperative#handle">FieldHandle reference</a> has
       the exact signatures.
     </p>
   </section>
@@ -355,3 +629,147 @@ const DEMOS = [
     </p>
   </section>
 </DocsLayout>
+
+<script>
+  // The #walkthrough stepper (merged from the retired /docs/concepts#walkthrough in Phase 6, #1001).
+  // Drives the running example deterministically with applyPattern: supply a priority, the pattern
+  // writes --field-priority back. No requestAnimationFrame, no cursor — the feedback is real and
+  // repeatable, so the number printed under the demo is one the field actually wrote.
+  import { applyPattern } from '@fundamental-engine/dom';
+  import { patternById } from '@fundamental-engine/core';
+
+  interface Stage { title: string; body: string; markup: string; feedback?: boolean; rel?: boolean; link?: string; reduced?: boolean }
+  const data: Stage[] = (window as unknown as { __NR__?: Stage[] }).__NR__ ?? [];
+  const $ = (id: string) => document.getElementById(id);
+  let i = 0;
+  let applied: ReturnType<typeof applyPattern> | null = null;
+
+  function driveFeedback(reduced: boolean) {
+    const root = $('nr-demo-root');
+    const demo = $('nr-demo');
+    if (!root || !demo) return;
+    demo.setAttribute('data-feedback', '');
+    demo.setAttribute('data-field-priority', '0.85');
+    applied?.destroy();
+    const pattern = patternById('priority-well');
+    if (!pattern) return;
+    applied = applyPattern(root, pattern, { bodies: [demo], annotateBodies: false, drive: false, reducedMotion: reduced });
+    applied.tick();
+    applied.tick();
+  }
+
+  function show(n: number) {
+    if (!data.length) return;
+    i = Math.max(0, Math.min(data.length - 1, n));
+    const s = data[i];
+    $('nr-title')!.textContent = s.title;
+    $('nr-body')!.textContent = s.body;
+    $('nr-step')!.textContent = String(i + 1);
+    $('nr-markup')!.textContent = s.markup;
+    ($('nr-prev') as HTMLButtonElement).disabled = i === 0;
+    ($('nr-next') as HTMLButtonElement).disabled = i === data.length - 1;
+
+    const link = $('nr-link') as HTMLAnchorElement;
+    link.toggleAttribute('hidden', !s.link);
+    if (s.link) link.href = s.link;
+
+    // the relationship anchor appears at the relationships stage and stays
+    $('nr-demo-rel')!.toggleAttribute('hidden', i < 6);
+    $('nr-demo-root')!.classList.toggle('rel-on', !!s.rel || i > 6);
+
+    // reduced-motion class for the static-baseline stage
+    const root = $('nr-demo-root')!;
+    root.classList.toggle('reduced', !!s.reduced);
+
+    // feedback turns on at the feedback stage and stays on for the rest
+    const readout = $('nr-readout')!;
+    if (i >= 5) {
+      driveFeedback(!!s.reduced);
+      // read the value the field wrote back off the element — the live proof the loop ran.
+      const v = parseFloat(getComputedStyle($('nr-demo')!).getPropertyValue('--field-priority')) || 0;
+      readout.textContent = `the field wrote → --field-priority: ${v.toFixed(2)}`;
+    } else {
+      applied?.destroy();
+      applied = null;
+      const demo = $('nr-demo')!;
+      demo.removeAttribute('data-feedback');
+      demo.removeAttribute('data-field-priority');
+      readout.textContent = '';
+    }
+
+    const prog = $('nr-progress')!;
+    prog.innerHTML = data.map((_, k) => `<span class="${k <= i ? 'on' : ''}"></span>`).join('');
+  }
+  $('nr-next')?.addEventListener('click', () => show(i + 1));
+  $('nr-prev')?.addEventListener('click', () => show(i - 1));
+  // Arrow keys step the walkthrough — but SCOPED to the stage. On its own page this was a document
+  // listener; on a long concepts narrative that would hijack arrow-key scrolling for the whole page.
+  document.querySelector('.nr-stage')?.addEventListener('keydown', (e) => {
+    const key = (e as KeyboardEvent).key;
+    if (key === 'ArrowRight') show(i + 1);
+    if (key === 'ArrowLeft') show(i - 1);
+  });
+  show(0);
+  document.addEventListener('astro:before-swap', () => applied?.destroy(), { once: true });
+</script>
+
+<script is:inline define:vars={{ stagesData: stages }}>
+  // hand the build-time stages to the client (define:vars serializes safely)
+  window.__NR__ = stagesData;
+</script>
+
+<style>
+  /* the four-field chapter (merged from /docs/concepts#natural-fields) */
+  .nf-doctrine { color: var(--text-2); }
+  .nf-lane { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+  .nf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0.9rem; margin: 0.8rem 0 1.4rem; }
+  .nf-card { padding: 1.1rem; border-radius: 12px; border: 1px solid var(--line); border-left: 3px solid var(--fc); background: color-mix(in srgb, var(--fc) 5%, transparent); }
+  .nf-card h4 { margin: 0 0 0.15rem; color: var(--fc); font-size: 1rem; }
+  .nf-translation { margin: 0 0 0.5rem; font-family: var(--mono); font-size: 0.8rem; color: var(--text-2); }
+  .nf-summary { font-size: 0.86rem; line-height: 1.5; color: var(--text-3); margin: 0 0 0.6rem; }
+  .nf-uses, .nf-expr { font-size: 0.78rem; color: var(--text-3); margin: 0.3rem 0 0; }
+  .nf-uses b, .nf-expr b { color: var(--text-2); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.2rem; }
+  .nf-expr code { margin-right: 0.3rem; }
+  .nf-none { font-style: italic; }
+  .nf-kinds { display: flex; flex-direction: column; gap: 0.7rem; margin: 0.8rem 0 1.4rem; }
+  .nf-kind { display: grid; grid-template-columns: 150px 1fr; gap: 0.8rem; align-items: baseline; }
+  .nf-kind-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--text-3); }
+  .nf-tokens { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .nf-token { font-size: 0.78rem; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid var(--line); }
+  .nf-token[data-field]:not([data-field=""]) { border-color: color-mix(in srgb, var(--fc) 55%, var(--line)); color: var(--fc); background: color-mix(in srgb, var(--fc) 10%, transparent); }
+  .nf-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; margin: 0.5rem 0 1.4rem; }
+  .nf-table th, .nf-table td { text-align: left; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .nf-table th { color: var(--text-3); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .nf-final b { color: var(--accent); }
+  @media (max-width: 620px) { .nf-kind { grid-template-columns: 1fr; gap: 0.3rem; } }
+
+  /* the walkthrough stepper (merged from /docs/concepts#walkthrough) */
+  .nr-stage { border: 1px solid var(--line, #2a2a35); border-radius: 12px; padding: 1.4rem; background: rgba(255, 255, 255, 0.02); }
+  .nr-progress { display: flex; gap: 6px; margin-bottom: 1rem; }
+  .nr-progress span { flex: 1; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.12); transition: background 0.3s ease; }
+  .nr-progress span.on { background: #4da3ff; }
+  .nr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 720px) { .nr-grid { grid-template-columns: 1fr; } }
+  .nr-step { font: 0.74rem ui-monospace, monospace; color: var(--muted, #9aa); margin: 0 0 0.3rem; }
+  .nr-text h3 { margin: 0 0 0.5rem; }
+  .nr-text p { color: var(--muted, #9aa); line-height: 1.55; }
+  .nr-link { display: inline-block; margin-top: 0.6rem; color: #4da3ff; }
+  #nr-link[hidden] { display: none !important; }
+  .nr-markup { background: #0b0e16; border: 1px solid var(--line, #2a2a35); border-radius: 9px; padding: 0.8rem 0.9rem; overflow-x: auto; margin: 0 0 0.9rem; }
+  .nr-markup code { font: 0.78rem/1.55 ui-monospace, SFMono-Regular, monospace; color: #c8d2e0; white-space: pre; }
+  .nr-demo-wrap { position: relative; }
+  .nr-demo { border: 1px solid var(--line, #2a2a35); border-radius: 10px; padding: 0.9rem 1rem; transition: opacity 0.4s ease; }
+  .nr-demo-h { display: block; margin: 0; font-size: 1.2rem; color: var(--text, #e8e8ef); font-weight: 600; }
+  .nr-demo-p { display: block; margin: 0.3rem 0 0; font-size: 0.85rem; font-weight: 400; color: var(--muted, #9aa); }
+  .nr-demo-rel { display: inline-block; margin-top: 0.6rem; font-size: 0.8rem; color: #2dd4bf; }
+  #nr-demo-rel[hidden] { display: none !important; }
+  .rel-on .nr-demo { border-left: 3px solid #2dd4bf; }
+  .nr-readout { display: block; margin-top: 0.7rem; font: 0.8rem ui-monospace, monospace; color: #4da3ff; min-height: 1.2em; padding: 0.3rem 0.5rem; border-radius: 6px; background: color-mix(in srgb, #4da3ff 10%, transparent); }
+  .nr-readout:empty { display: none; }
+  .nr-demo-root.reduced .nr-demo, .nr-demo-root.reduced .nr-demo-h { transition: none; }
+  @media (prefers-reduced-motion: reduce) { .nr-demo, .nr-demo-h { transition: none; } }
+  .nr-controls { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; }
+  .nr-controls button { font: inherit; font-size: 0.9rem; padding: 0.4rem 0.9rem; border: 1px solid var(--line, #2a2a35); border-radius: 8px; background: transparent; color: inherit; cursor: pointer; }
+  .nr-controls button:hover:not(:disabled) { border-color: #4da3ff; }
+  .nr-controls button:disabled { opacity: 0.4; cursor: default; }
+</style>

@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 import { MANUAL_FORCES } from '@fundamental-engine/core';
 
@@ -81,6 +82,7 @@ document.addEventListener('click', (e) => field.burst(e.clientX, e.clientY));`;
   <header class="docs-hero">
     <p class="kicker">Getting started</p>
     <h1>Your <span class="accent">first field</span></h1>
+    <StatusChip label="Shipped · every step runs" tone="stable" />
     <p class="lede">
       Eight short steps from <code>npm install</code> to a headline that gains weight and glow as
       the field pools around it. Every step is runnable on its own — paste, save, watch.
@@ -189,7 +191,7 @@ document.addEventListener('click', (e) => field.burst(e.clientX, e.clientY));`;
   <section class="docs-sec">
     <h2>7. Drive it from code</h2>
     <p>
-      Every entry point hands you a <a href="/docs/api/handle">FieldHandle</a>. With the web
+      Every entry point hands you a <a href="/docs/api/imperative#handle">FieldHandle</a>. With the web
       component it's proxied onto the element, so you can reshape the field and react to events:
     </p>
     <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: drive }]} />
@@ -202,7 +204,7 @@ document.addEventListener('click', (e) => field.burst(e.clientX, e.clientY));`;
         <b>Concepts</b>
         <span>The model in depth — one conserved field, reciprocity, the orthogonal axes.</span>
       </a>
-      <a class="next-card" href="/docs/api/forces">
+      <a class="next-card" href="/docs/api/declarative#forces">
         <b>The {MANUAL_FORCES.length} forces</b>
         <span>The full catalog — compose any of them on a body, space-separated.</span>
       </a>

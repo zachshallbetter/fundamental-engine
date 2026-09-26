@@ -292,7 +292,7 @@ const GROUPS = [
   <div class="callout">
     <b>Demo labels are human-facing behavior, not runtime tokens.</b> Words like <em>spring</em>,
     <em>orbit</em>, and <em>drag</em> describe what a demo does — they are not engine tokens. The
-    spring here is the <a href="/docs/api/forces"><code>tether</code></a> force, <em>drag</em> maps to
+    spring here is the <a href="/docs/api/declarative#forces"><code>tether</code></a> force, <em>drag</em> maps to
     <code>viscosity</code>, and <em>orbit</em> is composed motion (gravity + magnetism + tether), not a
     token. Runtime tokens always appear in <code>data-body</code> and pattern <code>primitives</code>.
     These demos read <code>--field-density</code>, the field-namespaced form of the density channel; the canonical raw channel is <code>--d</code>, which the engine writes alongside it (same value).
@@ -341,7 +341,7 @@ const GROUPS = [
   <section class="docs-sec" id="conserved-emphasis">
     <h2>Conserved emphasis</h2>
     <p>
-      One finite attention budget across the page (<a href="/docs/api/handle"><code>setAttention</code></a>).
+      One finite attention budget across the page (<a href="/docs/api/imperative#handle"><code>setAttention</code></a>).
       Focusing one item lifts it <em>and</em> makes the others recede by the same total — emphasis you
       can't fake with hover styles, because the page can never over-emphasize more than the budget
       allows. Hover or tab through the list, then flip the budget off to feel the difference.
@@ -450,7 +450,7 @@ const GROUPS = [
   <section class="docs-sec" id="magnetic-snapping">
     <h2>Magnetic snapping</h2>
     <p>
-      The same spring that powers the <a href="/docs/api/forces">tether</a> force, applied to an
+      The same spring that powers the <a href="/docs/api/declarative#forces">tether</a> force, applied to an
       element's transform. Drag the tile anywhere — on release it springs to the nearest grid cell.
       A damped spring, not a stepped <code>round()</code>, so it carries momentum and settles.
     </p>
@@ -523,7 +523,7 @@ const GROUPS = [
     <h2>Text as boundary</h2>
     <p>
       <code>textBodies()</code> samples a sentence's <em>rendered</em> word boxes — Range geometry,
-      one box per word — into invisible <a href="/docs/api/forces"><code>shear</code></a> boundary
+      one box per word — into invisible <a href="/docs/api/declarative#forces"><code>shear</code></a> boundary
       spans bound back to the text via <code>data-field-visual-for</code>. Toggle it and the field
       flows <em>along the words</em> while the sentence stays real, selectable HTML. Matter never
       forms the words; the words bend the flow. Box geometry today — glyph contours are the planned
@@ -542,7 +542,7 @@ const GROUPS = [
   <section class="docs-sec" id="click-burst">
     <h2>Click to burst</h2>
     <p>
-      Drive the field from your own events. The <a href="/docs/api/handle">FieldHandle</a>'s
+      Drive the field from your own events. The <a href="/docs/api/imperative#handle">FieldHandle</a>'s
       <code>burst</code> takes viewport coordinates — click anywhere in the stage to shove and heat
       the matter there.
     </p>
