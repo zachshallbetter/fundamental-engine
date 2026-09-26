@@ -3400,6 +3400,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // the declared-potential channel (#443) — the programmatic mirror of data-potential, so a
       // non-DOM host (a game, an agent runtime) can declare terrain-coupled matter through addBody.
       if (spec.potential != null) attrs['data-potential'] = spec.potential;
+      // the capture horizon (#1177) — the programmatic mirror of data-absorb, so a non-DOM host can
+      // size a sink's or a warp throat's radius without reaching past the public API.
+      if (spec.absorbR != null) attrs['data-absorb'] = String(spec.absorbR);
       const toRect = (): DOMRect => {
         const r = spec.rect();
         return {
