@@ -3,6 +3,7 @@
 //! The physics primitives: [`Body`] (a force source), [`Particle`] (a free agent), [`Env`] (the
 //! per-apply environment the integrator hands each force), and the [`Force`] trait.
 
+use super::scalar_grid::{GridMode, ScalarGrid};
 use super::spatial_hash::{NeighborSample, Neighborhood};
 use crate::math::Vec3;
 use crate::record::Rng;
@@ -22,6 +23,17 @@ pub enum Effect {
         power: f64,
         /// Spark tint (`#rrggbb`); `None` = the force's canon colour.
         color: Option<String>,
+    },
+    /// A velocity change owed to a particle, addressed by id (#1037).
+    ///
+    /// The neighbour snapshot a class-\[B\] force reads is a frame-start *copy*, so a force that must
+    /// move its neighbour — `collide` is the only one — cannot simply mutate it the way the JS engine
+    /// does. It emits the neighbour's half of the exchange as data instead, and the integrator applies
+    /// it by id after the force pass. Equal-and-opposite pairs make the result momentum-conserving and
+    /// independent of the order particles are visited in.
+    Impulse {
+        particle_id: u64,
+        dv: Vec3,
     },
 }
 
@@ -137,6 +149,9 @@ pub struct Body {
 
     // ── feedback / density (§8) ─────────────────────────────────────────
     /// Whether this body is an active force source this frame (JS `vis`).
+    /// `screen`'s attenuation floor — the most a quiet zone may damp a neighbour's force to. 0 (the
+    /// default) lets a screen cancel a neighbour outright at its core; 0.25 leaves a quarter of it.
+    pub screen_min: f64,
     pub visible: bool,
     /// Whether this body samples local density for two-way feedback.
     pub feedback: bool,
@@ -159,6 +174,7 @@ impl Default for Body {
             strength: 1.0,
             range: 300.0,
             absorb_r: 64.0,
+            screen_min: 0.0,
             capacity: 60.0,
             spin: 1.0,
             heading: Vec3::new(1.0, 0.0, 0.0),
@@ -218,6 +234,10 @@ pub struct Env {
     pub capture_request: bool,
     /// The frame-start neighbour snapshot (§20.1 class \[B\]). Rebuilt by the integrator each step when a
     /// neighbour force is in play; queried via [`neighbors`](Env::neighbors).
+    /// Scalar field buffers, keyed by name (§20.1 class \[C\]). Created on demand by [`Env::grid`],
+    /// owned by the env for the life of the field, and advanced once per frame by the integrator.
+    /// The NAME picks the scheme — see [`GridMode::for_name`].
+    pub grids: std::collections::HashMap<String, ScalarGrid>,
     pub neighborhood: Neighborhood,
 }
 
@@ -236,6 +256,7 @@ impl Default for Env {
             scroll_v: 0.0,
             rng: Rng::default(),
             effects: Vec::new(),
+            grids: std::collections::HashMap::new(),
             capture_request: false,
             neighborhood: Neighborhood::default(),
         }
@@ -266,6 +287,20 @@ impl Env {
     #[inline]
     pub fn neighbors(&self, at: Vec3, r: f64) -> Vec<NeighborSample> {
         self.neighborhood.near(at, r)
+    }
+
+    /// The named scalar grid, created on first use (§20.1 class \[C\]). The NAME picks the scheme:
+    /// `wave…` is a travelling wave, `memory…` slow decay, `potential:…` a held raster, and anything
+    /// else diffuses — the same convention the JS field uses, so a force asking for `"wave-propagate"`
+    /// gets wave stepping on every plane.
+    ///
+    /// Sized from the env's volume. A headless env with a zero volume still yields the 2×2 floor, so
+    /// a grid is always safe to read.
+    pub fn grid(&mut self, name: &str) -> &mut ScalarGrid {
+        let (w, h) = (self.volume.x, self.volume.y);
+        self.grids
+            .entry(name.to_string())
+            .or_insert_with(|| ScalarGrid::new(w, h, GridMode::for_name(name), 32.0))
     }
 }
 
@@ -308,4 +343,10 @@ pub trait Force: Send + Sync {
     /// Apply this force to a free particle. Mutates the particle; reaches the world only through the
     /// [`Env`] seam (`env.rng()`, `env.spark(…)`, `env.request_capture()`).
     fn apply(&self, body: &Body, particle: &mut Particle, env: &mut Env);
+
+    /// Class-\[S\] **body-level** hook, run once per frame per body AFTER the particle loop — so a
+    /// source acts once per frame rather than once per existing particle. `propagate` uses it to
+    /// deposit a pulse into its wave grid; the spawn/morph sources (#1038) will emit matter through it.
+    /// Default: no-op, so a force that has nothing to say per body says nothing.
+    fn source(&self, _body: &Body, _env: &mut Env) {}
 }
