@@ -121,11 +121,17 @@ const FOCUS_MUL_MAX = 2;
 
 export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}): FieldHandle {
   // Signals-only mode (`render: 'none'`, §13.7 / #297): the full simulation + feedback pipeline
-  // runs, but the engine never acquires a 2d context, never sizes a canvas backing store (it stays
-  // 0×0 — the allocation win), and never draws. The field exists purely as signals: `--d`, `--load`,
-  // `--lit`, capture events, `scrollV()`. `ctx` stays null until `setRender` to a drawing mode
-  // acquires it lazily (and sizes the store then) — so a field created with 'none' allocates no
-  // render surface at all unless asked to draw.
+  // runs, but the engine never acquires a 2d context for THIS canvas, never sizes its backing store
+  // (it stays 0×0 — the allocation win), and never draws matter. The field exists purely as signals:
+  // `--d`, `--load`, `--lit`, capture events, `scrollV()`. `ctx` stays null until `setRender` to a
+  // drawing mode acquires it lazily (and sizes the store then) — so a field created with 'none'
+  // allocates no MATTER surface at all unless asked to draw.
+  //
+  // What the mode does NOT withhold, as of the Field Surfaces amendment to §13.7, is a READING: an
+  // overlay reading draws on a different, host-owned canvas, and a field that declares one gets it
+  // whatever the underlay mode. The guarantee above is about matter; the coupling to the overlay was
+  // incidental. A field that declares no reading — the default — is byte-identical to before: no
+  // overlay canvas is requested, no context is acquired, and nothing is drawn anywhere.
   let ctx: CanvasRenderingContext2D | null = null;
   if ((opts.render ?? 'none') !== 'none') {
     ctx = canvas.getContext('2d');
@@ -135,14 +141,19 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // Field Surfaces: the optional OVERLAY surface, drawn in front of page content. Core only draws to
   // it (the caller owns the element + its fixed/pointer-events placement); its backing store is sized
   // in resize() to match the main canvas dpr. Keeps core DOM-free — the canvas is handed in.
-  // Under `render: 'none'` it is never acquired either (the overlay never draws in that mode).
   // The overlay canvas may be handed in eagerly (`overlayCanvas`) OR resolved lazily the first time an
   // overlay actually becomes active (`overlayCanvasProvider`, #676) — the host defers creating a
   // full-viewport light-DOM canvas until a reading is switched on, so the common `overlay: off` case
   // never adds a mix-blend canvas to the compositing tree at boot. Core stays DOM-free either way: the
   // host owns the element; core only draws to it.
+  //
+  // The overlay does NOT depend on the underlay's render mode (§13.7 amended — Field Surfaces Q-3).
+  // `render: 'none'` is a statement about MATTER: the main canvas gets no context, no backing store
+  // and no draw. A READING is a separate surface with its own host-owned canvas, so a signals-only
+  // field that declares one still draws it. Nothing is provisioned for a field that declares no
+  // reading, which is the default — `overlay: 'off'` still creates no canvas and acquires no context.
   let overlayCanvas: HTMLCanvasElement | null = opts.overlayCanvas ?? null;
-  let overlayCtx: CanvasRenderingContext2D | null = ctx ? (overlayCanvas?.getContext('2d') ?? null) : null;
+  let overlayCtx: CanvasRenderingContext2D | null = overlayCanvas?.getContext('2d') ?? null;
   // The overlay draws exclusively through the RenderBackend contract (#373) — the structural
   // seam a WebGL/WebGPU surface implements later. Callers may inject one; the default wraps the
   // overlay's own 2d context.
@@ -153,16 +164,24 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
    * call it once, acquire its 2d context + default backend, and size the backing store to the live dpr.
    * Idempotent — an already-resolved backend (eager canvas, injected backend, or a prior call) short-
    * circuits. Called the first time an overlay reading becomes active (`setOverlay`) and on the
-   * `setRender('none' → …)` lazy path. No-op while the underlay `ctx` is absent (signals-only boot).
+   * `setRender('none' → …)` lazy path.
+   *
+   * It is deliberately NOT gated on the underlay `ctx`: a reading draws on its own surface, so a
+   * signals-only field (`render: 'none'`) resolves one exactly like any other field (§13.7 amended).
+   * That also retires the older shape of this function, which called the provider BEFORE the `ctx`
+   * check and so left a signals-only host holding a canvas nothing could ever draw to.
+   *
+   * Sizing goes through `effectiveDpr`, the same ceiling `sizeSurfaces` applies, so the lazy path can
+   * never open a surface at a higher DPR than the configured `dprCap` / quality tier allows.
    */
   function ensureOverlaySurface(): void {
     if (overlayBackend) return;
     if (!overlayCanvas && opts.overlayCanvasProvider) overlayCanvas = opts.overlayCanvasProvider() ?? null;
-    if (!overlayCanvas || !ctx) return;
+    if (!overlayCanvas) return;
     overlayCtx ??= overlayCanvas.getContext('2d');
     if (!overlayCtx) return;
     overlayBackend = opts.overlayBackend ?? canvas2dBackend(overlayCanvas, overlayCtx);
-    overlayBackend.size(W, H, host.viewport().dpr); // size to the live viewport — resize() only fires on change
+    overlayBackend.size(W, H, effectiveDpr(host.viewport().dpr)); // live viewport — resize() only fires on change
   }
 
   const store = new FieldStore();
@@ -1598,16 +1617,26 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let qualityTier = 0;
   const TIER_DPR = [Infinity, 1.5, 1.25, 1]; // effective DPR ceiling per tier, capping cfg.dprCap further
 
-  // backing store stays 0×0 while W/H — the simulation space — keep tracking the viewport.
+  /** The backing-store DPR actually used: the host's, clamped by `dprCap` (#410) and the quality
+   *  tier's ceiling (#413). The ONE definition — `sizeSurfaces` and the lazy `ensureOverlaySurface`
+   *  both resolve through it, so a surface opened off-cycle can't exceed the configured ceiling. */
+  function effectiveDpr(dprRaw: number): number {
+    return Math.min(dprRaw || 1, cfg.dprCap, TIER_DPR[qualityTier] ?? Infinity);
+  }
+  // With no underlay context (a field created with `render: 'none'`) the main backing store stays
+  // 0×0 while W/H — the simulation space — keep tracking the viewport.
   function sizeSurfaces(dprRaw: number): void {
-    if (!ctx) return;
-    const dpr = Math.min(dprRaw || 1, cfg.dprCap, TIER_DPR[qualityTier] ?? Infinity);
-    canvas.width = Math.floor(W * dpr);
-    canvas.height = Math.floor(H * dpr);
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const dpr = effectiveDpr(dprRaw);
+    if (ctx) {
+      canvas.width = Math.floor(W * dpr);
+      canvas.height = Math.floor(H * dpr);
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
     // size the overlay surface's backing store to match (same dpr transform → same CSS coords).
+    // Independent of `ctx`: a signals-only field can carry a reading, and its surface must still
+    // track the viewport (§13.7 amended). With no overlay surface this is a null check.
     overlayBackend?.size(W, H, dpr);
   }
 
@@ -2961,12 +2990,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     updateCaptureEvents();
     updateThresholdEvents(now); // reserved agent-threshold events (§22.5): debounced field:* on crossings
     flushBusEvents(); // #684: deliver the frame's coalesced discrete events — one per (source, type)
-    // Draw only when there is a surface to draw to AND the canvas can be seen. Under the
-    // signals-only mode (`render: 'none'`, §13.7 / #297) the engine never draws — neither the
-    // underlay nor the overlay — and `ctx` may not even exist. Under reduced motion the scene is
-    // static (dt = 0), so a quarter-rate redraw is visually identical at a quarter of the cost.
-    if (ctx && cfg.render !== 'none' && canvasVisible && (motion > 0 || frameN % 4 === 0)) {
-      render();
+    // Draw only when there is a surface to draw to AND the canvas can be seen. Under reduced motion
+    // the scene is static (dt = 0), so a quarter-rate redraw is visually identical at a quarter of
+    // the cost. The two surfaces are gated SEPARATELY (§13.7 amended — Field Surfaces Q-3): the
+    // underlay needs a drawing render mode and a context; the overlay needs only a resolved surface
+    // and an active reading. `render: 'none'` therefore stops MATTER, not readings. A field that
+    // declares no reading never resolves a surface, so `overlayBackend` is null and this costs one
+    // null check — the default path is unchanged.
+    if (canvasVisible && (motion > 0 || frameN % 4 === 0)) {
+      if (ctx && cfg.render !== 'none') render();
       if (overlayBackend) {
         const stack = overlayStack(cfg.overlay);
         if (stack.length) renderOverlay(overlayBackend, stack);
@@ -3107,7 +3139,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           console.warn(`Fundamental: setRender('${mode}') could not acquire a 2d context; staying in render 'none'`);
           return;
         }
-        // an overlay reading is already active → bring its surface up alongside the underlay (#676).
+        // an overlay reading is already active → its surface is already up (a reading no longer waits
+        // for the underlay, §13.7 amended); this stays for the case where the provider declined
+        // earlier, and is idempotent when it did not (#676).
         if (overlayStack(cfg.overlay).length) ensureOverlaySurface();
         sizeSurfaces(host.viewport().dpr); // the one deferred resize the lazy path needs
       }
@@ -3141,13 +3175,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     setDprCap: (cap) => {
       cfg.dprCap = cap > 0 ? cap : 2;
-      if (ctx) sizeSurfaces(host.viewport().dpr); // re-size the backing store to the new ceiling now
+      // re-size the backing stores to the new ceiling now. `overlayBackend` is checked too: a
+      // signals-only field can carry a reading, and its surface obeys the same ceiling (§13.7 amended).
+      if (ctx || overlayBackend) sizeSurfaces(host.viewport().dpr);
     },
     setQualityTier: (tier) => {
       const next = Math.max(0, Math.min(3, Math.floor(tier || 0)));
       if (next === qualityTier) return;
       qualityTier = next;
-      if (ctx) sizeSurfaces(host.viewport().dpr); // re-apply the tier's effective DPR ceiling now
+      if (ctx || overlayBackend) sizeSurfaces(host.viewport().dpr); // re-apply the tier's DPR ceiling now
     },
     get policy() {
       return clonePolicy(policy); // frozen copy — callers can't mutate the live policy

@@ -33,7 +33,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {string} accent - Accent color (hex) the field draws particles and overlay in.
  * @attr {number} density - Particle-density multiplier (default `1`; `0.5` halves the count).
  * @attr {boolean} waves - Draw the background Currents (the resting wave layers + bound shimmer). OPT-IN (#979): absent = off (the bare field); present (and not `"false"`) = on.
- * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `flow` | `knockout` | `redshift` | `blackbody` | `depth` | `none`. The DEFAULT is `none` (#538) — the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn. Set `render="dots"` for the particle surface.
+ * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `flow` | `knockout` | `redshift` | `blackbody` | `depth` | `none`. The DEFAULT is `none` (#538) — the signals-only engine (#297): the simulation and feedback signals run, but no underlay context is acquired and no matter is drawn. Set `render="dots"` for the particle surface. It does not suppress the `overlay` readings, which draw on their own front surface (§13.7 as amended by Field Surfaces); with no `overlay` set — the default — nothing is drawn at all.
  * @attr {string} overlay - Overlay readings (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines` | `grid` | `temperature` | `energy` | `path` | `data` — or a space-separated stack (readings are additive, drawn in order).
  * @attr {string} palette - Named color palette for the field.
  * @attr {string} theme - Ambient theme preset (#529): `warm` (default) | `cool` | `mono` — the heat ramp + wave baseline.
@@ -213,7 +213,8 @@ export class FieldField extends HTMLElementBase {
   }
 
   /** render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,
-   *  never draw (#297). Set `render="dots"` (or another drawing mode) to get a visible surface. */
+   *  never draw MATTER (#297). Set `render="dots"` (or another drawing mode) to get a visible underlay;
+   *  an `overlay` reading draws on its own front surface regardless of this mode. */
   get renderMode():
     | 'dots'
     | 'trails'
