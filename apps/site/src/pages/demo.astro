@@ -73,6 +73,32 @@ import StatusChip from '../components/StatusChip.astro';
       </section>
     </div>
 
+    <!-- #1142: a DEDICATED contained field. The page <field-root> cannot flip mass/reaction without
+         changing the whole page, so this one owns its own bounds — the only way to show inertia
+         without imposing it on everything else. -->
+    <section class="mass-panel" aria-labelledby="mass-h">
+      <h2 id="mass-h">Mass is first-class</h2>
+      <p class="mass-lede">
+        Both plates push matter away with exactly the same force. They differ only in <em>rendered
+        area</em>, and under <code>mass</code> a body's inertia comes from that area
+        (<code>√(area / 4800)</code>) — so the same push moves them by different amounts. The numbers
+        below are read off the field with <code>query()</code>, not animated.
+      </p>
+      <div class="mass-stage" data-mass-stage>
+        <span class="plate heavy" data-body="repel" data-strength="2" data-range="200" data-authority="dynamic" data-feedback>
+          <span class="plate-name">heavy</span>
+          <span class="plate-read" data-mass-read="heavy">—</span>
+        </span>
+        <span class="plate light" data-body="repel" data-strength="2" data-range="200" data-authority="dynamic" data-feedback>
+          <span class="plate-name">light</span>
+          <span class="plate-read" data-mass-read="light">—</span>
+        </span>
+      </div>
+      <p class="stage-hint" data-mass-note>
+        Recoil is measured from each plate's own starting point, in pixels.
+      </p>
+    </section>
+
     <nav class="demo-explore" aria-label="Related proof">
       <a href="/ai-evidence">AI Evidence — claims &amp; sources as a readable field →</a>
       <a href="/docs/api">The substrate read API — <code>query</code>, <code>snapshot</code>, projections →</a>
@@ -166,6 +192,48 @@ import StatusChip from '../components/StatusChip.astro';
     .body { transition: none; }
     /* the field runs static; the free body holds its authored position, numbers still stream */
   }
+
+  /* #1142 — the contained mass field. The plates differ ONLY in size; everything else is equal, so
+     any difference in how far they drift is inertia and nothing else. */
+  .mass-panel {
+    margin-block: var(--space-xl, 3rem);
+    padding: var(--space-lg, 2rem);
+    border: 1px solid var(--rule, rgb(255 255 255 / 0.12));
+    border-radius: 10px;
+  }
+  .mass-panel h2 { margin: 0 0 0.5rem; font-size: 1.15rem; }
+  .mass-lede { margin: 0 0 1.25rem; max-width: 62ch; opacity: 0.85; }
+  .mass-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    min-height: 200px;
+    padding: 1rem;
+    border-radius: 8px;
+    background: color-mix(in oklab, currentColor 4%, transparent);
+  }
+  .plate {
+    display: grid;
+    place-content: center;
+    gap: 0.2rem;
+    border: 1px solid currentColor;
+    border-radius: 6px;
+    font: 500 0.75rem/1.2 var(--mono, ui-monospace, monospace);
+    text-align: center;
+    /* the live density the field writes back — the plate reads its own field state */
+    background: color-mix(in oklab, currentColor calc(var(--d, 0) * 22%), transparent);
+  }
+  /* 240x80 = 19200px^2 -> inertia 2 ; 60x20 = 1200px^2 -> inertia 0.5. A 4x area ratio is a 2x
+     inertia ratio, because inertia goes as the SQUARE ROOT of area. */
+  .plate.heavy { inline-size: 240px; block-size: 80px; }
+  .plate.light { inline-size: 60px; block-size: 20px; font-size: 0.6rem; }
+  .plate.light .plate-name { display: none; }
+  .plate-read { opacity: 0.75; font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: reduce) {
+    /* the engine already freezes (dt = 0); the panel says so rather than showing a dead 0.0 */
+    .mass-stage { outline: 1px dashed color-mix(in oklab, currentColor 30%, transparent); }
+  }
 </style>
 
 <script>
@@ -244,5 +312,58 @@ import StatusChip from '../components/StatusChip.astro';
   }
 
   initDemo();
+  void initMassField();
   document.addEventListener('astro:page-load', initDemo);
+  // the contained mass field re-binds on SPA nav too; it guards itself with stage.dataset.bound
+  document.addEventListener('astro:page-load', () => void initMassField());
+  // ── #1142: the contained mass field ────────────────────────────────────────────────────────
+  // A field of its own, bounded to the stage, so `mass` + `reaction` apply HERE and nowhere else —
+  // the page <field-root> keeps its own settings. The two plates are identical but for rendered
+  // area, so the difference in how far they drift is inertia and nothing else.
+  //
+  // The read is a real read: each frame we ask the field where the plates are and print the
+  // distance from where they started. Nothing here animates anything.
+  async function initMassField() {
+    const stage = document.querySelector('[data-mass-stage]') as HTMLElement | null;
+    if (!stage || stage.dataset.bound) return;
+    stage.dataset.bound = '1';
+
+    const { createField } = await import('@fundamental-engine/vanilla');
+    const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const note = document.querySelector('[data-mass-note]') as HTMLElement | null;
+
+    const field = createField(stage, {
+      bounds: stage,
+      render: 'dots',
+      mass: true, // inertia from rendered area (#872)
+      reaction: true, // the plate feels the equal-and-opposite of what it pushes (#873)
+      density: 1.1,
+    }) as unknown as FieldEl;
+
+    if (reduced) {
+      // The engine freezes itself under reduced motion (dt = 0), so the plates will not drift.
+      // Say that, rather than leave two zeros looking like a broken read-out.
+      if (note) note.textContent = 'Reduced motion: the field is frozen, so the plates hold position. The mass relationship is unchanged — it is simply not animated.';
+      return;
+    }
+
+    const origin = new Map<string, { x: number; y: number }>();
+    const tick = (): void => {
+      if (typeof field.query !== 'function') return;
+      const q = field.query();
+      for (const b of q.bodies) {
+        if (!b.rect) continue;
+        if (!origin.has(b.id)) origin.set(b.id, { x: b.rect.x, y: b.rect.y });
+        const o = origin.get(b.id)!;
+        const moved = Math.hypot(b.rect.x - o.x, b.rect.y - o.y);
+        // the plate's own element carries the read-out, so the number sits on the thing it describes
+        const host = (b as { el?: HTMLElement }).el ?? null;
+        const slot = host?.querySelector('[data-mass-read]') as HTMLElement | null;
+        if (slot) slot.textContent = `${r3(moved)}px`;
+      }
+    };
+    const id = window.setInterval(tick, 180);
+    window.addEventListener('beforeunload', () => window.clearInterval(id), { once: true });
+  }
+
 </script>
