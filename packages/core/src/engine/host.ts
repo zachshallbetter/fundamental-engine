@@ -23,6 +23,21 @@ export interface HostViewport {
 }
 
 /**
+ * The handle a host returns from {@link FieldHost.observeBodies} — the engine's side of body-geometry
+ * observation (#689). The engine calls `observe` as bodies enter the scan and `unobserve` as they
+ * leave, and `disconnect` once on destroy. A host backs this with `ResizeObserver` +
+ * `IntersectionObserver`; the engine never names either, because core imports zero DOM.
+ */
+export interface BodyObserver {
+  /** start watching an element's geometry. Called once per body, per scan. */
+  observe(el: Element): void;
+  /** stop watching it (the body left the scan). */
+  unobserve(el: Element): void;
+  /** tear the whole observation down — called once by `destroy()`. */
+  disconnect(): void;
+}
+
+/**
  * `MinimalFieldHost` — the SMALLEST surface a host must supply for the engine to run. It is the
  * required core of {@link FieldHost}; everything else (scroll, reduced-motion, visibility, the heatmap
  * canvas, and every event subscription) is an OPTIONAL capability the engine degrades around when
@@ -77,6 +92,25 @@ export interface FieldHost extends MinimalFieldHost {
   onInput?(cb: () => void): () => void;
   /** subscribe to a composed shadow-DOM body event by name; returns an unsubscribe. Absent ⇒ programmatic bodies only (no DOM body-event registration). */
   onBodyEvent?(type: string, cb: (e: Event) => void): () => void;
+  /**
+   * Subscribe to body-GEOMETRY changes (#689). The host reports *which* elements changed shape or
+   * crossed the viewport; it does not report their new boxes, because the engine measures every body
+   * in one coordinate convention and a rect captured at observation time is already stale by the
+   * frame that would consume it. Absent ⇒ the engine falls back to polling every body's rect on a
+   * fixed cadence, which is exactly what it did before this capability existed — so a host that
+   * omits this is byte-identical to the historical behaviour, not degraded.
+   *
+   * What this buys: `getBoundingClientRect` forces layout, once per body per poll, forever, on a page
+   * that is usually not moving. With observers the engine measures when something actually changed
+   * and otherwise falls back to a slow safety cadence.
+   *
+   * What it does NOT buy, and why the safety cadence stays: neither `ResizeObserver` nor
+   * `IntersectionObserver` fires when an element MOVES without changing size or crossing the
+   * viewport — a sibling reflowing above it, a transform animation, a layout shift. Those are common,
+   * so the poll is not removed, only slowed down; observation pulls the cadence back to hot the moment
+   * anything is reported.
+   */
+  observeBodies?(cb: (changed: readonly Element[]) => void): BodyObserver;
   /** release host-side state when the field is destroyed — called once by `FieldHandle.destroy()`
    *  after every event subscription is unsubscribed. A contained host (`containerHost`) uses it to
    *  remove its `data-field-boundary` ownership marker so the outer/page field re-adopts the bodies
@@ -107,6 +141,9 @@ export interface HostCapabilities {
   events: boolean;
   /** the host relays composed shadow-DOM body events (`onBodyEvent`) — DOM body registration. */
   bodyEvents: boolean;
+  /** the host observes body geometry (`observeBodies`) so the engine can measure on demand instead
+   *  of polling every rect on a fixed cadence (#689). Absent ⇒ the historical poll, unchanged. */
+  bodyObservation: boolean;
 }
 
 /**
@@ -129,6 +166,7 @@ export function hostCapabilities(host: FieldHost): HostCapabilities {
       typeof host.onInput === 'function' ||
       typeof host.onBodyEvent === 'function',
     bodyEvents: typeof host.onBodyEvent === 'function',
+    bodyObservation: typeof host.observeBodies === 'function',
   };
 }
 
@@ -163,5 +201,9 @@ export function defineHost(host: MinimalFieldHost & Partial<FieldHost>): FieldHo
     onVisibility: host.onVisibility ?? (() => NEVER_UNSUBSCRIBE),
     onInput: host.onInput ?? (() => NEVER_UNSUBSCRIBE),
     onBodyEvent: host.onBodyEvent ?? (() => NEVER_UNSUBSCRIBE),
+    // deliberately NOT defaulted: an absent observer must stay absent. A no-op subscriber that never
+    // fires would read as "observation is on and nothing ever changes", and the engine would slow its
+    // safety cadence on the strength of a signal that does not exist.
+    observeBodies: host.observeBodies,
   };
 }
