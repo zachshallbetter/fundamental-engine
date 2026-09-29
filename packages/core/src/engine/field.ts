@@ -828,6 +828,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const onUpdateBody = scheduleScan; // attrs/geometry changed → re-scan (coalesced)
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
   const t0 = wallNow();
+  /** Origin of the SIMULATION clock — the first frame's timestamp, set on that frame (#1207). Distinct
+   *  from `t0`, which is wall time and belongs to input-idle tracking. */
+  let simT0: number | undefined;
 
   const env: Env = {
     dx: 0,
@@ -2801,7 +2804,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
   function frame(now: number): void {
     frameN++;
-    env.t = (now - t0) / 1000;
+    // The simulation clock's origin is the FIRST FRAME, not the moment the field was constructed
+    // (#1207). It used to be `now - t0` with `t0 = performance.now()` captured at construction, which
+    // mixed a wall clock into the frame path: `env.t` then depended on how long elapsed between
+    // building the field and its first frame, so a seeded headless run was NOT reproducible — six
+    // identical runs drifted monotonically, and three separate processes disagreed. `t0` still anchors
+    // input-idle tracking, which genuinely wants wall time; the simulation clock starts at 0 for every
+    // caller, so `rng` alone is now enough to make a run repeatable.
+    if (simT0 === undefined) simT0 = now;
+    env.t = (now - simT0) / 1000;
     env.frameN = frameN;
     // Frame-rate-independent timestep (#434): dt is the real frame interval normalized to a
     // 60fps baseline (≈1 at 60fps, ≈0.5 at 120fps, ≈2 at 30fps), clamped so a long stall
