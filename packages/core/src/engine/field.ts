@@ -157,12 +157,23 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
    */
   function ensureOverlaySurface(): void {
     if (overlayBackend) return;
+    // The `ctx` check comes FIRST, before the provider is asked for anything (C-24). A signals-only
+    // field cannot draw a reading — the frame gate is `ctx && cfg.render !== 'none' && …` — so
+    // calling the provider here would build a canvas that will never be painted: on `<field-root>`
+    // that is a full-viewport `mix-blend-mode` layer added to the compositing tree for nothing. The
+    // recovery path is already in place: `setRender()` acquires the context and then calls back
+    // here, so a field that later leaves `'none'` still gets its surface.
+    if (!ctx) return;
     if (!overlayCanvas && opts.overlayCanvasProvider) overlayCanvas = opts.overlayCanvasProvider() ?? null;
-    if (!overlayCanvas || !ctx) return;
+    if (!overlayCanvas) return;
     overlayCtx ??= overlayCanvas.getContext('2d');
     if (!overlayCtx) return;
     overlayBackend = opts.overlayBackend ?? canvas2dBackend(overlayCanvas, overlayCtx);
-    overlayBackend.size(W, H, host.viewport().dpr); // size to the live viewport — resize() only fires on change
+    // Size to the live viewport (`resize()` only fires on change) through the SAME ceiling the
+    // underlay uses (C-25). The raw host DPR ignores `dprCap` and the quality tier, so on a DPR-3
+    // phone at tier 1 this lazy path allocated 2.25x the underlay's pixels — on the full-viewport
+    // mix-blend layer, which is the most expensive surface in the tree — until the next resize.
+    overlayBackend.size(W, H, effectiveDpr(host.viewport().dpr));
   }
 
   const store = new FieldStore();
@@ -1599,9 +1610,20 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const TIER_DPR = [Infinity, 1.5, 1.25, 1]; // effective DPR ceiling per tier, capping cfg.dprCap further
 
   // backing store stays 0×0 while W/H — the simulation space — keep tracking the viewport.
+  /**
+   * The device-pixel ratio the field actually renders at: the host's, capped by the configured
+   * `dprCap` and again by the adaptive quality tier's ceiling. Every path that sizes a backing store
+   * goes through here — the underlay in `sizeSurfaces`, and the overlay's lazy first sizing in
+   * `ensureOverlaySurface` — so the two surfaces can never disagree about how many pixels a CSS
+   * pixel is worth (C-25).
+   */
+  function effectiveDpr(dprRaw: number): number {
+    return Math.min(dprRaw || 1, cfg.dprCap, TIER_DPR[qualityTier] ?? Infinity);
+  }
+
   function sizeSurfaces(dprRaw: number): void {
     if (!ctx) return;
-    const dpr = Math.min(dprRaw || 1, cfg.dprCap, TIER_DPR[qualityTier] ?? Infinity);
+    const dpr = effectiveDpr(dprRaw);
     canvas.width = Math.floor(W * dpr);
     canvas.height = Math.floor(H * dpr);
     canvas.style.width = W + 'px';
