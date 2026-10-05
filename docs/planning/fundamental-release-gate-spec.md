@@ -29,6 +29,41 @@ Define, as evidence, exactly what must be true to **(a) cut `1.0.0-rc.1`** and *
 
 ---
 
+## 1.1 The product definition of done
+
+§1 says what must be true **procedurally** to cut the tag. This says what must be true about the
+**product** for the number to mean anything. They are different questions, and the RC/ST ledger below
+only answers the first.
+
+> **1.0 = examples green · alias-free surface · parity across the shipped planes (conformance-gated) ·
+> perf budgets met · the composable and explanatory bets landed.**
+
+This line lived only in the body of epic E5 (#788) until #1185. Nothing in `docs/` contained the words
+"alias-free" or "examples green", and this file contained neither "parity" nor "alias" — so closing the
+epic would have taken the only copy with it.
+
+**The parity clause is restated here.** The original said *3-plane parity*. There are **four** planes.
+The claim is over the three **shipped** planes — JS, Swift and Kotlin — held by the cross-plane
+conformance golden. The Rust plane is experimental and unpublished (28 of the 37 catalog forces at the
+time of writing, and absent from `data/parity-matrix.json` entirely), and is **explicitly outside the
+1.0 parity claim**. If that changes, this clause changes with it.
+
+Two of the five clauses are load-bearing and **not currently verifiable from any gate**:
+
+| clause | what would evidence it | state today |
+|---|---|---|
+| examples green | every example in `apps/` and `examples/` builds and runs in CI | covered by the examples workflow |
+| **alias-free surface** | no `@deprecated` symbol remains in the published entry points | **unasserted.** 39 `@deprecated` symbols remain across 7 files in `packages/core` and `packages/dom`; 15 of them say *"removed at 1.0"* in so many words. Nothing fails if they ship |
+| **parity (conformance-gated)** | the golden passes on all three shipped planes, and the parity matrix reports no unexplained gap | **partly asserted.** The golden is gated; the matrix is generated and drift-checked. But a force counts as supported on a plane when its token is *registered*, not when it is reachable — see #1176 |
+| perf budgets met | the perf workflow's budgets hold | covered |
+| composable + explanatory bets landed | E1 (#784) and E3 (#786) closed on evidence | epic-tracked |
+
+The two marked rows are the ones to watch: each is a clause the definition asserts and no predicate
+checks, which is precisely the failure mode §1 forbids — *"no gate passes on assertion."* Either they
+gain a predicate in the RC ledger, or 1.0 ships claiming something unproven.
+
+---
+
 ## 2. Canonical shape
 
 Each gate requirement is one record: **id · gate (`RC` | `STABLE`) · requirement · predicate (how it's checked) · evidence (what proves it) · owner · state (`open` | `blocked` | `met`)**. One requirement, one predicate, one evidence type.
