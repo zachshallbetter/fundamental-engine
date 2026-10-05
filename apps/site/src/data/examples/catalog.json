@@ -1,17 +1,17 @@
 {
   "source": "Open Library search API (openlibrary.org)",
   "license": "Open Library (open data)",
-  "snapshotAt": "2026-06-10T00:38:24.144Z",
+  "snapshotAt": "2026-10-05T14:46:29.996Z",
   "books": [
     {
-      "key": "/works/OL893415W",
+      "key": "/works/OL893414W",
       "title": "Dune",
       "author": "Frank Herbert",
       "year": 1965,
-      "ratings": 423,
+      "ratings": 446,
       "stars": 4.3,
-      "wantToRead": 3284,
-      "editions": 120,
+      "wantToRead": 3418,
+      "editions": 155,
       "subjects": [
         "Dune (Imaginary place)",
         "Fiction",
@@ -20,16 +20,16 @@
         "New York Times reviewed",
         "Science fiction"
       ],
-      "url": "https://openlibrary.org/works/OL893415W"
+      "url": "https://openlibrary.org/works/OL893414W"
     },
     {
       "key": "/works/OL46125W",
       "title": "Foundation",
       "author": "Isaac Asimov",
       "year": 1951,
-      "ratings": 299,
-      "stars": 4.11,
-      "wantToRead": 1385,
+      "ratings": 308,
+      "stars": 4.09,
+      "wantToRead": 1406,
       "editions": 99,
       "subjects": [
         "Psychohistory",
@@ -46,10 +46,10 @@
       "title": "三体",
       "author": "刘慈欣",
       "year": 2008,
-      "ratings": 212,
+      "ratings": 217,
       "stars": 3.93,
-      "wantToRead": 1125,
-      "editions": 41,
+      "wantToRead": 1144,
+      "editions": 44,
       "subjects": [
         "Hugo Award Winner",
         "award:hugo_award=2015",
@@ -65,9 +65,9 @@
       "title": "Snow Crash",
       "author": "Neal Stephenson",
       "year": 1992,
-      "ratings": 197,
-      "stars": 4.08,
-      "wantToRead": 378,
+      "ratings": 200,
+      "stars": 4.07,
+      "wantToRead": 384,
       "editions": 41,
       "subjects": [
         "American Science fiction",
@@ -81,13 +81,13 @@
     },
     {
       "key": "/works/OL46241W",
-      "title": "Les Robots",
+      "title": "I, Robot",
       "author": "Isaac Asimov",
       "year": 1950,
-      "ratings": 182,
+      "ratings": 190,
       "stars": 4.25,
-      "wantToRead": 1429,
-      "editions": 98,
+      "wantToRead": 1496,
+      "editions": 99,
       "subjects": [
         "smear campaigns",
         "supercomputers",
@@ -103,10 +103,10 @@
       "title": "Project Hail Mary",
       "author": "Andy Weir",
       "year": 2021,
-      "ratings": 166,
-      "stars": 4.49,
-      "wantToRead": 868,
-      "editions": 30,
+      "ratings": 184,
+      "stars": 4.52,
+      "wantToRead": 1044,
+      "editions": 32,
       "subjects": [
         "hard science-fiction",
         "science-fiction",
@@ -118,33 +118,14 @@
       "url": "https://openlibrary.org/works/OL21745884W"
     },
     {
-      "key": "/works/OL46224W",
-      "title": "Foundation and Empire",
-      "author": "Isaac Asimov",
-      "year": 1945,
-      "ratings": 148,
-      "stars": 4.11,
-      "wantToRead": 281,
-      "editions": 82,
-      "subjects": [
-        "Fiction",
-        "Psychohistory",
-        "Life on other planets",
-        "American Science fiction",
-        "Science Fiction",
-        "Fiction, science fiction, general"
-      ],
-      "url": "https://openlibrary.org/works/OL46224W"
-    },
-    {
-      "key": "/works/OL893526W",
+      "key": "/works/OL893461W",
       "title": "Dune Messiah",
       "author": "Frank Herbert",
       "year": 1969,
-      "ratings": 135,
-      "stars": 3.95,
-      "wantToRead": 524,
-      "editions": 70,
+      "ratings": 143,
+      "stars": 3.94,
+      "wantToRead": 575,
+      "editions": 101,
       "subjects": [
         "American Science fiction",
         "Dune (Imaginary place)",
@@ -153,17 +134,36 @@
         "Science Fiction",
         "Translations into Russian"
       ],
-      "url": "https://openlibrary.org/works/OL893526W"
+      "url": "https://openlibrary.org/works/OL893461W"
+    },
+    {
+      "key": "/works/OL46309W",
+      "title": "Second Foundation",
+      "author": "Isaac Asimov",
+      "year": 1953,
+      "ratings": 141,
+      "stars": 4.35,
+      "wantToRead": 287,
+      "editions": 81,
+      "subjects": [
+        "Fiction",
+        "Psychohistory",
+        "Life on other planets",
+        "Science fiction",
+        "Fiction, science fiction, general",
+        "American literature"
+      ],
+      "url": "https://openlibrary.org/works/OL46309W"
     },
     {
       "key": "/works/OL17837968W",
       "title": "Artemis",
       "author": "Andy Weir",
       "year": 2017,
-      "ratings": 127,
-      "stars": 3.69,
-      "wantToRead": 232,
-      "editions": 33,
+      "ratings": 130,
+      "stars": 3.68,
+      "wantToRead": 258,
+      "editions": 34,
       "subjects": [
         "Fiction",
         "Science fiction",
@@ -179,9 +179,9 @@
       "title": "2001",
       "author": "Arthur C. Clarke",
       "year": 1968,
-      "ratings": 123,
+      "ratings": 124,
       "stars": 4.2,
-      "wantToRead": 533,
+      "wantToRead": 545,
       "editions": 117,
       "subjects": [
         "Human-computer interaction",
@@ -198,9 +198,9 @@
       "title": "The Martian Chronicles",
       "author": "Ray Bradbury",
       "year": 1950,
-      "ratings": 107,
-      "stars": 4.09,
-      "wantToRead": 588,
+      "ratings": 114,
+      "stars": 4.11,
+      "wantToRead": 613,
       "editions": 138,
       "subjects": [
         "American Science fiction",
@@ -213,32 +213,13 @@
       "url": "https://openlibrary.org/works/OL103134W"
     },
     {
-      "key": "/works/OL2950903W",
-      "title": "Contact",
-      "author": "Carl Sagan",
-      "year": 1985,
-      "ratings": 102,
-      "stars": 4.18,
-      "wantToRead": 768,
-      "editions": 50,
-      "subjects": [
-        "Exploration",
-        "Fiction",
-        "Human-alien encounters",
-        "Life on other planets",
-        "Radio astronomy",
-        "Women scientists"
-      ],
-      "url": "https://openlibrary.org/works/OL2950903W"
-    },
-    {
       "key": "/works/OL17610507W",
       "title": "Death's End (The Three-Body Problem Series Book 3)",
       "author": "刘慈欣",
       "year": 2010,
-      "ratings": 100,
-      "stars": 4.35,
-      "wantToRead": 138,
+      "ratings": 106,
+      "stars": 4.34,
+      "wantToRead": 143,
       "editions": 27,
       "subjects": [
         "Fiction",
@@ -251,32 +232,32 @@
       "url": "https://openlibrary.org/works/OL17610507W"
     },
     {
-      "key": "/works/OL49604W",
-      "title": "Xenocide",
-      "author": "Orson Scott Card",
-      "year": 1991,
-      "ratings": 95,
-      "stars": 3.78,
-      "wantToRead": 94,
-      "editions": 38,
+      "key": "/works/OL2950903W",
+      "title": "Contact",
+      "author": "Carl Sagan",
+      "year": 1985,
+      "ratings": 103,
+      "stars": 4.18,
+      "wantToRead": 781,
+      "editions": 50,
       "subjects": [
-        "Space warfare",
+        "Exploration",
         "Fiction",
-        "Fiction, science fiction, hard science fiction",
-        "Fiction, fantasy, epic",
-        "Reading Level-Grade 7",
-        "Reading Level-Grade 9"
+        "Human-alien encounters",
+        "Life on other planets",
+        "Radio astronomy",
+        "Women scientists"
       ],
-      "url": "https://openlibrary.org/works/OL49604W"
+      "url": "https://openlibrary.org/works/OL2950903W"
     },
     {
       "key": "/works/OL38499W",
       "title": "The Diamond Age",
       "author": "Neal Stephenson",
       "year": 1995,
-      "ratings": 90,
-      "stars": 4.1,
-      "wantToRead": 184,
+      "ratings": 94,
+      "stars": 4.11,
+      "wantToRead": 189,
       "editions": 28,
       "subjects": [
         "Revolutions",
@@ -293,9 +274,9 @@
       "title": "The Long Way to a Small, Angry Planet",
       "author": "Becky Chambers",
       "year": 2014,
-      "ratings": 83,
-      "stars": 4.08,
-      "wantToRead": 293,
+      "ratings": 85,
+      "stars": 4.09,
+      "wantToRead": 306,
       "editions": 21,
       "subjects": [
         "Fiction",
@@ -312,10 +293,10 @@
       "title": "God Emperor of Dune",
       "author": "Frank Herbert",
       "year": 1981,
-      "ratings": 74,
-      "stars": 3.95,
-      "wantToRead": 165,
-      "editions": 40,
+      "ratings": 78,
+      "stars": 3.91,
+      "wantToRead": 181,
+      "editions": 47,
       "subjects": [
         "American Science fiction",
         "Dune (imaginary place), fiction",
@@ -331,9 +312,9 @@
       "title": "Ubik",
       "author": "Philip K. Dick",
       "year": 1969,
-      "ratings": 73,
-      "stars": 3.95,
-      "wantToRead": 207,
+      "ratings": 78,
+      "stars": 3.96,
+      "wantToRead": 218,
       "editions": 68,
       "subjects": [
         "Fiction",
@@ -347,13 +328,13 @@
     },
     {
       "key": "/works/OL7967812W",
-      "title": "Понедельник начинается в субботу; Пикник на обочине",
+      "title": "Roadside Picnic",
       "author": "Аркадий Стругацкий",
       "year": 1978,
-      "ratings": 70,
-      "stars": 4.3,
-      "wantToRead": 189,
-      "editions": 23,
+      "ratings": 73,
+      "stars": 4.32,
+      "wantToRead": 199,
+      "editions": 22,
       "subjects": [
         "science fiction",
         "Russian science fiction",
@@ -369,9 +350,9 @@
       "title": "A Fire upon the Deep",
       "author": "Vernor Vinge",
       "year": 1992,
-      "ratings": 70,
-      "stars": 4.26,
-      "wantToRead": 178,
+      "ratings": 72,
+      "stars": 4.25,
+      "wantToRead": 185,
       "editions": 24,
       "subjects": [
         "Fiction",
@@ -388,9 +369,9 @@
       "title": "Foundation and Earth",
       "author": "Isaac Asimov",
       "year": 1986,
-      "ratings": 68,
+      "ratings": 69,
       "stars": 4.03,
-      "wantToRead": 139,
+      "wantToRead": 145,
       "editions": 48,
       "subjects": [
         "Fiction",
@@ -403,32 +384,32 @@
       "url": "https://openlibrary.org/works/OL46347W"
     },
     {
-      "key": "/works/OL46390W",
-      "title": "The Foundation Trilogy",
-      "author": "Isaac Asimov",
-      "year": 1950,
-      "ratings": 64,
-      "stars": 4.2,
-      "wantToRead": 447,
-      "editions": 54,
+      "key": "/works/OL8514692W",
+      "title": "Blindsight",
+      "author": "Peter Watts",
+      "year": 2006,
+      "ratings": 68,
+      "stars": 4.1,
+      "wantToRead": 179,
+      "editions": 20,
       "subjects": [
-        "American Science fiction",
+        "Vampires",
+        "Artifical Hibernation",
         "Fiction",
-        "Psychohistory",
-        "Science fiction",
-        "Life on other planets",
-        "Prophecies"
+        "Science Fiction",
+        "Human-alien encounters",
+        "Life on other planets"
       ],
-      "url": "https://openlibrary.org/works/OL46390W"
+      "url": "https://openlibrary.org/works/OL8514692W"
     },
     {
       "key": "/works/OL5734646W",
       "title": "The Last Colony",
       "author": "John Scalzi",
       "year": 2007,
-      "ratings": 64,
-      "stars": 3.72,
-      "wantToRead": 38,
+      "ratings": 68,
+      "stars": 3.71,
+      "wantToRead": 39,
       "editions": 11,
       "subjects": [
         "Space warfare",
@@ -441,13 +422,32 @@
       "url": "https://openlibrary.org/works/OL5734646W"
     },
     {
+      "key": "/works/OL46390W",
+      "title": "The Foundation Trilogy",
+      "author": "Isaac Asimov",
+      "year": 1950,
+      "ratings": 67,
+      "stars": 4.19,
+      "wantToRead": 485,
+      "editions": 54,
+      "subjects": [
+        "American Science fiction",
+        "Fiction",
+        "Psychohistory",
+        "Science fiction",
+        "Life on other planets",
+        "Prophecies"
+      ],
+      "url": "https://openlibrary.org/works/OL46390W"
+    },
+    {
       "key": "/works/OL59740W",
       "title": "Starship Troopers",
       "author": "Robert A. Heinlein",
       "year": 1959,
-      "ratings": 62,
-      "stars": 3.82,
-      "wantToRead": 242,
+      "ratings": 64,
+      "stars": 3.78,
+      "wantToRead": 248,
       "editions": 60,
       "subjects": [
         "Fiction",
@@ -466,7 +466,7 @@
       "year": 2002,
       "ratings": 60,
       "stars": 3.85,
-      "wantToRead": 173,
+      "wantToRead": 178,
       "editions": 28,
       "subjects": [
         "Science Fiction",
@@ -479,23 +479,22 @@
       "url": "https://openlibrary.org/works/OL29914687W"
     },
     {
-      "key": "/works/OL8339333W",
-      "title": "Use of Weapons",
-      "author": "Iain Banks",
+      "key": "/works/OL1963251W",
+      "title": "The Fall of Hyperion",
+      "author": "Dan Simmons",
       "year": 1990,
       "ratings": 59,
-      "stars": 3.97,
-      "wantToRead": 76,
-      "editions": 16,
+      "stars": 4.03,
+      "wantToRead": 98,
+      "editions": 29,
       "subjects": [
-        "Long Now Manual for Civilization",
-        "OverDrive",
-        "Fiction",
-        "Science Fiction",
-        "Science Fiction & Fantasy",
-        "In library"
+        "Littérature américaine",
+        "Science-fiction américaine",
+        "Science-fiction",
+        "Fiction, science fiction, action & adventure",
+        "Fiction, science fiction, general"
       ],
-      "url": "https://openlibrary.org/works/OL8339333W"
+      "url": "https://openlibrary.org/works/OL1963251W"
     },
     {
       "key": "/works/OL17062642W",
@@ -504,7 +503,7 @@
       "year": 2014,
       "ratings": 57,
       "stars": 3.93,
-      "wantToRead": 37,
+      "wantToRead": 38,
       "editions": 7,
       "subjects": [
         "Science Fiction",
@@ -517,22 +516,23 @@
       "url": "https://openlibrary.org/works/OL17062642W"
     },
     {
-      "key": "/works/OL1963251W",
-      "title": "The Fall of Hyperion",
-      "author": "Dan Simmons",
-      "year": 1990,
-      "ratings": 56,
-      "stars": 4.05,
-      "wantToRead": 91,
-      "editions": 29,
+      "key": "/works/OL893502W",
+      "title": "Heretics of Dune",
+      "author": "Frank Herbert",
+      "year": 1984,
+      "ratings": 55,
+      "stars": 3.85,
+      "wantToRead": 147,
+      "editions": 48,
       "subjects": [
-        "Littérature américaine",
-        "Science-fiction américaine",
-        "Science-fiction",
-        "Fiction, science fiction, action & adventure",
-        "Fiction, science fiction, general"
+        "Science Fiction",
+        "Fiction",
+        "Dune (Imaginary place)",
+        "Anglais (langue)",
+        "Roman américain",
+        "Science-fiction américaine"
       ],
-      "url": "https://openlibrary.org/works/OL1963251W"
+      "url": "https://openlibrary.org/works/OL893502W"
     }
   ]
 }

@@ -1,248 +1,248 @@
 {
-  "source": "Wikimedia pageviews API — en.wikipedia most-read, 2026/06/08 (trend vs 2026/06/07)",
+  "source": "Wikimedia pageviews API — en.wikipedia most-read, 2026/10/03 (trend vs 2026/10/02)",
   "license": "CC0",
-  "snapshotAt": "2026-06-10T00:38:26.143Z",
-  "day": "2026/06/08",
+  "snapshotAt": "2026-10-05T14:46:32.737Z",
+  "day": "2026/10/03",
   "articles": [
     {
-      "title": "Obsession (2025 film)",
-      "slug": "Obsession_(2025_film)",
-      "views": 291972,
+      "title": "2026 Asian Games medal table",
+      "slug": "2026_Asian_Games_medal_table",
+      "views": 898640,
+      "rank": 2,
+      "priorViews": 558673,
+      "url": "https://en.wikipedia.org/wiki/2026_Asian_Games_medal_table"
+    },
+    {
+      "title": "Christa Pike",
+      "slug": "Christa_Pike",
+      "views": 799409,
       "rank": 4,
-      "priorViews": 303010,
-      "url": "https://en.wikipedia.org/wiki/Obsession_(2025_film)"
+      "priorViews": 1708406,
+      "url": "https://en.wikipedia.org/wiki/Christa_Pike"
     },
     {
-      "title": "2026 Peruvian general election",
-      "slug": "2026_Peruvian_general_election",
-      "views": 281754,
-      "rank": 5,
-      "priorViews": 34164,
-      "url": "https://en.wikipedia.org/wiki/2026_Peruvian_general_election"
-    },
-    {
-      "title": "2026 FIFA World Cup",
-      "slug": "2026_FIFA_World_Cup",
-      "views": 264644,
+      "title": "India at the 2026 Asian Games",
+      "slug": "India_at_the_2026_Asian_Games",
+      "views": 548653,
       "rank": 6,
-      "priorViews": 238040,
-      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup"
+      "priorViews": 432879,
+      "url": "https://en.wikipedia.org/wiki/India_at_the_2026_Asian_Games"
     },
     {
-      "title": "Backrooms (film)",
-      "slug": "Backrooms_(film)",
-      "views": 174832,
+      "title": "2026 Asian Games",
+      "slug": "2026_Asian_Games",
+      "views": 469229,
       "rank": 7,
-      "priorViews": 213709,
-      "url": "https://en.wikipedia.org/wiki/Backrooms_(film)"
+      "priorViews": 328740,
+      "url": "https://en.wikipedia.org/wiki/2026_Asian_Games"
     },
     {
-      "title": "Alexander Zverev",
-      "slug": "Alexander_Zverev",
-      "views": 163973,
+      "title": "Drishyam: The Conclusion",
+      "slug": "Drishyam:_The_Conclusion",
+      "views": 273328,
       "rank": 8,
-      "priorViews": 476702,
-      "url": "https://en.wikipedia.org/wiki/Alexander_Zverev"
+      "priorViews": 235494,
+      "url": "https://en.wikipedia.org/wiki/Drishyam:_The_Conclusion"
     },
     {
-      "title": "Masters of the Universe (2026 film)",
-      "slug": "Masters_of_the_Universe_(2026_film)",
-      "views": 155937,
+      "title": "Digger (2026 film)",
+      "slug": "Digger_(2026_film)",
+      "views": 227483,
       "rank": 9,
-      "priorViews": 190411,
-      "url": "https://en.wikipedia.org/wiki/Masters_of_the_Universe_(2026_film)"
+      "priorViews": 238832,
+      "url": "https://en.wikipedia.org/wiki/Digger_(2026_film)"
     },
     {
-      "title": "Christian Eriksen",
-      "slug": "Christian_Eriksen",
-      "views": 139845,
+      "title": "Ted Kaczynski",
+      "slug": "Ted_Kaczynski",
+      "views": 195350,
       "rank": 10,
-      "priorViews": 185631,
-      "url": "https://en.wikipedia.org/wiki/Christian_Eriksen"
+      "priorViews": 168509,
+      "url": "https://en.wikipedia.org/wiki/Ted_Kaczynski"
+    },
+    {
+      "title": "East of Eden (novel)",
+      "slug": "East_of_Eden_(novel)",
+      "views": 193513,
+      "rank": 11,
+      "priorViews": 186667,
+      "url": "https://en.wikipedia.org/wiki/East_of_Eden_(novel)"
+    },
+    {
+      "title": "Gypsy-Rose Blanchard",
+      "slug": "Gypsy-Rose_Blanchard",
+      "views": 182914,
+      "rank": 12,
+      "priorViews": 466589,
+      "url": "https://en.wikipedia.org/wiki/Gypsy-Rose_Blanchard"
+    },
+    {
+      "title": "Lizzie Borden",
+      "slug": "Lizzie_Borden",
+      "views": 174410,
+      "rank": 13,
+      "priorViews": 170398,
+      "url": "https://en.wikipedia.org/wiki/Lizzie_Borden"
+    },
+    {
+      "title": "Pornography",
+      "slug": "Pornography",
+      "views": 171647,
+      "rank": 14,
+      "priorViews": 97617,
+      "url": "https://en.wikipedia.org/wiki/Pornography"
+    },
+    {
+      "title": "East of Eden (2026 miniseries)",
+      "slug": "East_of_Eden_(2026_miniseries)",
+      "views": 167621,
+      "rank": 15,
+      "priorViews": 171814,
+      "url": "https://en.wikipedia.org/wiki/East_of_Eden_(2026_miniseries)"
+    },
+    {
+      "title": "Verity (film)",
+      "slug": "Verity_(film)",
+      "views": 145655,
+      "rank": 16,
+      "priorViews": 151519,
+      "url": "https://en.wikipedia.org/wiki/Verity_(film)"
     },
     {
       "title": "Deaths in 2026",
       "slug": "Deaths_in_2026",
-      "views": 132986,
-      "rank": 11,
-      "priorViews": 126945,
+      "views": 123471,
+      "rank": 17,
+      "priorViews": 136072,
       "url": "https://en.wikipedia.org/wiki/Deaths_in_2026"
     },
     {
-      "title": "Peddi",
-      "slug": "Peddi",
-      "views": 128308,
-      "rank": 12,
-      "priorViews": 137665,
-      "url": "https://en.wikipedia.org/wiki/Peddi"
-    },
-    {
-      "title": "79th Tony Awards",
-      "slug": "79th_Tony_Awards",
-      "views": 127279,
-      "rank": 13,
-      "priorViews": 21517,
-      "url": "https://en.wikipedia.org/wiki/79th_Tony_Awards"
-    },
-    {
-      "title": "Killing of Rachel Nickell",
-      "slug": "Killing_of_Rachel_Nickell",
-      "views": 117991,
-      "rank": 14,
-      "priorViews": 164794,
-      "url": "https://en.wikipedia.org/wiki/Killing_of_Rachel_Nickell"
-    },
-    {
-      "title": "Spencer Pratt",
-      "slug": "Spencer_Pratt",
-      "views": 116916,
-      "rank": 15,
-      "priorViews": 40672,
-      "url": "https://en.wikipedia.org/wiki/Spencer_Pratt"
-    },
-    {
-      "title": "Scary Movie (2026 film)",
-      "slug": "Scary_Movie_(2026_film)",
-      "views": 114201,
-      "rank": 16,
-      "priorViews": 141030,
-      "url": "https://en.wikipedia.org/wiki/Scary_Movie_(2026_film)"
-    },
-    {
-      "title": "Stacey King",
-      "slug": "Stacey_King",
-      "views": 110003,
-      "rank": 17,
-      "priorViews": 128512,
-      "url": "https://en.wikipedia.org/wiki/Stacey_King"
-    },
-    {
-      "title": "Inde Navarrette",
-      "slug": "Inde_Navarrette",
-      "views": 105410,
+      "title": "Cornell 7",
+      "slug": "Cornell_7",
+      "views": 120690,
       "rank": 18,
-      "priorViews": 108420,
-      "url": "https://en.wikipedia.org/wiki/Inde_Navarrette"
-    },
-    {
-      "title": "ChatGPT",
-      "slug": "ChatGPT",
-      "views": 105017,
-      "rank": 19,
-      "priorViews": 82585,
-      "url": "https://en.wikipedia.org/wiki/ChatGPT"
-    },
-    {
-      "title": "Ford Creek Patrol Cabin",
-      "slug": "Ford_Creek_Patrol_Cabin",
-      "views": 104947,
-      "rank": 20,
-      "priorViews": null,
-      "url": "https://en.wikipedia.org/wiki/Ford_Creek_Patrol_Cabin"
-    },
-    {
-      "title": "Nelly Korda",
-      "slug": "Nelly_Korda",
-      "views": 104138,
-      "rank": 21,
-      "priorViews": 71061,
-      "url": "https://en.wikipedia.org/wiki/Nelly_Korda"
-    },
-    {
-      "title": "Nithya Raman",
-      "slug": "Nithya_Raman",
-      "views": 100163,
-      "rank": 22,
-      "priorViews": 24901,
-      "url": "https://en.wikipedia.org/wiki/Nithya_Raman"
-    },
-    {
-      "title": "Michael Jackson",
-      "slug": "Michael_Jackson",
-      "views": 96378,
-      "rank": 23,
-      "priorViews": 114842,
-      "url": "https://en.wikipedia.org/wiki/Michael_Jackson"
-    },
-    {
-      "title": "2026 Armenian parliamentary election",
-      "slug": "2026_Armenian_parliamentary_election",
-      "views": 93251,
-      "rank": 24,
-      "priorViews": 83116,
-      "url": "https://en.wikipedia.org/wiki/2026_Armenian_parliamentary_election"
+      "priorViews": 162645,
+      "url": "https://en.wikipedia.org/wiki/Cornell_7"
     },
     {
       "title": ".xxx",
       "slug": ".xxx",
-      "views": 90002,
-      "rank": 25,
-      "priorViews": 48394,
+      "views": 110475,
+      "rank": 19,
+      "priorViews": 69782,
       "url": "https://en.wikipedia.org/wiki/.xxx"
     },
     {
-      "title": "Jalen Brunson",
-      "slug": "Jalen_Brunson",
-      "views": 87519,
+      "title": "Bella Ramsey",
+      "slug": "Bella_Ramsey",
+      "views": 105487,
+      "rank": 20,
+      "priorViews": 211074,
+      "url": "https://en.wikipedia.org/wiki/Bella_Ramsey"
+    },
+    {
+      "title": "Richard E. Grant",
+      "slug": "Richard_E._Grant",
+      "views": 105221,
+      "rank": 21,
+      "priorViews": 174377,
+      "url": "https://en.wikipedia.org/wiki/Richard_E._Grant"
+    },
+    {
+      "title": "Ansel Adams",
+      "slug": "Ansel_Adams",
+      "views": 101625,
+      "rank": 22,
+      "priorViews": 77390,
+      "url": "https://en.wikipedia.org/wiki/Ansel_Adams"
+    },
+    {
+      "title": "Death of Nolan Wells",
+      "slug": "Death_of_Nolan_Wells",
+      "views": 89937,
+      "rank": 23,
+      "priorViews": 25645,
+      "url": "https://en.wikipedia.org/wiki/Death_of_Nolan_Wells"
+    },
+    {
+      "title": "Nahui Ollin",
+      "slug": "Nahui_Ollin",
+      "views": 88560,
+      "rank": 24,
+      "priorViews": 48889,
+      "url": "https://en.wikipedia.org/wiki/Nahui_Ollin"
+    },
+    {
+      "title": "Aileen Wuornos",
+      "slug": "Aileen_Wuornos",
+      "views": 87115,
+      "rank": 25,
+      "priorViews": 108810,
+      "url": "https://en.wikipedia.org/wiki/Aileen_Wuornos"
+    },
+    {
+      "title": "Drishyam 3",
+      "slug": "Drishyam_3",
+      "views": 86099,
       "rank": 26,
-      "priorViews": 78204,
-      "url": "https://en.wikipedia.org/wiki/Jalen_Brunson"
+      "priorViews": 76122,
+      "url": "https://en.wikipedia.org/wiki/Drishyam_3"
     },
     {
-      "title": "Béla Pap",
-      "slug": "Béla_Pap",
-      "views": 86893,
+      "title": "Bethlehem Kudumba Unit",
+      "slug": "Bethlehem_Kudumba_Unit",
+      "views": 83430,
       "rank": 27,
-      "priorViews": null,
-      "url": "https://en.wikipedia.org/wiki/Béla_Pap"
+      "priorViews": 88704,
+      "url": "https://en.wikipedia.org/wiki/Bethlehem_Kudumba_Unit"
     },
     {
-      "title": "Robert Napper",
-      "slug": "Robert_Napper",
-      "views": 86007,
+      "title": "Verity (novel)",
+      "slug": "Verity_(novel)",
+      "views": 76166,
       "rank": 28,
-      "priorViews": 120791,
-      "url": "https://en.wikipedia.org/wiki/Robert_Napper"
+      "priorViews": 97738,
+      "url": "https://en.wikipedia.org/wiki/Verity_(novel)"
     },
     {
-      "title": "Manav Suthar",
-      "slug": "Manav_Suthar",
-      "views": 84425,
+      "title": "Anna's Archive",
+      "slug": "Anna's_Archive",
+      "views": 75062,
       "rank": 29,
-      "priorViews": 131908,
-      "url": "https://en.wikipedia.org/wiki/Manav_Suthar"
+      "priorViews": 68189,
+      "url": "https://en.wikipedia.org/wiki/Anna's_Archive"
     },
     {
-      "title": "Teach You a Lesson",
-      "slug": "Teach_You_a_Lesson",
-      "views": 83358,
+      "title": "UFC 332",
+      "slug": "UFC_332",
+      "views": 72417,
       "rank": 30,
-      "priorViews": 88984,
-      "url": "https://en.wikipedia.org/wiki/Teach_You_a_Lesson"
+      "priorViews": 15976,
+      "url": "https://en.wikipedia.org/wiki/UFC_332"
     },
     {
-      "title": "FIFA World Cup",
-      "slug": "FIFA_World_Cup",
-      "views": 82434,
+      "title": "The Celebrity Traitors series 2",
+      "slug": "The_Celebrity_Traitors_series_2",
+      "views": 69145,
       "rank": 31,
-      "priorViews": 68616,
-      "url": "https://en.wikipedia.org/wiki/FIFA_World_Cup"
+      "priorViews": 97669,
+      "url": "https://en.wikipedia.org/wiki/The_Celebrity_Traitors_series_2"
     },
     {
-      "title": "Lewis Hamilton",
-      "slug": "Lewis_Hamilton",
-      "views": 78769,
+      "title": "Michael McDonald (musician)",
+      "slug": "Michael_McDonald_(musician)",
+      "views": 68242,
       "rank": 32,
-      "priorViews": 88231,
-      "url": "https://en.wikipedia.org/wiki/Lewis_Hamilton"
+      "priorViews": 87456,
+      "url": "https://en.wikipedia.org/wiki/Michael_McDonald_(musician)"
     },
     {
-      "title": "2026 Gilgit Baltistan Assembly election",
-      "slug": "2026_Gilgit_Baltistan_Assembly_election",
-      "views": 77056,
+      "title": "Sebastian Croft",
+      "slug": "Sebastian_Croft",
+      "views": 68061,
       "rank": 33,
-      "priorViews": 32463,
-      "url": "https://en.wikipedia.org/wiki/2026_Gilgit_Baltistan_Assembly_election"
+      "priorViews": 140560,
+      "url": "https://en.wikipedia.org/wiki/Sebastian_Croft"
     }
   ]
 }
