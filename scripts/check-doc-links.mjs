@@ -5,8 +5,16 @@
  *
  * Scanned: every *.md at the repo root, docs/ (recursively), and the package READMEs.
  * Run: `pnpm check:links` (wired into pr-checks.yml).
+ *
+ * ALSO scans every TRACKED source file for committed merge-conflict markers (#1168). That belongs
+ * here rather than in a gate of its own because it is the same class of failure — text that says
+ * something untrue and that no compiler reads. Two shipped to `main` undetected: one rendered
+ * `<<<<<<< HEAD` and two contradictory sentences as visible prose on /engine-tour, the other froze
+ * two stale counts in a reference doc. Nothing caught either, because an `.astro` template treats a
+ * marker as text and markdown treats it as a paragraph — the site built, every gate stayed green.
  */
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
@@ -92,8 +100,36 @@ for (const file of files) {
   }
 }
 
-if (broken) {
-  console.error(`\n${broken} broken internal link/anchor(s).`);
+// ── committed merge-conflict markers, across every tracked file ────────────────────────────────
+// A conflict marker is only ever a mistake, and the two that reached `main` show why a dedicated
+// check is needed: neither the compiler nor the site build objects, because in a template or a
+// markdown file a marker is just text. Anchored to the line start so prose ABOUT markers (this
+// comment, the check's own output) never trips it.
+const CONFLICT = /^(?:<{7} |={7}$|>{7} )/;
+let markers = 0;
+const tracked = execSync('git ls-files -z', { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+  .split('\0')
+  .filter(Boolean);
+for (const rel of tracked) {
+  if (rel === 'scripts/check-doc-links.mjs') continue; // the pattern itself lives here
+  const abs = join(root, rel);
+  let text;
+  try {
+    text = readFileSync(abs, 'utf8');
+  } catch {
+    continue; // binary or unreadable — nothing to scan
+  }
+  if (text.includes('\u0000')) continue; // binary
+  text.split('\n').forEach((line, i) => {
+    if (!CONFLICT.test(line)) return;
+    console.error(`  CONFLICT MARKER  ${rel}:${i + 1}  ${line.slice(0, 60)}`);
+    markers++;
+  });
+}
+
+if (broken || markers) {
+  if (broken) console.error(`\n${broken} broken internal link/anchor(s).`);
+  if (markers) console.error(`\n${markers} committed merge-conflict marker(s) — resolve them, do not commit them.`);
   process.exit(1);
 }
-console.log(`doc links ok — ${files.length} markdown files checked`);
+console.log(`doc links ok — ${files.length} markdown files checked; no conflict markers in ${tracked.length} tracked files`);
