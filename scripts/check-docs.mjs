@@ -218,6 +218,29 @@ function cemAttrs(tagName) {
   return set;
 }
 
+/**
+ * The `data-field-*` attributes the DOM PLATFORM LAYER reads from markup (#1190).
+ *
+ * Three files, not one — the same widening `engineElementAttrs` needed for `field.ts`. A gate that
+ * reads a single file and calls it the surface is how these six stayed invisible while every one of
+ * them was live: `metrics.ts` reads two, `lint.ts` two, `visual-bindings.ts` two.
+ *
+ * READS only. `bind-data.ts` also WRITES several of these names when a recipe generates them, and an
+ * extractor that collected writes would demand documentation for engine output — the opposite of a
+ * contract. Matching on `getAttribute` / `querySelectorAll` / `hasAttribute` keeps it to what an
+ * author can set and the engine will honour.
+ */
+function enginePlatformAttrs() {
+  const set = new Set();
+  for (const f of ['metrics.ts', 'lint.ts', 'visual-bindings.ts']) {
+    const src = read(`packages/dom/src/${f}`);
+    for (const m of src.matchAll(/(?:getAttribute|hasAttribute)\('(data-field-[\w-]+)'\)/g)) set.add(m[1]);
+    for (const m of src.matchAll(/querySelectorAll\('\[(data-field-[\w-]+)\]'\)/g)) set.add(m[1]);
+    for (const m of src.matchAll(/\[(data-field-[\w-]+)\]/g)) set.add(m[1]);
+  }
+  return set;
+}
+
 // ── docs extractors (apps/site/src/lib/docs-api.ts) ─────────────────────────────────────────────
 
 /** Names in a `{ name: 'x', … }` row array, scoped to `export const NAME: …[] = [ … ]`. */
@@ -327,6 +350,11 @@ const surfaces = [
     docs: docElementConsumerAttrs(),
   },
   {
+    name: 'platform attrs (packages/dom)',
+    truth: enginePlatformAttrs(),
+    docs: docElementAttrs('PLATFORM_ATTRS'),
+  },
+  {
     name: '<field-root> attrs',
     truth: cemAttrs('field-root'),
     docs: docElementAttrs('FIELD_ROOT_ATTRS'),
@@ -379,6 +407,30 @@ const surfaces = [
     docs: docRowNames('BODY_HANDLE', 'name'),
   },
 ];
+
+// A gate that can quietly shrink is not a gate (#1187).
+//
+// Two surfaces once collapsed into ONE object during a merge — duplicate keys in the same literal,
+// where JavaScript silently keeps the last. The element-consumer surface vanished, every check still
+// passed, and the run reported sixteen surfaces where it should have reported seventeen. Nothing in
+// the output said so; you had to count.
+//
+// This floor makes that failure loud. Raise it when you add a surface — that is the point: adding one
+// is deliberate, losing one never is.
+const EXPECTED_SURFACES = 17;
+if (surfaces.length < EXPECTED_SURFACES) {
+  console.error(
+    `check:docs: only ${surfaces.length} surfaces are registered, expected at least ${EXPECTED_SURFACES}.\n` +
+      'A surface was dropped — check for two entries merged into one object literal (duplicate keys, ' +
+      'last one wins) rather than two separate `{ … }` entries.',
+  );
+  process.exit(1);
+}
+const dupes = surfaces.map((s) => s.name).filter((n, i, a) => a.indexOf(n) !== i);
+if (dupes.length) {
+  console.error(`check:docs: duplicate surface name(s): ${[...new Set(dupes)].join(', ')}`);
+  process.exit(1);
+}
 
 // ── run ───────────────────────────────────────────────────────────────────────────────────────
 
