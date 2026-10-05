@@ -15,6 +15,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createField } from './engine/field.ts';
+import { idCoordinate, admits } from './engine/agent-read-share.ts';
 import type { FieldHost } from './engine/host.ts';
 
 function stubHost(): FieldHost {
@@ -331,4 +332,176 @@ test('forAgent: a fully-granted agent view exposes ONLY the AGENT_EXPOSED method
   } finally {
     field.destroy();
   }
+});
+
+// ─── #915: the FRACTIONAL agentRead budget (0 < b < 1) ─────────────────────────────────────────────
+// `budgets.agentRead` is a conservation law on the agent surface: b is the share of the field's
+// readable body population one view may consume. The 0 boundary shipped wired; the gradient did not.
+// These tests pin the three properties that make the gradient meaningful rather than decorative.
+
+const ALL_CAPS = ['read:snapshots', 'read:metrics', 'read:relationships', 'read:influences'] as const;
+
+/** A field of `n` programmatic bodies with stable, explicit ids, paired by edges. */
+function manyBodies(n: number, policy?: Parameters<typeof createField>[1]['policy']): ReturnType<typeof createField> {
+  const field = createField({} as HTMLCanvasElement, { host: stubHost(), render: 'none', policy });
+  const hs = [];
+  for (let i = 0; i < n; i++) {
+    hs.push(field.addBody({
+      tokens: ['attract'],
+      identity: `b${String(i).padStart(2, '0')}`,
+      rect: () => ({ left: 10 + i * 7, top: 10 + i * 5, width: 20, height: 20 }),
+    }));
+  }
+  // real edges, so the withheld-endpoint test below is not vacuously iterating an empty array
+  for (let i = 0; i + 1 < hs.length; i += 2) field.addEdge(hs[i], hs[i + 1], { type: 'link', strength: 0.5 });
+  return field;
+}
+
+test('#915 fractional agentRead: a partial read admits a strict subset of the bodies', () => {
+  const field = manyBodies(64, { budgets: { agentRead: 0.5 } });
+  try {
+    const view = field.forAgent({ capabilities: [...ALL_CAPS] });
+    const got = view.query().bodies.length;
+    // Pin the actual SHARE, not merely "some". An earlier draft asserted only 0 < got < 64 and passed
+    // against a hash so badly clustered that b=0.25 and b=0.5 both admitted 24 of 64 — the assertion
+    // has to be tight enough to see that.
+    assert.ok(Math.abs(got - 32) <= 8, `a 0.5 share admits about half of 64: got ${got}`);
+  } finally {
+    field.destroy();
+  }
+});
+
+test('#915 fractional agentRead: the admitted subset is STABLE — resampling cannot union the field', () => {
+  // The security core. A subset redrawn per call leaks everything to a patient reader: the union of
+  // enough independent 10% samples is 100%. A budget defeated by calling query() in a loop is not one.
+  const field = manyBodies(64, { budgets: { agentRead: 0.25 } });
+  try {
+    const view = field.forAgent({ capabilities: [...ALL_CAPS] });
+    const first = view.query().bodies.map((b) => b.id).sort();
+    const union = new Set(first);
+    for (let i = 0; i < 50; i++) for (const b of view.query().bodies) union.add(b.id);
+    assert.deepEqual([...union].sort(), first, '50 further reads revealed no body the first read withheld');
+
+    // and a second, independently constructed view under the same policy admits the same set —
+    // the share is a property of the field and the budget, not of the caller or the call.
+    const other = field.forAgent({ capabilities: [...ALL_CAPS] });
+    assert.deepEqual(other.query().bodies.map((b) => b.id).sort(), first, 'the subset is view-independent');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('#915 fractional agentRead: no edge ever names a withheld body', () => {
+  // An edge to a body you were not granted is itself a disclosure of that body's id and existence.
+  const field = manyBodies(48, { budgets: { agentRead: 0.5 } });
+  try {
+    const view = field.forAgent({ capabilities: [...ALL_CAPS] });
+    const r = view.query();
+    const visible = new Set(r.bodies.map((b) => b.id));
+    assert.ok(r.relationships.length > 0, 'the fixture actually surfaced edges (guards a vacuous pass)');
+    for (const rel of r.relationships) {
+      assert.ok(visible.has(rel.from) && visible.has(rel.to), `relationship ${rel.from}→${rel.to} names a withheld body`);
+    }
+    for (const inf of r.influences) {
+      assert.ok(visible.has(inf.source), `influence from ${inf.source} names a withheld body`);
+      if (inf.target != null) assert.ok(visible.has(inf.target), `influence to ${inf.target} names a withheld body`);
+    }
+  } finally {
+    field.destroy();
+  }
+});
+
+test('#915 fractional agentRead: snapshot() honours the same share as query()', () => {
+  // Otherwise the capture surface hands back exactly the field the reading just withheld.
+  const field = manyBodies(64, { budgets: { agentRead: 0.25 } });
+  try {
+    const view = field.forAgent({ capabilities: [...ALL_CAPS] });
+    const q = view.query().bodies.map((b) => b.id).sort();
+    const s = view.snapshot!({ profile: 'debug' }).bodies.map((b) => b.id).sort();
+    assert.deepEqual(s, q, 'a capture admits exactly the bodies a reading admits');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('#915 fractional agentRead: the existing boundaries are unmoved (unset / >=1 full, 0 closed)', () => {
+  for (const [label, policy] of [
+    ['unset', undefined],
+    ['1', { budgets: { agentRead: 1 } }],
+  ] as const) {
+    const field = manyBodies(32, policy as never);
+    try {
+      const view = field.forAgent({ capabilities: [...ALL_CAPS] });
+      assert.equal(view.query().bodies.length, 32, `agentRead ${label} reads the whole field`);
+    } finally {
+      field.destroy();
+    }
+  }
+  const closed = manyBodies(32, { budgets: { agentRead: 0 } });
+  try {
+    const view = closed.forAgent({ capabilities: [...ALL_CAPS] });
+    const r = view.query();
+    assert.deepEqual(r.metrics, {}, 'the 0 boundary still closes the surface');
+    assert.deepEqual(r.relationships, [], 'the 0 boundary still strips relationships');
+  } finally {
+    closed.destroy();
+  }
+});
+
+test('#915 fractional agentRead: selection is deterministic across identically-built fields', () => {
+  const ids = (): string[] => {
+    const f = manyBodies(64, { budgets: { agentRead: 0.3 } });
+    try {
+      return f.forAgent({ capabilities: [...ALL_CAPS] }).query().bodies.map((b) => b.id).sort();
+    } finally {
+      f.destroy();
+    }
+  };
+  assert.deepEqual(ids(), ids(), 'the same field under the same budget admits the same bodies');
+});
+
+test('#915 fractional agentRead: the share is roughly uniform and monotone in b', () => {
+  // The property that makes the gradient a gradient. This is the test that catches a weak digest:
+  // body ids in a real field are near-identical short strings, and an unmixed hash clusters them
+  // hard (measured, pre-fix: b=0.1 → 0 admitted, b=0.25 and b=0.5 → 24 each, b=0.75 → all 64).
+  const admitted = (share: number): number => {
+    const f = manyBodies(64, { budgets: { agentRead: share } });
+    try {
+      return f.forAgent({ capabilities: [...ALL_CAPS] }).query().bodies.length;
+    } finally {
+      f.destroy();
+    }
+  };
+  const counts = [0.1, 0.25, 0.5, 0.75].map(admitted);
+  const expected = [6.4, 16, 32, 48];
+  counts.forEach((got, i) => {
+    assert.ok(Math.abs(got - expected[i]) <= 8, `share ${[0.1, 0.25, 0.5, 0.75][i]} admits ~${expected[i]} of 64, got ${got}`);
+  });
+  for (let i = 1; i < counts.length; i++) {
+    assert.ok(counts[i] > counts[i - 1], `a larger budget admits strictly more: ${counts.join(' → ')}`);
+  }
+});
+
+test('#915 the share digest is bit-identical across JS, Swift and Kotlin', () => {
+  // The digest picks WHICH bodies a partial read admits. If it differs between planes, the same policy
+  // over the same field admits different bodies depending on where it runs — a parity break nothing
+  // else in the suite would catch. The same vector is pinned in AgentReadShareTests.swift and .kt.
+  const vectors: Array<[string, number]> = [
+    ['body-0', 0.65820098831318319],
+    ['body-1', 0.39754880708642304],
+    ['body-2', 0.90072084194980562],
+    ['a', 0.10352621669881046],
+    ['hero', 0.83324211370199919],
+    ['b00', 0.28318144241347909],
+    ['b63', 0.07492343452759087],
+    ['card-42', 0.51497967774048448],
+    ['', 0.66892218845896423],
+    ['\u00fcn\u00efcode', 0.78291085967794061],
+  ];
+  for (const [id, expected] of vectors) {
+    assert.ok(Math.abs(idCoordinate(id) - expected) < 1e-15, `coordinate(${JSON.stringify(id)}) drifted`);
+  }
+  assert.equal(admits('body-2', 1), true, 'share >= 1 admits everything');
+  assert.equal(admits('hero', 0.5), false, 'a share below the coordinate withholds');
+  assert.equal(admits('hero', 0.9), true, 'a share above the coordinate admits');
 });

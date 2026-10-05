@@ -210,16 +210,20 @@ public struct BodySpec {
     /// FIRST-CLASS IDENTITY for this programmatic body (see ``FieldBodyIdentity``, JS #884). Supply a
     /// stable identity so snapshots/diff/replay/relationships agree on `identity.id`; when omitted the
     /// engine derives a deterministic `body-N`. Mirrors JS `BodySpec.identity`.
+    /// Capture radius in px — the horizon `sink` absorbs within, and the throat `warp`
+    /// transports through. `nil` keeps the `Body` default (10). See #1177.
+    public var absorbR: Float?
     public var identity: FieldBodyIdentity?
     /// Called each frame with this body's field readings. Mirrors JS `BodySpec.onFeedback`.
     public var onFeedback: ((FeedbackChannels) -> Void)?
     public init(tokens: [String], strength: Float = 1, range: Float = 100, spin: Float = 1,
                 angle: Float? = nil, color: String? = nil, data: (any Sendable)? = nil,
-                identity: FieldBodyIdentity? = nil,
+                absorbR: Float? = nil, identity: FieldBodyIdentity? = nil,
                 rect: @escaping () -> Box,
                 onFeedback: ((FeedbackChannels) -> Void)? = nil) {
         self.tokens = tokens; self.strength = strength; self.range = range; self.spin = spin
         self.angle = angle; self.color = color; self.data = data; self.rect = rect
+        self.absorbR = absorbR
         self.identity = identity
         self.onFeedback = onFeedback
     }

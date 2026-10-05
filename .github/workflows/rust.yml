@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   test:
-    name: cargo build + test (fundamental-core)
+    name: cargo build + test (rust workspace)
     runs-on: ubuntu-latest
     defaults:
       run:

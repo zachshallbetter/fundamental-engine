@@ -230,9 +230,23 @@ past what policy already permits. `snapshot({ profile: 'agent', includeData: tru
 The agent surface honours the runtime [`FieldPolicy`](#) privacy + budget model directly. A privacy
 budget below the threshold (or `allowBodyDataInSnapshots: false`) withholds body `data` regardless of the
 agent's caps. And `budgets.agentRead` gates the surface itself: **`agentRead === 0` closes it** — `forAgent`
-yields the most-restricted view (ids + shape only, snapshots fall to `public`). The fractional
-`0 < agentRead < 1` gradient (partial agent read) is a **declared seam** — carried on the policy, wired as
-its consumer lands.
+yields the most-restricted view (ids + shape only, snapshots fall to `public`).
+
+The fractional `0 < agentRead < 1` gradient is **WIRED** (#915): `b` is the **share of the field's readable
+body population** one agent view may consume. A partial read admits a subset of the bodies, and every
+relationship or influence naming a withheld body is dropped with it — an edge to a body you were not
+granted is itself a disclosure of that body. `snapshot()` admits exactly the bodies `query()` does, so the
+capture surface cannot hand back what the reading withheld.
+
+Selection is **deterministic, stable per body id, and not positional**. Stability is the security
+property: a subset resampled per call leaks the whole field to a caller that simply reads in a loop, since
+the union of enough independent 10% samples is 100%. The digest is bit-identical on all three planes, so
+the same policy over the same field admits the same bodies everywhere.
+
+Two boundaries are deliberate and documented rather than silently chosen. Field-wide `metrics` are
+aggregates over the whole field, not per-body readings, and stay gated by `read:metrics` alone. The raw
+particle pool carries no body identity, so it has no stable key to sample by and stays gated by
+`read:diagnostics` alone.
 
 ---
 
@@ -447,7 +461,7 @@ interface FieldBudgets {
   render?: number;        // 0..1 — declared. cap on render cost (draw layers / fill)
   privacy?: number;       // 0..1 — WIRED. below 0.5 → snapshots withhold body data
   accessibility?: number; // 0..1 — declared. minimum non-motion legibility floor
-  agentRead?: number;     // 0..1 — declared. cap on field state agent readers may consume
+  agentRead?: number;     // 0..1 — WIRED. share of the body population an agent view may read
 }
 
 interface FieldPolicy {
@@ -477,7 +491,7 @@ field.policy;                                       // a frozen copy ({} when no
   the caller passes `includeData: true`**. Policy *tightens* the call-site privacy default; it never
   widens it.
 
-**Declared-not-yet-enforced:** `force`, `attention`, `thermal`, `render`, `accessibility`, `agentRead`
+**Declared-not-yet-enforced:** `force`, `attention`, `thermal`, `render`, `accessibility`
 are accepted and carried on the policy (readable via `field.policy`) for host/tooling introspection, and
 will be wired as their consumers land. `setPolicy` is a **replace** (not a merge): pass the full policy
 you want in effect; `{}` clears to the unbounded default. Purely additive — a field with no policy

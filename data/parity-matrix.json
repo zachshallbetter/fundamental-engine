@@ -2822,6 +2822,7 @@
         "kotlin": "`BodySpec` class"
       },
       "union": [
+        "absorb-r",
         "angle",
         "authority",
         "color",
@@ -2835,12 +2836,13 @@
         "tokens"
       ],
       "counts": {
-        "js": 11,
-        "swift": 9,
-        "kotlin": 8
+        "js": 12,
+        "swift": 10,
+        "kotlin": 9
       },
       "planes": {
         "js": [
+          "absorb-r",
           "angle",
           "authority",
           "color",
@@ -2854,6 +2856,7 @@
           "tokens"
         ],
         "swift": [
+          "absorb-r",
           "angle",
           "color",
           "data",
@@ -2865,6 +2868,7 @@
           "tokens"
         ],
         "kotlin": [
+          "absorb-r",
           "angle",
           "color",
           "data",
@@ -2876,6 +2880,12 @@
         ]
       },
       "support": [
+        {
+          "symbol": "absorb-r",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
         {
           "symbol": "angle",
           "js": true,
