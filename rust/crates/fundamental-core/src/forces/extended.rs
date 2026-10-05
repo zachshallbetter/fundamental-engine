@@ -9,7 +9,7 @@
 //! scalar grid → (natural) `diffuse`/`propagate`/`memory`; integrator modifier pass → `resonate`,
 //! `spotlight`, `screen`; source/scatter state → `spawn`, `morph`; net field-line hook → `fieldflow`.
 
-use crate::engine::{Body, Env, Force, ForceModification, Particle};
+use crate::engine::{Body, Effect, Env, Force, ForceModification, Particle};
 use crate::math::{mix_hex, Vec3};
 
 const FREEZE: f64 = 0.5; // heat below which crystallize solidifies matter
@@ -488,4 +488,214 @@ impl Force for Spotlight {
         })
     }
     fn apply(&self, _b: &Body, _p: &mut Particle, _e: &mut Env) {} // pure modifier
+}
+
+/// workover v0.3 — `screen`: a quiet zone / shield (truth mode: designed).
+///
+/// The only **cross-body** modifier. `spotlight` and `resonate` bend their own body's siblings, so
+/// they compose inside that body's token loop; `screen` damps *other* bodies' forces on matter inside
+/// its range, which no per-body hook can express. Its `apply` and `modify` are therefore both no-ops —
+/// the whole force lives in the integrator, which is the only place per-particle, per-body forces
+/// compose. A screen never damps its own siblings.
+pub struct Screen;
+
+impl Force for Screen {
+    fn token(&self) -> &'static str {
+        "screen"
+    }
+    fn label(&self) -> &'static str {
+        "Screen"
+    }
+    fn is_modifier(&self) -> bool {
+        true
+    }
+    // No `modify`: this modifier acts on OTHER bodies, which the per-body hook cannot reach.
+    fn apply(&self, _b: &Body, _p: &mut Particle, _e: &mut Env) {} // pure modifier
+}
+
+/// Fraction of velocity turned onto the line per frame (× gain).
+const FIELDFLOW_STEER: f64 = 0.5;
+/// Streaming acceleration along the line (× gain).
+const FIELDFLOW_ACCEL: f64 = 0.12;
+
+/// §20.3 — `fieldflow`: follow the field lines. Steer onto the local net field line and stream down
+/// it — solar prominences, aurora, plasma streams, guided matter.
+///
+/// The one force that reads **existing field geometry** rather than sourcing its own: it consumes the
+/// superposition of every radiating body ([`Env::field_here`]) and transports matter along it. That
+/// makes it the consumer half of the structure-field hooks — `gravity`, `charge` and `magnetism`
+/// radiate, `fieldflow` follows, and a field-line diagram traces the same function.
+///
+/// Two distinct motions, and the distinction matters: the STEER turns velocity onto the tangent
+/// without spending it (speed-preserving, like `align`), while the STREAM accelerates along it and
+/// therefore does work. `magnetism` carries only charged matter; `fieldflow` carries neutral matter
+/// too, unless the opt-in charge gate says otherwise.
+pub struct Fieldflow;
+
+impl Force for Fieldflow {
+    fn token(&self) -> &'static str {
+        "fieldflow"
+    }
+    fn label(&self) -> &'static str {
+        "Field Flow"
+    }
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if b.range > 0.0 && e.dist >= b.range {
+            return; // range 0 ⇒ global
+        }
+        // Opt-in charge gate (#711): the magnetized-plasma reading follows only charged matter.
+        if b.charge_gated && p.charge == 0.0 {
+            return;
+        }
+        let Some((fx, fy)) = e.field_here else {
+            return; // nothing radiates — no line to follow
+        };
+        let mag = (fx * fx + fy * fy).sqrt();
+        if !(mag > 1e-9) {
+            return; // a true null point (or NaN) — no line here
+        }
+        // the field-line tangent, direction only: scale-free, so a faint dipole reads as clearly
+        // as a strong monopole.
+        let (ux, uy) = (fx / mag, fy / mag);
+        let falloff = if b.range > 0.0 {
+            1.0 - e.dist / b.range
+        } else {
+            1.0
+        };
+        let gain = b.strength * falloff;
+
+        // 1) STEER onto the line — turn velocity toward the tangent without spending it.
+        // The structure field is planar (bodies radiate in the page plane), so this also turns any
+        // z velocity onto the in-plane line: matter funnels back toward the plane.
+        let sp = (p.velocity.x * p.velocity.x
+            + p.velocity.y * p.velocity.y
+            + p.velocity.z * p.velocity.z)
+            .sqrt();
+        if sp > 1e-6 {
+            let k = (gain * FIELDFLOW_STEER).min(1.0);
+            p.velocity.x += (ux * sp - p.velocity.x) * k;
+            p.velocity.y += (uy * sp - p.velocity.y) * k;
+            if p.velocity.z != 0.0 {
+                p.velocity.z += -p.velocity.z * k; // the line's z tangent is 0
+            }
+        }
+        // 2) STREAM down the line — accelerate along it (the flare ejection; does work).
+        p.velocity.x += ux * gain * FIELDFLOW_ACCEL;
+        p.velocity.y += uy * gain * FIELDFLOW_ACCEL;
+
+        // bound by the unit system's speed of light (§20.10), as gravity/thermal do.
+        let s2 = p.velocity.x * p.velocity.x
+            + p.velocity.y * p.velocity.y
+            + p.velocity.z * p.velocity.z;
+        if s2 > e.c * e.c {
+            let inv = e.c / s2.sqrt();
+            p.velocity.x *= inv;
+            p.velocity.y *= inv;
+            p.velocity.z *= inv;
+        }
+        if b.engaged {
+            p.heat = p.heat.max(falloff * 0.4);
+        }
+    }
+}
+
+/// Default lifespan in frames when a `spawn` body declares no `life`.
+pub const SPAWN_LIFE: f64 = 90.0;
+/// Within this many px of its target, a `morph` particle counts as arrived and its jitter fades.
+const MORPH_ARRIVE: f64 = 40.0;
+
+/// §20.1/§20.2 — `spawn`: a source. Emits matter along the heading, budgeted by a lifespan.
+///
+/// The one force that DELIBERATELY breaks conservation, which is why every particle it emits is
+/// mortal: the budget that bounds the population has to travel with the matter, or a fountain left
+/// running fills the pool.
+///
+/// A body-level source, not a per-particle force — `apply` is a no-op and the work is in
+/// [`source`](Force::source), so emission happens once per frame rather than once per existing
+/// particle. A source whose rate scaled with how much matter already surrounded it would run away.
+///
+/// The budget is `source_cap / life` per frame, so the live spawned population settles at about
+/// `source_cap` regardless of `strength`. Fractional rates accumulate on `emit_acc`, so a budget
+/// below one particle per frame still flows rather than rounding to nothing.
+pub struct Spawn;
+
+impl Force for Spawn {
+    fn token(&self) -> &'static str {
+        "spawn"
+    }
+    fn label(&self) -> &'static str {
+        "Spawn"
+    }
+    fn apply(&self, _b: &Body, _p: &mut Particle, _e: &mut Env) {} // a source; see source()
+    fn source(&self, b: &mut Body, e: &mut Env) {
+        let life = b.life.unwrap_or(SPAWN_LIFE);
+        let mut rate = (b.strength * 2.0).round().max(1.0);
+        if let Some(cap) = b.source_cap {
+            if cap > 0.0 && life > 0.0 {
+                rate = rate.min(cap / life);
+            }
+        }
+        // `emit_acc` lives on the body, so a fractional carry survives between frames.
+        b.emit_acc += rate;
+        let n = b.emit_acc.floor();
+        b.emit_acc -= n;
+        let (ux, uy) = (b.heading.x, b.heading.y);
+        for _ in 0..(n as i64) {
+            // rotate the heading by a small random angle → a soft emission cone
+            let j = (e.rng() - 0.5) * 0.6;
+            let (sn, cs) = j.sin_cos();
+            let hx = ux * cs - uy * sn;
+            let hy = ux * sn + uy * cs;
+            let speed = 2.0 + e.rng() * 2.0;
+            e.effects.push(Effect::Spawn(Box::new(Particle {
+                position: b.center,
+                velocity: Vec3::new(hx * speed, hy * speed, 0.0),
+                heat: 0.6,
+                age: Some(life),
+                species: b.species,
+                ..Default::default()
+            })));
+        }
+    }
+}
+
+/// §20.3 — `morph` (class \[D\]): matter assembles into a mark. Never words (§11).
+///
+/// Each particle springs toward ONE target, chosen by hashing its fixed scatter fraction to an index.
+/// That fraction is assigned once and never changes, which is the whole trick: assignment derived
+/// from pool position would rehash as the pool reorders and the assembled mark would boil.
+///
+/// The jitter fades as matter arrives, so the shape settles instead of vibrating at its own outline.
+pub struct Morph;
+
+impl Force for Morph {
+    fn token(&self) -> &'static str {
+        "morph"
+    }
+    fn label(&self) -> &'static str {
+        "Morph"
+    }
+    fn apply(&self, b: &Body, p: &mut Particle, e: &mut Env) {
+        if b.targets.is_empty() {
+            return; // no shape assigned → inert
+        }
+        let i = ((p.gx * b.targets.len() as f64).floor() as usize).min(b.targets.len() - 1);
+        let t = b.targets[i];
+        let dx = t.x - p.position.x;
+        let dy = t.y - p.position.y;
+        let d = (dx * dx + dy * dy).sqrt();
+        let k = b.strength;
+        p.velocity.x += dx * k * 0.02; // spring toward the target point
+        p.velocity.y += dy * k * 0.02;
+        // targets are marks on the page plane (z-axis.md): the same spring returns matter to z = 0.
+        if p.position.z != 0.0 {
+            p.velocity.z -= p.position.z * k * 0.02;
+        }
+        let arrived = if d < MORPH_ARRIVE { 1.0 - d / MORPH_ARRIVE } else { 0.0 };
+        let jit = (1.0 - arrived) * k * 0.3; // jitter that fades to zero on arrival
+        if jit > 0.0 {
+            p.velocity.x += (e.rng() - 0.5) * jit;
+            p.velocity.y += (e.rng() - 0.5) * jit;
+        }
+    }
 }

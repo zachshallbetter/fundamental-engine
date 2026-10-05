@@ -1,10 +1,10 @@
 [workspace]
 resolver = "2"
-members = ["crates/fundamental-core"]
+members = ["crates/fundamental-core", "crates/fundamental-platform"]
 
 # The Fundamental Rust plane. Mirrors the JS/Swift/Kotlin cores at parity:
 #   core ← platform ← {surfaces}   (core never depends up)
-# Add `fundamental-platform`, surface crates, etc. as members as they land.
+# Add surface crates etc. as members as they land.
 #
 # Publishing (crates.io) — see RELEASING.md § "The Rust plane (crates.io)" and
 # docs/planning/rust-publishing-decision.md. Crates are named `fundamental-<layer>` (the crates.io

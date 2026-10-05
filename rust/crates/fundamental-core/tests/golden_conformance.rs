@@ -19,10 +19,12 @@ use fundamental_core::engine::{Body, Env, Particle, Registry};
 use fundamental_core::math::Vec3;
 use serde::Deserialize;
 
-const GOLDEN: &str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/../../../swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json"
-));
+// The crate's OWN copy (#1045). It used to reach out to the Swift fixture with a path that climbed
+// out of the crate root, which resolves only inside this monorepo — so the test had to be excluded
+// from the published tarball, and a crates.io consumer could not run the conformance suite at all.
+// `scripts/gen-conformance-golden.mjs` now writes both copies from one payload, so there is still a
+// single source of truth and no way for the two to drift apart silently.
+const GOLDEN: &str = include_str!("fixtures/conformance-golden.json");
 
 #[derive(Deserialize)]
 struct Golden {

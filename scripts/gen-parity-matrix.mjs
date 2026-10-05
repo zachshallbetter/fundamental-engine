@@ -87,7 +87,51 @@ function parenBlockAfter(src, header) {
 
 /** Parameter/property names in a Swift or Kotlin signature block — every `name:` at paren depth 0,
  *  so a closure parameter's own label (`(_ view: AnyObject, …)`) is not mistaken for a parameter. */
-function paramNames(block) {
+/** Strip comments from a signature block before scanning it for parameter names.
+ *  A doc comment is prose, and prose contains colons — `note: this exists` would otherwise be read
+ *  as a parameter called `note` and published to the parity page as real cross-plane surface (#1178).
+ *  Done as a scanner rather than a regex because a naive strip eats the `//` inside a string default
+ *  such as `url: String = "https://example.com"`, silently truncating the block. String BODIES are
+ *  dropped for the same reason comments are — a colon inside a default value is not a parameter —
+ *  while the quotes stay so the surrounding block still reads as code. */
+export function stripComments(block) {
+  let out = '';
+  let i = 0;
+  while (i < block.length) {
+    const c = block[i];
+    const next = block[i + 1];
+    if (c === '"' || c === "'") {
+      // copy the string whole, honouring backslash escapes, so its contents are never scanned
+      const quote = c;
+      out += quote;
+      i++;
+      while (i < block.length) {
+        if (block[i] === '\\') { i += 2; continue; }        // escape: skip the pair, emit nothing
+        if (block[i] === quote) { i++; break; }
+        i++;                                                 // body dropped, not copied
+      }
+      out += quote;
+      continue;
+    }
+    if (c === '/' && next === '*') {
+      i += 2;
+      while (i < block.length && !(block[i] === '*' && block[i + 1] === '/')) i++;
+      i += 2;
+      out += ' '; // a comment separates tokens; do not fuse the text either side
+      continue;
+    }
+    if (c === '/' && next === '/') {
+      while (i < block.length && block[i] !== '\n') i++;
+      continue; // keep the newline itself: paramNames uses it as a separator
+    }
+    out += c;
+    i++;
+  }
+  return out;
+}
+
+export function paramNames(rawBlock) {
+  const block = stripComments(rawBlock);
   const set = new Set();
   let depth = 0;
   let token = '';
@@ -214,6 +258,26 @@ function jsBodyAttrs() {
   for (const m of src.matchAll(/getAttribute\('data-([\w-]+)'\)/g)) set.add(m[1]);
   for (const m of src.matchAll(/\[data-([\w-]+)\]/g)) set.add(m[1]);
   if (src.includes('dataset.color')) set.add('color');
+
+  // …and the attributes the ENGINE reads directly, which the scanner never sees (#1170).
+  //
+  // `scanner.ts` is not the whole declarative surface. `field.ts` sweeps the host root for reaction
+  // attributes (`data-move`, `data-on`, `data-class`, `data-emit`, `data-hot`, `data-formation`) and
+  // tests two behaviour flags on the body element itself (`data-dock`, `data-warp`). An author writes
+  // all of them in markup, so all of them are part of the declarative contract — but reading only the
+  // scanner made them invisible to every consumer of this set at once: the docs gate, the parity
+  // matrix, and the /docs/api/declarative drift check that resolves through it.
+  //
+  // These are JS-only today. That shows up as real gaps against Swift and Kotlin, which is the honest
+  // reading: the ports have no equivalent, and a matrix that omitted the capability reported parity it
+  // had not earned.
+  const engine = read('packages/core/src/engine/field.ts');
+  for (const m of engine.matchAll(/querySelectorAll\('\[data-([\w-]+)\]'\)/g)) set.add(m[1]);
+  for (const m of engine.matchAll(/hasAttribute\('data-([\w-]+)'\)/g)) set.add(m[1]);
+  // NB: do NOT drop `body` here. `bodyConceptSet` canonicalizes it to the concept `tokens`, and the
+  // scanner's `[data-body]` selector is its ONLY source — deleting it removes `tokens` from the JS
+  // plane entirely, producing a matrix that claims JS cannot do the one thing every body needs while
+  // Swift and Kotlin can. Every gate passes on that state; only diffing the emitted sets catches it.
   return set;
 }
 

@@ -3,6 +3,7 @@
 //! The physics primitives: [`Body`] (a force source), [`Particle`] (a free agent), [`Env`] (the
 //! per-apply environment the integrator hands each force), and the [`Force`] trait.
 
+use super::scalar_grid::{GridMode, ScalarGrid};
 use super::spatial_hash::{NeighborSample, Neighborhood};
 use crate::math::Vec3;
 use crate::record::Rng;
@@ -23,6 +24,23 @@ pub enum Effect {
         /// Spark tint (`#rrggbb`); `None` = the force's canon colour.
         color: Option<String>,
     },
+    /// A velocity change owed to a particle, addressed by id (#1037).
+    ///
+    /// The neighbour snapshot a class-\[B\] force reads is a frame-start *copy*, so a force that must
+    /// move its neighbour — `collide` is the only one — cannot simply mutate it the way the JS engine
+    /// does. It emits the neighbour's half of the exchange as data instead, and the integrator applies
+    /// it by id after the force pass. Equal-and-opposite pairs make the result momentum-conserving and
+    /// independent of the order particles are visited in.
+    Impulse {
+        particle_id: u64,
+        dv: Vec3,
+    },
+    /// Matter a source emitted this frame (#1038), drained into the pool after the source pass.
+    ///
+    /// A value, like every other effect, so an emission is recordable and replayable: a receipt can
+    /// say which body produced which particle. Every spawned particle is MORTAL — `spawn` breaks
+    /// conservation deliberately, so the budget that bounds it has to travel with the matter.
+    Spawn(Box<Particle>),
 }
 
 /// The active, eased formation (§7) — ambient bias applied field-wide.
@@ -51,7 +69,7 @@ impl Default for Formation {
 /// A free particle — the lightest agent.
 ///
 /// The integrator mutates particles in place. All positions/velocities are 3D; on 2D fields `z` = 0.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Particle {
     pub position: Vec3,
     pub velocity: Vec3,
@@ -71,6 +89,20 @@ pub struct Particle {
     pub charge: f64,
     /// Species tag, for `hunt` and matter tagging (§20.3). 0 = the default species.
     pub species: i32,
+    /// Remaining life in frames, or `None` for IMMORTAL matter (#1038).
+    ///
+    /// `None` is the conserved base field — the pool the engine neither creates nor destroys. Only a
+    /// source's emissions carry an age, so "mortal" is exactly "spawned", and the distinction is a
+    /// type rather than a sentinel: there is no lifespan value that means "lives forever".
+    pub age: Option<f64>,
+    /// A fixed scatter fraction in [0,1), assigned once (#1038).
+    ///
+    /// `morph` hashes it to a target index so a given particle always aims at the SAME point. Without
+    /// a per-particle constant the assignment would rehash as the pool reorders and the assembled
+    /// mark would boil.
+    pub gx: f64,
+    pub gy: f64,
+    pub gz: f64,
     /// Carried pigment (`#rrggbb`), conserved colour transport (§20.8). `None` until a `pigment` body
     /// stains it.
     pub color: Option<String>,
@@ -88,6 +120,10 @@ impl Default for Particle {
             cap: None,
             charge: 0.0,
             species: 0,
+            age: None, // immortal — the conserved base field; only a source's emissions age
+            gx: 0.0,
+            gy: 0.0,
+            gz: 0.0,
             color: None,
         }
     }
@@ -137,6 +173,26 @@ pub struct Body {
 
     // ── feedback / density (§8) ─────────────────────────────────────────
     /// Whether this body is an active force source this frame (JS `vis`).
+    /// `screen`'s attenuation floor — the most a quiet zone may damp a neighbour's force to. 0 (the
+    /// default) lets a screen cancel a neighbour outright at its core; 0.25 leaves a quarter of it.
+    pub screen_min: f64,
+    /// `fieldflow`'s opt-in charge gate (#711): when set, only CHARGED matter follows the field lines
+    /// and neutral matter drifts free — the magnetized-plasma reading. Default `false` advects all
+    /// matter, the neutral-medium transport.
+    /// The species tag this body stamps on matter it emits (`data-species`), so a downstream
+    /// `affects` body can act on it selectively. 0 is the default species (#1038).
+    pub species: i32,
+    /// `spawn`'s lifespan budget in frames — how long each emitted particle lives. `None` takes the
+    /// `SPAWN_LIFE` default (#1038).
+    pub life: Option<f64>,
+    /// `spawn`'s population clamp: the emission rate is limited to `source_cap / life` per frame, so
+    /// the body's live spawned population is bounded at about `source_cap` regardless of strength.
+    pub source_cap: Option<f64>,
+    /// Fractional-rate carry for `spawn`, so a sub-1-per-frame budget still flows (#1038).
+    pub emit_acc: f64,
+    /// `morph`'s assembly targets — marks on the page plane, never letterforms (§11).
+    pub targets: Vec<Vec3>,
+    pub charge_gated: bool,
     pub visible: bool,
     /// Whether this body samples local density for two-way feedback.
     pub feedback: bool,
@@ -159,6 +215,13 @@ impl Default for Body {
             strength: 1.0,
             range: 300.0,
             absorb_r: 64.0,
+            screen_min: 0.0,
+            species: 0,
+            life: None,
+            source_cap: None,
+            emit_acc: 0.0,
+            targets: Vec::new(),
+            charge_gated: false,
             capacity: 60.0,
             spin: 1.0,
             heading: Vec3::new(1.0, 0.0, 0.0),
@@ -218,6 +281,23 @@ pub struct Env {
     pub capture_request: bool,
     /// The frame-start neighbour snapshot (§20.1 class \[B\]). Rebuilt by the integrator each step when a
     /// neighbour force is in play; queried via [`neighbors`](Env::neighbors).
+    /// Scalar field buffers, keyed by name (§20.1 class \[C\]). Created on demand by [`Env::grid`],
+    /// owned by the env for the life of the field, and advanced once per frame by the integrator.
+    /// The NAME picks the scheme — see [`GridMode::for_name`].
+    pub grids: std::collections::HashMap<String, ScalarGrid>,
+    /// The net structure field at the CURRENT sample point (#1041) — the superposition of every
+    /// visible body's [`Force::field`], refreshed by the integrator once per particle, before the
+    /// body loop.
+    ///
+    /// Deliberately a resolved value rather than an `at(x, y)` accessor: the superposition needs
+    /// every body AND the force registry, and inside the particle loop the integrator already holds
+    /// `&mut Body` and `&mut Env`, so a force cannot ask the env to evaluate its siblings. A tracer
+    /// that needs the field somewhere else calls [`net_field`](crate::engine::net_field) directly.
+    ///
+    /// `None` when nothing radiates — the common case, and it lets a follower tell "no field here"
+    /// from "a field that is zero here". A true null point between two poles is a real, followable
+    /// feature; an empty field is not.
+    pub field_here: Option<(f64, f64)>,
     pub neighborhood: Neighborhood,
 }
 
@@ -236,6 +316,8 @@ impl Default for Env {
             scroll_v: 0.0,
             rng: Rng::default(),
             effects: Vec::new(),
+            grids: std::collections::HashMap::new(),
+            field_here: None,
             capture_request: false,
             neighborhood: Neighborhood::default(),
         }
@@ -266,6 +348,20 @@ impl Env {
     #[inline]
     pub fn neighbors(&self, at: Vec3, r: f64) -> Vec<NeighborSample> {
         self.neighborhood.near(at, r)
+    }
+
+    /// The named scalar grid, created on first use (§20.1 class \[C\]). The NAME picks the scheme:
+    /// `wave…` is a travelling wave, `memory…` slow decay, `potential:…` a held raster, and anything
+    /// else diffuses — the same convention the JS field uses, so a force asking for `"wave-propagate"`
+    /// gets wave stepping on every plane.
+    ///
+    /// Sized from the env's volume. A headless env with a zero volume still yields the 2×2 floor, so
+    /// a grid is always safe to read.
+    pub fn grid(&mut self, name: &str) -> &mut ScalarGrid {
+        let (w, h) = (self.volume.x, self.volume.y);
+        self.grids
+            .entry(name.to_string())
+            .or_insert_with(|| ScalarGrid::new(w, h, GridMode::for_name(name), 32.0))
     }
 }
 
@@ -308,4 +404,27 @@ pub trait Force: Send + Sync {
     /// Apply this force to a free particle. Mutates the particle; reaches the world only through the
     /// [`Env`] seam (`env.rng()`, `env.spark(…)`, `env.request_capture()`).
     fn apply(&self, body: &Body, particle: &mut Particle, env: &mut Env);
+
+    /// Class-\[S\] **body-level** hook, run once per frame per body AFTER the particle loop — so a
+    /// source acts once per frame rather than once per existing particle. `propagate` deposits a pulse
+    /// into its wave grid through it; `spawn` emits matter through it.
+    ///
+    /// Takes `&mut Body` because a source owns per-body emission state: `spawn` carries a fractional
+    /// rate across frames on `emit_acc`, and routing that through an effect would make the body's own
+    /// bookkeeping a message to the integrator about itself.
+    ///
+    /// Default: no-op, so a force with nothing to say per body says nothing.
+    fn source(&self, _body: &mut Body, _env: &mut Env) {}
+    /// The renderable/followable **structure field** this body radiates at a world point (#1041).
+    ///
+    /// Geometry, not a force law: `apply` is untouched by it, and a field line is not a particle
+    /// path — a sideways-moving particle orbits a gravity well rather than falling down its line.
+    /// [`net_field`](crate::engine::net_field) superposes every body's contribution, `fieldflow`
+    /// follows the result, and a field-line diagram traces the same function, so the picture IS the
+    /// engine's field rather than a hand-rolled stand-in.
+    ///
+    /// `None` (the default) means this force radiates no structure.
+    fn field(&self, _body: &Body, _x: f64, _y: f64) -> Option<(f64, f64)> {
+        None
+    }
 }

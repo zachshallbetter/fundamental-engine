@@ -40,7 +40,15 @@ jobs:
           distribution: temurin
           java-version: '17'
       - name: set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          # Explicit, not the action's default — that default is what broke this build.
+          # v3 requested `tools platform-tools`, and the obsolete `tools` package has since
+          # been withdrawn from the SDK repository, so sdkmanager exited 1 before a single
+          # line of Kotlin compiled. Naming the package here means a future default change
+          # cannot silently reintroduce one this build never asked for. v4 also runs on
+          # Node 24, clearing the Node 20 deprecation the runner now warns about.
+          packages: platform-tools
       - name: core — engine + cross-plane conformance
         working-directory: android
         run: ./gradlew :fundamental-core:test :fundamental-platform:test :lab:test
@@ -105,7 +113,10 @@ jobs:
           distribution: temurin
           java-version: '17'
       - name: set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          # Pinned explicitly for the same reason as the `build` job above — see the note there.
+          packages: platform-tools
       - name: publish core + compose to GitHub Packages
         working-directory: android
         env:

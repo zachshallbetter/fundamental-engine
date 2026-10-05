@@ -2468,14 +2468,21 @@
         "budget",
         "cap",
         "charge-gated",
+        "class",
         "color",
+        "dock",
+        "emit",
         "feedback",
         "fmax",
         "fmin",
+        "formation",
+        "hot",
         "intensity",
         "intent",
         "life",
         "max",
+        "move",
+        "on",
         "opsz",
         "pair",
         "potential",
@@ -2492,10 +2499,11 @@
         "strength",
         "tokens",
         "twist",
+        "warp",
         "when"
       ],
       "counts": {
-        "js": 33,
+        "js": 41,
         "swift": 4,
         "kotlin": 4
       },
@@ -2509,14 +2517,21 @@
           "budget",
           "cap",
           "charge-gated",
+          "class",
           "color",
+          "dock",
+          "emit",
           "feedback",
           "fmax",
           "fmin",
+          "formation",
+          "hot",
           "intensity",
           "intent",
           "life",
           "max",
+          "move",
+          "on",
           "opsz",
           "pair",
           "potential",
@@ -2533,6 +2548,7 @@
           "strength",
           "tokens",
           "twist",
+          "warp",
           "when"
         ],
         "swift": [
@@ -2598,7 +2614,25 @@
           "kotlin": false
         },
         {
+          "symbol": "class",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
           "symbol": "color",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "dock",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "emit",
           "js": true,
           "swift": false,
           "kotlin": false
@@ -2617,6 +2651,18 @@
         },
         {
           "symbol": "fmin",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "formation",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "hot",
           "js": true,
           "swift": false,
           "kotlin": false
@@ -2641,6 +2687,18 @@
         },
         {
           "symbol": "max",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "move",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "on",
           "js": true,
           "swift": false,
           "kotlin": false
@@ -2742,6 +2800,12 @@
           "kotlin": false
         },
         {
+          "symbol": "warp",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
           "symbol": "when",
           "js": true,
           "swift": false,
@@ -2758,6 +2822,7 @@
         "kotlin": "`BodySpec` class"
       },
       "union": [
+        "absorb-r",
         "angle",
         "authority",
         "color",
@@ -2771,12 +2836,13 @@
         "tokens"
       ],
       "counts": {
-        "js": 11,
-        "swift": 9,
-        "kotlin": 8
+        "js": 12,
+        "swift": 10,
+        "kotlin": 9
       },
       "planes": {
         "js": [
+          "absorb-r",
           "angle",
           "authority",
           "color",
@@ -2790,6 +2856,7 @@
           "tokens"
         ],
         "swift": [
+          "absorb-r",
           "angle",
           "color",
           "data",
@@ -2801,6 +2868,7 @@
           "tokens"
         ],
         "kotlin": [
+          "absorb-r",
           "angle",
           "color",
           "data",
@@ -2812,6 +2880,12 @@
         ]
       },
       "support": [
+        {
+          "symbol": "absorb-r",
+          "js": true,
+          "swift": true,
+          "kotlin": true
+        },
         {
           "symbol": "angle",
           "js": true,

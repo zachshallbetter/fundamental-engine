@@ -132,6 +132,8 @@ export const ATTRS: AttrRow[] = [
   { name: 'data-shaped', type: 'flag', desc: 'Shaped source — forces reference the nearest point on the element box, so matter shells the shape instead of bunching at its centre.' },
   { name: 'data-charge-gated', type: 'flag', desc: 'Opt-in fieldflow mode (magnetized plasma) — the fieldflow force follows only charged matter (charge ≠ 0) so it composes with charge; neutral matter drifts free. Omit for the default, which advects ALL matter (neutral-medium transport).' },
   { name: 'data-potential', type: 'channel name', def: "'height'", desc: 'The addField channel the relief force admits as a scalar POTENTIAL (terrain height, a cost surface) — matter is transported down its gradient, -grad(Phi). Names which channel; omit for "height". data-spin picks the sign: >= 0 (default) drains downhill, < 0 climbs. A pure no-op when no such channel is registered, so a relief body on a field with no host channel does nothing at all.' },
+  { name: 'data-dock', type: 'flag', desc: 'Collapse into a sink when captured; fires field:captured / field:released. Read on the body element; needs data-move.' },
+  { name: 'data-warp', type: 'flag', desc: 'Teleport to a paired body through a warp throat; fires field:relocated. Read on the body element; needs data-move.' },
   { name: 'data-authority', type: 'anchored | kinematic | dynamic', def: 'anchored', desc: 'Body-authority (substrate doc 04) — who owns the body position. anchored (default) measures from the DOM/host rect; kinematic = the engine writes the visual transform (the data-move pattern); dynamic = the engine owns position/velocity and the body moves — it integrates under the net field each frame (recoil / field-to-body coupling, doc 04 Step 5); momentum-recoil from own emission + torque are later refinements. Reported by query()/snapshot(). Experimental.' },
   { name: 'data-affects', type: 'species', desc: 'Matter tagging — a comma-separated species set this body acts on (e.g. "1" or "1,2"). Matter whose species is outside the set is skipped entirely (no force, no density sample). Omit to act on all matter (the default). Lets pollen / seeds / spores share one field, each pulled only by its own bodies.' },
   { name: 'data-species', type: 'number', desc: 'The species tag a spawn source stamps on the matter it emits, so a downstream data-affects body can act on it selectively. Particles default to species 0.' },
@@ -156,9 +158,45 @@ export const ATTRS: AttrRow[] = [
   { name: 'data-field-boundary', type: 'flag (engine-set)', desc: 'Field-ownership marker — ENGINE-SET by a contained host (containerHost / the bounds: option) on its bounds element, not authored. A body belongs to the NEAREST enclosing marked boundary: outer/page-field scans skip bodies inside it, the contained field owns exactly its subtree, and nesting resolves to the nearest. Removed on destroy so the outer field re-adopts on rescan.' },
 ];
 
+/**
+ * The `packages/dom` platform layer's declarative surface (#1190).
+ *
+ * A third table rather than rows in `ATTRS` or `ELEMENT_ATTRS`, because these are neither. `ATTRS` is
+ * the `[data-body]` contract and `ELEMENT_ATTRS` is the element side of Body Matter Interaction —
+ * both `packages/core`. These six live in the DOM BINDING LAYER: a lint contract, two metrics inputs,
+ * and a visual-binding pair. Filing them under either existing table would misrepresent what they are.
+ *
+ * Read-side only. Several of these names are also WRITTEN by `bind-data.ts` when a recipe generates
+ * them; what is documented here is the authored contract — what the engine will read if you write it
+ * yourself.
+ */
+export const PLATFORM_ATTRS: { name: string; reads: string; desc: string }[] = [
+  { name: 'data-field-at', reads: 'packages/dom/src/metrics.ts', desc: 'Timestamp (ISO or epoch ms) the grounded-recency metric decays from. Without it an element has no age and contributes no recency signal.' },
+  { name: 'data-field-halflife', reads: 'packages/dom/src/metrics.ts', desc: 'Half-life in ms for the recency decay that `data-field-at` feeds — how fast the signal fades.' },
+  { name: 'data-field-relation', reads: 'packages/dom/src/lint.ts', desc: 'Declares a relationship from this element; the platform lint pairs it with `data-field-target` and warns when the target resolves to nothing.' },
+  { name: 'data-field-target', reads: 'packages/dom/src/lint.ts', desc: 'The selector a `data-field-relation` points at. A relation whose target does not resolve is a relation pointing at nothing, which the lint reports.' },
+  { name: 'data-field-visual-for', reads: 'packages/dom/src/visual-bindings.ts', desc: 'Binds a visual element to the body it depicts, so a drawn overlay tracks the right matter.' },
+  { name: 'data-field-visual-role', reads: 'packages/dom/src/visual-bindings.ts', desc: "The bound visual's role — what the visual is FOR, so the binding layer can treat a contour differently from a label." },
+];
+
 /** The CSS custom properties the field writes back onto bodies — the reciprocal half of the
  *  loop (the field measures, then writes state into the elements that made it). Read these in
  *  your own CSS to make an element answer the field. Written only to bodies that opt in. */
+/**
+ * Element-consumer attributes — the ELEMENT side of the Body Matter Interaction model. The engine
+ * collects these with `querySelectorAll` on the host root (field.ts), not through the body scanner,
+ * which is why `check:docs` could not see them until #1170: its extraction read scanner.ts alone.
+ * Each needs `data-move` so the engine may relocate the node.
+ */
+export const ELEMENT_ATTRS: { name: string; desc: string }[] = [
+  { name: 'data-move', desc: 'Opt the element in to relocation — the engine may translate or collapse this node. Required by every consumer below.' },
+  { name: 'data-on', desc: 'Bind a field event to this element (capture, release, proximity), so the DOM reacts to matter reaching it.' },
+  { name: 'data-class', desc: 'Toggle a class on this element as field state crosses a threshold — the class-toggle channel.' },
+  { name: 'data-emit', desc: 'Clone a decorative <template> child as the body emits matter.' },
+  { name: 'data-hot', desc: 'Mark the element a heat source; matter warms as it passes, feeding the thermal channel.' },
+  { name: 'data-formation', desc: 'Declare a section formation (for example "wells"); after roughly 6s of no input the field drifts back to calm ambient. Also a <field-root> attribute — see FIELD_ROOT_ATTRS.' },
+];
+
 export const WRITEBACK: { name: string; on: string; desc: string }[] = [
   { name: '--d', on: 'data-feedback', desc: "The body's own gathered density ∈ [0,1], eased. The canonical reaction var." },
   { name: '--field-density', on: 'data-feedback', desc: 'Namespaced alias of --d (same value).' },
