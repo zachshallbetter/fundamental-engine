@@ -23,12 +23,17 @@ name: Release
 # Rehearsal: workflow_dispatch with dry_run=true runs the entire path — gate, version
 # match, pack — without writing to the registry.
 #
-# Prerequisite (one-time): a repository secret `NPM_TOKEN` — a granular npm access
-# token with read+write to the @Fundamental packages, created so it bypasses 2FA for
-# automation (CI cannot answer an interactive OTP prompt).
+# Auth: prefer npm Trusted Publishing (OIDC). Configure each @fundamental-engine/*
+# package on npmjs.com → Access → Trusted Publisher → GitHub Actions with:
+#   Organization or user: zachshallbetter
+#   Repository: fundamental-engine
+#   Workflow filename: release.yml
+#   Allowed actions: npm publish
+# No long-lived token is required once trusted publishers are validated.
+# Optional fallback: repository secret `NPM_TOKEN` (granular, 2FA-bypass) if OIDC
+# is not yet configured for a package.
 #
-# The human rules around this workflow (when a tag may be pushed, partial-publish
-# recovery, token rotation) live in RELEASING.md.
+# The human rules around this workflow live in docs/meta/releasing.md.
 
 on:
   push:
@@ -52,6 +57,7 @@ concurrency:
   cancel-in-progress: false # never cancel a publish mid-run
 
 env:
+  # Node 22.14+ / npm 11.5.1+ required for trusted-publishing OIDC path.
   NODE_VERSION: 22
   RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
@@ -132,6 +138,10 @@ jobs:
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
 
+      # Trusted publishing needs npm ≥ 11.5.1; Node 22 images may ship older npm.
+      - name: Ensure npm supports trusted publishing OIDC
+        run: npm install -g npm@latest && npm --version
+
       - name: Install
         run: pnpm install --frozen-lockfile
 
@@ -144,6 +154,11 @@ jobs:
       # targeted (apps are private).
       # The retired umbrellas (@fundamental-engine/kit + fundamental-engine) are `private: true`
       # as of 0.7.0, so pnpm publish skips them — no filter exclusion needed.
+      #
+      # Auth order: npm CLI uses GitHub OIDC trusted publishing when configured on the
+      # package; NODE_AUTH_TOKEN is only a fallback for packages not yet migrated.
+      # Do not inject a dead token — an invalid NODE_AUTH_TOKEN forces the legacy path
+      # and surfaces as E404 on PUT for scoped packages.
       - name: Publish with provenance
         # pnpm publish is idempotent (it skips versions already on the registry), so a retry only
         # re-attempts the packages that didn't land. Wrap it to absorb the transient Sigstore provenance
