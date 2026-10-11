@@ -2,7 +2,7 @@
   "title": "Fundamental",
   "version": "0.10.1",
   "upload_type": "software",
-  "description": "A platform-native relational field runtime \u2014 elements bend the field, the field bends them back. The DOM is the first host, not the boundary; the same model runs headlessly and in native ports.",
+  "description": "Fundamental version 0.10.1: a platform-native relational field runtime.",
   "creators": [
     {
       "name": "Shallbetter, Zachary",
@@ -10,13 +10,13 @@
     }
   ],
   "keywords": [
-    "dom",
+    "relational field runtime",
     "physics",
-    "field",
     "particles",
     "animation",
     "typescript",
-    "web"
+    "dom",
+    "simulation"
   ],
   "license": "mit-license",
   "access_right": "open",
