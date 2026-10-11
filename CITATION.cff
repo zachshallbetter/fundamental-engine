@@ -11,7 +11,7 @@ authors:
     given-names: Zachary
     orcid: "https://orcid.org/0009-0009-9450-3429"
 version: "0.10.1"
-date-released: "2026-10-11"
+date-released: "2026-07-22"
 license: MIT
 repository-code: "https://github.com/zachshallbetter/fundamental-engine"
 url: "https://fundamental-engine.com"
@@ -24,3 +24,16 @@ keywords:
   - dom
   - simulation
 doi: 10.5281/zenodo.20989937   # concept DOI — always resolves to the latest release
+
+# Related research by the same author (not a runtime dependency)
+references:
+  - type: dataset
+    title: "Foundations of Computational Interaction"
+    authors:
+      - family-names: Shallbetter
+        given-names: Zachary
+        orcid: "https://orcid.org/0009-0009-9450-3429"
+    version: "0.5.1"
+    doi: "10.5281/zenodo.23290487"
+    url: "https://doi.org/10.5281/zenodo.23290488"
+    notes: "Related research program on formally describing, measuring, modeling, and predicting human-computer interaction."
