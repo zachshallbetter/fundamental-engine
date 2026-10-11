@@ -624,7 +624,7 @@ build-time tool and ships no runtime JavaScript by default.
 
 If you use this work, please cite it via its concept DOI (it always resolves to the latest release):
 
-> Shallbetter, Z. (2026). *Fundamental* (Version 0.10.0) [Computer software].
+> Shallbetter, Z. (2026). *Fundamental* (Version 0.10.1) [Computer software].
 > Zenodo. https://doi.org/10.5281/zenodo.20989937
 
 <details>
@@ -636,7 +636,7 @@ If you use this work, please cite it via its concept DOI (it always resolves to 
   title     = {Fundamental},
   year      = {2026},
   publisher = {Zenodo},
-  version   = {0.10.0},
+  version   = {0.10.1},
   doi       = {10.5281/zenodo.20989937},
   url       = {https://doi.org/10.5281/zenodo.20989937}
 }
@@ -646,6 +646,15 @@ If you use this work, please cite it via its concept DOI (it always resolves to 
 
 A machine-readable [`CITATION.cff`](CITATION.cff) is also included. Update the version number after each
 Zenodo release; the concept DOI stays the same.
+
+## Related research
+
+Fundamental is a **runtime**. A related research program by the same author develops the broader formal treatment of interaction:
+
+- Shallbetter, Z. (2026). *Foundations of Computational Interaction* (Version 0.5.1) [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.23290488
+
+That work addresses how interaction can be declared, constrained, measured, and projected under explicit authority. Fundamental does not depend on it as a package; the connection is scholarly and architectural (shared concern with inspectable interaction and independent layer versioning), not a software import.
+
 
 ## Contributing
 
