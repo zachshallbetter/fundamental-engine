@@ -1,8 +1,8 @@
 {
   "title": "Fundamental",
-  "version": "0.10.2",
+  "version": "0.11.0",
   "upload_type": "software",
-  "description": "Fundamental version 0.10.2: a platform-native relational field runtime.",
+  "description": "Fundamental version 0.11.0: a platform-native relational field runtime.",
   "creators": [
     {
       "name": "Shallbetter, Zachary",
@@ -22,7 +22,7 @@
   "access_right": "open",
   "related_identifiers": [
     {
-      "identifier": "https://github.com/zachshallbetter/fundamental-engine/tree/v0.10.2",
+      "identifier": "https://github.com/zachshallbetter/fundamental-engine/tree/v0.11.0",
       "relation": "isSupplementTo",
       "resource_type": "software"
     }

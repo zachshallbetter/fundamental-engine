@@ -1,7 +1,7 @@
 {
   "name": "@fundamental-engine/dom",
-  "version": "0.10.2",
-  "description": "The platform-adjacent layer for Fundamental — native-first registries for measurement, semantic state, feedback, relationships, visual-semantic bindings, and overlays. The browser primitives Fundamental wishes existed, built on the ones it has.",
+  "version": "0.11.0",
+  "description": "The platform-adjacent layer for Fundamental \u2014 native-first registries for measurement, semantic state, feedback, relationships, visual-semantic bindings, and overlays. The browser primitives Fundamental wishes existed, built on the ones it has.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
