@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "fundamental-core"
-version = "0.10.2"
+version = "0.11.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -12,7 +12,7 @@ dependencies = [
 
 [[package]]
 name = "fundamental-platform"
-version = "0.10.2"
+version = "0.11.0"
 dependencies = [
  "fundamental-core",
 ]

@@ -1,7 +1,7 @@
 {
   "name": "@fundamental-engine/three",
-  "version": "0.10.2",
-  "description": "Three.js authoring surface for Fundamental — run the reciprocal field engine headless and render its swarm as a THREE.Points layer (the particle bridge), plus threeHost() and threeBackend() (a RenderBackend) for binding the engine to a WebGL scene.",
+  "version": "0.11.0",
+  "description": "Three.js authoring surface for Fundamental \u2014 run the reciprocal field engine headless and render its swarm as a THREE.Points layer (the particle bridge), plus threeHost() and threeBackend() (a RenderBackend) for binding the engine to a WebGL scene.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",

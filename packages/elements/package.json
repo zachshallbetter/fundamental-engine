@@ -1,7 +1,7 @@
 {
   "name": "@fundamental-engine/elements",
-  "version": "0.10.2",
-  "description": "Web-component keystone for Fundamental — the <field-root> custom element + declarative data-body bodies.",
+  "version": "0.11.0",
+  "description": "Web-component keystone for Fundamental \u2014 the <field-root> custom element + declarative data-body bodies.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",

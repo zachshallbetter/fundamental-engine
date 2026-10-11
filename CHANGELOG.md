@@ -7,6 +7,21 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
 
 ## [Unreleased]
 
+## [0.11.0] — 2026-10-11
+
+Milestone release for the Jul–Oct body of work. **0.10.2** was the interim catch-up packaging tag after ~11 weeks without a cut; **0.11.0** is the honest minor for that coherent batch under the pre-1.0 cadence rule (new plane, enforced agent gates, new substrate/force-family work should not hide forever under patch).
+
+Full narrative of what landed after 0.10.1 remains under [0.10.2](#0102--2026-10-11). This tag is lockstep + distribution + policy:
+
+### Changed
+
+- **Release cadence policy** documented in [`docs/meta/releasing.md`](docs/meta/releasing.md): ≤30 days without a tag on a moving main; prefer **minor** for coherent milestones (new plane, newly enforced capabilities, new force family / major substrate) even when SemVer would allow a patch.
+- Fleet version **0.11.0** (npm packages + `FIELD_VERSION` on JS / Swift / Kotlin / Rust).
+
+### Fixed
+
+- npm publish path: restore `NODE_AUTH_TOKEN` in the release workflow after the prior automation token expired (CI was failing with scoped `E404` / `EOTP`).
+
 ## [0.10.2] — 2026-10-11
 
 Patch release: accumulates engine, tooling, site, and Rust-plane work landed on `main` since 0.10.1 (2026-07-21), plus a small repository-docs layout cleanup.

@@ -21,6 +21,20 @@ declares `three` as a peer dependency.) They follow [Semantic Versioning](https:
   migration note.
 - **major** (`1.0.0`) — the stability promise itself; from 1.0 on, standard SemVer applies.
 
+### Release cadence (pre-1.0)
+
+SemVer above is the *floor*. Cadence and honesty are separate:
+
+- **Never let a moving `main` go more than 30 days without a version tag** when user-visible or package-surface work has landed. Catch-up dumps understate the product.
+- Prefer **small, frequent patches** when the week is bugfixes and tooling.
+- Prefer a **minor** when a *coherent milestone* lands, even if every change is additive and a patch would be policy-legal. Examples that should not hide under `0.x.y+1`:
+  - a new **plane** (Rust / a new host runtime)
+  - newly **enforced** capability or safety gates (declared-but-unwired → wired)
+  - a new **force family** or major substrate (terrain/height, navigation field, CMS reading layer)
+  - a deliberate product narrative shift (homepage/art-direction is site-only and may stay patch)
+- **Minor is cheap pre-1.0.** Use it so the number matches the story people read on npm and in citations.
+- Between tags, keep work under `## [Unreleased]` in the CHANGELOG so the next cut is mechanical.
+
 **Pre-1.0, pin an exact version.** The stable subset is protected, but the wider surface is still
 moving between releases; `~0.MINOR` is not a safe range yet. Read the CHANGELOG before upgrading.
 

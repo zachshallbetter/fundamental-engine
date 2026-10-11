@@ -17,4 +17,4 @@ publish = true
 # The core stays host-free — it is the physics, and it must remain runnable with no environment at all.
 # `dep_direction.rs` is the test that keeps this honest.
 [dependencies]
-fundamental-core = { path = "../fundamental-core", version = "0.10.2" }
+fundamental-core = { path = "../fundamental-core", version = "0.11.0" }
