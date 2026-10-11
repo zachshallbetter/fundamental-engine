@@ -6,14 +6,14 @@ members = ["crates/fundamental-core", "crates/fundamental-platform"]
 #   core ← platform ← {surfaces}   (core never depends up)
 # Add surface crates etc. as members as they land.
 #
-# Publishing (crates.io) — see RELEASING.md § "The Rust plane (crates.io)" and
+# Publishing (crates.io) — see docs/meta/releasing.md § "The Rust plane (crates.io)" and
 # docs/planning/rust-publishing-decision.md. Crates are named `fundamental-<layer>` (the crates.io
 # spelling of the npm `@fundamental-engine/<layer>` scope) and versioned in LOCKSTEP with
 # FIELD_VERSION / packages/core/package.json, so `version` below is the release version, bumped by
 # the same release commit that bumps the seven npm packages and the Swift/Kotlin constants.
 
 [workspace.package]
-version = "0.10.1"
+version = "0.10.2"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/zachshallbetter/fundamental-engine"

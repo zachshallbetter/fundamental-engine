@@ -12,7 +12,7 @@ homepage.workspace = true
 documentation = "https://docs.rs/fundamental-core"
 authors.workspace = true
 
-# crates.io publishing is a maintainer-only act (RELEASING.md § "The Rust plane (crates.io)").
+# crates.io publishing is a maintainer-only act (docs/meta/releasing.md § "The Rust plane (crates.io)").
 # `publish = true` only makes `cargo publish --dry-run` runnable — the real publish rides the
 # dispatch-only `crates-io.yml` workflow with `dry_run=false`, never a laptop.
 publish = true

@@ -176,4 +176,4 @@ migration note and a `0.MINOR` bump.
 
 The packages are **published to npm** under the `@fundamental-engine` scope (`@fundamental-engine/core`
 and the five adapters: dom, elements, react, vanilla, three). This list defines what CI protects from silent removal
-consumers build against; the publish steps and order are in [`PUBLISHING.md`](../../PUBLISHING.md).
+consumers build against; the publish steps and order are in [`docs/meta/publishing.md`](../meta/publishing.md).

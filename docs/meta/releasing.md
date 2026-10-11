@@ -1,7 +1,7 @@
 # Releasing
 
 How versions are cut and published. The mechanical detail lives in
-[`PUBLISHING.md`](PUBLISHING.md); this document is the policy around it.
+[`publishing.md`](publishing.md); this document is the policy around it.
 
 ## Versioning policy
 
@@ -30,12 +30,12 @@ element attributes/methods, the `@fundamental-engine/vanilla` `FieldField` class
 adapter's props. The internal integrator, render code, and the site are not part of the public
 contract. A listed subset is **protected from silent removal** by `pnpm check:api` — that is a guard against
 accidental breakage, not a freeze; the surface evolves pre-1.0 and additions never fail the check. See
-[API stability](docs/canonical/api-stability.md).
+[API stability](../canonical/api-stability.md).
 
 > The packages are published to npm under the `@fundamental-engine` scope, **with provenance** (a signed
 > Sigstore/SLSA attestation tying each tarball to this repo and the CI build). Each release is cut as a
 > **git tag** (`vX.Y.Z`); pushing the tag is what triggers the publish. Between tags, changes accumulate
-> under `## [Unreleased]` in the [CHANGELOG](CHANGELOG.md).
+> under `## [Unreleased]` in the [CHANGELOG](../../CHANGELOG.md).
 
 ## Cutting a release
 
@@ -114,7 +114,7 @@ requires `conclusion` and `conclusion-pr`, with no admin bypass.
 The Rust plane (`rust/`) publishes to [crates.io](https://crates.io) as **`fundamental-core`** — the
 crates.io spelling of `@fundamental-engine/core` (crates.io has no scopes, so the crate name carries
 the layer; later layers follow as `fundamental-platform`, …). The decision and its reasoning are in
-[`docs/planning/rust-publishing-decision.md`](docs/planning/rust-publishing-decision.md).
+[`docs/planning/rust-publishing-decision.md`](../planning/rust-publishing-decision.md).
 
 - **Lockstep, no separate version line.** Crate `x.y.z` *is* engine `x.y.z`: `[workspace.package].version`
   in `rust/Cargo.toml` = the Rust `FIELD_VERSION` (`rust/crates/fundamental-core/src/version.rs`) =
@@ -154,7 +154,7 @@ the gates above.
   exact merge commit — not "probably green". The release gate re-runs everything anyway,
   but a red tag burns the version number.
 - **Never publish from a laptop**, except the documented manual fallback in
-  [PUBLISHING.md](PUBLISHING.md) (no provenance, OTP per package). If the fallback is ever
+  [PUBLISHING.md](publishing.md) (no provenance, OTP per package). If the fallback is ever
   used, log it as an exception in the CHANGELOG entry for that release — "published
   without provenance" is a recorded fact, not a silent degradation.
 - **Never bump one package alone.** Always

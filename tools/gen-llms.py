@@ -150,7 +150,7 @@ def categorize_files(source_files):
         line_count = len(src.splitlines())
         size_kib = round(len(src.encode('utf-8')) / 1024, 1)
         item = (rel, line_count, size_kib)
-        if rel in ("README.md", "CHANGELOG.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", "SUPPORT.md", "PUBLISHING.md", "RELEASING.md", "CITATION.cff") or rel.startswith("docs/"):
+        if rel in ("README.md", "CHANGELOG.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", "SUPPORT.md", "docs/meta/publishing.md", "docs/meta/releasing.md", "CITATION.cff") or rel.startswith("docs/"):
             categories["Governance, Doctrine & Canonical Specifications"].append(item)
         elif rel.startswith("packages/"):
             categories["Core Engine & Host Adapters (Packages)"].append(item)
@@ -179,8 +179,8 @@ def main():
     readme = read_file(os.path.join(ROOT_DIR, "README.md"))
     changelog = read_file(os.path.join(ROOT_DIR, "CHANGELOG.md"))
     contributing = read_file(os.path.join(ROOT_DIR, "CONTRIBUTING.md"))
-    publishing = read_file(os.path.join(ROOT_DIR, "PUBLISHING.md"))
-    releasing = read_file(os.path.join(ROOT_DIR, "RELEASING.md"))
+    publishing = read_file(os.path.join(ROOT_DIR, "docs/meta/publishing.md"))
+    releasing = read_file(os.path.join(ROOT_DIR, "docs/meta/releasing.md"))
     security = read_file(os.path.join(ROOT_DIR, "SECURITY.md"))
     support = read_file(os.path.join(ROOT_DIR, "SUPPORT.md"))
     agents_md = read_file(os.path.join(AGENTS_DIR, "AGENTS.md"))
@@ -203,9 +203,9 @@ def main():
     if contributing:
         manifest_lines.append("- [CONTRIBUTING.md](CONTRIBUTING.md): Contribution guidelines & development workflow")
     if publishing:
-        manifest_lines.append("- [PUBLISHING.md](PUBLISHING.md): Publishing & distribution specifications")
+        manifest_lines.append("- [PUBLISHING.md](docs/meta/publishing.md): Publishing & distribution specifications")
     if releasing:
-        manifest_lines.append("- [RELEASING.md](RELEASING.md): Release process & policies")
+        manifest_lines.append("- [RELEASING.md](docs/meta/releasing.md): Release process & policies")
     if security:
         manifest_lines.append("- [SECURITY.md](SECURITY.md): Security policy")
     if support:
