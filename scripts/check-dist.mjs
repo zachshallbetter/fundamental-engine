@@ -7,7 +7,7 @@
  *   3. the built entry actually imports — resolving its own deps and workspace deps.
  *
  * This catches build-output / exports-map / `files` mistakes that typecheck and unit tests
- * can't see. Run after `pnpm build`. Used by CI and the publish checklist (PUBLISHING.md).
+ * can't see. Run after `pnpm build`. Used by CI and the publish checklist (docs/meta/publishing.md).
  *
  * (not published to npm; validated here to keep the migration-path code honest). For deeper exports-map
  * and TypeScript-resolution checks, see scripts/check-packaging.mjs (publint + attw).

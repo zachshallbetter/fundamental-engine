@@ -3,9 +3,17 @@
 All notable changes are documented here, following
 [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
 The packages are published to npm under the `@fundamental-engine` scope; each release is also cut as
-a git tag (see [RELEASING.md](RELEASING.md)).
+a git tag (see [RELEASING.md](docs/meta/releasing.md)).
 
 ## [Unreleased]
+
+## [0.10.2] — 2026-10-11
+
+Patch release: accumulates engine, tooling, site, and Rust-plane work landed on `main` since 0.10.1 (2026-07-21), plus a small repository-docs layout cleanup.
+
+### Changed
+
+- **Repository operations docs** moved from the repository root into [`docs/meta/`](docs/meta/README.md) (`releasing`, `publishing`).
 
 ### Fixed
 
@@ -119,8 +127,8 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   - **Ships inert.** With no `data-pair`, `@pair` resolves to nothing, `warp` no-ops, and the hot gate never opens — the element is a plain attract well. Every existing preset and force is byte-identical, and the ports carry no preset catalog, so this is a JS-plane change only.
 
 - **`rust/` — the experimental Rust plane (milestone 1).** A fourth plane of the fleet lands in the monorepo: `rust/crates/fundamental-core`, an f64, seeded, zero-dependency headless port of the engine for server / data / CMS hosts, where a body is a data record rather than a widget. 28 of the 36 forces (the canonical nine, natural, extended, the spatial-hash neighbour forces and the resonate/spotlight modifier pass), the step loop, FieldStore, the legacy Euler integrator, and an rng that matches the JS mulberry32 stream bit for bit; held to the shared cross-plane golden at f64 tolerance (`tests/golden_conformance.rs`). A `rust.yml` workflow builds and tests the crate on changes under `rust/`. **Experimental and unpublished**: no crates.io release (#1047), not on the parity page; the remaining forces and the platform crate are #1037–#1046 under epic #1036. No npm package changes.
-- **Rust plane: the crates.io publishing path is decided and prepared — nothing published** (#1047). The crate is named `fundamental-core` (the crates.io spelling of `@fundamental-engine/core`; verified unclaimed by a read-only registry query, nothing reserved) and versioned in **lockstep** with `FIELD_VERSION`: `rust/Cargo.toml` carries the fleet version (`0.10.1`) via `[workspace.package]`, the crate gains a `FIELD_VERSION` constant and a `version_lockstep` drift guard mirroring the JS/Swift/Kotlin ones, and `RELEASING.md` step 4 now bumps four planes. `Cargo.toml` metadata (description, MIT, repository, homepage, docs.rs, keywords, categories, a crate-local README) makes `cargo package --list` and `cargo publish --dry-run` green; the monorepo-only golden test is excluded from the tarball. A new **dispatch-only, dry-run-by-default** `crates-io.yml` workflow is the publish path (a policy change, declared as such); it needs a maintainer-created `CARGO_REGISTRY_TOKEN` secret and is never triggered by a tag. Decision record: `docs/planning/rust-publishing-decision.md`. No npm package changes.
-- **Maven Central publishing is prepared for the Kotlin artifacts** (#1092). `com.fundamental:fundamental-core` and `:fundamental-compose` now publish with everything the Sonatype Central Portal validates — a full POM (name, description, url, MIT license, developer, scm), `-sources` + `-javadoc` jars, checksums — and GPG signing from an **in-memory** key (`SIGNING_KEY` / `SIGNING_PASSWORD`; opt-in, unsigned when absent). New root Gradle tasks: `centralBundle` (stage + sign + zip into the Portal bundle, prints the manifest, **no network**) and `centralUpload` (the only task that talks to `central.sonatype.com`; refuses a `-SNAPSHOT` or an unsigned bundle), plus a **dispatch-only, dry-run-by-default** `maven-central.yml` workflow. GitHub Packages publishing on a release tag is unchanged — both targets share one publication. Going live still needs the maintainer's Portal account, namespace verification (the `com.fundamental` group requires owning fundamental.com — see `PUBLISHING.md`), and the secrets.
+- **Rust plane: the crates.io publishing path is decided and prepared — nothing published** (#1047). The crate is named `fundamental-core` (the crates.io spelling of `@fundamental-engine/core`; verified unclaimed by a read-only registry query, nothing reserved) and versioned in **lockstep** with `FIELD_VERSION`: `rust/Cargo.toml` carries the fleet version (`0.10.1`) via `[workspace.package]`, the crate gains a `FIELD_VERSION` constant and a `version_lockstep` drift guard mirroring the JS/Swift/Kotlin ones, and `docs/meta/releasing.md` step 4 now bumps four planes. `Cargo.toml` metadata (description, MIT, repository, homepage, docs.rs, keywords, categories, a crate-local README) makes `cargo package --list` and `cargo publish --dry-run` green; the monorepo-only golden test is excluded from the tarball. A new **dispatch-only, dry-run-by-default** `crates-io.yml` workflow is the publish path (a policy change, declared as such); it needs a maintainer-created `CARGO_REGISTRY_TOKEN` secret and is never triggered by a tag. Decision record: `docs/planning/rust-publishing-decision.md`. No npm package changes.
+- **Maven Central publishing is prepared for the Kotlin artifacts** (#1092). `com.fundamental:fundamental-core` and `:fundamental-compose` now publish with everything the Sonatype Central Portal validates — a full POM (name, description, url, MIT license, developer, scm), `-sources` + `-javadoc` jars, checksums — and GPG signing from an **in-memory** key (`SIGNING_KEY` / `SIGNING_PASSWORD`; opt-in, unsigned when absent). New root Gradle tasks: `centralBundle` (stage + sign + zip into the Portal bundle, prints the manifest, **no network**) and `centralUpload` (the only task that talks to `central.sonatype.com`; refuses a `-SNAPSHOT` or an unsigned bundle), plus a **dispatch-only, dry-run-by-default** `maven-central.yml` workflow. GitHub Packages publishing on a release tag is unchanged — both targets share one publication. Going live still needs the maintainer's Portal account, namespace verification (the `com.fundamental` group requires owning fundamental.com — see `docs/meta/publishing.md`), and the secrets.
 
 ### Fixed
 
@@ -163,7 +171,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 >
 > **Still open:** the parity matrix does not track colour (#1091), which is why this divergence reached an app before any gate. Closing it would fail a future single-accent-vs-palette mismatch at CI instead.
 
-- **Release tooling: scope the version bump to `./packages/*`, not the `@fundamental-engine/*` name glob.** The glob also matched the private workspace apps (`apps/site`, `apps/starter`, `apps/observatory`), which share the npm scope but version independently — and `exec npm version` ignores the `private` flag, so it silently bumped them to the release version (0.10.0 caught this: observatory jumped `0.0.0 → 0.10.0` before it was reverted by hand). The path filter targets exactly the seven publishable packages, so no private app is bumped and the old "revert the apps afterward" step is gone. `pnpm publish` already skipped private packages, so only the version bump was ever affected. Fixed in `RELEASING.md`, `PUBLISHING.md`, and `release.yml`.
+- **Release tooling: scope the version bump to `./packages/*`, not the `@fundamental-engine/*` name glob.** The glob also matched the private workspace apps (`apps/site`, `apps/starter`, `apps/observatory`), which share the npm scope but version independently — and `exec npm version` ignores the `private` flag, so it silently bumped them to the release version (0.10.0 caught this: observatory jumped `0.0.0 → 0.10.0` before it was reverted by hand). The path filter targets exactly the seven publishable packages, so no private app is bumped and the old "revert the apps afterward" step is gone. `pnpm publish` already skipped private packages, so only the version bump was ever affected. Fixed in `docs/meta/releasing.md`, `docs/meta/publishing.md`, and `release.yml`.
 
 ## [0.10.0] — 2026-07-21
 
@@ -202,7 +210,7 @@ now releases npm, Swift (SPM) and Kotlin (Maven/GitHub Packages) in lockstep at 
 ## [0.9.5] — 2026-07-20
 
 - **CI: replaced the third-party path-filter action with plain git.** GitHub began forcing Node 24 onto actions that target Node 20; the filter action dies silently mid-run and takes the whole gate with it via `conclusion`. A path filter is one `git diff` and does not need a dependency that can break underneath the repository. All nine original path patterns preserved and verified against a fixture of paths that must and must not match; the replacement also logs which files it saw and which way it decided.
-- **Retired the API "freeze" — it was never real.** The list was described as frozen for `0.x` and had been edited 40 times; a stability promise revised whenever it becomes inconvenient is not a promise, it is a claim that quietly stops being true. The check itself is kept and renamed to what it actually does: it protects listed symbols from **silent removal**. It has never failed on an addition and cannot — new exports land freely. Removing or renaming a listed symbol is allowed and expected; it just has to be deliberate, which means dropping the entry in the same change and adding a migration note so consumers are told. `FROZEN_*` → `PROTECTED_*` throughout, with failure messages that now say what happened and what to do. Three inaccuracies fixed in passing: the docs page claimed entries "fail the build if they change" (only removal fails); `api-stability.md` and `substrate-api.md` cited "the frozen 17" where the check reports **20**. `RELEASING.md`, `PUBLISHING.md` and three canonical docs updated to match. Freeze language remains in prose elsewhere in `docs/canonical/` and is tracked as follow-up — it is stale wording, not a wrong claim about the gate.
+- **Retired the API "freeze" — it was never real.** The list was described as frozen for `0.x` and had been edited 40 times; a stability promise revised whenever it becomes inconvenient is not a promise, it is a claim that quietly stops being true. The check itself is kept and renamed to what it actually does: it protects listed symbols from **silent removal**. It has never failed on an addition and cannot — new exports land freely. Removing or renaming a listed symbol is allowed and expected; it just has to be deliberate, which means dropping the entry in the same change and adding a migration note so consumers are told. `FROZEN_*` → `PROTECTED_*` throughout, with failure messages that now say what happened and what to do. Three inaccuracies fixed in passing: the docs page claimed entries "fail the build if they change" (only removal fails); `api-stability.md` and `substrate-api.md` cited "the frozen 17" where the check reports **20**. `docs/meta/releasing.md`, `docs/meta/publishing.md` and three canonical docs updated to match. Freeze language remains in prose elsewhere in `docs/canonical/` and is tracked as follow-up — it is stale wording, not a wrong claim about the gate.
 - **Documentation accuracy pass.** `docs/README.md` now indexes `docs/method/` (a whole top-level docs directory that was unlisted) and the `planning/world-substrate/` program. `PLAN.md`'s status header said *"Nothing in F1–F5 or C2 is built"* — false since Stage 1 landed — and the document contradicted itself, carrying both a current "Not started" line and a superseded one, plus a note calling F1.4 equivalence "pending" when it is measured. The repository guide listed **17** protected API entries where `check:api` reports **20**, and its layout table omitted `apps/observatory` entirely. Corrected, with the authoritative source named in each case so the next drift is self-diagnosing.
 - **Documentation and code now reference only tracked documents.** Nine files pointed at a repository-root file that is no longer version-controlled, so those references resolved for some checkouts and broke on a fresh clone. They now point at `docs/engineering-practices.md`, which is tracked and carries the same guidance. The site's `llms.txt` generator was also including that untracked root file in its published output; it now publishes `README.md` and `CHANGELOG.md` only.
 - **Documentation accuracy pass.** `docs/README.md` now indexes `docs/method/` (a whole top-level docs directory that was unlisted) and the `planning/world-substrate/` program. `PLAN.md`'s status header said *"Nothing in F1–F5 or C2 is built"* — false since Stage 1 landed — and the document contradicted itself, carrying both a current "Not started" line and a superseded one, plus a note calling F1.4 equivalence "pending" when it is measured. The repository guide listed **17** frozen API entries where `check:api` reports **20**, and its layout table omitted `apps/observatory` entirely. Corrected, with the authoritative source named in each case so the next drift is self-diagnosing.
@@ -1534,7 +1542,7 @@ additive (the frozen surface is intact).
   longer install the retired `kit`/`fundamental-engine` umbrellas (that mismatch is why the 0.7.0 run
   reported failure even though all 7 packages published); the version-match gate now skips private
   packages. Doc corrections: `api-stability.md` no longer promises a `forces-*` alias window that the
-  hard rename removed (only `forces:*` events survive); the root README + `RELEASING.md` + the retired
+  hard rename removed (only `forces:*` events survive); the root README + `docs/meta/releasing.md` + the retired
   umbrella READMEs drop install instructions for unpublished packages; `elements` README `dom` links
   point at `../dom`; stale "35 forces" counts fixed (authoritative is 36); the `addField` JSDoc no
   longer implies the engine consumes channels internally. Test hardening: `BodyHandle.set` color +
@@ -1571,7 +1579,7 @@ additive (the frozen surface is intact).
 - **Docs accuracy sweep.** Audited all 86 docs + package READMEs against the code. Corrected the force
   count to **36** where docs drifted (9 canonical + 19 extended + 8 natural; `forces-engine.md`,
   `research/01`); fixed package READMEs (`react`/`vanilla` `../platform` links → `../dom`, `three` CDN
-  example `@0.3.1` → `@0.7.0`); reconciled `RELEASING.md`/`PUBLISHING.md` to **six** published packages at
+  example `@0.3.1` → `@0.7.0`); reconciled `docs/meta/releasing.md`/`docs/meta/publishing.md` to **six** published packages at
   **0.7.0**; removed a false `compat-*` package claim; split the shipped `warp` atom from the spec-only
   `wormhole` preset; fixed the `pheromone`→`diffuse` token name; repaired broken `docs/...` cross-paths;
   committed the load-bearing RC/1.0 gate spec and removed stale `docs/planning/` duplicates; added a
@@ -1820,7 +1828,7 @@ additive (the frozen surface is intact).
   longer install the retired `kit`/`fundamental-engine` umbrellas (that mismatch is why the 0.7.0 run
   reported failure even though all 7 packages published); the version-match gate now skips private
   packages. Doc corrections: `api-stability.md` no longer promises a `forces-*` alias window that the
-  hard rename removed (only `forces:*` events survive); the root README + `RELEASING.md` + the retired
+  hard rename removed (only `forces:*` events survive); the root README + `docs/meta/releasing.md` + the retired
   umbrella READMEs drop install instructions for unpublished packages; `elements` README `dom` links
   point at `../dom`; stale "35 forces" counts fixed (authoritative is 36); the `addField` JSDoc no
   longer implies the engine consumes channels internally. Test hardening: `BodyHandle.set` color +
@@ -1857,7 +1865,7 @@ additive (the frozen surface is intact).
 - **Docs accuracy sweep.** Audited all 86 docs + package READMEs against the code. Corrected the force
   count to **36** where docs drifted (9 canonical + 19 extended + 8 natural; `forces-engine.md`,
   `research/01`); fixed package READMEs (`react`/`vanilla` `../platform` links → `../dom`, `three` CDN
-  example `@0.3.1` → `@0.7.0`); reconciled `RELEASING.md`/`PUBLISHING.md` to **six** published packages at
+  example `@0.3.1` → `@0.7.0`); reconciled `docs/meta/releasing.md`/`docs/meta/publishing.md` to **six** published packages at
   **0.7.0**; removed a false `compat-*` package claim; split the shipped `warp` atom from the spec-only
   `wormhole` preset; fixed the `pheromone`→`diffuse` token name; repaired broken `docs/...` cross-paths;
   committed the load-bearing RC/1.0 gate spec and removed stale `docs/planning/` duplicates; added a
@@ -2772,7 +2780,7 @@ First npm release under the `@field-ui` scope.
   catalog-driven API reference, recipes, and performance/accessibility notes.
 - **`docs/forces-tests.md`** — the testing & conformance reference.
 - **Release engineering** — CI (typecheck · test · build on every PR), `CONTRIBUTING.md`,
-  `RELEASING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, and issue/PR templates.
+  `docs/meta/releasing.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, and issue/PR templates.
 
 ### Fixed
 

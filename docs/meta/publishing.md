@@ -1,10 +1,10 @@
 # Publishing
 
 The six `@fundamental-engine/*` packages publish to npm **with provenance** via CI. This document is the
-mechanics; the policy (versioning, when to cut) is in [`RELEASING.md`](RELEASING.md).
+mechanics; the policy (versioning, when to cut) is in [`releasing.md`](releasing.md).
 
 > A listed subset of the public surface is protected from silent removal — see
-> [API stability](docs/canonical/api-stability.md). `pnpm check:api` (run in CI and the
+> [API stability](../canonical/api-stability.md). `pnpm check:api` (run in CI and the
 > release workflow) fails if a protected symbol disappears, so an export cannot vanish from a release by accident.
 
 ## The packages
@@ -25,13 +25,13 @@ use raw `npm publish`, which leaks the `workspace:` protocol into the tarball.
 ## The normal path: push a tag
 
 Releases publish from CI, not a laptop — that's the only way to get **provenance** (it needs the GitHub
-OIDC token). Per [`RELEASING.md`](RELEASING.md): bump versions, commit, then push a `v*` tag:
+OIDC token). Per [`releasing.md`](releasing.md): bump versions, commit, then push a `v*` tag:
 
 ```sh
 git tag -a vX.Y.Z -m "Release X.Y.Z" && git push origin vX.Y.Z
 ```
 
-This triggers [`.github/workflows/release.yml`](.github/workflows/release.yml): full gate →
+This triggers [`.github/workflows/release.yml`](../../.github/workflows/release.yml): full gate →
 `pnpm --filter "./packages/*" publish --access public --no-git-checks --provenance`. A failed publish can
 be retried without re-tagging: `gh run rerun <run-id> --failed`.
 
@@ -58,11 +58,11 @@ pnpm --filter "./packages/*" publish --access public --no-git-checks --otp=<code
 The Kotlin port publishes two Maven artifacts — `com.fundamental:fundamental-core` (jar) and
 `com.fundamental:fundamental-compose` (AAR) — at the same tag-derived version as npm and SPM
 (`-PreleaseVersion=<tag without the v>`; a build without the property is `0.0.0-SNAPSHOT`). Both carry
-`-sources` and `-javadoc` jars and a full POM. Details: [`android/README.md`](android/README.md#publishing).
+`-sources` and `-javadoc` jars and a full POM. Details: [`android/README.md`](../../android/README.md#publishing).
 
 ### Today: GitHub Packages (live)
 
-The `publish` job in [`.github/workflows/android.yml`](.github/workflows/android.yml) runs on every `v*` tag:
+The `publish` job in [`.github/workflows/android.yml`](../../.github/workflows/android.yml) runs on every `v*` tag:
 `./gradlew :fundamental-core:publish :fundamental-compose:publish -PreleaseVersion=X.Y.Z`, authenticated
 with the Actions `GITHUB_TOKEN`. Nothing to create. The cost is on the consumer: GitHub Packages requires a
 read token (`android/gpr.key`) even for public packages (#1092).
@@ -72,7 +72,7 @@ read token (`android/gpr.key`) even for public packages (#1092).
 Everything on the repo side is in place — `android/gradle/maven-central.gradle.kts` (POM metadata Central
 validates: name, description, url, MIT license, developer, scm; GPG signing from an **in-memory** key; a
 local `CentralStaging` repository), the root tasks `centralBundle` / `centralUpload` / `centralStatus`, and the
-dispatch-only, dry-run-by-default [`.github/workflows/maven-central.yml`](.github/workflows/maven-central.yml).
+dispatch-only, dry-run-by-default [`.github/workflows/maven-central.yml`](../../.github/workflows/maven-central.yml).
 `centralBundle` stages, signs, and zips the Portal bundle **without touching the network**; `centralUpload` is
 the only task that talks to `central.sonatype.com`, and it refuses a `-SNAPSHOT` or an unsigned bundle. What
 remains is one-time and human:
@@ -113,16 +113,16 @@ remains is one-time and human:
    publish the same `MavenPublication`, so they can never carry different bytes).
 
 Nothing in this path runs on a tag push. Wiring `centralUpload` into `android.yml`'s release job is a policy
-change per [RELEASING.md](RELEASING.md) and rides its own PR.
+change per [RELEASING.md](releasing.md) and rides its own PR.
 
 ## The Rust plane (crates.io)
 
 `rust/crates/fundamental-core` publishes to crates.io as `fundamental-core`, at the same version as the
 npm packages, through the **dispatch-only, dry-run-by-default**
-[`.github/workflows/crates-io.yml`](.github/workflows/crates-io.yml) — never from a tag push and never
+[`.github/workflows/crates-io.yml`](../../.github/workflows/crates-io.yml) — never from a tag push and never
 from a laptop. It needs a maintainer-created `CARGO_REGISTRY_TOKEN` repository secret. The policy,
 the dispatch commands, and the immutability rule (yank, never re-upload) are in
-[`RELEASING.md`](RELEASING.md) § "The Rust plane (crates.io)".
+[`releasing.md`](releasing.md) § "The Rust plane (crates.io)".
 
 ## Versioning
 
@@ -132,6 +132,6 @@ All seven published packages are versioned together (currently `0.10.1`). Bump t
 pnpm --filter "./packages/*" exec npm version <patch|minor|major> --no-git-tag-version
 ```
 
-Per the `0.x` rules in [API stability](docs/canonical/api-stability.md), a breaking change to a
+Per the `0.x` rules in [API stability](../canonical/api-stability.md), a breaking change to a
 protected symbol is a **minor** bump (`0.2 → 0.3`); additive and fix-only changes are patches. The private
 `site` / `starter` apps are versioned independently and not published.

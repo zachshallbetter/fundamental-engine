@@ -7,5 +7,5 @@
 //! of the three drifts — the same drift guard the other planes carry (#923, #1047).
 
 /// The engine build / snapshot-format version. Hand-maintained per plane; bumped by the release
-/// commit that bumps the seven npm packages (see RELEASING.md).
-pub const FIELD_VERSION: &str = "0.10.1";
+/// commit that bumps the seven npm packages (see docs/meta/releasing.md).
+pub const FIELD_VERSION: &str = "0.10.2";

@@ -4,7 +4,7 @@
 > release-path decisions for the Rust plane (`rust/`), and what was verified. The publish itself is a
 > maintainer act: a hand-dispatched run of `.github/workflows/crates-io.yml` with `dry_run=false`, after
 > the npm / Swift / Kotlin release for the same tag is out. The human rules live in
-> [`../../RELEASING.md`](../../RELEASING.md) § "The Rust plane (crates.io)". Parent epic: #1036.
+> [`../../RELEASING.md`](../meta/releasing.md) § "The Rust plane (crates.io)". Parent epic: #1036.
 
 | Question | Decision |
 |---|---|
@@ -59,7 +59,7 @@ The mechanism (all in this PR, all verified by `cargo test`):
 - `rust/crates/fundamental-core/tests/version_lockstep.rs` — the drift guard. Asserts
   `FIELD_VERSION == CARGO_PKG_VERSION` always, and `== packages/core/package.json` when run from the
   monorepo (skipped, with a note, on the published crate source where that file does not exist).
-- `RELEASING.md` step 4 now lists **four** planes to bump; `crates-io.yml` re-checks tag == crate ==
+- `docs/meta/releasing.md` step 4 now lists **four** planes to bump; `crates-io.yml` re-checks tag == crate ==
   `FIELD_VERSION` == `packages/core` before it will package anything.
 
 ## 3. Release path — `crates-io.yml`, dispatch-only, dry-run by default

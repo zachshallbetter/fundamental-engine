@@ -210,7 +210,7 @@ trail the newest JS-side additions.
   zero-dependency `fundamental-core` crate for servers, data pipelines and CMS runtimes, where a body is
   a data record rather than a widget. 28 of the 37 forces today, held to the same cross-plane golden;
   **not yet published** to crates.io — the publish path (`fundamental-core`, lockstep-versioned,
-  maintainer-dispatched) is prepared per [RELEASING.md](RELEASING.md) (#1047) — and not on the parity
+  maintainer-dispatched) is prepared per [RELEASING.md](docs/meta/releasing.md) (#1047) — and not on the parity
   page yet. Tracked by epic #1036.
 
 The JS core remains the source of truth; engine/physics fixes land on every plane.
@@ -539,7 +539,7 @@ Sigstore/SLSA build attestation). Most web projects want **`npm i @fundamental-e
 host-bundled default door) or **`@fundamental-engine/react`** for React; `@fundamental-engine/elements`
 and `@fundamental-engine/core` are there when you need them. No build step? Import from a CDN —
 `import { createField } from 'https://esm.sh/@fundamental-engine/vanilla'`. Releases publish from CI on a
-`vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The stable public
+`vX.Y.Z` tag (see [`docs/meta/releasing.md`](docs/meta/releasing.md) / [`docs/meta/publishing.md`](docs/meta/publishing.md)). The stable public
 surface is frozen, with new surface added additively; the support and versioning policy is in [`SUPPORT.md`](SUPPORT.md).
 
 ## Documentation
@@ -624,7 +624,7 @@ build-time tool and ships no runtime JavaScript by default.
 
 If you use this work, please cite it via its concept DOI (it always resolves to the latest release):
 
-> Shallbetter, Z. (2026). *Fundamental* (Version 0.10.1) [Computer software].
+> Shallbetter, Z. (2026). *Fundamental* (Version 0.10.2) [Computer software].
 > Zenodo. https://doi.org/10.5281/zenodo.20989937
 
 <details>
@@ -636,7 +636,7 @@ If you use this work, please cite it via its concept DOI (it always resolves to 
   title     = {Fundamental},
   year      = {2026},
   publisher = {Zenodo},
-  version   = {0.10.1},
+  version   = {0.10.2},
   doi       = {10.5281/zenodo.20989937},
   url       = {https://doi.org/10.5281/zenodo.20989937}
 }

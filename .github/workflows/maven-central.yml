@@ -24,7 +24,7 @@
 #   MAVEN_CENTRAL_USERNAME  a Central Portal *user token* username (Portal → View Account → Generate User Token)
 #   MAVEN_CENTRAL_PASSWORD  the matching user-token password
 #
-# Policy note (RELEASING.md): adding a workflow is a policy change. This one is intentionally inert — no trigger
+# Policy note (docs/meta/releasing.md): adding a workflow is a policy change. This one is intentionally inert — no trigger
 # but workflow_dispatch, no upload unless the dispatcher flips dry_run off — so merging it changes no release path.
 
 name: maven-central

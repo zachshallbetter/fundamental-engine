@@ -16,7 +16,7 @@ core (`packages/core`) and the Swift/Kotlin ports, held to the **same** cross-pl
 - Roadmap: [epic #1036](https://github.com/zachshallbetter/fundamental-engine/issues/1036).
 - Publishing: crates.io as `fundamental-core`, versioned in lockstep with `FIELD_VERSION`, via the
   dispatch-only `crates-io.yml` — see [docs/planning/rust-publishing-decision.md](../docs/planning/rust-publishing-decision.md)
-  and [RELEASING.md](../RELEASING.md) (#1047).
+  and [releasing.md](../docs/meta/releasing.md) (#1047).
 
 ## What makes the Rust plane different
 

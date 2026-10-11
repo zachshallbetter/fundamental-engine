@@ -298,7 +298,7 @@ local build with no property is `0.0.0-SNAPSHOT`.
 | target | status | how |
 |---|---|---|
 | **GitHub Packages** | live | the `publish` job in `.github/workflows/android.yml` on a `v*` tag → `./gradlew :fundamental-core:publish :fundamental-compose:publish`. Consumers need a read token (`android/gpr.key`) even though the packages are public — the friction #1092 exists to remove. |
-| **Maven Central** (Sonatype Central Portal) | prepared, not yet live | `gradle/maven-central.gradle.kts` (POM metadata, in-memory GPG signing, a local staging repo) + the root `centralBundle` / `centralUpload` / `centralStatus` tasks, and the **dispatch-only, dry-run-by-default** `.github/workflows/maven-central.yml`. Needs the maintainer's one-time account, namespace verification and secrets — see [PUBLISHING.md](../PUBLISHING.md#kotlin-android-artifacts). |
+| **Maven Central** (Sonatype Central Portal) | prepared, not yet live | `gradle/maven-central.gradle.kts` (POM metadata, in-memory GPG signing, a local staging repo) + the root `centralBundle` / `centralUpload` / `centralStatus` tasks, and the **dispatch-only, dry-run-by-default** `.github/workflows/maven-central.yml`. Needs the maintainer's one-time account, namespace verification and secrets — see [publishing.md](../docs/meta/publishing.md#kotlin-android-artifacts). |
 
 ```sh
 ./gradlew :fundamental-core:publishToMavenLocal -PreleaseVersion=X.Y.Z   # what a consumer resolves, into ~/.m2
