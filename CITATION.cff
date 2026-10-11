@@ -1,14 +1,17 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "Fundamental"
-abstract: "A platform-native relational field runtime — elements bend the field, the field bends them back. The DOM is the first host, not the boundary; the same model runs headlessly and in native ports."
+abstract: >-
+  A platform-native relational field runtime — elements bend the field, the field
+  bends them back. The DOM is the first host, not the boundary; the same model
+  runs headlessly and in native ports.
 type: software
 authors:
   - family-names: Shallbetter
     given-names: Zachary
     orcid: "https://orcid.org/0009-0009-9450-3429"
-version: 0.9.4
-date-released: 2026-07-10
+version: "0.10.1"
+date-released: "2026-07-22"
 license: MIT
 repository-code: "https://github.com/zachshallbetter/fundamental-engine"
 url: "https://fundamental-engine.com"
