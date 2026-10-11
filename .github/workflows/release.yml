@@ -23,15 +23,11 @@ name: Release
 # Rehearsal: workflow_dispatch with dry_run=true runs the entire path — gate, version
 # match, pack — without writing to the registry.
 #
-# Auth: prefer npm Trusted Publishing (OIDC). Configure each @fundamental-engine/*
-# package on npmjs.com → Access → Trusted Publisher → GitHub Actions with:
-#   Organization or user: zachshallbetter
-#   Repository: fundamental-engine
-#   Workflow filename: release.yml
-#   Allowed actions: npm publish
-# No long-lived token is required once trusted publishers are validated.
-# Optional fallback: repository secret `NPM_TOKEN` (granular, 2FA-bypass) if OIDC
-# is not yet configured for a package.
+# Auth: npm Trusted Publishing (OIDC) only. Per package:
+#   npm trust github @fundamental-engine/<pkg> --file release.yml \
+#     --repo zachshallbetter/fundamental-engine --allow-publish
+# First successful publish within 2 days validates the trust config.
+# No NPM_TOKEN / bypass-2FA granular tokens required.
 #
 # The human rules around this workflow live in docs/meta/releasing.md.
 
@@ -135,10 +131,11 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
           registry-url: 'https://registry.npmjs.org'
+          # Docs: never cache package manager on release publishes
+          package-manager-cache: false
 
-      # Trusted publishing needs npm ≥ 11.5.1; Node 22 images may ship older npm.
+      # Trusted publishing needs npm ≥ 11.5.1 (docs); upgrade for OIDC path.
       - name: Ensure npm supports trusted publishing OIDC
         run: npm install -g npm@latest && npm --version
 
@@ -176,7 +173,10 @@ jobs:
             attempt=$((attempt + 1)); sleep $((attempt * 20))
           done
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # Auth via npm Trusted Publishing (OIDC). Do NOT set NODE_AUTH_TOKEN —
+          # a stale token forces the legacy path and fails with EOTP/E404.
+          # Configure once per package: npm trust github <pkg> --file release.yml \
+          #   --repo zachshallbetter/fundamental-engine --allow-publish
           NPM_CONFIG_PROVENANCE: true
 
   # Proof the release is consumable, not just that the publish command exited 0:

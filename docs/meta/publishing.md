@@ -7,6 +7,52 @@ mechanics; the policy (versioning, when to cut) is in [`releasing.md`](releasing
 > [API stability](../canonical/api-stability.md). `pnpm check:api` (run in CI and the
 > release workflow) fails if a protected symbol disappears, so an export cannot vanish from a release by accident.
 
+
+## Auth (Trusted Publishing / OIDC)
+
+Publishes authenticate with **npm Trusted Publishing**, not long-lived tokens.
+
+1. One-time per package (local, with your npm 2FA session):
+
+   ```sh
+   npm trust github @fundamental-engine/core \
+     --file release.yml \
+     --repo zachshallbetter/fundamental-engine \
+     --allow-publish --yes
+   ```
+
+   Repeat for `dom`, `vanilla`, `react`, `elements`, `three`, `create`.
+   First call opens a browser 2FA prompt; you can skip 2FA for ~5 minutes for the rest.
+
+2. CI: `.github/workflows/release.yml` already has `permissions.id-token: write` and does **not** set `NODE_AUTH_TOKEN`.
+3. First successful publish within **2 days** validates each trust config (npm expires unvalidated configs).
+4. Prefer this over "bypass 2FA" granular tokens (npm is deprecating those for direct publish).
+
+See https://docs.npmjs.com/trusted-publishers
+
+
+## Auth (Trusted Publishing / OIDC)
+
+Publishes authenticate with **npm Trusted Publishing**, not long-lived tokens.
+
+1. One-time per package (local, with your npm 2FA session):
+
+   ```sh
+   npm trust github @fundamental-engine/core \
+     --file release.yml \
+     --repo zachshallbetter/fundamental-engine \
+     --allow-publish --yes
+   ```
+
+   Repeat for `dom`, `vanilla`, `react`, `elements`, `three`, `create`.
+   First call opens a browser 2FA prompt; you can skip 2FA for ~5 minutes for the rest.
+
+2. CI: `.github/workflows/release.yml` already has `permissions.id-token: write` and does **not** set `NODE_AUTH_TOKEN`.
+3. First successful publish within **2 days** validates each trust config (npm expires unvalidated configs).
+4. Prefer this over "bypass 2FA" granular tokens (npm is deprecating those for direct publish).
+
+See https://docs.npmjs.com/trusted-publishers
+
 ## The packages
 
 | npm name | role |
