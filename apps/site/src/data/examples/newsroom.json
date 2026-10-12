@@ -1,248 +1,248 @@
 {
-  "source": "Wikimedia pageviews API — en.wikipedia most-read, 2026/06/08 (trend vs 2026/06/07)",
+  "source": "Wikimedia pageviews API — en.wikipedia most-read, 2026/10/10 (trend vs 2026/10/09)",
   "license": "CC0",
-  "snapshotAt": "2026-06-10T00:38:26.143Z",
-  "day": "2026/06/08",
+  "snapshotAt": "2026-10-12T15:32:49.969Z",
+  "day": "2026/10/10",
   "articles": [
     {
-      "title": "Obsession (2025 film)",
-      "slug": "Obsession_(2025_film)",
-      "views": 291972,
+      "title": "Mathematics",
+      "slug": "Mathematics",
+      "views": 420278,
       "rank": 4,
-      "priorViews": 303010,
-      "url": "https://en.wikipedia.org/wiki/Obsession_(2025_film)"
+      "priorViews": 391937,
+      "url": "https://en.wikipedia.org/wiki/Mathematics"
     },
     {
-      "title": "2026 Peruvian general election",
-      "slug": "2026_Peruvian_general_election",
-      "views": 281754,
+      "title": "List of equations",
+      "slug": "List_of_equations",
+      "views": 417307,
       "rank": 5,
-      "priorViews": 34164,
-      "url": "https://en.wikipedia.org/wiki/2026_Peruvian_general_election"
+      "priorViews": 387779,
+      "url": "https://en.wikipedia.org/wiki/List_of_equations"
     },
     {
-      "title": "2026 FIFA World Cup",
-      "slug": "2026_FIFA_World_Cup",
-      "views": 264644,
+      "title": "Nidal Hasan",
+      "slug": "Nidal_Hasan",
+      "views": 382214,
       "rank": 6,
-      "priorViews": 238040,
-      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup"
+      "priorViews": 787247,
+      "url": "https://en.wikipedia.org/wiki/Nidal_Hasan"
     },
     {
-      "title": "Backrooms (film)",
-      "slug": "Backrooms_(film)",
-      "views": 174832,
+      "title": "Mike Ditka",
+      "slug": "Mike_Ditka",
+      "views": 361505,
       "rank": 7,
-      "priorViews": 213709,
-      "url": "https://en.wikipedia.org/wiki/Backrooms_(film)"
+      "priorViews": 627603,
+      "url": "https://en.wikipedia.org/wiki/Mike_Ditka"
     },
     {
-      "title": "Alexander Zverev",
-      "slug": "Alexander_Zverev",
-      "views": 163973,
+      "title": "Christa Pike",
+      "slug": "Christa_Pike",
+      "views": 204814,
       "rank": 8,
-      "priorViews": 476702,
-      "url": "https://en.wikipedia.org/wiki/Alexander_Zverev"
+      "priorViews": 216215,
+      "url": "https://en.wikipedia.org/wiki/Christa_Pike"
     },
     {
-      "title": "Masters of the Universe (2026 film)",
-      "slug": "Masters_of_the_Universe_(2026_film)",
-      "views": 155937,
+      "title": "Carrie (miniseries)",
+      "slug": "Carrie_(miniseries)",
+      "views": 193876,
       "rank": 9,
-      "priorViews": 190411,
-      "url": "https://en.wikipedia.org/wiki/Masters_of_the_Universe_(2026_film)"
+      "priorViews": 192804,
+      "url": "https://en.wikipedia.org/wiki/Carrie_(miniseries)"
     },
     {
-      "title": "Christian Eriksen",
-      "slug": "Christian_Eriksen",
-      "views": 139845,
+      "title": "Money in the Bank (2026)",
+      "slug": "Money_in_the_Bank_(2026)",
+      "views": 182270,
       "rank": 10,
-      "priorViews": 185631,
-      "url": "https://en.wikipedia.org/wiki/Christian_Eriksen"
+      "priorViews": 30418,
+      "url": "https://en.wikipedia.org/wiki/Money_in_the_Bank_(2026)"
+    },
+    {
+      "title": "Navi Pillay",
+      "slug": "Navi_Pillay",
+      "views": 178275,
+      "rank": 11,
+      "priorViews": 383057,
+      "url": "https://en.wikipedia.org/wiki/Navi_Pillay"
+    },
+    {
+      "title": "Katie Zacharia",
+      "slug": "Katie_Zacharia",
+      "views": 151159,
+      "rank": 12,
+      "priorViews": 9534,
+      "url": "https://en.wikipedia.org/wiki/Katie_Zacharia"
+    },
+    {
+      "title": "Below (miniseries)",
+      "slug": "Below_(miniseries)",
+      "views": 147649,
+      "rank": 13,
+      "priorViews": 148760,
+      "url": "https://en.wikipedia.org/wiki/Below_(miniseries)"
+    },
+    {
+      "title": "2009 Fort Hood shooting",
+      "slug": "2009_Fort_Hood_shooting",
+      "views": 128581,
+      "rank": 14,
+      "priorViews": 298849,
+      "url": "https://en.wikipedia.org/wiki/2009_Fort_Hood_shooting"
+    },
+    {
+      "title": "Other Mommy",
+      "slug": "Other_Mommy",
+      "views": 124110,
+      "rank": 15,
+      "priorViews": 171173,
+      "url": "https://en.wikipedia.org/wiki/Other_Mommy"
     },
     {
       "title": "Deaths in 2026",
       "slug": "Deaths_in_2026",
-      "views": 132986,
-      "rank": 11,
-      "priorViews": 126945,
+      "views": 124023,
+      "rank": 16,
+      "priorViews": 136433,
       "url": "https://en.wikipedia.org/wiki/Deaths_in_2026"
     },
     {
-      "title": "Peddi",
-      "slug": "Peddi",
-      "views": 128308,
-      "rank": 12,
-      "priorViews": 137665,
-      "url": "https://en.wikipedia.org/wiki/Peddi"
-    },
-    {
-      "title": "79th Tony Awards",
-      "slug": "79th_Tony_Awards",
-      "views": 127279,
-      "rank": 13,
-      "priorViews": 21517,
-      "url": "https://en.wikipedia.org/wiki/79th_Tony_Awards"
-    },
-    {
-      "title": "Killing of Rachel Nickell",
-      "slug": "Killing_of_Rachel_Nickell",
-      "views": 117991,
-      "rank": 14,
-      "priorViews": 164794,
-      "url": "https://en.wikipedia.org/wiki/Killing_of_Rachel_Nickell"
-    },
-    {
-      "title": "Spencer Pratt",
-      "slug": "Spencer_Pratt",
-      "views": 116916,
-      "rank": 15,
-      "priorViews": 40672,
-      "url": "https://en.wikipedia.org/wiki/Spencer_Pratt"
-    },
-    {
-      "title": "Scary Movie (2026 film)",
-      "slug": "Scary_Movie_(2026_film)",
-      "views": 114201,
-      "rank": 16,
-      "priorViews": 141030,
-      "url": "https://en.wikipedia.org/wiki/Scary_Movie_(2026_film)"
-    },
-    {
-      "title": "Stacey King",
-      "slug": "Stacey_King",
-      "views": 110003,
+      "title": "Susan Dell",
+      "slug": "Susan_Dell",
+      "views": 118757,
       "rank": 17,
-      "priorViews": 128512,
-      "url": "https://en.wikipedia.org/wiki/Stacey_King"
+      "priorViews": null,
+      "url": "https://en.wikipedia.org/wiki/Susan_Dell"
     },
     {
-      "title": "Inde Navarrette",
-      "slug": "Inde_Navarrette",
-      "views": 105410,
+      "title": "Animals (2026 film)",
+      "slug": "Animals_(2026_film)",
+      "views": 113215,
       "rank": 18,
-      "priorViews": 108420,
-      "url": "https://en.wikipedia.org/wiki/Inde_Navarrette"
+      "priorViews": 69270,
+      "url": "https://en.wikipedia.org/wiki/Animals_(2026_film)"
     },
     {
-      "title": "ChatGPT",
-      "slug": "ChatGPT",
-      "views": 105017,
+      "title": "East of Eden (2026 miniseries)",
+      "slug": "East_of_Eden_(2026_miniseries)",
+      "views": 106771,
       "rank": 19,
-      "priorViews": 82585,
-      "url": "https://en.wikipedia.org/wiki/ChatGPT"
+      "priorViews": 101769,
+      "url": "https://en.wikipedia.org/wiki/East_of_Eden_(2026_miniseries)"
     },
     {
-      "title": "Ford Creek Patrol Cabin",
-      "slug": "Ford_Creek_Patrol_Cabin",
-      "views": 104947,
+      "title": "East of Eden (novel)",
+      "slug": "East_of_Eden_(novel)",
+      "views": 103021,
       "rank": 20,
-      "priorViews": null,
-      "url": "https://en.wikipedia.org/wiki/Ford_Creek_Patrol_Cabin"
+      "priorViews": 105924,
+      "url": "https://en.wikipedia.org/wiki/East_of_Eden_(novel)"
     },
     {
-      "title": "Nelly Korda",
-      "slug": "Nelly_Korda",
-      "views": 104138,
+      "title": "Ansel Adams",
+      "slug": "Ansel_Adams",
+      "views": 101952,
       "rank": 21,
-      "priorViews": 71061,
-      "url": "https://en.wikipedia.org/wiki/Nelly_Korda"
+      "priorViews": 74830,
+      "url": "https://en.wikipedia.org/wiki/Ansel_Adams"
     },
     {
-      "title": "Nithya Raman",
-      "slug": "Nithya_Raman",
-      "views": 100163,
+      "title": "Drishyam: The Conclusion",
+      "slug": "Drishyam:_The_Conclusion",
+      "views": 99520,
       "rank": 22,
-      "priorViews": 24901,
-      "url": "https://en.wikipedia.org/wiki/Nithya_Raman"
+      "priorViews": 90207,
+      "url": "https://en.wikipedia.org/wiki/Drishyam:_The_Conclusion"
     },
     {
-      "title": "Michael Jackson",
-      "slug": "Michael_Jackson",
-      "views": 96378,
+      "title": "Nana Patekar",
+      "slug": "Nana_Patekar",
+      "views": 99473,
       "rank": 23,
-      "priorViews": 114842,
-      "url": "https://en.wikipedia.org/wiki/Michael_Jackson"
+      "priorViews": 296778,
+      "url": "https://en.wikipedia.org/wiki/Nana_Patekar"
     },
     {
-      "title": "2026 Armenian parliamentary election",
-      "slug": "2026_Armenian_parliamentary_election",
-      "views": 93251,
+      "title": "Digger (2026 film)",
+      "slug": "Digger_(2026_film)",
+      "views": 98459,
       "rank": 24,
-      "priorViews": 83116,
-      "url": "https://en.wikipedia.org/wiki/2026_Armenian_parliamentary_election"
+      "priorViews": 105698,
+      "url": "https://en.wikipedia.org/wiki/Digger_(2026_film)"
     },
     {
-      "title": ".xxx",
-      "slug": ".xxx",
-      "views": 90002,
+      "title": "Lizzie Borden",
+      "slug": "Lizzie_Borden",
+      "views": 91079,
       "rank": 25,
-      "priorViews": 48394,
-      "url": "https://en.wikipedia.org/wiki/.xxx"
+      "priorViews": 83544,
+      "url": "https://en.wikipedia.org/wiki/Lizzie_Borden"
     },
     {
-      "title": "Jalen Brunson",
-      "slug": "Jalen_Brunson",
-      "views": 87519,
+      "title": "Ted Kaczynski",
+      "slug": "Ted_Kaczynski",
+      "views": 87149,
       "rank": 26,
-      "priorViews": 78204,
-      "url": "https://en.wikipedia.org/wiki/Jalen_Brunson"
+      "priorViews": 63026,
+      "url": "https://en.wikipedia.org/wiki/Ted_Kaczynski"
     },
     {
-      "title": "Béla Pap",
-      "slug": "Béla_Pap",
-      "views": 86893,
+      "title": "Dhruv Rathee",
+      "slug": "Dhruv_Rathee",
+      "views": 83322,
       "rank": 27,
-      "priorViews": null,
-      "url": "https://en.wikipedia.org/wiki/Béla_Pap"
+      "priorViews": 44910,
+      "url": "https://en.wikipedia.org/wiki/Dhruv_Rathee"
     },
     {
-      "title": "Robert Napper",
-      "slug": "Robert_Napper",
-      "views": 86007,
+      "title": "Avatar: Seven Havens",
+      "slug": "Avatar:_Seven_Havens",
+      "views": 77304,
       "rank": 28,
-      "priorViews": 120791,
-      "url": "https://en.wikipedia.org/wiki/Robert_Napper"
+      "priorViews": 71973,
+      "url": "https://en.wikipedia.org/wiki/Avatar:_Seven_Havens"
     },
     {
-      "title": "Manav Suthar",
-      "slug": "Manav_Suthar",
-      "views": 84425,
+      "title": "Josh Hartnett",
+      "slug": "Josh_Hartnett",
+      "views": 74468,
       "rank": 29,
-      "priorViews": 131908,
-      "url": "https://en.wikipedia.org/wiki/Manav_Suthar"
+      "priorViews": 65926,
+      "url": "https://en.wikipedia.org/wiki/Josh_Hartnett"
     },
     {
-      "title": "Teach You a Lesson",
-      "slug": "Teach_You_a_Lesson",
-      "views": 83358,
+      "title": "Miss Grand International 2026",
+      "slug": "Miss_Grand_International_2026",
+      "views": 72820,
       "rank": 30,
-      "priorViews": 88984,
-      "url": "https://en.wikipedia.org/wiki/Teach_You_a_Lesson"
+      "priorViews": null,
+      "url": "https://en.wikipedia.org/wiki/Miss_Grand_International_2026"
     },
     {
-      "title": "FIFA World Cup",
-      "slug": "FIFA_World_Cup",
-      "views": 82434,
+      "title": "Man",
+      "slug": "Man",
+      "views": 71286,
       "rank": 31,
-      "priorViews": 68616,
-      "url": "https://en.wikipedia.org/wiki/FIFA_World_Cup"
+      "priorViews": 12010,
+      "url": "https://en.wikipedia.org/wiki/Man"
     },
     {
-      "title": "Lewis Hamilton",
-      "slug": "Lewis_Hamilton",
-      "views": 78769,
+      "title": "Arch Manning",
+      "slug": "Arch_Manning",
+      "views": 70857,
       "rank": 32,
-      "priorViews": 88231,
-      "url": "https://en.wikipedia.org/wiki/Lewis_Hamilton"
+      "priorViews": null,
+      "url": "https://en.wikipedia.org/wiki/Arch_Manning"
     },
     {
-      "title": "2026 Gilgit Baltistan Assembly election",
-      "slug": "2026_Gilgit_Baltistan_Assembly_election",
-      "views": 77056,
+      "title": "Bella Ramsey",
+      "slug": "Bella_Ramsey",
+      "views": 70009,
       "rank": 33,
-      "priorViews": 32463,
-      "url": "https://en.wikipedia.org/wiki/2026_Gilgit_Baltistan_Assembly_election"
+      "priorViews": 136954,
+      "url": "https://en.wikipedia.org/wiki/Bella_Ramsey"
     }
   ]
 }
