@@ -153,3 +153,34 @@ test('density metric does not clobber --field-density written by the particle en
 
   applied.destroy();
 });
+
+test('destroy() from inside a platform phase handler stops the drive loop (audit H1)', () => {
+  // the drive loop re-armed requestAnimationFrame after platform.tick ran its subscribers, so a
+  // subscriber that destroyed the pattern mid-frame left the loop running for good.
+  const g = globalThis as Record<string, unknown>;
+  const saved = [g.requestAnimationFrame, g.cancelAnimationFrame];
+  const pending = new Map<number, (t: number) => void>();
+  let id = 0;
+  g.requestAnimationFrame = (cb: (t: number) => void) => (pending.set(++id, cb), id);
+  g.cancelAnimationFrame = (i: number) => void pending.delete(i);
+  try {
+    const el = fakeEl({ x: 450, y: 450, w: 100, h: 100 });
+    const applied = applyRecipe(fakeRoot(), patternById('evidence-field')!, { bodies: [el], annotateBodies: false, reducedMotion: false });
+    let destroyedInFrame = false;
+    applied.platform.on('write', () => {
+      if (!destroyedInFrame) {
+        destroyedInFrame = true;
+        applied.destroy();
+      }
+    });
+    for (let f = 1; f <= 10; f++) {
+      const cbs = [...pending.values()];
+      pending.clear();
+      for (const cb of cbs) cb(f * 16);
+    }
+    assert.equal(destroyedInFrame, true, 'the phase handler ran');
+    assert.equal(pending.size, 0, 'no frame is scheduled after an in-frame destroy');
+  } finally {
+    [g.requestAnimationFrame, g.cancelAnimationFrame] = saved;
+  }
+});

@@ -409,15 +409,36 @@ function refreshBodyParams(b: Body): void {
   }
 }
 
+/**
+ * True for a DOM-backed body whose element has left the document. A body with a custom rect
+ * provider (`b.rect` — programmatic addBody, closed shadow root) has no element of its own to check.
+ * `=== false` (not `!isConnected`) so a stub element that doesn't model the property counts as live.
+ */
+function isDetachedBody(b: Body): boolean {
+  return !b.rect && b.el.isConnected === false;
+}
+
+/**
+ * Re-measure each body's centre + half-extents from its rect. A detached DOM body is skipped and
+ * marked invisible/inactive (its all-zero rect would otherwise place a live force at the top-left
+ * corner); the return value reports whether any were found so the caller can prune them.
+ */
 export function measureBodies(
   bodies: readonly Body[],
   W: number,
   H: number,
   originX = 0,
   originY = 0,
-): void {
+): boolean {
   const margin = H * 0.15;
+  let detached = false;
   for (const b of bodies) {
+    if (isDetachedBody(b)) {
+      b.vis = false;
+      b.on = false;
+      detached = true;
+      continue;
+    }
     // a shadow-DOM body may carry a custom rect provider (closed root, internal core); the
     // host's own box is the default (shadow-dom.md §10/§16).
     const r = b.rect ? b.rect() : b.el.getBoundingClientRect();
@@ -434,4 +455,5 @@ export function measureBodies(
       top + r.height > -margin && top < H + margin && left + r.width > -margin && left < W + margin;
     refreshBodyParams(b); // reactive force params (live, no rescan)
   }
+  return detached;
 }

@@ -217,6 +217,7 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
   }
 
   let raf = 0;
+  let destroyed = false;
   let handle: FieldHandle | null = null;
   let lastTs = 0;
   let frame = 0;
@@ -248,6 +249,7 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
   document.addEventListener('visibilitychange', onVisibility);
 
   const loop = (t: number): void => {
+    if (destroyed) return;
     const duration = lastTs ? t - lastTs : 0;
     lastTs = t;
     frame++;
@@ -273,7 +275,9 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
         }));
       }
     }
-    raf = requestAnimationFrame(loop);
+    // platform.tick runs subscriber callbacks; one may have destroyed this runtime mid-frame, and
+    // destroy() can only cancel the id of the frame already executing — don't re-arm past it.
+    if (!destroyed) raf = requestAnimationFrame(loop);
   };
   raf = requestAnimationFrame(loop);
   return {
@@ -283,6 +287,7 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
       governor.reset();
     },
     destroy(): void {
+      destroyed = true;
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
       handle = null;
