@@ -8,7 +8,7 @@ reinterpretation — the same approach as the [Swift port](../swift/README.md). 
 the API surface, and the physics mirror the npm packages (and the Swift package) one-to-one; where
 they diverge it is a bug.
 
-> **Status: running on-device.** The pure-Kotlin core (full 36-force surface + integrator, held to the
+> **Status: running on-device.** The pure-Kotlin core (full 37-force surface + integrator, held to the
 > cross-plane conformance gate), the `FieldHandle` public API, a Jetpack Compose host, and a desktop
 > FieldLab are all in place. See [Parity](#parity) for exactly what is and isn't ported yet.
 
@@ -72,7 +72,7 @@ Ported and tested:
 - **Core math + contracts** — `Vec3`, `Box`, `Particle`, `Body`, `Env`, `Formation`, `ScalarGrid`,
   the full `Force` interface (`apply`/`source`/`modify`/`field`), `ForceModification`, the canon
   `ForceColors`, and the standard `Registry`.
-- **The full 36-force surface**, line-for-line from the Swift sources:
+- **The full 37-force surface**, line-for-line from the Swift sources:
   - **Canonical nine** (§6) — `attract`, `jet`, `tether`, `wall`, `stream`, `repel`, `viscosity`,
     `swirl`, `sink`.
   - **Natural primitives** (§20.10) — `gravity`, `charge`, `magnetism`, `thermal`, `collide`,
@@ -213,7 +213,7 @@ Ported and tested:
   lines**; a displaced lattice → the **deformation grid**; and **marching-squares iso-contours** for
   **temperature** and **energy** from a particle-splatted scalar grid. Pure + JVM-tested.
 - **FieldLab (desktop, `:lab`)** — a JVM Swing/Java2D **FieldLab** over the same engine: a sidebar (tour
-  + the full 36-force catalog + the 64-recipe canon), a live canvas, and an inspector (formation / render mode / density /
+  + the full 37-force catalog + the 64-recipe canon), a live canvas, and an inspector (formation / render mode / density /
   accent / live body sliders / **the Readings overlays** / **the Body-Matter-Interaction toggles** + heatmap glow + carrier waves / live stats), plus a headless scene-tour +
   overlay PNG renderer + sim bench (`--args="render"` / `"bench"`). The Kotlin analog of
   `swift run FieldLab` — fast iteration and a CI-able visual render path, no emulator.
@@ -266,7 +266,7 @@ adb shell am start -n com.fundamental.sample/.MainActivity
 `:lab` is a JVM **FieldLab** over the **same** `:fundamental-core` engine, drawn with Java2D (built into
 the JDK — no Android, no Compose-Multiplatform). It's the Kotlin analog of `swift run FieldLab`: a real
 desktop app, instant iteration without an emulator. Like the Swift lab it has a **sidebar** (the tour +
-the full 36-force catalog, grouped canonical / natural / extended), a **live canvas**, and an
+the full 37-force catalog, grouped canonical / natural / extended), a **live canvas**, and an
 **inspector** (formation, render mode, density, accent, live body strength/range/spin sliders, and live
 stats — particles / kinetic / thermal / frame-ms). Each force opens a scene wired so it actually shows
 (charge/magnetism get charged matter, hunt gets two species, wall/gate get a box, morph gets a target).
@@ -277,7 +277,7 @@ stats — particles / kinetic / thermal / frame-ms). Each force opens a scene wi
 ./gradlew :lab:run --args="bench"        # headless: sim ms/frame per scene
 ```
 
-At full FieldLab parity: the sidebar runs the tour + 36-force catalog + 64-recipe canon, **all eight**
+At full FieldLab parity: the sidebar runs the tour + 37-force catalog + 64-recipe canon, **all eight**
 overlay readings work (incl. `path` traces + per-body `data` rings), the three Body-Matter-Interaction
 toggles (attention / causality / heatmap) + carrier waves, and **recipe save/export** round-trips a
 scene back to the canon JSON shape (`RecipeExport`).

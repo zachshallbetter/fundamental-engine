@@ -55,6 +55,7 @@ same field the `<field-root>` custom element and vanilla `mountField()` wrap. Th
 | `className` / `style` | — | applied to the managed `<canvas>` |
 | `onReady` | `(field: FieldHandle) => void` | called once the engine is live |
 
+<!-- check:readme-code prelude: import { FieldField } from '@fundamental-engine/react'; -->
 ```tsx
 <FieldField
   render="streamlines"
@@ -67,6 +68,7 @@ same field the `<field-root>` custom element and vanilla `mountField()` wrap. Th
 
 `onReady` hands you the live `FieldHandle` — the full imperative surface:
 
+<!-- check:readme-code prelude: import { FieldField } from '@fundamental-engine/react'; declare const x: number, y: number; -->
 ```tsx
 <FieldField onReady={(field) => {
   field.scan();                 // re-pick-up [data-body] elements after a render
@@ -92,9 +94,13 @@ same field the `<field-root>` custom element and vanilla `mountField()` wrap. Th
 For full control of the canvas element yourself, use `useFieldField()` instead of the component:
 
 ```tsx
-const { canvasRef, fieldRef } = useFieldField({ accent: '#4da3ff' });
-return <canvas ref={canvasRef} className="my-field" />;
-// fieldRef.current is the FieldHandle once mounted
+import { useFieldField } from '@fundamental-engine/react';
+
+function MyField() {
+  const { canvasRef, fieldRef } = useFieldField({ accent: '#4da3ff' });
+  // fieldRef.current is the FieldHandle once mounted
+  return <canvas ref={canvasRef} className="my-field" />;
+}
 ```
 
 ## Marking bodies — the `data-body` vocabulary

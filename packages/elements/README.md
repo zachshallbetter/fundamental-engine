@@ -50,9 +50,9 @@ each frame — style with them (`var(--field-density)`, etc.) to make content re
 
 `accent` · `density` · `waves` · `render` (`dots` / `trails` / `links` / `streamlines` / `metaballs` /
 `voronoi` / `knockout` / `redshift` / `blackbody` / `depth`) · `palette` (`ours` / `heatmap` /
-`infrared` / `spectrum`) · `mass` · `attention` · `causality`. The engine ships 20 render modes in
-all (including `field-lines`, `heatmap`, and the diagnostics); the others are reached through
-`setRender()` / the core, not this attribute.
+`infrared` / `spectrum`) · `mass` · `attention` · `causality`. The engine's catalog names 20 render
+modes in all; the others are overlay modes (`overlay` / `setOverlay()`), `setHeatmap()`, or standalone
+`draw*()` helpers in the core — not values of this attribute.
 
 ## Methods — the `FieldHandle`, proxied onto the element
 

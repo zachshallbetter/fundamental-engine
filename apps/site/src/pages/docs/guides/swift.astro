@@ -72,7 +72,7 @@ let field = FieldField(host: host)`;
 
   <div class="callout">
     <b>Status: broad, not complete.</b> The Swift port is conformance-checked against the JS engine
-    (a 36-force golden test asserts the two planes agree) and ships
+    (a shared golden asserts the planes agree on the six canonical deterministic forces; the other forces are tested behaviorally on the plane) and ships
     <strong>{handleDim.counts.swift}</strong> of the {handleDim.union.length} callable
     <code>FieldHandle</code> members any plane declares, against JS's
     <strong>{handleDim.counts.js}</strong> — generated from the port source, not typed here. The big

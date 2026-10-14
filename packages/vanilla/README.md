@@ -75,6 +75,7 @@ wrap.
 Drive a `<canvas>` you own instead by passing it — then the field never creates or removes a canvas,
 and `destroy()` only stops the engine:
 
+<!-- check:readme-code prelude: import { FieldField } from '@fundamental-engine/vanilla'; declare const myCanvas: HTMLCanvasElement; -->
 ```ts
 const field = new FieldField({ canvas: myCanvas, density: 1.2 });
 ```

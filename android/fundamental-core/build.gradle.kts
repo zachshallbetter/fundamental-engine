@@ -102,7 +102,7 @@ tasks.named<Jar>("sourcesJar") {
 // Maven Central staging tree (local; see gradle/maven-central.gradle.kts — upload is opt-in).
 extra["pomName"] = "Fundamental Engine — Core (Kotlin)"
 extra["pomDescription"] = "The Fundamental reciprocal field engine, in pure Kotlin/JVM: particles, " +
-    "bodies, the 36-force surface, the integrator, and the runtime driver. Mirror of " +
+    "bodies, the 37-force surface, the integrator, and the runtime driver. Mirror of " +
     "@fundamental-engine/core and FundamentalCore (Swift)."
 apply(from = rootProject.file("gradle/github-packages.gradle.kts"))
 apply(from = rootProject.file("gradle/maven-central.gradle.kts"))

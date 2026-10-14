@@ -93,7 +93,7 @@ of the contract until they are added to the table above.
 | Advanced diagnostics | partial | `DIAGNOSTICS` / `DIAGNOSTIC_LENS` / `draw*` primitives ship but are unfrozen. |
 | Performance budget | shipped-unprotected | `inspectBudget()`, `withinBudget()`, `DEFAULT_BUDGET`, `BudgetFinding` ship in `@fundamental-engine/core`; `FieldPerf` (frame-duration split, adaptive governor) ships shipped-but-unfrozen in `@fundamental-engine/dom` as `createFieldPerf` + `QualityGovernor`. |
 | Visual recipe editor | absent | No editor UI; the authoring toolkit is the substrate to build one on. |
-| GPU / WebGPU backend | planned | A named direction; the 16 shipped render modes are CPU/canvas. |
+| GPU / WebGPU backend | planned | A named direction; every shipped render mode (the 20 in `RENDER_MODES`) is CPU/canvas. |
 | Multi-root bridge | absent | No API for coordinating multiple `<field-root>` instances yet. |
 | AI evidence fields | partial | `EVIDENCE_FIELD` + the agent API ship as a substrate, but no packaged feature. |
 | Custom render backends | partial | Possible via `opts.host`; no stable backend-registration API. |

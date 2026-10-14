@@ -7,7 +7,7 @@ core (`packages/core`) and the Swift/Kotlin ports, held to the **same** cross-pl
 
 - **[docs/architecture.md](docs/architecture.md)** — purpose, design commitments, module map, the tick,
   and the two architectural bets (effects-as-data, frame-start neighbour snapshot).
-- **[docs/reference.md](docs/reference.md)** — the core types, the full 36-force catalog with porting
+- **[docs/reference.md](docs/reference.md)** — the core types, the full 37-force catalog with porting
   status, the subsystems, and conformance.
 - **[docs/guide.md](docs/guide.md)** — a practical tour: build a field, compose forces, determinism, and
   reading results back (the CMS shape).
@@ -112,7 +112,16 @@ pulses sibling strength `S(t) = S₀(1 + sin ωt)`; `spotlight` gates siblings t
 
 **41 tests, all green.**
 
-### Next (toward full parity — 8 forces remain)
+### Since milestone 6
+
+All landed on `main` and covered by `cargo test`: `collide` (#1037), the source pass → `spawn` /
+`morph` (#1038), the scalar grid → `diffuse` / `propagate` / `memory` (#1039), cross-body `screen`
+(#1040), and the field-structure hooks → `fieldflow` (#1041) — **36 of the 37 forces**. Plus
+`solve(until_settled)` (#1042), deterministic snapshot + causal replay (#1043), and the CMS reading
+layer — scores, clusters, relations (#1044). Only `relief` is not ported: it descends a host-declared
+scalar channel (`addField`), and the Rust plane has no channel API yet.
+
+### The original milestone-6 plan (kept for the record)
 
 - **`collide`** — the one class-[B] force that mutates its neighbour; needs a pairwise-impulse effect.
 - **Source/scatter pass** → `spawn` (mortal matter + a spawn effect), `morph` (target set + scatter).

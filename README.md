@@ -208,7 +208,9 @@ trail the newest JS-side additions.
 
 - **Rust (headless, experimental)** — a fourth plane in [`rust/`](rust/README.md): an f64, seeded,
   zero-dependency `fundamental-core` crate for servers, data pipelines and CMS runtimes, where a body is
-  a data record rather than a widget. 28 of the 37 forces today, held to the same cross-plane golden;
+  a data record rather than a widget. 36 of the 37 forces today (all but `relief`), each unit-tested, and
+  the six forces the shared cross-plane golden pins (`attract`, `repel`, `swirl`, `stream`, `tether`,
+  `viscosity`) match it;
   **not yet published** to crates.io — the publish path (`fundamental-core`, lockstep-versioned,
   maintainer-dispatched) is prepared per [RELEASING.md](docs/meta/releasing.md) (#1047) — and not on the parity
   page yet. Tracked by epic #1036.
@@ -226,14 +228,15 @@ queries, snapshots, edges, metrics, and diagnostics.
 import { createField, headlessHost } from '@fundamental-engine/core';
 
 const host = headlessHost({ width: 1920, height: 1080 });
-const field = createField(undefined, { host, render: 'none' });
+// headless: no canvas — createField's first parameter is typed HTMLCanvasElement, so cast
+const field = createField(undefined as unknown as HTMLCanvasElement, { host, render: 'none' });
 
 const body = field.addBody({
   tokens: ['attract'],
   strength: 1.4,
   range: 300,
   data: { kind: 'claim', id: 'claim-1' },
-  rect: () => ({ x: 100, y: 120, width: 240, height: 80 }),
+  rect: () => ({ left: 100, top: 120, width: 240, height: 80 }),
   onFeedback: (channels) => {
     // density, load, lit, entropy, coherence, temperature...
   },
@@ -296,19 +299,26 @@ fill-rate-bound, not particle-bound; `<field-root>` applies it automatically.
   `align`, `wind`, `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, `resonate`, `spotlight`,
   `screen`, `pigment`, `fieldflow`, `warp`, `relief`.
 
-Forces also carry a four-field classification — gravity, electromagnetic, strong, weak — so the catalog
-reads as a translation of the four fundamental fields into interface behavior. See
+Ten of the forces also carry a four-field classification — gravity, electromagnetic, strong, weak
+(`FORCE_FIELD` / `classifyForce()`); the other 27, including the canonical nine, are unclassified. See
 [`/docs/natural-fields`](https://fundamental-engine.com/docs/natural-fields).
 
 **9 presets** compose primitives into cosmology with no new engine code: `blackhole`, `whitehole`,
 `wormhole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
 
-**20 render modes (all shipped):** the matter/structure modes `dots`, `trails`, `links`, `streamlines`,
-`metaballs`, `voronoi`, `field-lines`, `heatmap`, `knockout` (matter as negative space in a field
-wash), `redshift` (Doppler + gravitational spectral tint), `blackbody` (energy on a thermal ramp),
-`depth` (the z lane as 2.5D — parallax, occlusion, defocus); and the diagnostic modes
-`force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`, `causality`,
-`prediction`. Live on [`/docs/diagnostics`](https://fundamental-engine.com/docs/diagnostics).
+**20 render modes** in the catalog (`RENDER_MODES`), reached three different ways:
+
+- **`render` / `setRender()` (10):** `dots`, `trails`, `links`, `streamlines`, `metaballs`, `voronoi`,
+  `knockout` (matter as negative space in a field wash), `redshift` (Doppler + gravitational spectral
+  tint), `blackbody` (energy on a thermal ramp), `depth` (the z lane as 2.5D — parallax, occlusion,
+  defocus). `render` also takes `flow` and `none`.
+- **Overlay readings and toggles (4):** `field-lines`, `force-vectors` and `energy` are
+  `overlay` / `setOverlay()` modes; `heatmap` is `setHeatmap()`.
+- **Standalone diagnostic helpers (6):** `contours`, `potential`, `topology`, `inspector`, `causality`,
+  `prediction` are `draw*()` functions you call on your own canvas (`drawContours`, `drawTopology`, …) —
+  they are not `render` values.
+
+Live on [`/docs/diagnostics`](https://fundamental-engine.com/docs/diagnostics).
 
 **Controlled flow.** `field.flowTo(x, y)` places a movable flow focus the field bends toward — it pulls
 matter in and curves the streamlines; retarget it each frame to follow the pointer, an element, a path,
@@ -346,9 +356,10 @@ A Field Pattern names an intent and composes existing tokens into behavior, with
 > Field Patterns compose. FieldPattern represents. Field Contracts execute. **No word lives in two lanes.**
 
 A Field Pattern validates, compiles, applies, can be inspected, and carries a reduced-motion output. It
-adds **no** engine behavior. **64 Field Patterns across 4 tiers** (core / workflow / professional /
-enterprise) ship in the catalog. The runtime is three calls:
+adds **no** engine behavior. **64 Field Patterns across 4 tiers** (core / applied / systems /
+operational, 16 each) ship in the catalog. The runtime is three calls:
 
+<!-- check:readme-code prelude: declare const listEl: HTMLElement; declare const tasks: { id: string; title: string; priority: number }[]; declare const nextTasks: typeof tasks; -->
 ```ts
 import { patternById, compilePattern } from '@fundamental-engine/core';         // pure: pattern → plan (no DOM)
 import { applyPattern, bindData } from '@fundamental-engine/dom';    // DOM: run it / bind data to it
@@ -388,38 +399,44 @@ const reading = field.query({
   at: el.getBoundingClientRect(),                    // point {x,y} | DOMRect-shaped rect | omitted = whole field
   radius: 320,
   include: ['bodies', 'metrics', 'relationships', 'influences'],
-  lens: { id: 'attention', metrics: ['attention', 'confidence', 'memory'], channels: ['linear'] },
+  lens: { id: 'attention', metrics: ['density', 'attention', 'salience'], channels: ['linear'] },
 });
 ```
 
 A query can answer: *what is dense here? what is pulling attention? which bodies are influencing this one?
-which relationships are active? which forces caused this state? which regions are unstable? what changed
-since the last snapshot?* A `FieldLens` is **user-defined** — each clause (`metrics`, influence
+which programmatic relationships are active? which forces caused this state?* Body metrics are `density`,
+`count` and `engaged`, plus `attention`, `salience` and `load` where the field computes them; each body's
+dimensions are `entropy`, `coherence` and `temperature`. Relationships in a reading are the edges added
+with `addEdge` — relationships declared by Field Patterns or DOM attributes are not included. *What
+changed since the last snapshot* is `diff()`, not `query()`. A `FieldLens` is **user-defined** — each clause (`metrics`, influence
 `channels`, body `tokens`) is an allow-list, and the standalone `applyLens(result, lens)` is exported and
 pure, so the same lens composes over any reading.
 
 ### Field Snapshot
 
 A `FieldSnapshot` captures *what the field is doing* at a frame: bodies, positions, authority modes,
-dimensions, relationships, metrics, active forces, influence attribution, projections, diagnostics,
-events, time, and host metadata. A screenshot captures what something looked like; a Field Snapshot
+dimensions, relationships, metrics, active forces, projections, the frame and the field clock — plus
+influence attribution and particles when you opt in. It does not carry diagnostics, an event log, or
+host metadata. A screenshot captures what something looked like; a Field Snapshot
 captures what it was *doing*.
 
 ### Causal Replay
 
-Causal Replay explains *how* a state happened — an ordered, typed account of the formations,
-relationships, metrics, and forces that moved the field between two snapshots:
+Causal Replay explains *how* a state happened — a typed account of the formation, relationship,
+body/metric and force changes between **two** snapshots (`replay(a, b)`). It is a structured diff, not a
+timeline: every step carries the later snapshot's frame and time, and steps are grouped by lane
+(formation → relationship → body/metric → force), not ordered by when each change happened. For a
+history, replay successive snapshot pairs.
 
 ```txt
-t0  Claim A gained attention
-t1  Citation B increased support cohesion
-t2  Contradiction C introduced charge separation
-t3  confidence dropped
-t4  the Evidence Field became unstable
+Formation 'wells' activated
+Relationship claim-a→citation-b (supports) formed
+Body claim-a attention rose 0.21→0.64
+Force attract on claim-a grew 1.2→1.9    (only when both snapshots used includeInfluences)
 ```
 
-This is the foundation for inspectable AI evidence, debugging, compliance, design-system governance,
-observability, and agent reasoning.
+It is a foundation for inspectable AI evidence, debugging and observability — it reports what changed,
+not why it matters.
 
 ## Projection and accessibility
 
@@ -435,9 +452,11 @@ reveal a dimension without allowing that dimension to cause motion or mutation.
 | depth | scale, blur, occlusion, layering |
 | time | trail, decay, ghost, replay, sediment |
 
-**Reduced motion does not remove meaning — it changes the projection.** A density that becomes movement,
-orbit, flow, or pull under a motion projection becomes contrast, weight, outline, spacing, annotation,
-order, sound, or haptic feedback under a reduced-motion one. **Accessibility is not fallback;
+**Reduced motion does not remove meaning — it changes the projection.** Under `prefers-reduced-motion`
+the field stops moving (`dt = 0`), but it keeps computing and writing its feedback channels (`--d` and the
+`--field-*` properties), so the host's CSS can still express density as contrast, weight, outline,
+spacing or annotation. Field Patterns also append a static prose equivalent. The engine ships no sound
+or haptic projection — those are surface kinds a host can implement, not built-in outputs. **Accessibility is not fallback;
 accessibility is alternate projection.** Every Field Pattern must carry an accessibility equivalent, and
 projections can be auto-applied each write phase (`field.projections.bind`) — including the `agent-json`
 surface, whose output is a serializable reading rather than a visual write.
@@ -479,7 +498,8 @@ validation.
 
 **A `check:api`-gated stable subset is protected; the rest of the surface is still moving pre-1.0.**
 `pnpm check:api` fails the build if a frozen export changes, `pnpm check:dist` verifies every package's
-entry points resolve, and `pnpm check:readme` keeps these READMEs true to the code. New options and
+entry points resolve, `pnpm check:readme` keeps these READMEs' counts true to the code, and
+`pnpm check:readme-code` typechecks their code examples against the built packages. New options and
 methods (including the experimental substrate API — `query`/`snapshot`/`diff`/`replay`/`forAgent`/projections)
 are **added freely**; deprecated aliases and unfrozen surface can change in any release, so **pin an exact
 version pre-1.0** and read the [CHANGELOG](CHANGELOG.md). Full SemVer stability arrives at 1.0. See
@@ -577,6 +597,7 @@ pnpm -r build       # the packages (tsc) and the site (Astro)
 pnpm check:dist     # every package's entry points resolve and import cleanly
 pnpm check:api      # the frozen public surface is intact (additive-only)
 pnpm check:readme   # the READMEs stay true to the code (catalog counts, package names)
+pnpm check:readme-code  # every README TypeScript example typechecks against the built packages
 pnpm check:recipes  # the pattern catalog is well-formed
 pnpm check:cem      # the custom-elements manifest is current
 pnpm check:links    # internal doc links resolve
