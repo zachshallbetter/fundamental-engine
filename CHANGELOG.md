@@ -7,6 +7,11 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`destroy()` from inside a frame callback no longer leaves the loop running.** `createField`'s frame loop re-armed `host.raf(frame)` after user callbacks (`onFeedback`, bus listeners) ran, while `destroy()` could only cancel the id of the frame already executing — so an in-frame `destroy()` left a zombie loop for good. A `destroyed` flag now gates every re-arm; `destroy()` is idempotent, and `scan()`/`rescan()` after destroy are no-ops (they used to re-bind `[data-hot]` listeners nothing released). The same re-arm-after-callbacks pattern is fixed in `startPlatformRuntime` (`@fundamental-engine/elements`) and the `applyPattern`/`applyRecipe` drive loop (`@fundamental-engine/dom`).
+- **Detached body elements no longer act from the top-left corner.** `measureBodies` had no `isConnected` guard: a `[data-body]` element removed without a rescan measured as an all-zero rect (`cx = cy = 0`, `vis = true`), kept exerting force from the origin, and stayed referenced until the next rescan. It is now skipped (marked invisible), and the field prunes it on the measure cadence, releasing any matter it had captured. Bodies with a custom rect provider (`addBody`, shadow-DOM `rect`) are unaffected. `measureBodies` now returns `true` when it found a detached body (previously `void`).
+
 ## [0.11.0] — 2026-10-11
 
 Milestone release for the Jul–Oct body of work. **0.10.2** was the interim catch-up packaging tag after ~11 weeks without a cut; **0.11.0** is the honest minor for that coherent batch under the pre-1.0 cadence rule (new plane, enforced agent gates, new substrate/force-family work should not hide forever under patch).

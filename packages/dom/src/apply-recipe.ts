@@ -303,14 +303,18 @@ export function applyPattern(root: Element, recipe: FieldRecipe, options: ApplyP
 
   // ── drive ─────────────────────────────────────────────────────────────────────────────
   let raf = 0;
+  // set by destroy(): platform.tick runs subscriber callbacks, and one that destroys the pattern
+  // mid-frame must not be undone by the re-arm after it (destroy can only cancel the running id).
+  let destroyed = false;
   const viewport = () => (typeof window !== 'undefined' ? { width: window.innerWidth, height: window.innerHeight } : undefined);
   const tick = (now = 0): void => {
     platform.tick(now, viewport());
   };
   if (options.drive !== false && typeof requestAnimationFrame !== 'undefined') {
     const loop = (now: number): void => {
+      if (destroyed) return;
       tick(now);
-      raf = requestAnimationFrame(loop);
+      if (!destroyed) raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
   }
@@ -344,6 +348,7 @@ export function applyPattern(root: Element, recipe: FieldRecipe, options: ApplyP
   };
 
   const destroy = (): void => {
+    destroyed = true;
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
     // release the surfaces this recipe drove — the field returns to its resting reading

@@ -436,6 +436,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // reflows the text, so we only write it when the rounded weight actually changes.
   const lastWeight = new WeakMap<HTMLElement, number>();
   let raf = 0;
+  // Set by destroy(). frame() re-arms the loop AFTER user callbacks (onFeedback, bus events) run, so a
+  // destroy() from inside a frame would only cancel the id of the frame already executing and the
+  // re-arm below would keep the loop alive for good — every re-arm site checks this flag instead.
+  let destroyed = false;
   let frameN = 0;
   // element-level visibility (FieldHandle.setVisible): false skips draw work each frame while
   // the simulation + feedback signals stay live. Tab-level visibility is handled separately
@@ -981,7 +985,25 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     boundTarget = bound.length;
   }
 
+  // A DOM body whose element has left the document (SPA swap, framework unmount, el.remove()) without
+  // a rescan: measureBodies skips it (a detached element's rect is all-zero, which used to pin a live
+  // force at the top-left corner) and reports it; drop it here so the old node isn't retained until
+  // the next rescan. Matter the body had captured is released (not stranded on a ghost Body). A body
+  // with a custom rect provider (addBody / shadow `rect`) has no element to check and is never pruned.
+  // (Same predicate as scanner.ts's measure-time skip — kept module-private there, not public API.)
+  function isDetachedBody(b: Body): boolean {
+    return !b.rect && b.el.isConnected === false;
+  }
+  function pruneDetachedBodies(): void {
+    const gone = bodies.filter(isDetachedBody);
+    if (gone.length === 0) return;
+    bodies = bodies.filter((b) => !isDetachedBody(b));
+    for (const b of gone) if (b.accreted > 0) releaseCaptured(store.particles, b, rng);
+  }
+
   function scan(): void {
+    // after destroy() a scan would re-bind [data-hot] listeners that nothing ever releases.
+    if (destroyed) return;
     // capture the outgoing generation FIRST — the rebuild below replaces every DOM-scanned Body
     // object wholesale, and the reconciliation pass after the rebuild carries runtime state across.
     const prevGen = bodies;
@@ -1085,7 +1107,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
       }
     }
-    measureBodies(bodies, W, H, originX, originY);
+    if (measureBodies(bodies, W, H, originX, originY)) pruneDetachedBodies();
     bindEngagement();
     // Reconcile movers: carry forward offset + dock state for elements that persist across
     // rescans (shadow-DOM re-register, Astro nav re-mounts, explicit rescan()). An element that
@@ -2801,6 +2823,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   function frame(now: number): void {
+    if (destroyed) return; // a host whose cancelRaf can't reach an already-queued callback
     frameN++;
     env.t = (now - t0) / 1000;
     env.frameN = frameN;
@@ -2849,7 +2872,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       w.offsetY += (target - w.offsetY) * 0.04;
     }
     if (bodies.length && frameN % 6 === 0) {
-      measureBodies(bodies, W, H, originX, originY);
+      if (measureBodies(bodies, W, H, originX, originY)) pruneDetachedBodies();
       detectProximityEvents(bodies); // #441 enter/exit/met — on the measure cadence, lazy
       // attention-gated discharge (#365): an engagement-gated sink releases on the falling
       // edge of engagement — the same conserved supernova ritual as saturation.
@@ -2973,7 +2996,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         if (stack.length) renderOverlay(overlayBackend, stack);
       }
     }
-    raf = host.raf(frame);
+    if (!destroyed) raf = host.raf(frame); // a callback above may have destroyed the field
   }
 
   function setFormation(name: string): void {
@@ -3032,7 +3055,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (host.hidden?.() ?? false) {
       host.cancelRaf(raf);
       raf = 0;
-    } else if (!raf) {
+    } else if (!raf && !destroyed) {
       raf = host.raf(frame);
     }
   };
@@ -3805,7 +3828,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (mode === 'transparent' && ctx) ctx.clearRect(0, 0, W, H);
     },
     destroy: () => {
+      if (destroyed) return; // idempotent: a second destroy() must not re-run host.detach() etc.
+      destroyed = true;
       host.cancelRaf(raf);
+      raf = 0;
       clearInterval(idleTimer);
       for (const off of teardowns) off(); // release every host event subscription
       // release the per-element [data-hot] engagement listeners, so repeated create/destroy
