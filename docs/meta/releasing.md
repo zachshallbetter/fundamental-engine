@@ -77,6 +77,9 @@ accidental breakage, not a freeze; the surface evolves pre-1.0 and additions nev
    - Rust: `rust/crates/fundamental-core/src/version.rs` **and** `[workspace.package].version` in
      `rust/Cargo.toml`, then `cargo build` in `rust/` to refresh `Cargo.lock` (guard:
      `tests/version_lockstep.rs`; `rust.yml` runs `--locked`, so a stale lock fails CI)
+   On a **minor** or **major** bump, also move the scaffolder templates' engine range
+   (`packages/create/templates/*/package.json`) to `^X.Y.0` — a 0.x caret spans one minor, so a stale
+   range scaffolds the previous engine (guard: `packages/create/src/cli.test.ts`).
 5. **Commit, tag, push the tag** — pushing the tag triggers the release workflow:
    ```sh
    git commit -am "release: vX.Y.Z"
