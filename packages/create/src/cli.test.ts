@@ -65,3 +65,21 @@ test('non-interactive scaffold: no TTY, flags drive it, real files land', async 
   }
   await rm(base, { recursive: true, force: true });
 });
+
+// A 0.x caret range only spans one minor (`^0.9.2` = `<0.10.0`), so a template range that lags this
+// package's minor scaffolds an engine older than the one the docs describe. Pin every template to
+// `^<this minor>.0` — a minor release that forgets the templates fails here, not in a user's app.
+test('every template installs the engine minor this package ships', async () => {
+  const [major, minor] = selfVersion().split('.');
+  const expected = `^${major}.${minor}.0`;
+  const root = join(import.meta.dirname, '..', 'templates');
+  const templates = await readdir(root);
+  assert.ok(templates.length > 0, 'templates found');
+  for (const t of templates) {
+    const pkg = JSON.parse(await readFile(join(root, t, 'package.json'), 'utf8'));
+    const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+    const engine = Object.entries(deps).filter(([name]) => name.startsWith('@fundamental-engine/'));
+    assert.ok(engine.length > 0, `${t} depends on an engine package`);
+    for (const [name, range] of engine) assert.equal(range, expected, `${t}: ${name}`);
+  }
+});
