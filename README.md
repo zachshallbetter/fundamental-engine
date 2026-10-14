@@ -208,9 +208,9 @@ trail the newest JS-side additions.
 
 - **Rust (headless, experimental)** — a fourth plane in [`rust/`](rust/README.md): an f64, seeded,
   zero-dependency `fundamental-core` crate for servers, data pipelines and CMS runtimes, where a body is
-  a data record rather than a widget. 36 of the 37 forces today (all but `relief`), each unit-tested, and
-  the six forces the shared cross-plane golden pins (`attract`, `repel`, `swirl`, `stream`, `tether`,
-  `viscosity`) match it;
+  a data record rather than a widget. 36 of the 37 forces today (all but `relief`): the six the shared
+  cross-plane golden pins (`attract`, `repel`, `swirl`, `stream`, `tether`, `viscosity`) match it, and the
+  other 30 are unit-tested on the plane;
   **not yet published** to crates.io — the publish path (`fundamental-core`, lockstep-versioned,
   maintainer-dispatched) is prepared per [RELEASING.md](docs/meta/releasing.md) (#1047) — and not on the parity
   page yet. Tracked by epic #1036.
