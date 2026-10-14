@@ -108,6 +108,12 @@ jobs:
       - name: Check READMEs
         run: pnpm check:readme
 
+      # Typecheck every ```ts/```tsx block in the root + package READMEs against the built packages'
+      # public types, so a README example can't call the API with the wrong shape (the headless
+      # example once passed rect {x, y} where the API takes {left, top} and silently built nothing).
+      - name: Check README code
+        run: pnpm check:readme-code
+
       # data/recipes.json is generated from the catalog source (pnpm gen:recipes); fail if it drifted.
       - name: Check recipes datafile
         run: pnpm check:recipes

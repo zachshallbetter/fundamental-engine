@@ -46,7 +46,7 @@ trait Force {
 A side effect a force requests, applied by the integrator with full context. Today: `Spark { at, power,
 color }`. Growing: `Impulse` (collide), `Spawn` (spawn) — see the epic.
 
-## The force catalog (28 / 36)
+## The force catalog (36 / 37)
 
 Legend: ✅ ported · ⬜ deferred (with the sub-issue that lands it). "Class" is the JS implementation
 class — [A] single-particle, [B] neighbour query, [C] scalar grid, [D] targets, [S] source, mod =
@@ -74,10 +74,10 @@ modifier.
 | `charge` | A | ✅ signed inverse-square (like repels, opposite attracts) |
 | `magnetism` | A | ✅ Lorentz rotation — preserves speed exactly |
 | `thermal` | A | ✅ Langevin/Box–Muller kick off the seeded rng |
-| `collide` | B | ⬜ [#1037](https://github.com/zachshallbetter/fundamental-engine/issues/1037) — pairwise-impulse effect |
-| `diffuse` | C | ⬜ [#1039](https://github.com/zachshallbetter/fundamental-engine/issues/1039) — scalar grid |
-| `propagate` | C | ⬜ [#1039](https://github.com/zachshallbetter/fundamental-engine/issues/1039) — scalar grid |
-| `memory` | C | ⬜ [#1039](https://github.com/zachshallbetter/fundamental-engine/issues/1039) — scalar grid |
+| `collide` | B | ✅ elastic pairwise collision via an `Impulse` effect (#1037) |
+| `diffuse` | C | ✅ scalar-grid diffusion (#1039) |
+| `propagate` | C | ✅ scalar-grid travelling wave (#1039) |
+| `memory` | C | ✅ scalar-grid sediment (#1039) |
 
 ### Designed extended (§20.3) — 15 / 19
 
@@ -98,12 +98,13 @@ modifier.
 | `hunt` | B | ✅ two-species pursuit |
 | `resonate` | mod | ✅ pulses sibling strength `S(t)=S₀(1+sin ωt)` |
 | `spotlight` | mod | ✅ gates siblings to a heading cone |
-| `morph` | D | ⬜ [#1038](https://github.com/zachshallbetter/fundamental-engine/issues/1038) — targets + source pass |
-| `spawn` | S | ⬜ [#1038](https://github.com/zachshallbetter/fundamental-engine/issues/1038) — mortal matter + spawn effect |
-| `screen` | mod | ⬜ [#1040](https://github.com/zachshallbetter/fundamental-engine/issues/1040) — cross-body attenuation |
-| `fieldflow` | A | ⬜ [#1041](https://github.com/zachshallbetter/fundamental-engine/issues/1041) — net field-line hook |
+| `morph` | D | ✅ target assembly via the source pass (#1038) |
+| `spawn` | S | ✅ mortal matter via the source pass (#1038) |
+| `screen` | mod | ✅ cross-body force attenuation (#1040) |
+| `fieldflow` | A | ✅ field-line transport via the structure hooks (#1041) |
+| `relief` | C | ⬜ not yet ported — descends a host-declared scalar channel (`addField`), which the Rust plane has no channel API for |
 
-`Registry::standard()` registers all ported forces (currently 28). Each is opt-in — a body only feels a
+`Registry::standard()` registers all ported forces (currently 36). Each is opt-in — a body only feels a
 force it names in its `tokens`, so a fuller registry never changes a body that doesn't ask.
 
 ## Subsystems

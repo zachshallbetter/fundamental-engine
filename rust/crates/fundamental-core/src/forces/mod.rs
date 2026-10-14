@@ -1,10 +1,8 @@
 //! The force catalog — mirrors `packages/core/src/forces`.
 //!
-//! Parity target is 36 forces (9 canonical + 8 natural + 19 extended). Landed so far: the canonical
-//! nine, the four self-contained natural primitives, the eight self-contained extended forces, the
-//! five class-\[B\] neighbour forces, and the two self-modifiers (`resonate`/`spotlight`) — 28. The rest
-//! wait on their subsystems (scalar grid, cross-body `screen`, source/scatter pass, field-line hook,
-//! plus `collide`'s pairwise impulse); see `natural.rs` / `extended.rs` for the per-force breakdown.
+//! The JS catalog has 37 forces (9 canonical + 8 natural + 20 extended). All are registered here except
+//! `relief`, which descends a host-declared scalar channel (`addField`) this plane has no API for yet —
+//! 36. See `natural.rs` / `extended.rs` for the per-force notes.
 
 pub mod canonical;
 pub mod extended;

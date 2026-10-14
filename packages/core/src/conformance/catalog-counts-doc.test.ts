@@ -42,6 +42,12 @@ const files = [
   ...mdIn('docs/canonical'),
   ...mdIn('docs/engine-reference'),
   rootFile('README.md'),
+  // the package READMEs ship to npm; the port READMEs are each plane's front door
+  ...['core', 'dom', 'vanilla', 'react', 'elements', 'three'].map((p) => rootFile(`packages/${p}/README.md`)),
+  rootFile('swift/README.md'),
+  rootFile('android/README.md'),
+  rootFile('rust/README.md'),
+  rootFile('rust/crates/fundamental-core/README.md'),
 ].filter((x): x is { rel: string; text: string } => x !== null);
 
 test('catalog self-consistency: families sum to the total force count', () => {
@@ -52,7 +58,8 @@ test('catalog self-consistency: families sum to the total force count', () => {
 test('docs: bare "N forces" total claims (N ≥ 30) match the catalog total', () => {
   // Sub-counts elsewhere (test-tier rosters like "20 forces") sit well under 30; a number ≥ 30 next to
   // "forces" is a total claim, so it must equal the catalog total — catches drift like "33 forces".
-  const re = /\b(\d+)\s+forces\b/gi;
+  // "37 forces" and the compound "37-force catalog" are both total claims.
+  const re = /\b(\d+)(?:[ \t]+|-)forces?\b/gi;
   const wrong: string[] = [];
   let statedTotal = false;
   for (const { rel, text } of files)

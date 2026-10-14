@@ -113,7 +113,7 @@ Before declaring done or merging, always:
 
 ```txt
 pnpm typecheck · pnpm build · pnpm test
-pnpm check:api · check:dist · check:readme · check:recipes · check:cem
+pnpm check:api · check:dist · check:readme · check:readme-code · check:recipes · check:cem
 pnpm --filter @fundamental-engine/site test:e2e     (chromium + webkit + mobile)
 ```
 

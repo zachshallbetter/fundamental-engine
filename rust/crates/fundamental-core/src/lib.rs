@@ -23,10 +23,10 @@
 //! reproduces every `dv`. See `tests/golden_conformance.rs`.
 //!
 //! # Status
-//! Experimental. 28 of the 36-force catalog (the canonical nine, natural, extended, neighbour, and
-//! modifier forces), [`step`], [`FieldStore`], the spatial hash, and the seeded [`Rng`] have landed;
-//! the six deterministic canonical forces pass the shared golden. The remaining forces, snapshot /
-//! query, and the CMS-facing reading layer (scores / clusters / relations) follow under epic #1036.
+//! Experimental. 36 of the 37-force catalog (all but `relief`, which needs a host scalar-channel API),
+//! [`step`], [`FieldStore`], the spatial hash, the seeded [`Rng`], deterministic snapshot + causal replay
+//! ([`record`]), and the CMS-facing reading layer ([`reading`]: scores / clusters / relations) have
+//! landed; the six deterministic canonical forces pass the shared golden. Tracked under epic #1036.
 //! Versioned in lockstep with the fleet — [`FIELD_VERSION`] is the crate version.
 
 pub mod config;

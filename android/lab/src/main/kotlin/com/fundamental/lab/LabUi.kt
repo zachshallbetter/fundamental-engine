@@ -41,7 +41,7 @@ import javax.swing.Timer
 import javax.swing.WindowConstants
 
 // FieldLab desktop UI (Swing/Java2D) — the Kotlin analog of the macOS FieldLab: a sidebar (the tour +
-// the full 36-force catalog), a live canvas, and an inspector (formation, render mode, density, accent,
+// the full 37-force catalog), a live canvas, and an inspector (formation, render mode, density, accent,
 // live body sliders, live stats). Drives the same :fundamental-core engine.
 
 // ── overlay readings ────────────────────────────────────────────────────────────────────────────

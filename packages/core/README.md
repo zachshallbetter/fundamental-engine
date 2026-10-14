@@ -25,20 +25,23 @@ instead of wiring the host themselves. The public surface is frozen for `0.x` (s
 
 ## What's inside
 
-- **36 forces** in three families: **9 canonical** verbs (`attract`, `repel`, `swirl`, `stream`,
+- **37 forces** in three families: **9 canonical** verbs (`attract`, `repel`, `swirl`, `stream`,
   `viscosity`, `jet`, `tether`, `wall`, `sink`), **8 natural** primitives (`gravity`, `charge`,
-  `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`), and **19 designed-extended**
+  `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`), and **20 designed-extended**
   forces (`lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`, `pressure`,
   `link`, `morph`, `hunt`, `spawn`, `resonate`, `spotlight`, the `screen` quiet zone, `pigment`,
-  field-line transport `fieldflow`, and wormhole relocate `warp`).
+  field-line transport `fieldflow`, wormhole relocate `warp`, and scalar-channel descent `relief`).
 - **9 presets** compose those primitives into cosmology with no new engine code (`blackhole`, `star`,
   `galaxy`, `tornado`, …), plus **5 formations** that bias the whole field and **6 condition** gates.
-- **20 render modes**: matter/structure (`dots`, `trails`, `links`, `streamlines`, `metaballs`,
-  `voronoi`, `field-lines`, `heatmap`, `knockout`, `redshift`, `blackbody`, `depth`) and
-  diagnostics (`force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`,
-  `causality`, `prediction`).
-- **64 recipes** across 4 tiers: a recipe is a portable field program. `compileRecipe()` lives here
-  (pure, no DOM); `applyRecipe()` and `bindData()` are in [`@fundamental-engine/dom`](../dom).
+- **20 render modes** in the catalog, reached three ways: `render` / `setRender()` takes `dots`,
+  `trails`, `links`, `streamlines`, `metaballs`, `voronoi`, `knockout`, `redshift`, `blackbody`, `depth`
+  (plus `flow` and `none`); `field-lines`, `force-vectors` and `energy` are overlay modes and `heatmap`
+  is `setHeatmap()`; `contours`, `potential`, `topology`, `inspector`, `causality` and `prediction` are
+  standalone `draw*()` helpers you call on your own canvas.
+- **64 Field Patterns** across 4 tiers (core / applied / systems / operational): a pattern is a
+  portable field program. `compilePattern()` lives here (pure, no DOM); `applyPattern()` and
+  `bindData()` are in [`@fundamental-engine/dom`](../dom). (The `*Recipe` names remain as deprecated
+  aliases until 1.0.)
 - **A conformance framework** that fires known particles into each force and checks the measured
   trajectory against the math. The same catalog drives the tests and the visual Lab.
 
@@ -79,6 +82,7 @@ host throws a clear error pointing you to those doors.
 
 `createField` returns a `FieldHandle`:
 
+<!-- check:readme-code prelude: declare const x: number, y: number; -->
 ```ts
 field.scan();                   // re-scan [data-body] after a DOM change
 field.setAccent('#a78bfa');     // recolor the travelling accent

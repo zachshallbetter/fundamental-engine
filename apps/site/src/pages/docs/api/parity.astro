@@ -139,15 +139,15 @@ const total = METHODS.length;
       JS is the source of truth. <code>@fundamental-engine/three</code> delegates all {total} methods to
       the wrapped engine — {threeCount}/{total}. Swift ({swiftCount}/{total}) and Kotlin ({kotlinCount}/{total})
       are native ports, mirrored but currently trailing the newest additions (see the table below for
-      which methods and why). The cross-plane <em>physics</em> is identical (the 36-force conformance
-      suite asserts it) regardless of API-surface gaps. This matrix tracks <em>API surface</em> parity.
+      which methods and why). The cross-plane <em>physics</em> is held to a shared conformance golden (six canonical deterministic
+      forces, within a stated tolerance) plus per-plane behavioral tests for the rest, regardless of API-surface gaps. This matrix tracks <em>API surface</em> parity.
     </p>
     <div class="callout">
       <b>Three distinct axes — don't conflate them.</b>
       <b>API parity</b> (this matrix): the <code>FieldHandle</code> method surface — {threeCount}/{total} Three.js,
       {swiftCount}/{total} Swift, {kotlinCount}/{total} Kotlin.
-      <b>Conformance</b>: the force math matches, asserted by the shared cross-plane golden (the 36-force
-      suite). <b>Production readiness</b>: packaging, platform polish, and docs — this is
+      <b>Conformance</b>: the force math matches, asserted by the shared cross-plane golden for the six canonical deterministic forces, and by
+      per-plane behavioral tests for the other 31. <b>Production readiness</b>: packaging, platform polish, and docs — this is
       <em>Preview</em> and differs by host. Native ports are at <code>FieldHandle</code> API parity, but
       packaging, platform polish, and production-readiness differ by host.
     </div>

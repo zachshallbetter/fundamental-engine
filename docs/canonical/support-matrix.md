@@ -31,8 +31,9 @@ Four libraries map one-to-one to npm: `FundamentalCore` ↔ `@fundamental-engine
 imports, the mirror of core's zero-DOM rule), `FundamentalPlatform` ↔ `@fundamental-engine/dom`,
 `FundamentalVanilla` ↔ `@fundamental-engine/vanilla`, `FundamentalSwiftUI` ↔ `@fundamental-engine/react`.
 
-- **Cross-plane conformance is enforced**, not asserted: the 36-force catalog is single-sourced and a
-  golden test verifies the JS and Swift planes agree force-for-force (`gen:force-catalog`). The Swift
+- **Cross-plane conformance is enforced**, not asserted: the 37-force catalog is single-sourced (`check:force-catalog`), and a
+  shared golden verifies the JS, Swift and Kotlin planes agree on the six canonical deterministic forces
+  (the others are tested behaviorally per plane — see [testing-and-conformance](testing-and-conformance.md)). The Swift
   macOS and iOS-Simulator builds + tests are CI gates.
 - **Parity (honest):** the web plane moves first. Core forces, the scheduler/registries, formations,
   and the interactive scenes are present; the newest primitives (the field-channel read/write surface,
@@ -50,7 +51,7 @@ mirror the npm packages (and the Swift package) one-to-one.
 
 | Module | Support | Notes |
 |---|---|---|
-| `:fundamental-core` | ✅ supported | the pure physics — full 36-force surface + integrator + `FieldHandle` (incl. relationship edges); zero Android deps, plain `kotlin("jvm")` |
+| `:fundamental-core` | ✅ supported | the pure physics — full 37-force surface + integrator + `FieldHandle` (incl. relationship edges); zero Android deps, plain `kotlin("jvm")` |
 | `:fundamental-platform` | ✅ supported | the six-phase scheduler (`discover→read→compute→state→write→render`) + the six registries (measurement / state / feedback / relationship / visual-binding / overlay), driven by an injected `FieldHost`; zero Android deps, plain `kotlin("jvm")` |
 | `:fundamental-compose` (Compose host) | ✅ supported (preview) | Jetpack Compose adapter — `FieldView` composable + `Modifier.fieldBody()`; verified on-device (Pixel 7 / API 35) |
 | `:fundamental-android` (non-Compose host) | ✅ supported (preview) | imperative `View`/`Canvas` host — `FieldFieldView` (custom `View`, `Choreographer`-driven, draws in `onDraw`) + `AndroidFieldHost` |

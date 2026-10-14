@@ -160,12 +160,12 @@ Ported and tested — the full engine:
   `seededRng(seed)` (the mulberry32 mirror of the JS `record/rng.ts`) and a run reproduces
   bit-for-bit. Pinned by `DeterminismTests` (the core seam) + the whole-run fingerprint suite in
   `FundamentalVanillaTests`.
-- **All 33 forces.** The canonical nine (§6: attract, jet, tether, wall, stream, repel,
+- **All 37 forces.** The canonical nine (§6: attract, jet, tether, wall, stream, repel,
   viscosity, swirl, sink); the natural primitives (§20.10: gravity, charge, magnetism,
   thermal, collide, diffuse, propagate, memory — the grid-backed three run against real
   scalar grids); the designed extended set (§20.3: lens, gate, buoyancy, shear,
   crystallize, align, wind, cohesion, pressure, link, hunt, morph, spawn, resonate,
-  spotlight, screen, pigment, fieldflow, warp). Stage B `field()` structure hooks
+  spotlight, screen, pigment, fieldflow, warp, relief). Stage B `field()` structure hooks
   (dipole, monopole, gravity well) included.
 - **Scalar grids** (`scalar-grid.ts`): the three stepping modes — diffuse (explicit heat
   equation), wave (leapfrog, CFL-clamped), memory (slow decay) — with bilinear sampling

@@ -16,9 +16,11 @@ servers, data pipelines, CMS runtimes, and analysis, where *a body is a data rec
 
 ## Status
 
-**Experimental.** 28 of the 36-force catalog (the canonical nine, natural, extended, neighbour, and
-modifier forces), the `step()` loop, `FieldStore`, and the seeded rng. The remaining forces, the
-platform crate, and the CMS-facing reading layer (scores / clusters / relations) are tracked under
+**Experimental.** 36 of the 37-force catalog (all but `relief`, which needs a host scalar-channel API
+this plane doesn't have yet), the `step()` / `solve()` loop, `FieldStore`, the seeded rng, deterministic
+snapshot + causal replay, and the CMS-facing reading layer (scores / clusters / relations). The shared
+cross-plane golden pins the six canonical deterministic forces; the rest are unit-tested here. Work is
+tracked under
 [epic #1036](https://github.com/zachshallbetter/fundamental-engine/issues/1036). Pre-1.0: pin an
 exact version.
 

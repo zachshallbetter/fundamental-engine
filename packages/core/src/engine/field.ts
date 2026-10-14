@@ -292,7 +292,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const fieldChannels = new Map<string, (x: number, y: number) => number>(); // addField() input channels
   // custom overlay functions registered via registerOverlay(); keyed by name, dispatched from renderOverlay()
   const customOverlays = new Map<string, (backend: RenderBackend, env: Env, W: number, H: number) => void>();
-  // All 36 forces are registered on every field — there is no opt-in. Any of them activates per-body
+  // All 37 forces are registered on every field — there is no opt-in. Any of them activates per-body
   // through its `data-body` token (e.g. `data-body="lens crystallize"`); an unused force costs nothing.
   registerCoreForces(reg); // the canonical nine (§6)
   registerNaturalForces(reg); // 8 natural primitives: gravity, charge, magnetism, thermal, … (§20.10)

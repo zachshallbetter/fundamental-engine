@@ -17,6 +17,7 @@
     "check:links": "node scripts/check-doc-links.mjs",
     "check:packaging": "node scripts/check-packaging.mjs",
     "check:readme": "node scripts/check-readme.mjs",
+    "check:readme-code": "node scripts/check-readme-code.mjs",
     "check:recipes": "node --experimental-strip-types scripts/export-recipes.mjs && git diff --exit-code data/recipes.json",
     "build": "pnpm -r build",
     "build:site": "pnpm --filter @fundamental-engine/site build",

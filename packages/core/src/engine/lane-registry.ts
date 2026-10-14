@@ -6,7 +6,7 @@
 // reports any word that appears in two lanes.
 //
 // DESIGN NOTES (flagged for review — these are the judgment calls):
-//   - Lanes covered: `force` (the 36 force tokens), `formation` (the 5 field-shape modes), `condition`
+//   - Lanes covered: `force` (the 37 force tokens), `formation` (the 5 field-shape modes), `condition`
 //     (the data-when keywords), `visualization` (the 16 render+diagnostic modes). These four have clean,
 //     single source-of-truth catalogs and are disjoint by construction, so the lint reports nothing today
 //     — its job is to guard future drift (a new force token that collides with a formation id, etc.).

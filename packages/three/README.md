@@ -56,6 +56,7 @@ The engine runs in signals-only mode (`render: 'none'`) and exposes its particle
 `FieldHandle.readParticles()`. `FieldLayer` pulls that each frame and writes it onto a `THREE.Points`
 geometry via a `FieldProjection`.
 
+<!-- check:readme-code prelude: declare const camera: import('three').Camera; -->
 ```ts
 import * as THREE from 'three';
 import { createFieldLayer, PlaneProjection } from '@fundamental-engine/three';
@@ -92,6 +93,7 @@ Pass `depth` and the layer defaults to a `VolumeProjection` automatically — bo
 plane (`z = 0`) while free matter drifts through the volume and is pulled gently back, reading as depth
 and parallax around the content:
 
+<!-- check:readme-code prelude: import { createFieldLayer } from '@fundamental-engine/three'; declare const renderer: import('three').WebGLRenderer; -->
 ```ts
 const layer = createFieldLayer({ depth: 300, renderer, accent: '#4da3ff' });
 ```
@@ -104,6 +106,7 @@ Both projections implement one interface, so `FieldLayer` and `threeBackend` are
 overlays — streamlines, field-lines, grid, contours, force-vector arrows — draw as scene geometry.
 Inject it via the lower-level `createThreeField`:
 
+<!-- check:readme-code prelude: declare const scene: import('three').Scene; declare const renderer: import('three').WebGLRenderer; -->
 ```ts
 import { createThreeField, threeBackend, PlaneProjection } from '@fundamental-engine/three';
 
@@ -129,6 +132,7 @@ bends the field and the swarm responds, while `density`/`load`/`lit` feedback fl
 mesh can be a meaningful agent, not just a force — and it can be **tagged** (`species`) and **selective**
 (`affects`) so several ecologies share one field.
 
+<!-- check:readme-code prelude: declare const layer: ReturnType<typeof import('@fundamental-engine/three').createFieldLayer>; declare const blossomMesh: import('three').Object3D; declare const genome: unknown; declare const glow: import('three').Mesh<import('three').BufferGeometry, import('three').MeshBasicMaterial>; -->
 ```ts
 const bloom = layer.addBody(blossomMesh, {
   tokens: 'attract', strength: 0.8, range: 260, // field px
@@ -146,6 +150,7 @@ particle pool, so it feels every force the swarm feels — body forces and the p
 `hunt`/`align`/`cohesion`) and drives the object's position each frame. This is the engine-stepped
 successor to `FieldAgent` (which samples + integrates itself).
 
+<!-- check:readme-code prelude: declare const layer: ReturnType<typeof import('@fundamental-engine/three').createFieldLayer>; declare const beeMesh: import('three').Object3D; -->
 ```ts
 const bee = layer.addAgent(beeMesh, {
   maxSpeed: 95,          // field px/frame

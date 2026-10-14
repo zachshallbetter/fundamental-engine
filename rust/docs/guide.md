@@ -137,8 +137,7 @@ you want wrap-around, or leave it zero for an unbounded solve.
 
 ## What's not here yet
 
-8 of the 36 forces and their subsystems (scalar grid, source pass, field-line hooks, cross-body
-`screen`) are deferred — tracked as sub-issues of the epic. They are documented no-ops: a field that
-doesn't use them behaves exactly as the JS flat-field fast path. See
+One force of the 37 is not ported: `relief`, which descends a host-declared scalar channel
+(`addField`) — the Rust plane has no channel API yet. A body that declares it gets no force from it. See
 [reference.md](reference.md) → *The force catalog* for the per-force status and
 [the epic](https://github.com/zachshallbetter/fundamental-engine/issues/1036) for the roadmap.

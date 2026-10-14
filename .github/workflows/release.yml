@@ -90,6 +90,8 @@ jobs:
         run: pnpm check:api
       - name: Check READMEs
         run: pnpm check:readme
+      - name: Check README code
+        run: pnpm check:readme-code
       - name: Check recipes datafile
         run: pnpm check:recipes
       - name: Check custom-elements manifest

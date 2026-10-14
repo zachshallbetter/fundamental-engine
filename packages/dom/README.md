@@ -58,6 +58,7 @@ scheduler that runs them in order: **discover → read → compute → state →
 | `VisualBindingRegistry` | bind a Canvas / SVG / WebGL visual layer to its semantic source |
 | `OverlayRegistry` | relationship / field-line / debug render layers |
 
+<!-- check:readme-code prelude: declare const card: HTMLElement; -->
 ```ts
 import { createFieldPlatform } from '@fundamental-engine/dom';
 
@@ -71,17 +72,19 @@ platform.tick(); // run one frame through the scheduler
 
 `createFieldPlatform` returns a `FieldPlatform` — the surface the inspector and tools read.
 
-## Recipes and data
+## Field Patterns and data
 
-The platform runs recipes and binds application data to the field. `compileRecipe()` (the pure
-compiler) lives in [the core](../core); application lives here:
+The platform runs Field Patterns and binds application data to the field. `compilePattern()` (the pure
+compiler) lives in [the core](../core); application lives here. (`applyRecipe` / `recipeById` /
+`compileRecipe` remain as deprecated aliases until 1.0.)
 
+<!-- check:readme-code prelude: declare const listEl: HTMLElement; declare const tasks: { id: string; title: string; priority: number }[]; declare const nextTasks: typeof tasks; -->
 ```ts
-import { applyRecipe, bindData } from '@fundamental-engine/dom';
-import { recipeById } from '@fundamental-engine/core';
+import { applyPattern, bindData } from '@fundamental-engine/dom';
+import { patternById } from '@fundamental-engine/core';
 
-// Run a recipe over a region; inspect the live run; tear it down.
-const applied = applyRecipe(root, recipeById('reading-field')!);
+// Run a pattern over a region; inspect the live run.
+const applied = applyPattern(root, patternById('reading-field')!);
 applied.inspect(); // { frame, measurements, relationships, lint }
 
 // Bind records → bodies. Updates diff by id; removed records decay out.
@@ -90,7 +93,7 @@ const binding = bindData(listEl, tasks, (t) => ({
   body: { tokens: ['attract'], strength: 0.4 + t.priority },
   metrics: { priority: t.priority },
   label: t.title,
-}), { recipe: 'priority-well' });
+}), { pattern: 'priority-well' });
 binding.update(nextTasks);
 ```
 

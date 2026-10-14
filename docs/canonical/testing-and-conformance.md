@@ -502,7 +502,7 @@ android.yml                # CI gate (Android side): fail if a Kotlin force drif
   tether, viscosity) across all planes — Swift and Android both reproduce it. Each plane's *other*
   forces (RNG / stateful / neighbor / grid / field) are verified behaviorally on that plane (Swift's
   `ParityTests`/`EngineTests`; Android's `CoreForcesBehaviorTests`/`NaturalForcesTests`/
-  `ExtendedForcesTests`, which port the full 36-force surface). The golden harness itself extends to the
+  `ExtendedForcesTests`, which port the full 37-force surface). The golden harness itself extends to the
   EM/grid/RNG/extended forces (RNG via the shared mulberry32 seed) and to short-trajectory + heat
   parity — follow-up coverage on the same fixture, ported per plane as it lands.
 
@@ -514,14 +514,14 @@ the Kotlin test classpath and `GoldenConformanceTests` reproduces every force de
 tolerance (`2e-4 + 1e-3·|dv|`); a divergence is a Kotlin bug (fix the force, never loosen the
 tolerance). Beyond the shared golden, the port carries its own per-plane coverage:
 
-- **Unit / integration tests** — the full 36-force surface (`CoreForcesBehaviorTests`,
+- **Unit / integration tests** — the full 37-force surface (`CoreForcesBehaviorTests`,
   `NaturalForcesTests`, `ExtendedForcesTests`), the integrator driven headlessly (`EngineTests`), the
   runtime driver (`FieldControllerTests`), and a deterministic `PerfRegressionTests` (1200 particles ×
   600 frames: count conserved, all-finite, velocity/heat bounded) — **85 core tests** — plus the
   platform module's scheduler/registry coverage (`FrameSchedulerTests`, `FieldPlatformTests`) — **10
   platform tests**.
 - **Headless FieldLab render as a visual gate** — the desktop FieldLab (`:lab`, JVM Swing/Java2D over
-  the same `:fundamental-core`) renders the scene tour + 36-force catalog to PNGs headlessly
+  the same `:fundamental-core`) renders the scene tour + 37-force catalog to PNGs headlessly
   (`./gradlew :lab:run --args="render out/"`), the Kotlin analog of the Swift `Snapshotter` visual gate
   — a CI-able render path with no emulator.
 - **CI gate** — `android.yml` (JDK 17 + Android SDK) runs the core conformance test and assembles the
