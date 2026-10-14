@@ -120,6 +120,10 @@ const FOCUS_GAIN = 1.0;
 /** hard clamp on focusMul so a focused body can never destabilize the integrator. */
 const FOCUS_MUL_MAX = 2;
 
+/** A height-only resize within this many CSS px of the built viewport keeps the swarm (the mobile URL
+ *  bar's show/hide delta is ~50–140px); see `resize()` in createField. */
+const SOFT_RESIZE_PX = 160;
+
 export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}): FieldHandle {
   // Signals-only mode (`render: 'none'`, §13.7 / #297): the full simulation + feedback pipeline
   // runs, but the engine never acquires a 2d context, never sizes a canvas backing store (it stays
@@ -1634,6 +1638,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     overlayBackend?.size(W, H, dpr);
   }
 
+  // The viewport the swarm was last BUILT for. A mobile browser's URL bar showing/hiding as the
+  // page scrolls fires `resize` with a height-only change of ~50–140px, continuously — rebuilding
+  // the swarm (and dropping captured matter) on each one resets the field mid-scroll. A height-only
+  // change within SOFT_RESIZE_PX of the built height keeps the swarm and only re-measures bodies;
+  // any width change, or a larger height change, rebuilds exactly as before.
+  let builtW = -1;
+  let builtH = -1;
+
   function resize(): void {
     const vp = host.viewport();
     W = vp.width;
@@ -1655,6 +1667,21 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (!heatmap) heatmap = new Heatmap(W, H);
       else heatmap.resize(W, H);
     }
+    if (H > 0 && W === builtW && builtH >= 0 && Math.abs(H - builtH) <= SOFT_RESIZE_PX) {
+      // soft resize: keep the swarm. Fold matter a shrink left below the floor back into the field
+      // now (the integrator's own wrap only runs while the field moves — never under reduced motion);
+      // agents clamp, matching the integrator's bounce. Bodies keep their elements, so re-measure
+      // instead of re-scanning the DOM.
+      for (const p of store.particles) {
+        if (p.y <= H) continue;
+        if (p.report === undefined) p.y %= H;
+        else p.y = H;
+      }
+      if (bodies.length && measureBodies(bodies, W, H, originX, originY)) pruneDetachedBodies();
+      return;
+    }
+    builtW = W;
+    builtH = H;
     build();
     scan();
   }
