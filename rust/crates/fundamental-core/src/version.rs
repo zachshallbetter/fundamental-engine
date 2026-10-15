@@ -8,4 +8,4 @@
 
 /// The engine build / snapshot-format version. Hand-maintained per plane; bumped by the release
 /// commit that bumps the seven npm packages (see docs/meta/releasing.md).
-pub const FIELD_VERSION: &str = "0.11.0";
+pub const FIELD_VERSION: &str = "0.11.1";
