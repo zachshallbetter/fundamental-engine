@@ -187,6 +187,38 @@ jobs:
           path: apps/site/playwright-report
           retention-days: 7
 
+  # The clean-consumer path, from the packed tarballs: scaffold each template with the packed
+  # `@fundamental-engine/create` CLI, install this commit's packages into it, typecheck, `vite build`,
+  # and check the web-component bundle still registers every element. It is the path a new user takes
+  # and no other gate walks it (it caught `npm create` being a silent no-op 0.9.3–0.11.0, and
+  # `<field-cell>` being tree-shaken). INFORMATIONAL here — it installs Vite/React from the npm
+  # registry, so a registry hiccup shouldn't hold the queue; release.yml runs it as a blocking step.
+  consumer:
+    name: "clean consumer (packed tarballs)"
+    runs-on: ubuntu-latest
+    needs: [changes, gate]
+    if: ${{ needs.changes.outputs.js == 'true' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the packages
+        run: pnpm -r --filter "./packages/*" build
+
+      - name: Scaffold, install from tarballs, typecheck, build
+        run: pnpm check:consumer
+
   # The INFORMATIONAL e2e legs: webkit + mobile. They run on every JS PR for cross-browser
   # coverage but are NOT in `conclusion`'s needs, so they report without blocking the merge.
   # A failure here is visible on the PR and worth investigating, but doesn't hold the queue.
