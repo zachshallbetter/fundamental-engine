@@ -92,6 +92,9 @@ jobs:
         run: pnpm check:readme
       - name: Check README code
         run: pnpm check:readme-code
+      # what a user actually gets: the packed create CLI scaffolds, installs these tarballs, builds.
+      - name: Clean consumer (packed tarballs)
+        run: pnpm check:consumer
       - name: Check recipes datafile
         run: pnpm check:recipes
       - name: Check custom-elements manifest

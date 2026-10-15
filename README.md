@@ -598,6 +598,7 @@ pnpm check:dist     # every package's entry points resolve and import cleanly
 pnpm check:api      # the frozen public surface is intact (additive-only)
 pnpm check:readme   # the READMEs stay true to the code (catalog counts, package names)
 pnpm check:readme-code  # every README TypeScript example typechecks against the built packages
+pnpm check:consumer # npm create → install the packed tarballs → typecheck → vite build (needs network)
 pnpm check:recipes  # the pattern catalog is well-formed
 pnpm check:cem      # the custom-elements manifest is current
 pnpm check:links    # internal doc links resolve

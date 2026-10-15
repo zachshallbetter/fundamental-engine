@@ -8,6 +8,7 @@
     "check:api": "tsc -p scripts/tsconfig.api.json --noEmit && node scripts/check-api-surface.mjs",
     "check:atoms": "node scripts/gen-atoms.mjs > apps/site/src/data/atoms.json && git diff --exit-code apps/site/src/data/atoms.json",
     "check:cem": "pnpm gen:cem && git diff --exit-code packages/elements/custom-elements.json",
+    "check:consumer": "node scripts/check-consumer.mjs",
     "check:contract-gap": "node scripts/check-silent-contract.mjs",
     "check:dist": "node scripts/check-dist.mjs",
     "check:docs": "node scripts/check-docs.mjs",
