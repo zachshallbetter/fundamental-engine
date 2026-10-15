@@ -7,6 +7,10 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
 
 ## [Unreleased]
 
+## [0.11.1] — 2026-10-14
+
+Patch release: the engine-audit fixes (2026-10-14). Headline: **`npm create @fundamental-engine` works again** — it scaffolded nothing in every release from 0.9.3 to 0.11.0. See [release notes](docs/release-notes/0.11.1.md).
+
 ### Fixed
 
 - **`destroy()` from inside a frame callback no longer leaves the loop running.** `createField`'s frame loop re-armed `host.raf(frame)` after user callbacks (`onFeedback`, bus listeners) ran, while `destroy()` could only cancel the id of the frame already executing — so an in-frame `destroy()` left a zombie loop for good. A `destroyed` flag now gates every re-arm; `destroy()` is idempotent, and `scan()`/`rescan()` after destroy are no-ops (they used to re-bind `[data-hot]` listeners nothing released). The same re-arm-after-callbacks pattern is fixed in `startPlatformRuntime` (`@fundamental-engine/elements`) and the `applyPattern`/`applyRecipe` drive loop (`@fundamental-engine/dom`).
