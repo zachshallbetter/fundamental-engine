@@ -266,14 +266,24 @@ handle?.destroy();</code></pre>
       </div>
       <div class="api-row">
         <dt class="k"><code>new QualityGovernor(budgetMs?)</code></dt>
-        <dd class="d">Default budget: <code>16.67</code> ms (60 fps). Pass <code>8.33</code> for a 120 fps budget.</dd>
+        <dd class="d">Default budget: <code>16.67</code> ms (60 fps). Pass the display's real frame interval —
+          <code>8.33</code> for 120 Hz, <code>33.3</code> for 30 Hz — so on-budget frames aren't read as overruns.
+          <code>createFieldPerf().snapshot().budgetMs</code> measures it.</dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>.setBudget(ms)</code> · <code>.budgetMs</code></dt>
+        <dd class="d">Re-base the thresholds on a measured budget once it is known (non-finite or ≤ 0 is
+          ignored); the tier is kept and the streaks restart. <code>&lt;field-root&gt;</code> does this
+          automatically from <code>createFieldPerf</code>, and doesn't feed the governor until the budget is
+          detected.</dd>
       </div>
       <div class="api-row">
         <dt class="k"><code>.feed(durationMs)</code></dt>
         <dd class="d">
           Feed one rAF frame duration. Returns the new tier when it changes,
-          <code>undefined</code> when stable. Escalation: 10 frames above 20 ms → tier 1; 5 frames
-          above 33 ms → tier 2; 3 frames above 50 ms → tier 3. Recovery requires 30 clean frames
+          <code>undefined</code> when stable. Escalation at the default 60 Hz budget: 10 frames above
+          20 ms → tier 1; 5 frames above 33 ms → tier 2; 3 frames above 50 ms → tier 3 — each threshold
+          scales with the budget (×2 at 30 Hz, ×½ at 120 Hz). Recovery requires 30 clean frames
           to avoid thrashing.
         </dd>
       </div>

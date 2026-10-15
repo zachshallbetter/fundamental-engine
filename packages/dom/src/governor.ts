@@ -22,16 +22,26 @@
  *
  * Recovery is asymmetric: a tier escalation fires after N consecutive overrun frames;
  * recovery requires a longer run of clean frames to avoid thrashing at the boundary.
+ *
+ * Every threshold is a multiple of the frame budget — the display's refresh interval, not a fixed
+ * 60 Hz. With the default 16.67 ms budget they are the original 20 / 33 / 50 ms; on a 30 Hz display
+ * (iOS Low Power Mode, a throttled laptop) a steady 33 ms rAF spacing is on budget, not an overrun.
+ * Pass the detected budget to the constructor or `setBudget()` — `createFieldPerf().snapshot().budgetMs`
+ * measures it, and the `<field-root>` runtime wires exactly that.
  */
 
 export type QualityTier = 0 | 1 | 2 | 3;
 
 interface TierRule {
-  readonly aboveMs: number;       // frame duration threshold
+  readonly aboveMs: number;       // frame duration threshold at the default 60 Hz budget (scaled by budget)
   readonly streak: number;        // consecutive frames needed to escalate to this tier
   readonly tier: QualityTier;
 }
 
+/** The 60 Hz budget the thresholds were tuned against (and the default). */
+const DEFAULT_BUDGET_MS = 16.67;
+
+// tuned at 60 Hz; feed() scales each by budget / DEFAULT_BUDGET_MS (exactly 1 at the default).
 const ESCALATE: readonly TierRule[] = [
   { aboveMs: 20, streak: 10, tier: 1 },
   { aboveMs: 33, streak:  5, tier: 2 },
@@ -44,13 +54,29 @@ export class QualityGovernor {
   private _tier: QualityTier = 0;
   private overrunStreak = 0;
   private cleanStreak = 0;
-  private readonly budget: number;
+  private budget: number;
 
-  constructor(budgetMs = 16.67) {
-    this.budget = budgetMs;
+  constructor(budgetMs = DEFAULT_BUDGET_MS) {
+    this.budget = validBudget(budgetMs) ?? DEFAULT_BUDGET_MS;
   }
 
   get tier(): QualityTier { return this._tier; }
+
+  /** The frame budget (ms) the thresholds scale from. */
+  get budgetMs(): number { return this.budget; }
+
+  /**
+   * Re-base the thresholds on a measured frame budget (ms) — e.g. `createFieldPerf().snapshot().budgetMs`
+   * once it is non-null. A non-finite or non-positive value is ignored. The current tier is kept; the
+   * overrun/clean streaks restart, since they were counted against the old budget.
+   */
+  setBudget(budgetMs: number): void {
+    const b = validBudget(budgetMs);
+    if (b === undefined || b === this.budget) return;
+    this.budget = b;
+    this.overrunStreak = 0;
+    this.cleanStreak = 0;
+  }
 
   /**
    * Feed one frame duration (ms). Returns the new tier when it changes, `undefined` when stable.
@@ -58,12 +84,13 @@ export class QualityGovernor {
    */
   feed(durationMs: number): QualityTier | undefined {
     const overrun = durationMs > this.budget * 1.3;
+    const scale = this.budget / DEFAULT_BUDGET_MS;
 
     if (overrun) {
       this.cleanStreak = 0;
       this.overrunStreak++;
       for (const rule of ESCALATE) {
-        if (durationMs > rule.aboveMs && this.overrunStreak >= rule.streak && this._tier < rule.tier) {
+        if (durationMs > rule.aboveMs * scale && this.overrunStreak >= rule.streak && this._tier < rule.tier) {
           this._tier = rule.tier;
           return this._tier;
         }
@@ -87,4 +114,8 @@ export class QualityGovernor {
     this.overrunStreak = 0;
     this.cleanStreak = 0;
   }
+}
+
+function validBudget(ms: number): number | undefined {
+  return Number.isFinite(ms) && ms > 0 ? ms : undefined;
 }

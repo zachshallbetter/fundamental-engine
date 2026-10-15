@@ -10,7 +10,7 @@
  * The legacy engine still owns everything visible in D1; the platform adds nothing observable, which
  * is exactly the parity guarantee: flag on and flag off render identically.
  */
-import { createFieldPlatform, QualityGovernor, type FieldPlatform } from '@fundamental-engine/dom';
+import { createFieldPlatform, createFieldPerf, QualityGovernor, type FieldPlatform } from '@fundamental-engine/dom';
 import type { FieldHandle } from '@fundamental-engine/core';
 import {
   bodyElements,
@@ -222,6 +222,14 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
   let lastTs = 0;
   let frame = 0;
   const governor = new QualityGovernor();
+  // The governor's thresholds scale with the display's real frame budget — a 30 Hz panel (iOS Low
+  // Power Mode) spaces rAF 33 ms apart, which is on budget, not an overrun. FieldPerf detects the
+  // budget from the median of the first clean frames; until it has, the governor isn't fed, so a
+  // slower display can't escalate during warm-up. Clamped to 30 Hz's interval so a page that is
+  // overloaded from its very first frames still escalates against a display rate, not its own jank.
+  const perf = createFieldPerf();
+  const MAX_BUDGET_MS = 1000 / 30;
+  let budgetKnown = false;
 
   // A frame gap this large is a discontinuity (background tab, system sleep, a debugger pause),
   // not a budget overrun — feeding it would spike the governor for free.
@@ -263,7 +271,16 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
     const stride = governor.tier >= 3 ? 4 : governor.tier === 2 ? 2 : 1;
     if (frame % stride === 0) platform.tick(t, { width: window.innerWidth, height: window.innerHeight });
 
-    if (duration > 0 && duration < DISCONTINUITY_MS && handle) {
+    perf.feed(t);
+    if (!budgetKnown && frame % 8 === 0) {
+      const budget = perf.snapshot().budgetMs; // sorts its window — so only polled until it exists
+      if (budget !== null) {
+        governor.setBudget(Math.min(budget, MAX_BUDGET_MS));
+        budgetKnown = true;
+      }
+    }
+
+    if (budgetKnown && duration > 0 && duration < DISCONTINUITY_MS && handle) {
       const newTier = governor.feed(duration);
       if (newTier !== undefined) {
         // #413: apply the engine-side quality response automatically (DPR cap + heatmap at 2+),
@@ -292,6 +309,7 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
       raf = 0;
       handle = null;
       document.removeEventListener('visibilitychange', onVisibility);
+      perf.dispose();
       unwireShadow();
       // Registry teardown: the VisualBindingRegistry holds live MutationObservers (one per mirrored
       // source) that the browser keeps firing — and keeps the registry, plus every observed element,
