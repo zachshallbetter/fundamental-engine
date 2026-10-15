@@ -7,6 +7,10 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`mountXRay`: the hotkey no longer fires while you type, and the panel follows a swapped `<body>`** (`@fundamental-engine/dom`). `onKey` toggled the panel on any keydown whose key matched, so typing `?` into a search box, a form field or a contenteditable editor opened and closed it; it now ignores the hotkey when the event target or the focused element is editable, or with Ctrl/Meta/Alt held (Escape still closes). The panel's parent was captured as `document.body` at mount, so under an SPA router that replaces `<body>` (Astro view transitions) the panel was appended to the detached old body and the hotkey seemed to do nothing; the parent is now resolved when the panel opens. Found wiring x-ray into zachshallbetter.com.
+
 ### Site
 
 - **The homepage reads as a progression: interaction → behavior → relationships → computation → substrate.** It cycled interaction → behavior → adoption → interaction → agent → substrate → relationships → install → platforms → agent, with cross-platform three times and install in the middle of the doctrine. Now: the hero ("Elements have mass.") and the try-it field, the inbox proof, what the field replaces, how it works / built to be inspected / the counts, then shipped work, hosts, the AI application and the invisible fields, then install and explore. Sections are moved, not rewritten; the hero's secondary CTA is now Install.
