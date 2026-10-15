@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, symlink, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parseArgs, HELP, selfVersion } from './index.ts';
+import { parseArgs, HELP, selfVersion, isEntrypoint } from './index.ts';
 
 const cli = join(import.meta.dirname, 'index.ts');
 
@@ -82,4 +82,37 @@ test('every template installs the engine minor this package ships', async () => 
     assert.ok(engine.length > 0, `${t} depends on an engine package`);
     for (const [name, range] of engine) assert.equal(range, expected, `${t}: ${name}`);
   }
+});
+
+// npm runs a package bin through a node_modules/.bin/ symlink. The entrypoint guard compared argv[1]
+// (the link) with import.meta.url (the real file), so under npm — `npm create @fundamental-engine` —
+// main() never ran: exit 0, no output, no project (0.9.3–0.11.0). Every test above spawns the file
+// directly, which is why none of them saw it.
+test('run through a .bin-style symlink (how npm runs it), the CLI still scaffolds', async () => {
+  const base = await mkdtemp(join(tmpdir(), 'fe-create-link-'));
+  const binDir = join(base, 'node_modules', '.bin');
+  await mkdir(binDir, { recursive: true });
+  const link = join(binDir, 'create-fundamental-engine');
+  await symlink(cli, link);
+  const r = spawnSync(process.execPath, [link, 'linked-app', '--template', 'vanilla'], {
+    cwd: base,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /Created linked-app/, 'main() ran through the symlink');
+  assert.ok((await readdir(join(base, 'linked-app'))).includes('package.json'), 'the project was written');
+  await rm(base, { recursive: true, force: true });
+});
+
+test('isEntrypoint: resolves symlinks, rejects other files and a missing argv[1]', async () => {
+  const base = await mkdtemp(join(tmpdir(), 'fe-create-entry-'));
+  const link = join(base, 'bin');
+  await symlink(cli, link);
+  const url = new URL(`file://${cli}`).href;
+  assert.equal(isEntrypoint(cli, url), true, 'the file itself');
+  assert.equal(isEntrypoint(link, url), true, 'a symlink to it');
+  assert.equal(isEntrypoint(join(base, 'nope.js'), url), false, 'a path that does not exist');
+  assert.equal(isEntrypoint(undefined, url), false, 'no argv[1] (e.g. node -e)');
+  await rm(base, { recursive: true, force: true });
 });

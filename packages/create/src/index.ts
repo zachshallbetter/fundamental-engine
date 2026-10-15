@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve, basename } from 'node:path';
-import { readFileSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout, argv, cwd, exit } from 'node:process';
 import { scaffold, isTemplate, TEMPLATES, type Template } from './scaffold.ts';
@@ -93,7 +93,18 @@ async function main(): Promise<void> {
 }
 
 // Run only as the CLI entrypoint, so tests can `import` this module (for parseArgs / HELP) without
-// executing the scaffold flow.
-if (import.meta.url === `file://${argv[1]}` || argv[1] === fileURLToPath(import.meta.url)) {
+// executing the scaffold flow. npm runs a package bin through a `node_modules/.bin/` SYMLINK, so
+// argv[1] is the link while import.meta.url is the resolved file — compare real paths, or
+// `npm create @fundamental-engine` silently does nothing (it did, 0.9.3–0.11.0).
+export function isEntrypoint(scriptPath: string | undefined, moduleUrl: string): boolean {
+  if (!scriptPath) return false;
+  try {
+    return realpathSync(scriptPath) === realpathSync(fileURLToPath(moduleUrl));
+  } catch {
+    return false;
+  }
+}
+
+if (isEntrypoint(argv[1], import.meta.url)) {
   void main();
 }

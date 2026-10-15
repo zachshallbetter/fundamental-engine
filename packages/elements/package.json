@@ -24,7 +24,8 @@
     "field"
   ],
   "sideEffects": [
-    "./dist/index.js"
+    "./dist/index.js",
+    "./dist/field-cell.js"
   ],
   "files": [
     "dist",
