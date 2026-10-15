@@ -212,9 +212,11 @@ const DEMOS = [
         (ambient, wells, lanes, scatter, accretion). <a href="/docs/api/catalog">Reference →</a>
       </li>
       <li>
-        <b>Render modes</b> — the same physics drawn differently. Matter/structure: dots, trails,
-        links, metaballs, voronoi, streamlines, field-lines, heatmap. Diagnostics (all shipped):
-        force-vectors, contours, potential, energy, topology, inspector, causality, prediction.
+        <b>Render modes</b> — the same physics drawn differently. <code>render</code> values: dots,
+        trails, links, metaballs, voronoi, streamlines, flow, knockout, redshift, blackbody, depth.
+        Overlay readings (<code>setOverlay</code>): field-lines, force-vectors, energy and more;
+        <code>setHeatmap()</code> for the density heatmap. Diagnostic helpers you call on your own
+        canvas (<code>draw*()</code>): contours, potential, topology, inspector, causality, prediction.
         <a href="/docs/diagnostics">Diagnostics →</a>
       </li>
     </ul>

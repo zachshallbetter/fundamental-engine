@@ -23,6 +23,8 @@ export default defineConfig({
         !page.includes('/design/') &&
         !page.includes('/resting-tuner/') &&
         !page.includes('/perf-bench/'),
+      // a build date on every URL, so crawlers re-index after a release instead of serving stale docs
+      lastmod: new Date(),
     }),
   ],
   // The /writings datastore (and the research papers under it) carry rich markdown:

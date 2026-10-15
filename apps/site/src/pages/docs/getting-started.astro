@@ -2,6 +2,9 @@
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 
+const codeScaffold = `npm create @fundamental-engine my-app
+cd my-app && npm install && npm run dev`;
+
 const codeInstall = `npm install @fundamental-engine/vanilla`;
 
 const codeCanvas = `<canvas id="field"></canvas>
@@ -29,8 +32,8 @@ const codeSignalsHtml = `<!-- Add data-feedback to receive live CSS vars -->
 
 const codeSignalsCss = `/* Use them in CSS — no JavaScript polling needed */
 #hero {
-  opacity: calc(0.4 + var(--field-density, 0) * 0.6);
-  scale: calc(1 + var(--field-attention, 0) * 0.08);
+  opacity: calc(0.4 + var(--d, 0) * 0.6);   /* --d (alias --field-density): local density, 0–1 */
+  scale: calc(1 + var(--d, 0) * 0.08);
 }`;
 ---
 <DocsLayout
@@ -41,6 +44,14 @@ const codeSignalsCss = `/* Use them in CSS — no JavaScript polling needed */
   <p>
     Five minutes: install → canvas → field → particles → read the signals.
     No framework, no build step beyond what you already have.
+  </p>
+
+  <h2>Fastest: scaffold a starter</h2>
+  <CodeTabs variants={[{ label: 'Terminal', lang: 'bash', code: codeScaffold }]} />
+  <p>
+    Generates a vanilla, React, or web-component project (pass <code>-- --template react</code>)
+    wired to the current engine. Requires 0.11.1 or later — in 0.9.3–0.11.0 the command exited
+    without creating anything. Or set it up by hand:
   </p>
 
   <h2>1. Install</h2>
@@ -69,9 +80,12 @@ const codeSignalsCss = `/* Use them in CSS — no JavaScript polling needed */
   <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: codeSignalsHtml }]} />
   <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: codeSignalsCss }]} />
   <p>
-    The field writes <code>--field-density</code>, <code>--field-attention</code>, and
-    <code>--field-temperature</code> directly onto elements with <code>data-feedback</code>.
-    CSS reads them — zero JS event listeners required for basic reactivity.
+    The field writes <code>--d</code> (also as <code>--field-density</code>), <code>--load</code>,
+    <code>--lit</code>, and the body's <code>--entropy</code>, <code>--coherence</code> and
+    <code>--temperature</code> directly onto elements with <code>data-feedback</code>.
+    CSS reads them — zero JS event listeners required for basic reactivity. Other channels,
+    such as <code>--field-attention</code>, appear only when a Field Pattern or a
+    <code>platform.feedback.bind</code> call maps them.
   </p>
 
   <h2>Next steps</h2>

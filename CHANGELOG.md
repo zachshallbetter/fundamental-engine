@@ -7,6 +7,10 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
 
 ## [Unreleased]
 
+### Site
+
+- **fundamental-engine.com truth and provenance pass.** `/docs/getting-started` told readers the field writes `--field-attention` and `--field-temperature`; the default sink writes neither, so its example CSS never changed — it now uses `--d`, lists the variables the sink actually writes, and leads with `npm create @fundamental-engine` (working since 0.11.1). `/use-cases` and `docs/canonical/use-cases.md` named APIs that don't exist (`field.setBodyStrength`, `ScrollAgent`, `data-truth`, a "pressure formation", the `coherent`/`dwell` body conditions) — each now names the real mechanism (`data-strength` re-read live, `focus()`, `bindData`, the `scrolling` condition, `setFormation('wells')`) or is marked a proposal, and the page no longer calls planning sketches "not demos". The homepage drops "identical output … every commit" (it's within a stated tolerance, on plane changes), "a frozen public API", "enforced and linted" reduced motion, "the job itself goes away", and the Ascent card's wrong package; concepts / natural-fields / support stop saying "all shipped" and "frozen". The changelog's "Recently shipped" covers 0.10–0.11.1, and the implementations table lists the Rust plane. Provenance: the footer shows the engine version, the build commit and build date on every page; the nav, the footer and the homepage's structured data read one version source; `llms.txt` / `llms-full.txt` carry version + commit; the sitemap carries `lastmod`.
+
 ## [0.11.1] — 2026-10-14
 
 Patch release: the engine-audit fixes (2026-10-14). Headline: **`npm create @fundamental-engine` works again** — it scaffolded nothing in every release from 0.9.3 to 0.11.0. See [release notes](docs/release-notes/0.11.1.md).
