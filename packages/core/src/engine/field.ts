@@ -79,6 +79,7 @@ import {
   depthBlurRadius,
 } from './render-modes.ts';
 import { canvas2dBackend, type RenderBackend, type Stroke } from './render-backend.ts';
+import { createOverlayRecording } from './overlay-recording.ts';
 import { forceAt, netField } from './streamlines.ts';
 import { traceFieldLines } from './fieldlines.ts';
 import { fieldLineSeeds } from './fieldline-seeds.ts';
@@ -168,6 +169,34 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (!overlayCtx) return;
     overlayBackend = opts.overlayBackend ?? canvas2dBackend(overlayCanvas, overlayCtx);
     overlayBackend.size(W, H, host.viewport().dpr); // size to the live viewport — resize() only fires on change
+    invalidateOverlayFrame();
+  }
+
+  // Unchanged-overlay skipping. Every overlay reading is a pure function of field state, so a static
+  // scene issues identical draw calls frame after frame — and each frame used to clear and re-stroke the
+  // whole full-viewport surface anyway (at dpr 2, a ~3200×1600 raster pass for no visible change). Each
+  // frame now records its calls first (overlay-recording.ts); when the recording equals the last one,
+  // the surface already shows it and nothing is drawn. Only for the engine's OWN canvas backend, whose
+  // pixels persist between frames — an injected backend (e.g. three's, which finalizes a frame on the
+  // next clear()) keeps the draw-every-frame path. Anything that wipes or resizes the surface invalidates.
+  const overlayOwned = !opts.overlayBackend;
+  let overlayRec = createOverlayRecording();
+  let overlayPrev = createOverlayRecording();
+  let overlayPrevValid = false;
+  let overlayDrawnW = -1;
+  let overlayDrawnH = -1;
+  function invalidateOverlayFrame(): void {
+    overlayPrevValid = false;
+  }
+  /** may this frame be skipped if it records identically? — the surface must still hold the last frame. */
+  function overlaySurfaceIntact(): boolean {
+    if (!overlayPrevValid || !overlayCanvas) return false;
+    // resized under us (another writer) — the backing store was reset, so its pixels are gone.
+    if (overlayCanvas.width !== overlayDrawnW || overlayCanvas.height !== overlayDrawnH) return false;
+    // a 2d context lost under memory pressure comes back blank — never trust it across a loss.
+    const lost = (overlayCtx as { isContextLost?: () => boolean } | null)?.isContextLost?.() ?? false;
+    if (lost) overlayPrevValid = false;
+    return !lost;
   }
 
   const store = new FieldStore();
@@ -1636,6 +1665,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     // size the overlay surface's backing store to match (same dpr transform → same CSS coords).
     overlayBackend?.size(W, H, dpr);
+    invalidateOverlayFrame();
   }
 
   // The viewport the swarm was last BUILT for. A mobile browser's URL bar showing/hiding as the
@@ -2832,7 +2862,28 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   function renderOverlay(out: RenderBackend, stack: readonly OverlayMode[]): void {
+    // a custom overlay is arbitrary user code (it may animate on its own clock), so a stack that
+    // contains one always draws directly.
+    if (overlayOwned && !stack.some((m) => customOverlays.has(m))) {
+      const rec = overlayRec;
+      rec.reset(out);
+      drawOverlayStack(rec, stack);
+      if (overlaySurfaceIntact() && rec.equals(overlayPrev)) return; // the surface already shows this frame
+      out.clear();
+      rec.replay(out);
+      overlayRec = overlayPrev;
+      overlayPrev = rec;
+      overlayPrevValid = true;
+      overlayDrawnW = overlayCanvas?.width ?? -1;
+      overlayDrawnH = overlayCanvas?.height ?? -1;
+      return;
+    }
+    overlayPrevValid = false;
     out.clear();
+    drawOverlayStack(out, stack);
+  }
+
+  function drawOverlayStack(out: RenderBackend, stack: readonly OverlayMode[]): void {
     if (!stack.length || W === 0 || H === 0) return;
     for (const mode of stack) {
       if (mode === 'streamlines') drawOverlayArrows(out, false, false);
@@ -3170,7 +3221,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // setOverlay is where a lazily-provided canvas is created + bound. 'off'/empty just clears any
       // surface that already exists and never forces one into being.
       if (overlayStack(mode).length) ensureOverlaySurface();
-      else overlayBackend?.clear(); // empty stack → clear the front surface
+      else {
+        overlayBackend?.clear(); // empty stack → clear the front surface
+        invalidateOverlayFrame();
+      }
     },
     setHeatmap: (on) => {
       cfg.heatmap = on;
