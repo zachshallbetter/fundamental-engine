@@ -226,3 +226,56 @@ test('mountXRay tolerates a reduced field facade without sample/energy', () => {
     teardown();
   });
 });
+
+// ── typing is not a command (the hotkey inside editable fields) ─────────────────────────────────
+// onKey toggled on any keydown whose key matched, so typing '?' into a search box, a form field, or a
+// contenteditable editor opened and closed the panel. Found wiring x-ray into zachshallbetter.com.
+
+test('the hotkey typed into an input, textarea, select or contenteditable does not toggle the panel', () => {
+  const doc = makeDoc();
+  const container = makeContainer(doc);
+  withStubRaf(() => {
+    const teardown = mountXRay(makeField(), container as unknown as ParentNode & EventTarget);
+    for (const target of [{ tagName: 'INPUT' }, { tagName: 'textarea' }, { tagName: 'SELECT' }, { tagName: 'DIV', isContentEditable: true }]) {
+      container.dispatch('keydown', { key: '?', target });
+      assert.equal(doc.body.children.length, 0, `typing '?' in ${JSON.stringify(target)} must not open the panel`);
+    }
+    // focus in an editable field (target retargeted, e.g. from a shadow root) — still text, not a command
+    (doc as unknown as { activeElement: unknown }).activeElement = { tagName: 'INPUT' };
+    container.dispatch('keydown', { key: '?', target: { tagName: 'X-WIDGET' } });
+    assert.equal(doc.body.children.length, 0, 'an editable activeElement suppresses the hotkey');
+    (doc as unknown as { activeElement: unknown }).activeElement = null;
+    teardown();
+  });
+});
+
+test('the hotkey with a modifier is left to the page; plain, it still toggles; Escape still closes', () => {
+  const doc = makeDoc();
+  const container = makeContainer(doc);
+  withStubRaf(() => {
+    const teardown = mountXRay(makeField(), container as unknown as ParentNode & EventTarget);
+    for (const mod of ['ctrlKey', 'metaKey', 'altKey']) {
+      container.dispatch('keydown', { key: '?', [mod]: true, target: { tagName: 'BODY' } });
+      assert.equal(doc.body.children.length, 0, `${mod}+? is not the x-ray hotkey`);
+    }
+    container.dispatch('keydown', { key: '?', target: { tagName: 'BODY' } });
+    assert.equal(doc.body.children.length, 1, 'a plain ? outside a field opens the panel');
+    container.dispatch('keydown', { key: 'Escape', target: { tagName: 'INPUT' } });
+    assert.equal(doc.body.children.length, 0, 'Escape closes it, even from a field');
+    teardown();
+  });
+});
+
+test('the panel mounts on the CURRENT body — an SPA router may replace <body> after mount', () => {
+  const doc = makeDoc();
+  const container = makeContainer(doc);
+  withStubRaf(() => {
+    const teardown = mountXRay(makeField(), container as unknown as ParentNode & EventTarget);
+    const oldBody = doc.body;
+    doc.body = makeEl(doc, 'body'); // the router swapped the page
+    container.dispatch('keydown', { key: '?', target: { tagName: 'BODY' } });
+    assert.equal(doc.body.children.length, 1, 'the panel lands in the live body');
+    assert.equal(oldBody.children.length, 0, 'not in the detached one');
+    teardown();
+  });
+});
