@@ -29,6 +29,11 @@ const outDir = join(site, 'public');
 const SITE_URL = 'https://fundamental-engine.com';
 const CANON_BLOB = 'https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical';
 const DATE = new Date().toISOString().slice(0, 10);
+// Provenance: the engine version this corpus describes and the commit it was generated from, so an
+// agent (or a person) holding an old copy can tell. Same sources as the site footer.
+const ENGINE_VERSION = JSON.parse(readFileSync(join(root, 'packages/core/package.json'), 'utf8')).version;
+const COMMIT = (process.env.VERCEL_GIT_COMMIT_SHA ?? spawnSync('git', ['rev-parse', '--short=7', 'HEAD'], { encoding: 'utf8' }).stdout ?? '').trim().slice(0, 7);
+const PROVENANCE = `Engine version ${ENGINE_VERSION}${COMMIT ? ` · commit ${COMMIT}` : ''} · generated ${DATE}`;
 
 // ---------------------------------------------------------------------------
 // Read the two TS rosters without a TS toolchain: a child `node` with type
@@ -427,7 +432,7 @@ bodies bend the field, and the field's local density bends them back (reciprocit
 the canonical \`--d\` density channel, whose expressive long form is \`--field-density\`). The **stable 0.x
 API baseline** (the frozen entries in \`scripts/api-surface.data.mjs\`, enforced in CI) is fixed; the
 experimental **substrate API** (\`query\`/\`snapshot\`/\`diff\`/\`replay\`/\`forAgent\` + projections) is added
-freely on top of it. Generated ${DATE} by apps/site/scripts/gen-llms.mjs.
+freely on top of it. ${PROVENANCE} by apps/site/scripts/gen-llms.mjs.
 
 ## Start here — don't guess
 
@@ -498,7 +503,7 @@ const fullHeader = `# Fundamental — full documentation corpus
 Created by Zach Shallbetter (zachshallbetter.com).
 
 Repository: https://github.com/zachshallbetter/fundamental-engine
-Generated: ${DATE} by apps/site/scripts/gen-llms.mjs
+${PROVENANCE} by apps/site/scripts/gen-llms.mjs
 
 Contents (in order):
   1. CANONICAL DOCUMENTS      docs/canonical/ — the authority on concepts, terminology, contracts (${canon.length})

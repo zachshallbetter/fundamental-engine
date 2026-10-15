@@ -19,7 +19,8 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
 
   <div class="callout">
     <b>What backs this up.</b> The contract is the <a href="/docs/api/stability">Stable surface</a> —
-    frozen and gated by <code>check:api</code> in CI. This page is the human-readable commitment around
+    guarded against silent removal by <code>check:api</code> in CI (a guard against accidental breakage,
+    not a freeze — the wider surface still moves pre-1.0). This page is the human-readable commitment around
     it; the canonical source is <code>SUPPORT.md</code> in the repository.
   </div>
 
@@ -41,7 +42,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
         and only after the deprecation window below.
       </li>
     </ul>
-    <p>The <code>0.x</code> line was already frozen-and-additive; <code>1.0</code> formalizes that promise.</p>
+    <p>On the <code>0.x</code> line the protected subset only grows; <code>1.0</code> extends that promise to the whole public surface.</p>
   </section>
 
   <section class="docs-sec">

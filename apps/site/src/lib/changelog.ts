@@ -4,6 +4,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { engineVersion } from "./build-info";
 
 const here = dirname(fileURLToPath(import.meta.url)); // apps/site/src/lib
 const root = resolve(here, "../../../.."); // repo root
@@ -92,9 +93,11 @@ export function parseChangelog(): ChangeVersion[] {
   return versions.filter((v) => v.sections.length);
 }
 
-/** Current released version = the first non-Unreleased entry. */
+/** Current released version — the published core package's version, the same source the footer and
+ *  llms.txt use (it used to be the first CHANGELOG heading, which could disagree with the package
+ *  between a CHANGELOG cut and the version bump). */
 export function currentVersion(): string {
-  return parseChangelog().find((v) => !v.unreleased)?.version ?? "0.x";
+  return engineVersion;
 }
 
 /** Hand-curated "recently shipped" highlights — the human-facing top of /changelog, above the full
@@ -106,41 +109,37 @@ export interface Highlight {
 }
 export const HIGHLIGHTS: Highlight[] = [
   {
-    title: "Focus / attention substrate — the field reads and writes attention",
-    blurb: "New (experimental): operator attention as an input, agent attention as an output, over one shared field. field.focus(target, { source }) deposits source-tagged, decaying focus onto any body by identity; field.focusState() is the ranked, thresholded digest an AI agent can read in a single turn; metrics.salience rides query()/snapshot(); the focus event is the write-back channel; and a focus well gathers the field toward whatever is currently focused. The agent view stays read-only. Signals-first — it runs with nothing drawn.",
+    title: "0.11.1 — `npm create @fundamental-engine` works again",
+    blurb: "From 0.9.3 to 0.11.0 the scaffolder exited without creating anything (npm runs a bin through a symlink the entry check never matched). It now scaffolds a vanilla, React, or web-component starter on the current engine — and a new release gate scaffolds, installs and builds all three from the packed tarballs before anything is published.",
+    href: "/docs/getting-started",
+  },
+  {
+    title: "0.11.1 — sturdier on real pages",
+    blurb: "Elements removed by a page swap no longer linger as invisible bodies; destroy() from inside a field callback really stops the field; the mobile address bar no longer resets the swarm; the quality governor runs on the display's real frame rate (a 30 Hz screen isn't held at reduced quality); and an unchanged overlay isn't redrawn every frame.",
+  },
+  {
+    title: "Rust — a fourth, headless plane",
+    blurb: "An experimental f64, seeded, zero-dependency Rust crate for servers and data pipelines, where a body is a data record: 36 of the 37 forces, solve() to equilibrium, deterministic snapshot + causal replay, and a reading layer (scores, clusters, relations). Not yet published to crates.io.",
+    href: "/docs/implementations",
+  },
+  {
+    title: "Height-aware fields — `relief`",
+    blurb: "The 37th force: a host-declared scalar channel (addField) becomes a potential the swarm descends — terrain as a cause, on JS, Swift and Kotlin.",
+    href: "/docs/api/forces",
+  },
+  {
+    title: "The reproducibility envelope is queryable",
+    blurb: "FieldHandle.guarantees states what a run promises — which paths are deterministic and what isn't — and agent read scopes (read:snapshots, read:diagnostics, a fractional agentRead budget) are enforced, not just declared.",
     href: "/docs/api/handle",
   },
   {
-    title: "“recipe” is now “Pattern”",
-    blurb: "The authored composed-arrangement concept is renamed to a Field Pattern, end to end: FieldPattern / compilePattern / applyPattern / FIELD_PATTERNS in the API, mirrored on the Swift + Kotlin ports. Every old recipe-named symbol still works as a deprecation alias (removed at 1.0), so nothing breaks.",
-    href: "/docs/api/stability",
+    title: "Native ports, kept in step",
+    blurb: "Swift and Kotlin track the JS engine — the shared cross-plane golden pins the six canonical deterministic forces within a stated tolerance, and FIELD_VERSION moves in lockstep across JS, Swift, Kotlin and Rust.",
+    href: "/docs/api/parity",
   },
   {
-    title: "Android — a native Kotlin port",
-    blurb: "The engine now runs natively on Android: same package layout, API surface, and physics as the JS and Swift packages, held to the same shared cross-plane golden. Ships a Jetpack Compose host (FieldView + Modifier.fieldBody), an imperative View host, and a desktop FieldLab. In active development on the android branch.",
-    href: "/docs/guides/kotlin",
-  },
-  {
-    title: "Warm palette by default",
-    blurb: "The field renders on a warm cool→warm ramp out of the box — the same palette across the JS core and the Swift port.",
-    href: "/docs/diagnostics",
-  },
-  {
-    title: "Bodies track scroll smoothly",
-    blurb: "Attractors no longer snap in 6-frame steps while you scroll — the swarm follows the page continuously, no more pausing.",
-  },
-  {
-    title: "Tag-tint — particles wear their tag's colour",
-    blurb: "Any body with data-color now stains the nearby swarm toward its hue at render time, so a tagged region reads in its own colour even on a sparse field.",
-  },
-  {
-    title: "gridWarp — tunable grid distortion",
-    blurb: "A new FieldOption (and <field-root grid-warp>) scales the grid overlay's deformation, so the field's bending of the reference lattice can be exaggerated for demos.",
-    href: "/docs/diagnostics",
-  },
-  {
-    title: "The homepage is a full narrative now",
-    blurb: "Substrate → natural fields → forces → system → gallery, end to end over the live engine — and every concept and all 36 forces link straight to their exact reference.",
-    href: "/docs/api/forces",
+    title: "Focus / attention substrate",
+    blurb: "Operator attention as an input, agent attention as an output: field.focus(target, { source }) deposits decaying, source-tagged focus; field.focusState() is the ranked digest an agent reads; metrics.salience rides query()/snapshot().",
+    href: "/docs/api/handle",
   },
 ];
