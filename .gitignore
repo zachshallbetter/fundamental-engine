@@ -69,10 +69,16 @@ apps/site/public/llms-full.txt
 # observatory: the bundle is a generated capture, re-emitted from the runtime
 apps/observatory/public/bundle.json
 
-# Agent guidance is local tooling config, not repository content.
-CLAUDE.md
-AGENTS.md
-.agents/
+# Root-level agent files stay local tooling config. The shared, tool-agnostic agent knowledge base
+# lives in .agents/ and IS tracked — re-included explicitly, because many global gitignores (and
+# .git/info/exclude files) ignore `.agents/` and `AGENTS.md` everywhere; repo rules take precedence.
+# Only its generated corpus (tools/gen-llms.py → .agents/llms*.txt) stays ignored.
+/CLAUDE.md
+/AGENTS.md
+!.agents/
+!.agents/**
+.agents/llms*.txt
+.agents/**/.DS_Store
 apps/llms-full-fe.txt
 
 # RC-7 gate output on the runner (scripts/perf, perf-hardware.yml); committed measurements live in docs/planning/perf-measurements/
