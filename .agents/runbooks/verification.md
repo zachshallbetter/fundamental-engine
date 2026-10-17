@@ -29,7 +29,17 @@ const host: FieldHost = {
   rebuilt. `field.query()` / `snapshot()` give bodies and metrics.
 - Node ≥ 22 runs `.ts` directly (type stripping) — but not TS parameter properties
   (`constructor(readonly x)`); write those out.
-- **Always prove the test fails without the fix**: `git stash push -m <tag> -- <fixed-file>`, run, pop.
+- **Always prove the test fails without the fix.** Simplest and safe with parallel worktrees: run the
+  test against the old file without stashing — `git show origin/main:<fixed-file> > /tmp/old && cp
+  <fixed-file> /tmp/new && cp /tmp/old <fixed-file>`, run, then `cp /tmp/new <fixed-file>`. If you do
+  stash, pop **by identity**, never bare: the stash stack is shared by every worktree, so a bare
+  `git stash pop` can apply another task's entry.
+  ```sh
+  git stash push -m verify-old-<branch> -- <fixed-file>
+  ref=$(git stash list --format='%gd %gs' | awk '/verify-old-<branch>/{print $1; exit}')
+  # run the test, then:
+  git stash pop "$ref"
+  ```
   If the test file itself imports new symbols, copy just the relevant test against the old source.
 
 ## 2. A bundler (tree-shaking, packaging)

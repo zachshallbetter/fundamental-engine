@@ -1,7 +1,8 @@
 # AGENTS.md — working on Fundamental
 
 The entry point for any agent or person picking up work in this repository — Claude, another model, or a
-human. It is tool-agnostic: plain markdown, plain shell. Read this file first, then the runbook or
+human. (The tracked root [`AGENTS.md`](../AGENTS.md) is a stub that points here, so tools that discover
+`AGENTS.md` from any subdirectory find these rules.) It is tool-agnostic: plain markdown, plain shell. Read this file first, then the runbook or
 knowledge file for the job in front of you. Everything here was verified against the code and the live
 infrastructure on the date in each file; when this guide and the code disagree, **the code wins** — fix
 the guide in the same PR.

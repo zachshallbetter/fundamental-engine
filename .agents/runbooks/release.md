@@ -20,8 +20,10 @@ as executed for **0.11.1** on 2026-10-14 (#1247, tag `v0.11.1` on merge commit `
 
 In a worktree on `origin/main`, branch `release/X.Y.Z`:
 
-1. **Packages**: `pnpm --filter "./packages/*" exec npm version patch --no-git-tag-version`
-   (path filter, never the `@fundamental-engine/*` name glob — that also bumps the private apps).
+1. **Packages**: `pnpm --filter "./packages/*" exec npm version X.Y.Z --no-git-tag-version` — the exact
+   version chosen in pre-flight (`patch` / `minor` / `major` also work, but an explicit version can't
+   drift from the tag). Path filter, never the `@fundamental-engine/*` name glob — that also bumps the
+   private apps.
    `npm version` rewrites `—` escapes in `description` fields as literal em dashes; restore the
    escapes so the diff is version lines only.
 2. **`FIELD_VERSION` on every plane** (each has a lockstep test that reds its CI job if missed):

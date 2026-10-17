@@ -69,12 +69,13 @@ apps/site/public/llms-full.txt
 # observatory: the bundle is a generated capture, re-emitted from the runtime
 apps/observatory/public/bundle.json
 
-# Root-level agent files stay local tooling config. The shared, tool-agnostic agent knowledge base
-# lives in .agents/ and IS tracked — re-included explicitly, because many global gitignores (and
-# .git/info/exclude files) ignore `.agents/` and `AGENTS.md` everywhere; repo rules take precedence.
-# Only its generated corpus (tools/gen-llms.py → .agents/llms*.txt) stays ignored.
+# Agent knowledge base: tracked. The root AGENTS.md is a tracked stub (tools discover AGENTS.md by
+# walking up from the working directory) that delegates to .agents/AGENTS.md. Both are re-included
+# explicitly, because many global gitignores (and .git/info/exclude files) ignore `.agents/` and
+# `AGENTS.md` everywhere; repo rules take precedence. A root CLAUDE.md stays local tooling config, and
+# the generated corpus (tools/gen-llms.py → .agents/llms*.txt) stays ignored.
 /CLAUDE.md
-/AGENTS.md
+!/AGENTS.md
 !.agents/
 !.agents/**
 .agents/llms*.txt
