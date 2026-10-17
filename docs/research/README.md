@@ -150,6 +150,14 @@ generalizing expansion family.
 |---|---|---|---|
 | 31 | [`31-behavioral-models-after-boids.md`](31-behavioral-models-after-boids.md) | **Substrate, Not Spectacle: Behavioral Models After Boids** | A source-grounded comparison with Reynolds' *Boids* (1987): shared mechanism (local neighborhoods, the three rules by name, spatial-hash neighbors), the per-axis better/worse/something-else verdict, the explainability↔arbitration tradeoff, and behavioral models as computation substrate. Comparison/positioning, not an empirical study. |
 
+## Applied papers (32–)
+
+The Fundamental kernels used outside the DOM, on a real system, with the code as the source of truth.
+
+| # | File | Title | Summary |
+|---|---|---|---|
+| 32 | [`32-relational-fe-graph.md`](32-relational-fe-graph.md) | **Relational Field Reading over a Household Evidence Graph** | A household assistant's stores projected into one graph whose every edge carries its sources, an epistemic state, a causality rung and a reason; Fundamental's kernels read it into who/what/where/when/why answers per viewer, with derived details inheriting their most private source. Applied; numbers from the implementation's own tests. |
+
 ## Conventions
 
 - **Audience & register.** Technical-preprint (arXiv) voice: precise, citable, honest about
