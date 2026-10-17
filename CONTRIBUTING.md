@@ -3,6 +3,11 @@
 Thanks for your interest. This guide covers the setup, the conventions that keep the
 codebase coherent, and the workflow for the most common change — adding a force.
 
+For the operating knowledge behind it — the release runbook, what each gate and CI job means when it is
+red, how to verify a change in a browser or from the registry, verified engine facts and the current
+open-work list — read [`.agents/AGENTS.md`](.agents/AGENTS.md). It is written for AI agents and people
+alike.
+
 ## Setup
 
 ```sh

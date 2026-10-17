@@ -3,7 +3,7 @@
  * resolves to a real file. External (http/https/mailto) links and pure #anchors are out
  * of scope — this guards the class of breakage refactors cause (a doc moves, ten links rot).
  *
- * Scanned: every *.md at the repo root, docs/ (recursively), and the package READMEs.
+ * Scanned: every *.md at the repo root, docs/ and .agents/ (recursively), and the package READMEs.
  * Run: `pnpm check:links` (wired into pr-checks.yml).
  *
  * ALSO scans every TRACKED source file for committed merge-conflict markers (#1168). That belongs
@@ -19,7 +19,7 @@ import { dirname, join, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 
-// Collect markdown files: root-level, docs/ (recursive), and each package README.
+// Collect markdown files: root-level, docs/ and .agents/ (recursive), and each package README.
 const files = [];
 for (const entry of readdirSync(root)) {
   if (entry.endsWith('.md')) files.push(join(root, entry));
@@ -32,6 +32,8 @@ const walk = (dir) => {
   }
 };
 walk(join(root, 'docs'));
+// the tracked agent knowledge base (generated .agents/llms*.txt are not markdown, so not scanned)
+if (existsSync(join(root, '.agents'))) walk(join(root, '.agents'));
 for (const pkg of readdirSync(join(root, 'packages'))) {
   const readme = join(root, 'packages', pkg, 'README.md');
   if (existsSync(readme)) files.push(readme);
