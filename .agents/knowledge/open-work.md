@@ -1,4 +1,4 @@
-# Open work — status as of 2026-10-16
+# Open work — status as of 2026-10-19
 
 What is open, in flight, or deliberately left, with evidence and a concrete next step. IDs like `M7`
 refer to [`docs/analysis/engine-audit-2026-10-14.md`](../../docs/analysis/engine-audit-2026-10-14.md).
@@ -14,8 +14,8 @@ changes.
 
 | ID | What | Evidence / where | Next step |
 |---|---|---|---|
-| #1207 | `reaction: true` not deterministic across repeated runs in one process | issue repro; module-level probe in `core/src/engine/streamlines.ts` | Fix PR #1208 exists but CONFLICTS (history rewrite) — rebuild on `main` with its owner's OK; add an "N identical runs → byte-identical" test |
-| #1176 | parity `force-tokens` counts registration, not reachability | issue; Kotlin `warp` case | Kotlin fix #1175 CONFLICTS — rebuild; then make the parity gate drive each force through each plane's host API and assert an effect |
+| #1207 | `reaction: true` not deterministic across repeated runs in one process | PR #1208 identifies construction-time clock origin as the mechanism; the original shared-probe explanation was a hypothesis | Fix PR #1208 conflicts; inspect its shared merge base, preserve repeated-run regression coverage, reconcile newer main changes, and re-run gates under #1274 |
+| #1176 | parity `force-tokens` counts registration, not reachability | issue; Kotlin `warp` case | Kotlin fix #1175 conflicts; recover with public pairing-path tests under #1274, then address the broader reachability gate |
 | M7 | reduced-motion gaps: `burst()` sparks gated at boot (`field.ts` ~334/923), threads/waves animate from wall clock, `bindFieldNav` checks only at bind; `prefersReducedMotion()` allocates a `MediaQueryList` per frame | audit (code trace) | read reduced motion live in the spark gate; scale wall-clock animations by the motion budget; cache the media query |
 | M10 | `query()`/`snapshot()` relationships are only `addEdge` edges — pattern/DOM relationships invisible to the read API | `field.ts` `programmaticEdges` in query/snapshot | decide: merge `RelationshipRegistry` edges into readings, or document the split as the contract |
 | M5 | `<field-root>` runs up to three rAF loops (platform runtime, engine, pattern drive) interleaving writes and layout reads in one frame | `elements/src/platform-runtime.ts`, `field.ts` measure/movers/threads, `dom/src/apply-recipe.ts` | consolidate onto the six-phase scheduler or order reads before writes |
@@ -33,11 +33,18 @@ changes.
 
 ## Repository state
 
-- **14 open PRs CONFLICT because of the 2026-10-14 history rewrite** (their branches no longer share a
-  merge base with `main`): #1175, #1179, #1180, #1208, #1209, #1210, #1211, #1212, #1213, #1214, #1215,
-  #1216, #1217, #1221. #1219, #1229, #1237 are mergeable. Each conflicting one needs the rebuild recipe
-  in [`runbooks/workflow.md`](../runbooks/workflow.md#recovering-from-a-history-rewrite) — with the owner's
-  OK, since it force-pushes their branch.
+- **14 open PRs report conflicts**: #1175, #1179, #1180, #1208, #1209, #1210, #1211, #1212, #1213,
+  #1214, #1215, #1216, #1217, #1221. Current comparisons of all 17 open heads against `main` at
+  `9fdea89b` find shared merge bases; the previous blanket no-ancestry claim was inaccurate. Inspect
+  actual conflicts before choosing merge resolution or a separate recovery branch; see
+  [`runbooks/workflow.md`](../runbooks/workflow.md#recovering-from-a-history-rewrite) and #1274.
+- #1219 is clean with retrieved passing checks; review its interaction with #1216. #1229 is clean
+  but explicitly held as a draft/do-not-merge. #1237 is mergeable but browser e2e and `conclusion`
+  fail; diagnose those failures separately from ancestry/conflict recovery.
+- Convergence #1274 tracks recovery and epic reconciliation; #1269 tracks contract investigations
+  and site case studies; #1270 tracks comparative consumer audits, feeding #1271–#1273. #1111 remains
+  parked research. Issue closure, merged implementation, released behavior and empirical validation
+  are separate states.
 - Perf (hardware) has rows that flake by one vsync step (see
   [`runbooks/gates-and-ci.md`](../runbooks/gates-and-ci.md#perf-hardware-on-the-titan-gpu-runner));
   `trails dprCap=1 density=64` is the most recent. Re-measure through the workflow if a row keeps

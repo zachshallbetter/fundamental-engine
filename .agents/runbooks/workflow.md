@@ -54,12 +54,25 @@ reports a usage limit, there was no review.
 
 ## Recovering from a history rewrite
 
-On 2026-10-14 (23:18 and 00:52 UTC) a bulk force-push rewrote ~45 branches and re-pushed old tags,
-stripping signatures and attribution trailers while leaving every tree identical. `main` was not
-rewritten (it can't be force-pushed), so every rewritten branch lost its merge base with `main` and its
-PR shows **CONFLICTING**. Merging `origin/main` into such a branch would drag the entire old history back.
+The earlier recovery record reports a bulk branch/tag rewrite around 2026-10-14. That record does
+**not** establish the current ancestry of a branch. On 2026-10-19, GitHub comparisons of all 17 open
+PR heads against `main` at `9fdea89b` found a shared merge base; 14 PRs nevertheless reported merge
+conflicts. The implementation branches (including #1175, #1208 and #1219) share `8f6861d3`; the
+paper and snapshot branches have different shared bases. See convergence epic #1274.
 
-Rebuild instead (needs the branch owner's / maintainer's OK, since it force-pushes their branch):
+Inspect each current branch before choosing recovery:
+
+1. Fetch current refs and record base/head SHAs. Use `git merge-base origin/main <head>` and inspect
+   `git diff <merge-base> <head>` plus the current-main changes in overlapping files.
+2. With shared ancestry, resolve the actual conflicts on an owned worktree/branch, preserving both
+   the intended change and newer fixes. A merge conflict alone is not evidence of unrelated history.
+3. If ancestry is genuinely unrelated, or a reviewed net change is easier to recover independently,
+   create a fresh recovery branch from current `main`, apply only that change, test it, and open a
+   linked replacement PR. Keep the original branch until the replacement is reviewed.
+4. Re-run relevant gates on the recovered base. Historical green runs are not current-main evidence.
+
+Rebuilding an existing branch is optional, not the default. It needs the branch owner's / maintainer's
+OK because it rewrites that branch; use an exact lease and inspect the intended net diff first:
 
 ```sh
 git fetch origin
