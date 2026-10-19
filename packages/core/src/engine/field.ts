@@ -866,6 +866,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const onUpdateBody = scheduleScan; // attrs/geometry changed → re-scan (coalesced)
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
   const t0 = wallNow();
+  // Simulation phase starts at the first frame, independently of construction wall time (#1207).
+  // Keep t0 for input-idle tracking, which deliberately uses the host's wall clock.
+  let simT0: number | undefined;
 
   const env: Env = {
     dx: 0,
@@ -2903,7 +2906,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   function frame(now: number): void {
     if (destroyed) return; // a host whose cancelRaf can't reach an already-queued callback
     frameN++;
-    env.t = (now - t0) / 1000;
+    if (simT0 === undefined) simT0 = now;
+    env.t = (now - simT0) / 1000;
     env.frameN = frameN;
     // Frame-rate-independent timestep (#434): dt is the real frame interval normalized to a
     // 60fps baseline (≈1 at 60fps, ≈0.5 at 120fps, ≈2 at 30fps), clamped so a long stall
