@@ -9,6 +9,8 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
 
 ### Fixed
 
+- **Seeded runs no longer depend on construction-to-first-frame delay** (`@fundamental-engine/core`, #1207; recovery of #1208). Simulation time starts at the first frame rather than construction wall time, so time-dependent forces begin at a defined phase. Input-idle tracking retains its wall-clock origin. Regression tests compare output bits across repeated runs, delayed first frames, and shifted host timestamps; this does not promise identical results across different frame intervals, geometry, or planes.
+
 - **`mountXRay`: the hotkey no longer fires while you type, and the panel follows a swapped `<body>`** (`@fundamental-engine/dom`). `onKey` toggled the panel on any keydown whose key matched, so typing `?` into a search box, a form field or a contenteditable editor opened and closed it; it now ignores the hotkey when the event target or the focused element is editable, or with Ctrl/Meta/Alt held (Escape still closes). The panel's parent was captured as `document.body` at mount, so under an SPA router that replaces `<body>` (Astro view transitions) the panel was appended to the detached old body and the hotkey seemed to do nothing; the parent is now resolved when the panel opens. Found wiring x-ray into zachshallbetter.com.
 
 ### Site
