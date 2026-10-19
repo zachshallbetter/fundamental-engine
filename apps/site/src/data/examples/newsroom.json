@@ -1,248 +1,248 @@
 {
-  "source": "Wikimedia pageviews API — en.wikipedia most-read, 2026/06/08 (trend vs 2026/06/07)",
+  "source": "Wikimedia pageviews API — en.wikipedia most-read, 2026/10/17 (trend vs 2026/10/16)",
   "license": "CC0",
-  "snapshotAt": "2026-06-10T00:38:26.143Z",
-  "day": "2026/06/08",
+  "snapshotAt": "2026-10-19T13:23:57.979Z",
+  "day": "2026/10/17",
   "articles": [
     {
-      "title": "Obsession (2025 film)",
-      "slug": "Obsession_(2025_film)",
-      "views": 291972,
-      "rank": 4,
-      "priorViews": 303010,
-      "url": "https://en.wikipedia.org/wiki/Obsession_(2025_film)"
+      "title": "Ying",
+      "slug": "Ying",
+      "views": 886855,
+      "rank": 2,
+      "priorViews": null,
+      "url": "https://en.wikipedia.org/wiki/Ying"
     },
     {
-      "title": "2026 Peruvian general election",
-      "slug": "2026_Peruvian_general_election",
-      "views": 281754,
+      "title": "Katie Zacharia",
+      "slug": "Katie_Zacharia",
+      "views": 539932,
       "rank": 5,
-      "priorViews": 34164,
-      "url": "https://en.wikipedia.org/wiki/2026_Peruvian_general_election"
+      "priorViews": 737664,
+      "url": "https://en.wikipedia.org/wiki/Katie_Zacharia"
     },
     {
-      "title": "2026 FIFA World Cup",
-      "slug": "2026_FIFA_World_Cup",
-      "views": 264644,
+      "title": "Jailer 2",
+      "slug": "Jailer_2",
+      "views": 341183,
       "rank": 6,
-      "priorViews": 238040,
-      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup"
+      "priorViews": 378259,
+      "url": "https://en.wikipedia.org/wiki/Jailer_2"
     },
     {
-      "title": "Backrooms (film)",
-      "slug": "Backrooms_(film)",
-      "views": 174832,
+      "title": "You Can See Everything",
+      "slug": "You_Can_See_Everything",
+      "views": 221438,
       "rank": 7,
-      "priorViews": 213709,
-      "url": "https://en.wikipedia.org/wiki/Backrooms_(film)"
+      "priorViews": 191594,
+      "url": "https://en.wikipedia.org/wiki/You_Can_See_Everything"
     },
     {
-      "title": "Alexander Zverev",
-      "slug": "Alexander_Zverev",
-      "views": 163973,
+      "title": "Elizabeth Holmes",
+      "slug": "Elizabeth_Holmes",
+      "views": 220338,
       "rank": 8,
-      "priorViews": 476702,
-      "url": "https://en.wikipedia.org/wiki/Alexander_Zverev"
+      "priorViews": 174341,
+      "url": "https://en.wikipedia.org/wiki/Elizabeth_Holmes"
     },
     {
-      "title": "Masters of the Universe (2026 film)",
-      "slug": "Masters_of_the_Universe_(2026_film)",
-      "views": 155937,
+      "title": "Street Fighter (2026 film)",
+      "slug": "Street_Fighter_(2026_film)",
+      "views": 192150,
       "rank": 9,
-      "priorViews": 190411,
-      "url": "https://en.wikipedia.org/wiki/Masters_of_the_Universe_(2026_film)"
+      "priorViews": 176357,
+      "url": "https://en.wikipedia.org/wiki/Street_Fighter_(2026_film)"
     },
     {
-      "title": "Christian Eriksen",
-      "slug": "Christian_Eriksen",
-      "views": 139845,
+      "title": "Deva (composer)",
+      "slug": "Deva_(composer)",
+      "views": 185478,
       "rank": 10,
-      "priorViews": 185631,
-      "url": "https://en.wikipedia.org/wiki/Christian_Eriksen"
+      "priorViews": null,
+      "url": "https://en.wikipedia.org/wiki/Deva_(composer)"
+    },
+    {
+      "title": "Kaviya Maran",
+      "slug": "Kaviya_Maran",
+      "views": 179926,
+      "rank": 11,
+      "priorViews": 22821,
+      "url": "https://en.wikipedia.org/wiki/Kaviya_Maran"
+    },
+    {
+      "title": "Karoline Leavitt",
+      "slug": "Karoline_Leavitt",
+      "views": 122749,
+      "rank": 12,
+      "priorViews": 130439,
+      "url": "https://en.wikipedia.org/wiki/Karoline_Leavitt"
+    },
+    {
+      "title": "Anirudh Ravichander",
+      "slug": "Anirudh_Ravichander",
+      "views": 120021,
+      "rank": 13,
+      "priorViews": 20553,
+      "url": "https://en.wikipedia.org/wiki/Anirudh_Ravichander"
     },
     {
       "title": "Deaths in 2026",
       "slug": "Deaths_in_2026",
-      "views": 132986,
-      "rank": 11,
-      "priorViews": 126945,
+      "views": 119712,
+      "rank": 14,
+      "priorViews": 128195,
       "url": "https://en.wikipedia.org/wiki/Deaths_in_2026"
     },
     {
-      "title": "Peddi",
-      "slug": "Peddi",
-      "views": 128308,
-      "rank": 12,
-      "priorViews": 137665,
-      "url": "https://en.wikipedia.org/wiki/Peddi"
-    },
-    {
-      "title": "79th Tony Awards",
-      "slug": "79th_Tony_Awards",
-      "views": 127279,
-      "rank": 13,
-      "priorViews": 21517,
-      "url": "https://en.wikipedia.org/wiki/79th_Tony_Awards"
-    },
-    {
-      "title": "Killing of Rachel Nickell",
-      "slug": "Killing_of_Rachel_Nickell",
-      "views": 117991,
-      "rank": 14,
-      "priorViews": 164794,
-      "url": "https://en.wikipedia.org/wiki/Killing_of_Rachel_Nickell"
-    },
-    {
-      "title": "Spencer Pratt",
-      "slug": "Spencer_Pratt",
-      "views": 116916,
+      "title": "Crystal Lake (TV series)",
+      "slug": "Crystal_Lake_(TV_series)",
+      "views": 119548,
       "rank": 15,
-      "priorViews": 40672,
-      "url": "https://en.wikipedia.org/wiki/Spencer_Pratt"
+      "priorViews": 131900,
+      "url": "https://en.wikipedia.org/wiki/Crystal_Lake_(TV_series)"
     },
     {
-      "title": "Scary Movie (2026 film)",
-      "slug": "Scary_Movie_(2026_film)",
-      "views": 114201,
+      "title": "Ansel Adams",
+      "slug": "Ansel_Adams",
+      "views": 96814,
       "rank": 16,
-      "priorViews": 141030,
-      "url": "https://en.wikipedia.org/wiki/Scary_Movie_(2026_film)"
+      "priorViews": 70632,
+      "url": "https://en.wikipedia.org/wiki/Ansel_Adams"
     },
     {
-      "title": "Stacey King",
-      "slug": "Stacey_King",
-      "views": 110003,
+      "title": "Kalanithi Maran",
+      "slug": "Kalanithi_Maran",
+      "views": 96131,
       "rank": 17,
-      "priorViews": 128512,
-      "url": "https://en.wikipedia.org/wiki/Stacey_King"
+      "priorViews": 16410,
+      "url": "https://en.wikipedia.org/wiki/Kalanithi_Maran"
     },
     {
-      "title": "Inde Navarrette",
-      "slug": "Inde_Navarrette",
-      "views": 105410,
+      "title": "Call of Duty: Modern Warfare 4",
+      "slug": "Call_of_Duty:_Modern_Warfare_4",
+      "views": 95060,
       "rank": 18,
-      "priorViews": 108420,
-      "url": "https://en.wikipedia.org/wiki/Inde_Navarrette"
+      "priorViews": 30898,
+      "url": "https://en.wikipedia.org/wiki/Call_of_Duty:_Modern_Warfare_4"
     },
     {
-      "title": "ChatGPT",
-      "slug": "ChatGPT",
-      "views": 105017,
+      "title": "Whalefall (film)",
+      "slug": "Whalefall_(film)",
+      "views": 83722,
       "rank": 19,
-      "priorViews": 82585,
-      "url": "https://en.wikipedia.org/wiki/ChatGPT"
+      "priorViews": 90394,
+      "url": "https://en.wikipedia.org/wiki/Whalefall_(film)"
     },
     {
-      "title": "Ford Creek Patrol Cabin",
-      "slug": "Ford_Creek_Patrol_Cabin",
-      "views": 104947,
+      "title": "Carrie (miniseries)",
+      "slug": "Carrie_(miniseries)",
+      "views": 83061,
       "rank": 20,
-      "priorViews": null,
-      "url": "https://en.wikipedia.org/wiki/Ford_Creek_Patrol_Cabin"
+      "priorViews": 86538,
+      "url": "https://en.wikipedia.org/wiki/Carrie_(miniseries)"
     },
     {
-      "title": "Nelly Korda",
-      "slug": "Nelly_Korda",
-      "views": 104138,
+      "title": "Shaun Wright-Phillips",
+      "slug": "Shaun_Wright-Phillips",
+      "views": 81151,
       "rank": 21,
-      "priorViews": 71061,
-      "url": "https://en.wikipedia.org/wiki/Nelly_Korda"
+      "priorViews": null,
+      "url": "https://en.wikipedia.org/wiki/Shaun_Wright-Phillips"
     },
     {
-      "title": "Nithya Raman",
-      "slug": "Nithya_Raman",
-      "views": 100163,
+      "title": "Lyn May",
+      "slug": "Lyn_May",
+      "views": 80905,
       "rank": 22,
-      "priorViews": 24901,
-      "url": "https://en.wikipedia.org/wiki/Nithya_Raman"
+      "priorViews": 18834,
+      "url": "https://en.wikipedia.org/wiki/Lyn_May"
     },
     {
-      "title": "Michael Jackson",
-      "slug": "Michael_Jackson",
-      "views": 96378,
+      "title": "Nathan Fielder",
+      "slug": "Nathan_Fielder",
+      "views": 78129,
       "rank": 23,
-      "priorViews": 114842,
-      "url": "https://en.wikipedia.org/wiki/Michael_Jackson"
+      "priorViews": 56216,
+      "url": "https://en.wikipedia.org/wiki/Nathan_Fielder"
     },
     {
-      "title": "2026 Armenian parliamentary election",
-      "slug": "2026_Armenian_parliamentary_election",
-      "views": 93251,
+      "title": "Tenzing Norgay",
+      "slug": "Tenzing_Norgay",
+      "views": 77394,
       "rank": 24,
-      "priorViews": 83116,
-      "url": "https://en.wikipedia.org/wiki/2026_Armenian_parliamentary_election"
+      "priorViews": 34220,
+      "url": "https://en.wikipedia.org/wiki/Tenzing_Norgay"
+    },
+    {
+      "title": "RJ Mitte",
+      "slug": "RJ_Mitte",
+      "views": 75818,
+      "rank": 25,
+      "priorViews": 108706,
+      "url": "https://en.wikipedia.org/wiki/RJ_Mitte"
+    },
+    {
+      "title": "Love of Your Life (film)",
+      "slug": "Love_of_Your_Life_(film)",
+      "views": 73069,
+      "rank": 26,
+      "priorViews": 48885,
+      "url": "https://en.wikipedia.org/wiki/Love_of_Your_Life_(film)"
+    },
+    {
+      "title": "Below (miniseries)",
+      "slug": "Below_(miniseries)",
+      "views": 70433,
+      "rank": 27,
+      "priorViews": 61428,
+      "url": "https://en.wikipedia.org/wiki/Below_(miniseries)"
+    },
+    {
+      "title": "Limonene",
+      "slug": "Limonene",
+      "views": 67373,
+      "rank": 28,
+      "priorViews": 71518,
+      "url": "https://en.wikipedia.org/wiki/Limonene"
+    },
+    {
+      "title": "Anthony Scaramucci",
+      "slug": "Anthony_Scaramucci",
+      "views": 66458,
+      "rank": 29,
+      "priorViews": 109623,
+      "url": "https://en.wikipedia.org/wiki/Anthony_Scaramucci"
+    },
+    {
+      "title": "VisionQuest",
+      "slug": "VisionQuest",
+      "views": 66450,
+      "rank": 30,
+      "priorViews": 81873,
+      "url": "https://en.wikipedia.org/wiki/VisionQuest"
     },
     {
       "title": ".xxx",
       "slug": ".xxx",
-      "views": 90002,
-      "rank": 25,
-      "priorViews": 48394,
+      "views": 64865,
+      "rank": 31,
+      "priorViews": 72780,
       "url": "https://en.wikipedia.org/wiki/.xxx"
     },
     {
-      "title": "Jalen Brunson",
-      "slug": "Jalen_Brunson",
-      "views": 87519,
-      "rank": 26,
-      "priorViews": 78204,
-      "url": "https://en.wikipedia.org/wiki/Jalen_Brunson"
-    },
-    {
-      "title": "Béla Pap",
-      "slug": "Béla_Pap",
-      "views": 86893,
-      "rank": 27,
-      "priorViews": null,
-      "url": "https://en.wikipedia.org/wiki/Béla_Pap"
-    },
-    {
-      "title": "Robert Napper",
-      "slug": "Robert_Napper",
-      "views": 86007,
-      "rank": 28,
-      "priorViews": 120791,
-      "url": "https://en.wikipedia.org/wiki/Robert_Napper"
-    },
-    {
-      "title": "Manav Suthar",
-      "slug": "Manav_Suthar",
-      "views": 84425,
-      "rank": 29,
-      "priorViews": 131908,
-      "url": "https://en.wikipedia.org/wiki/Manav_Suthar"
-    },
-    {
-      "title": "Teach You a Lesson",
-      "slug": "Teach_You_a_Lesson",
-      "views": 83358,
-      "rank": 30,
-      "priorViews": 88984,
-      "url": "https://en.wikipedia.org/wiki/Teach_You_a_Lesson"
-    },
-    {
-      "title": "FIFA World Cup",
-      "slug": "FIFA_World_Cup",
-      "views": 82434,
-      "rank": 31,
-      "priorViews": 68616,
-      "url": "https://en.wikipedia.org/wiki/FIFA_World_Cup"
-    },
-    {
-      "title": "Lewis Hamilton",
-      "slug": "Lewis_Hamilton",
-      "views": 78769,
+      "title": "The Diplomat (American TV series)",
+      "slug": "The_Diplomat_(American_TV_series)",
+      "views": 63563,
       "rank": 32,
-      "priorViews": 88231,
-      "url": "https://en.wikipedia.org/wiki/Lewis_Hamilton"
+      "priorViews": 52952,
+      "url": "https://en.wikipedia.org/wiki/The_Diplomat_(American_TV_series)"
     },
     {
-      "title": "2026 Gilgit Baltistan Assembly election",
-      "slug": "2026_Gilgit_Baltistan_Assembly_election",
-      "views": 77056,
+      "title": "Lizzie Borden",
+      "slug": "Lizzie_Borden",
+      "views": 62255,
       "rank": 33,
-      "priorViews": 32463,
-      "url": "https://en.wikipedia.org/wiki/2026_Gilgit_Baltistan_Assembly_election"
+      "priorViews": 54819,
+      "url": "https://en.wikipedia.org/wiki/Lizzie_Borden"
     }
   ]
 }
