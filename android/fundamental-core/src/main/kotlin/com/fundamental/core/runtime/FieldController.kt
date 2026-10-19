@@ -434,6 +434,18 @@ class FieldController(
     fun removeBody(body: Body): Boolean {
         // removing either endpoint automatically drops the edge (Swift FieldEngine parity).
         _edges.removeAll { it.from === body || it.to === body }
+        // ...and closes any wormhole pointed AT it (§22.3). This is the Kotlin form of the JS engine's
+        // `isConnected` severance: a throat whose partner has left the field must stop relocating
+        // matter rather than teleport it to a body the field no longer owns. Swift gets this from
+        // `weak var pairBody` (the reference nils itself); Kotlin has no weak property, so the
+        // severance is explicit — and it is also what releases the removed body for collection.
+        for (other in _bodies) {
+            if (other.pairBody === body) {
+                other.pairBody = null
+                other.warpHas = false
+                other.warpTarget = null
+            }
+        }
         bodyData.remove(body)
         return _bodies.remove(body)
     }
@@ -572,6 +584,46 @@ class FieldController(
         return n
     }
 
+    /**
+     * §22.3 relocate — refresh each `warp` throat's target from its paired body's LIVE centre.
+     *
+     * This is the resolution step the `Body.warpTarget`/`warpHas` comment has promised since those
+     * fields were ported and that was never written: without it `WarpForce.apply` returned at its
+     * first guard (`if (!body.warpHas …) return`) on every frame of every Kotlin field, so `warp` was
+     * a registered token with no reachable behaviour. Only a hand-written test fixture ever set
+     * `warpHas`, which is why the unit test passed while the runtime path never ran.
+     *
+     * Mirrors Swift `FieldEngine.step` (`if let pair = b.pairBody { b.warpTarget = pair.center;
+     * b.warpHas = true } else { b.warpHas = false }`), with two deliberate differences:
+     *
+     *  - **A second pass, not the measure loop itself.** Swift resolves pairings inside the same loop
+     *    that re-measures boxes, so a partner later in the body list is read at LAST frame's centre
+     *    while an earlier one is read at this frame's — the resolved target depends on registration
+     *    order. Running after every box is settled (which is also where JS runs `updateWarpTargets`,
+     *    after `measureBodies`) makes the target order-independent. No shipped Swift behaviour is
+     *    changed by observing this; it is noted here rather than acted on.
+     *  - **The visibility gate**, ported from JS (`if (b.pairBody.vis) … else b.warpHas = false`): an
+     *    off-screen partner exerts no force anywhere else in the engine, so it must not be a live
+     *    teleport destination either. Kotlin already maintains `isVisible` per body.
+     *
+     * The severance half of JS's check (a partner that has left the field) is handled at the point of
+     * removal in [removeBody] instead of re-scanned per frame.
+     *
+     * Costs one boolean write per body per tick and nothing else; a field with no pairing at all is
+     * behaviourally identical to before, which is why the conformance golden does not move.
+     */
+    private fun resolveWarpPairs() {
+        for (b in _bodies) {
+            val pair = b.pairBody
+            if (pair != null && pair.isVisible) {
+                b.warpTarget = pair.center
+                b.warpHas = true
+            } else {
+                b.warpHas = false
+            }
+        }
+    }
+
     /** Advance the field one frame: ease the formation, track programmatic bodies, apply flow, step. */
     fun tick(dt: Float = 1f) {
         // Loop-lifecycle guard (#605 mirror): a paused or destroyed field never advances. The
@@ -595,6 +647,7 @@ class FieldController(
         // introduced, port the JS compensation with its contained guard. Pinned by
         // ScrollTrackingTests.
         for (b in _bodies) b.rect?.let { b.box = it() }
+        resolveWarpPairs()
         store.reindex()
         for (g in grids.values) g.step()
         // flow focus: a transient pull toward a moving point, before the body forces integrate.
