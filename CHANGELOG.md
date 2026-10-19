@@ -9,6 +9,8 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
 
 ### Fixed
 
+- **Kotlin warp pairing is reachable through the public body API** (recovery of #1175). BodyHandle.pairWith resolves directed warp destinations after body measurement; BodySpec carries twist and scale. Removed or invisible partners close the link, and explicit unpairing clears the destination. Regression tests exercise the real controller using BodySpec.absorbR from current main rather than setting the radius through internals. Registration alone remains a separate parity-evidence concern (#1176).
+
 - **`mountXRay`: the hotkey no longer fires while you type, and the panel follows a swapped `<body>`** (`@fundamental-engine/dom`). `onKey` toggled the panel on any keydown whose key matched, so typing `?` into a search box, a form field or a contenteditable editor opened and closed it; it now ignores the hotkey when the event target or the focused element is editable, or with Ctrl/Meta/Alt held (Escape still closes). The panel's parent was captured as `document.body` at mount, so under an SPA router that replaces `<body>` (Astro view transitions) the panel was appended to the detached old body and the hotkey seemed to do nothing; the parent is now resolved when the panel opens. Found wiring x-ray into zachshallbetter.com.
 
 ### Site
