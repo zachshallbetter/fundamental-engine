@@ -1,7 +1,7 @@
 {
   "source": "GitHub status page API (githubstatus.com)",
   "license": "public status data",
-  "snapshotAt": "2026-06-10T00:38:23.460Z",
+  "snapshotAt": "2026-10-26T13:09:35.527Z",
   "components": [
     {
       "id": "8l4ygp009s5s",
@@ -78,68 +78,536 @@
   ],
   "incidents": [
     {
-      "id": "jpd6l1jq0r54",
-      "name": "Degraded availability for GitHub.com, GraphQL API, and Webhooks UI/API",
-      "impact": "none",
+      "id": "khv5nj9qy2kk",
+      "name": "Grok 4.6 and Grok 4.7 Service Issues",
+      "impact": "minor",
       "status": "resolved",
-      "createdAt": "2026-06-08T15:00:00.000Z",
-      "resolvedAt": "2026-06-08T15:00:00.000Z",
+      "createdAt": "2026-10-23T23:41:54.223Z",
+      "resolvedAt": "2026-10-24T00:23:32.689Z",
       "updates": [
         {
           "status": "resolved",
-          "at": "2026-06-09T15:48:39.389Z",
-          "body": "On June 8, 2026, between 14:49 and 14:54 UTC, a subset of requests to GitHub.com, the REST API, GraphQL API, and Webhooks UI/API experienced elevated error rates due to a transient infrastructure capacity issue that self-resolved within approximately 5 minutes. Users experienced "
+          "at": "2026-10-24T00:23:32.689Z",
+          "body": "This incident has been resolved. Thank you for your patience and understanding as we addressed this issue. A detailed root cause analysis will be shared as soon as it is available."
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-10-24T00:23:17.249Z",
+          "body": "The degradation affecting Copilot AI Model Providers has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-23T23:42:06.101Z",
+          "body": "We are experiencing degraded availability for the Grok 4.6 and Grok 4.7 models in Copilot products and IDE surfaces. This is due to an issue with an upstream model provider. While we work with them to resolve the issue, we recommend choosing another model or selecting 'Auto' to c"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-23T23:41:54.338Z",
+          "body": "We are investigating reports of degraded performance for Copilot AI Model Providers"
+        }
+      ],
+      "components": [
+        "Copilot AI Model Providers"
+      ]
+    },
+    {
+      "id": "71y513kjvbzh",
+      "name": "Disruption with Dependabot Alerts",
+      "impact": "minor",
+      "status": "resolved",
+      "createdAt": "2026-10-23T14:58:48.748Z",
+      "resolvedAt": "2026-10-23T18:51:24.490Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-10-23T18:51:24.490Z",
+          "body": "This incident has been resolved. Thank you for your patience and understanding as we addressed this issue. A detailed root cause analysis will be shared as soon as it is available."
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-10-23T18:36:15.053Z",
+          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-23T17:27:48.210Z",
+          "body": "Some Dependabot alerts continue to be delayed in closing after repository updates address a vulnerability. <br /><br />We're continuing to investigate and work to restore normal processing."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-23T16:43:03.822Z",
+          "body": "We’re continuing to investigate delays in some Dependabot alerts closing after affected repositories are updated. Alert processing remains backed up, and additional processing capacity is rolling out to help reduce the backlog. We’re monitoring progress and will share another upd"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-23T16:11:18.501Z",
+          "body": "We’re continuing to investigate delays in some Dependabot alerts closing after affected repositories are updated. Alert processing remains backed up, and additional processing capacity is rolling out to help reduce the backlog. We’re monitoring the rollout and will share another "
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-23T15:39:57.071Z",
+          "body": "We’re scaling alert processing capacity to reduce the backlog causing delays in some Dependabot alerts closing after affected repositories have been updated. We’re continuing to monitor and will share another update as more information becomes available."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-23T15:00:01.746Z",
+          "body": "We’re investigating delays in some Dependabot alerts closing after affected repositories have been updated to address a vulnerability. Alert processing is backed up. We’ll share more information as it becomes available."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-23T14:58:48.893Z",
+          "body": "We are investigating reports of impacted performance for some GitHub services."
         }
       ],
       "components": []
     },
     {
-      "id": "m7n7sm0sr1pz",
-      "name": "Pull Requests and Issues unavailable for signed-out users",
-      "impact": "critical",
+      "id": "ntrfd2jqldn6",
+      "name": "Delayed Actions status check results",
+      "impact": "minor",
       "status": "resolved",
-      "createdAt": "2026-06-08T07:11:37.583Z",
-      "resolvedAt": "2026-06-08T08:36:22.611Z",
+      "createdAt": "2026-10-23T07:29:03.081Z",
+      "resolvedAt": "2026-10-23T08:05:27.354Z",
       "updates": [
         {
           "status": "resolved",
-          "at": "2026-06-08T08:36:22.611Z",
+          "at": "2026-10-23T08:05:27.354Z",
           "body": "This incident has been resolved. Thank you for your patience and understanding as we addressed this issue. A detailed root cause analysis will be shared as soon as it is available."
         },
         {
           "status": "monitoring",
-          "at": "2026-06-08T08:35:21.138Z",
-          "body": "The degradation affecting Actions, Issues and Pull Requests has been mitigated. We are monitoring to ensure stability."
+          "at": "2026-10-23T07:56:35.639Z",
+          "body": "As of 07:27 UTC, Actions results are delivering within normal SLOs again.<br /><br />Thank you for this patience during this period of delayed Actions results delivery. Our team continues to monitor system health and explore refinements to reduce impact to customers in the future"
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-10-23T07:53:40.388Z",
+          "body": "The degradation affecting Actions has been mitigated. We are monitoring to ensure stability."
         },
         {
           "status": "investigating",
-          "at": "2026-06-08T08:27:48.817Z",
+          "at": "2026-10-23T07:31:54.566Z",
+          "body": "We are seeing delays in results from Actions workflows being reported within GitHub starting from 07:07 UTC.<br /><br />Recovery is already being seen but our team is continuing to investigate and monitor performance."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-23T07:29:03.320Z",
+          "body": "We are investigating reports of degraded performance for Actions"
+        }
+      ],
+      "components": [
+        "Actions"
+      ]
+    },
+    {
+      "id": "wq8305lppdc2",
+      "name": "Project updates delayed",
+      "impact": "minor",
+      "status": "resolved",
+      "createdAt": "2026-10-22T15:28:03.986Z",
+      "resolvedAt": "2026-10-23T02:30:25.221Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-10-23T02:30:25.221Z",
+          "body": "This incident has been resolved. Thank you for your patience and understanding as we addressed this issue. A detailed root cause analysis will be shared as soon as it is available."
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-10-23T00:55:18.035Z",
+          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T23:48:05.358Z",
+          "body": "GitHub Projects update processing has improved, but newly added items may still take longer than expected to appear. <br /><br />We're continuing to work on the remaining delays and monitor recovery."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T22:07:36.307Z",
+          "body": "Some GitHub Projects updates, including newly added items and changes to issues and pull requests, are still delayed.<br /><br />We have seen some recovery, and are working to add more capacity to accelerate the recovery."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T20:46:26.570Z",
+          "body": "Some GitHub Projects updates, including newly added items and changes to issues and pull requests, remain delayed.<br /><br />We've identified interruptions in update processing and are evaluating mitigations to restore normal operation."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T19:56:09.809Z",
+          "body": "Some GitHub Projects updates related to issue changes and merged pull requests are still delayed. We're investigating the remaining delays and working to restore normal processing."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T19:04:03.282Z",
+          "body": "Some updates in GitHub Projects are still delayed. We're continuing mitigation work and monitoring."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T18:26:31.116Z",
+          "body": "The other affected services have recovered. <br /><br />We're continuing to investigate GitHub Projects and verify that normal operation has been restored."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T17:43:44.874Z",
+          "body": "We're seeing recovery across the affected services. GitHub Projects is still recovering as queued updates are processed, and we're continuing to monitor for stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T17:41:38.697Z",
+          "body": "Actions, Issues, Packages and Pull Requests are operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T17:16:06.206Z",
+          "body": "We're seeing recovery after adding capacity, with errors decreasing. Some users may still experience errors loading Issues, Pull Requests and search results on github.com. <br /><br />We're continuing to work towards full recovery and monitoring for stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T16:41:52.512Z",
+          "body": "Some users continue to experience errors loading Issues, Pull Requests, package listings and search results on github.com. <br /><br />We're working through multiple mitigation efforts and continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T16:35:07.604Z",
+          "body": "API Requests is operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T16:28:56.822Z",
+          "body": "Packages is experiencing degraded performance. We are continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T16:26:16.966Z",
+          "body": "API Requests is experiencing degraded performance. We are continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T16:08:04.783Z",
+          "body": "Some users continue to experience intermittent errors loading Issues, Pull Requests and search results on github.com. <br /><br />We're investigating and evaluating mitigation options to restore normal service."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T15:33:52.378Z",
+          "body": "Some users may experience intermittent errors loading Issues, Pull Requests and search results on github.com. <br /><br />We're investigating and working to restore normal service."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T15:28:04.258Z",
+          "body": "We are investigating reports of degraded performance for Actions, Issues and Pull Requests"
+        }
+      ],
+      "components": [
+        "API Requests",
+        "Issues",
+        "Pull Requests",
+        "Actions",
+        "Packages"
+      ]
+    },
+    {
+      "id": "q29p76qtnkyk",
+      "name": "Incident with Actions Results",
+      "impact": "minor",
+      "status": "resolved",
+      "createdAt": "2026-10-22T14:18:15.723Z",
+      "resolvedAt": "2026-10-22T15:18:46.284Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-10-22T15:18:46.284Z",
+          "body": "This incident has been resolved. Thank you for your patience and understanding as we addressed this issue. A detailed root cause analysis will be shared as soon as it is available."
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-10-22T15:18:41.559Z",
+          "body": "GitHub Actions workflow and step result processing has recovered. Repository update processing has also returned to normal."
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-10-22T15:17:23.929Z",
+          "body": "The degradation affecting Actions has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T15:06:35.474Z",
+          "body": "We’re seeing recovery, and repository update processing has returned to normal. Delays affecting GitHub Actions workflow and step results are continuing to clear as we scale processing capacity; the remaining backlog is expected to take about 20 minutes to drain."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T14:35:29.241Z",
+          "body": "Repository update processing has recovered. We’re continuing to work on delays affecting GitHub Actions workflow and step results. We’ll share another update as we make progress."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T14:19:32.589Z",
+          "body": "We’re investigating delays in processing GitHub Actions workflow and step results, along with some repository updates."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-22T14:18:15.815Z",
+          "body": "We are investigating reports of degraded performance for Actions"
+        }
+      ],
+      "components": [
+        "Actions"
+      ]
+    },
+    {
+      "id": "nms1dpzmh9d9",
+      "name": "Delays for Pull Requests and Webhook deliveries",
+      "impact": "critical",
+      "status": "resolved",
+      "createdAt": "2026-10-21T14:52:49.979Z",
+      "resolvedAt": "2026-10-21T19:22:52.633Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-10-21T19:22:52.633Z",
+          "body": "This incident has been resolved. Thank you for your patience and understanding as we addressed this issue. A detailed root cause analysis will be shared as soon as it is available."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T19:22:38.037Z",
+          "body": "Pull request updates, Actions, and webhook deliveries have recovered. Audit log delays are now below 40 minutes, within the healthy threshold, and continue to decrease as the remaining backlog is processed."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T18:52:50.073Z",
+          "body": "Audit log events continue to recover, with delays now below 70 minutes. We’ve applied mitigations to speed recovery and expect audit logs to fully recover in about 40 minutes. Pull request updates, Actions, and webhook deliveries remain recovered. We are monitoring progress and w"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T18:18:11.377Z",
+          "body": "Audit log events are recovering, with delays now below 90 minutes as the remaining backlog is processed. We’ve reduced load on the event-streaming platform and are monitoring recovery. Further updates will follow."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T17:09:35.307Z",
+          "body": "Pull request updates, Actions, and webhook deliveries have recovered. Audit log events are recovering and delays are decreasing, but we expect the remaining backlog to take approximately two to three hours to clear. We’re monitoring recovery and will share further updates."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T16:59:45.159Z",
+          "body": "Actions and webhook deliveries have recovered. Audit log events are still delayed by about 100 minutes. We are working through the backlog, and full recovery will take some time. We will share more updates as recovery continues."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T16:57:42.160Z",
+          "body": "Actions and Webhooks are operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T16:34:49.131Z",
+          "body": "Audit log events continue to be delayed by up to 110 minutes. Pull request updates have recovered. Actions is recovering, and users should no longer experience impact in Actions. Webhook deliveries continue to recover as we work through backlogs. We are monitoring recovery and wi"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T16:33:10.619Z",
+          "body": "Pull Requests is operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T16:25:30.230Z",
+          "body": "Audit log events are delayed by up to 100 minutes, and Actions workflow status updates continue to experience extended delays. Pull request updates and webhook deliveries are recovering as we restore event processing and work through backlogs. We’re monitoring recovery and will s"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T16:17:23.261Z",
+          "body": "Audit log events and Actions workflow status updates continue to be delayed. Pull request updates and webhook deliveries are recovering as we restore event processing and work through backlogs. We’re monitoring the recovery and will share further updates as we learn more."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T15:58:38.767Z",
+          "body": "We continue to see delays affecting pull request updates, webhook deliveries, and audit log events. The event streaming platform is showing signs of recovery, and we are monitoring as the impact continues."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T15:36:47.783Z",
+          "body": "We are investigating delays affecting pull request updates and webhook deliveries. Increased load on our event streaming platform is contributing to hotspots. We are shifting traffic away from affected areas and adding processing capacity; impact is ongoing while these mitigation"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-21T15:15:04.970Z",
           "body": "Actions is experiencing degraded performance. We are continuing to investigate."
         },
         {
           "status": "investigating",
-          "at": "2026-06-08T08:13:25.865Z",
-          "body": "Following investigation, we are seeing that impact is limited to unauthenticated users when accessing Pull Requests, Issues, or Actions. Our team continues to work towards mitigation with more updates to follow as we have them."
+          "at": "2026-10-21T14:52:50.122Z",
+          "body": "We are investigating reports of degraded performance for Actions, Pull Requests and Webhooks"
+        }
+      ],
+      "components": [
+        "Webhooks",
+        "Pull Requests",
+        "Actions"
+      ]
+    },
+    {
+      "id": "8tzbpcnl75jp",
+      "name": "Degraded availability for GitHub Actions, GitHub Pages and Webhooks",
+      "impact": "critical",
+      "status": "resolved",
+      "createdAt": "2026-10-19T15:49:25.828Z",
+      "resolvedAt": "2026-10-19T16:56:58.390Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-10-19T16:56:58.390Z",
+          "body": "On October 19, 2026, between 15:24 and 16:52 UTC, GitHub Actions, GitHub Pages, and webhooks generated by Actions were degraded. Live updates on GitHub.com and code search were also degraded for part of this time. No data was lost. <br /><br />Impact <br /><br /> - Workflow statu"
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-10-19T16:56:54.747Z",
+          "body": "Actions, Pages and Webhooks are operating normally."
         },
         {
           "status": "investigating",
-          "at": "2026-06-08T07:32:28.125Z",
-          "body": "Pull Requests is experiencing degraded performance. We are continuing to investigate."
+          "at": "2026-10-19T16:30:29.644Z",
+          "body": "We’re seeing recovery following mitigation and are continuing to monitor. <br /><br />Customers may still experience delays in GitHub Actions workflow status updates, GitHub Pages deployments, and check and workflow webhook events generated by Actions runs."
         },
         {
           "status": "investigating",
-          "at": "2026-06-08T07:31:22.575Z",
-          "body": "Issues is experiencing degraded performance. We are continuing to investigate."
+          "at": "2026-10-19T15:56:34.098Z",
+          "body": "We’re are currently investigating degraded availability affecting GitHub Actions, GitHub Pages and Webhooks. <br /><br />Customers may experience delays in workflow processing, site builds and webhook delivery.<br />"
         },
         {
           "status": "investigating",
-          "at": "2026-06-08T07:14:01.045Z",
-          "body": "Issues is experiencing degraded availability. We are continuing to investigate."
+          "at": "2026-10-19T15:50:10.810Z",
+          "body": "Webhooks is experiencing degraded performance. We are continuing to investigate."
         },
         {
           "status": "investigating",
-          "at": "2026-06-08T07:11:37.648Z",
+          "at": "2026-10-19T15:49:25.946Z",
+          "body": "We are investigating reports of degraded performance for Actions and Pages"
+        }
+      ],
+      "components": [
+        "Webhooks",
+        "Actions",
+        "Pages"
+      ]
+    },
+    {
+      "id": "vlxrztp88101",
+      "name": "CCA Automations are delayed when starting an Automation",
+      "impact": "minor",
+      "status": "resolved",
+      "createdAt": "2026-10-15T18:31:49.838Z",
+      "resolvedAt": "2026-10-15T18:56:04.250Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-10-15T18:56:04.250Z",
+          "body": "We suspected that CCA Automations were experiencing delays when users start an Automation, but further investigation found that there was no delay or impact to CCA Automations.<br />"
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-10-15T18:53:04.477Z",
+          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-15T18:34:34.711Z",
+          "body": "CCA Automations are experiencing delays when users start an Automation"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-15T18:31:49.894Z",
           "body": "We are investigating reports of impacted performance for some GitHub services."
+        }
+      ],
+      "components": []
+    },
+    {
+      "id": "6yk962mhlr3h",
+      "name": "[Retroactive] Actions workflow run logs delayed",
+      "impact": "minor",
+      "status": "resolved",
+      "createdAt": "2026-10-13T20:30:00.000Z",
+      "resolvedAt": "2026-10-13T20:30:00.000Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-10-14T00:12:44.559Z",
+          "body": "On October 13, around 20:42 UTC, an infrastructure failure caused GitHub Actions to have delays showing logs for workflow runs. No logs were lost and the issue has now been resolved and log processing has caught up. The actual workflows producing the logs were not impacted and ra"
+        }
+      ],
+      "components": []
+    },
+    {
+      "id": "93njd414rpbx",
+      "name": "Incident with Actions, Pull Requests and Issues",
+      "impact": "minor",
+      "status": "resolved",
+      "createdAt": "2026-10-12T12:21:47.972Z",
+      "resolvedAt": "2026-10-12T20:16:07.447Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-10-12T20:16:07.447Z",
+          "body": "On October 12th 2026 11:51 UTC GitHub experienced elevated 500 responses across several application pages. This caused failures on Issues and Pull Requests as well as Projects and Actions. Customers also experienced delayed notifications in their web inbox and via email. <br /><b"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-12T19:28:42.836Z",
+          "body": "Web and email notifications will be delayed for 1 more hour as we are close to completing the backlog of notifications."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-12T17:34:24.812Z",
+          "body": "Web and email notifications continue to be delayed as we work through a backlog of notifications."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-12T15:50:39.420Z",
+          "body": "Notifications have resumed but will continue to be delayed as we work through a backlog."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-12T15:19:00.679Z",
+          "body": "We have successfully applied a mitigation for notifications, and notifications have resumed but will continue to be delayed as we work through a backlog."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-12T14:37:49.319Z",
+          "body": "We have mitigated the issues with Actions, issues, and projects, and have a mitigation in progress to address the delay with notifications."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-12T14:36:09.442Z",
+          "body": "The degradation affecting Actions has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-12T14:35:49.253Z",
+          "body": "The degradation affecting Issues has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-12T13:38:44.570Z",
+          "body": "Our initial mitigation was not fully successful, and users may still experience delays and errors with Actions, issues and projects, and notifications are delayed. We're continuing to investigate the root cause and work on additional mitigations."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-12T13:02:17.366Z",
+          "body": "Pull Requests is operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-12T12:57:44.849Z",
+          "body": "We have a mitigation in progress and are monitoring for recovery. Users may also experience delayed web notifications as we mitigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-12T12:33:21.895Z",
+          "body": "Users may experience issues loading the Actions tab UI, interacting with the Checks API, queueing new Actions runs, creating and updating issues, and requesting PR reviews, including via REST and GraphQL APIs."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-12T12:21:48.115Z",
+          "body": "We are investigating reports of degraded performance for Actions, Issues and Pull Requests"
         }
       ],
       "components": [
@@ -149,517 +617,315 @@
       ]
     },
     {
-      "id": "4843jm0lsls6",
-      "name": "EU Network Maintenance",
-      "impact": "minor",
-      "status": "resolved",
-      "createdAt": "2026-06-06T15:31:33.001Z",
-      "resolvedAt": "2026-06-06T18:49:15.588Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-06-06T18:49:15.588Z",
-          "body": "This incident has been resolved. Thank you for your patience and understanding as we addressed this issue. A detailed root cause analysis will be shared as soon as it is available."
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-06-06T18:48:52.902Z",
-          "body": "All work has been completed and we are hands off."
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-06-06T15:36:41.176Z",
-          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-06T15:31:43.178Z",
-          "body": "We are conducting routine maintenance on our network infrastructure in the EU. This will not impact production traffic, but may result in slightly increased latency for the remainder of our work. We expect this to last until 17:00 UTC."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-06T15:31:33.080Z",
-          "body": "We are investigating reports of impacted performance for some GitHub services."
-        }
-      ],
-      "components": []
-    },
-    {
-      "id": "b0plzff6yl6f",
-      "name": "Disruption with some GitHub services in the EU region",
-      "impact": "minor",
-      "status": "resolved",
-      "createdAt": "2026-06-06T16:53:35.825Z",
-      "resolvedAt": "2026-06-06T17:07:46.835Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-06-06T17:07:46.835Z",
-          "body": "This incident has been resolved. Thank you for your patience and understanding as we addressed this issue. A detailed root cause analysis will be shared as soon as it is available."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-06T16:56:49.684Z",
-          "body": "Packages is experiencing degraded performance. We are continuing to investigate."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-06T16:53:35.907Z",
-          "body": "We are investigating reports of impacted performance for some GitHub services."
-        }
-      ],
-      "components": [
-        "Packages"
-      ]
-    },
-    {
-      "id": "2nmfnbknhlnv",
-      "name": "Auth issue resulting in API impacts, including some Slack and Teams channel subscriptions",
-      "impact": "minor",
-      "status": "resolved",
-      "createdAt": "2026-06-05T17:20:31.897Z",
-      "resolvedAt": "2026-06-05T22:21:09.754Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-06-05T22:21:09.754Z",
-          "body": "This incident has been resolved. Thank you for your patience and understanding as we addressed this issue. A detailed root cause analysis will be shared as soon as it is available."
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-06-05T22:21:04.137Z",
-          "body": "Affected Slack and Teams subscriptions have been restored. Please contact support if you encounter any additional issues."
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-06-05T20:34:00.635Z",
-          "body": "Additional detail on the scope of impact during the 14:49 UTC to 16:45 UTC window: a small but elevated percentage of authenticated requests to GitHub.com received incorrect authorization failures. We saw a 1 to 2% increase in 4xx responses for a small number of endpoints (/repos"
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-06-05T18:43:49.501Z",
-          "body": "We are still exploring options to restore the deleted subscriptions, and we will provide another update soon. In the meantime, customers can manually re-subscribe their Slack and Teams channels to repositories."
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-06-05T18:05:00.048Z",
-          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-05T18:04:43.687Z",
-          "body": "During 14:49 UTC to 16:45 UTC, customers may have experienced authorization failures for legitimate requests. This was caused by a recently enabled feature flag, which has now been turned off as a mitigation. Customers should now see normal authorization behavior. This is also th"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-05T17:25:44.973Z",
-          "body": "Customers may see unexpected repo unsubscription events in their Slack or Teams channels."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-05T17:20:31.989Z",
-          "body": "We are investigating reports of impacted performance for some GitHub services."
-        }
-      ],
-      "components": []
-    },
-    {
-      "id": "5h5lmbffp07c",
-      "name": "Copilot Code Review Failing",
+      "id": "qpfv5p86dmrl",
+      "name": "Incident with Git Operations, Issues, Actions and Pull Requests",
       "impact": "critical",
       "status": "resolved",
-      "createdAt": "2026-06-04T18:02:54.000Z",
-      "resolvedAt": "2026-06-04T19:59:27.372Z",
+      "createdAt": "2026-10-07T17:17:05.776Z",
+      "resolvedAt": "2026-10-07T18:04:49.441Z",
       "updates": [
         {
           "status": "resolved",
-          "at": "2026-06-04T19:59:27.372Z",
-          "body": "On June 4, 2026, from 17:30 UTC to 18:55 UTC, Copilot Code Review experienced elevated failures for review requests on GitHub.com. Affected users saw “Copilot ran into an error” on pull requests when requesting a code review.<br /><br />During the incident window, an average of 8"
+          "at": "2026-10-07T18:04:49.441Z",
+          "body": "On October 7, 2026, from 16:52 to 17:01 UTC, GitHub experienced a recurrence of the write-operation outage from earlier that day. Both outages shared the same root cause. Please refer to the combined summary covering both incidents, their impact, and our prevention measures: http"
         },
         {
           "status": "monitoring",
-          "at": "2026-06-04T19:59:13.757Z",
-          "body": "This issue is now fully resolved and Copilot Code Review is working as expected."
+          "at": "2026-10-07T18:00:49.016Z",
+          "body": "All systems have recovered. We have applied mitigations and do not anticipate another recurrence."
         },
         {
           "status": "monitoring",
-          "at": "2026-06-04T19:41:26.002Z",
-          "body": "The mitigation for Copilot Code Review is now fully deployed, and new reviews are working as expected. We are continuing to monitor for full resolution.<br /><br /> Customers may need to re-request Copilot Code Review. Copilot Code Review Actions runs running for longer than 20 m"
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-06-04T19:07:42.608Z",
+          "at": "2026-10-07T17:27:12.641Z",
           "body": "The degradation has been mitigated. We are monitoring to ensure stability."
         },
         {
           "status": "investigating",
-          "at": "2026-06-04T19:07:25.873Z",
-          "body": "The mitigation for Copilot Code Review is now fully deployed, and new reviews are working as expected.<br /><br />Customers may need to re-request Copilot Code Review. Copilot Code Review Actions runs running for longer than 20 minutes may be safely cancelled."
+          "at": "2026-10-07T17:25:26.112Z",
+          "body": "We observed widespread impact across GitHub services from 16:52 UTC to 17:01 UTC, and are investigating the root cause. All systems have recovered. This incident is a reoccurrence of the incident from earlier in the day https://www.githubstatus.com/incidents/djlmxz2zd0j7. Durable"
         },
         {
           "status": "investigating",
-          "at": "2026-06-04T18:52:02.671Z",
-          "body": "The mitigation for Copilot Code Review is rolling out and we are seeing early signs of recovery."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-04T18:22:27.134Z",
-          "body": "We have identified that Copilot Code Review users may see \"Copilot ran into an error\" on Pull Requests that requested Copilot Code Review.<br /><br />A mitigation is in progress, we expect mitigation in approximately 30m.<br /><br />GitHub Enterprise Cloud with Data Residency is "
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-04T18:03:24.198Z",
-          "body": "We have identified that Copilot Code Review. Users may see \"Copilot ran into an error\" on Pull Requests that requested Copilot Code Review.<br /><br />A mitigation is in progress."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-04T18:02:54.096Z",
-          "body": "We are investigating reports of impacted performance for some GitHub services."
-        }
-      ],
-      "components": []
-    },
-    {
-      "id": "tf25qs8wdw5h",
-      "name": "Disruption with some GitHub services",
-      "impact": "minor",
-      "status": "resolved",
-      "createdAt": "2026-06-03T19:42:55.938Z",
-      "resolvedAt": "2026-06-04T04:11:59.625Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-06-04T04:11:59.625Z",
-          "body": "Between June 1, 2026, 23:00 UTC and June 4, 2026 04:11 UTC, customers experienced delays in Dependabot scheduled version updates. <br /><br />Pull request creation for version updates was delayed, with delays increasing over time and reaching up to two days. Approximately 1.5 mil"
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-06-04T04:11:47.894Z",
-          "body": "Job lag has recovered to within normal operating thresholds. We are declaring this incident closed and will follow up with a summary soon."
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-06-04T02:37:07.094Z",
-          "body": "Job lag has recovered from a peak of 1.71 days to 9h 9m at 19:29 UTC and continues to decrease. Backlog is draining at a healthy rate with no signs of reversal. New jobs are processing on schedule. Remaining lag will continue to drain over the next few hours as queued work comple"
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-06-04T02:35:59.599Z",
-          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-03T23:38:20.322Z",
-          "body": "We have applied mitigations and are continuing to see improvements in the Dependabot scheduled version updates. <br /><br />Next update in 12 hours."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-03T21:10:56.415Z",
-          "body": "We are preparing a mitigation for the delayed Dependabot scheduled version updates.<br /><br />Next update in 2 hours."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-03T20:18:52.795Z",
-          "body": "Customers may see delays of up to two days in Dependabot version updates.<br /><br />Dependabot Security updates are not delayed.<br /><br />The team is investigating mitigations for the backlog.<br /><br />Next update in 1 hour."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-03T19:43:05.154Z",
-          "body": "We're seeing delays in Dependabot scheduled version update runs. Our team is actively working on a fix and will share updates as the situation develops."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-03T19:42:56.014Z",
-          "body": "We are investigating reports of impacted performance for some GitHub services."
-        }
-      ],
-      "components": []
-    },
-    {
-      "id": "j240y90h4g0r",
-      "name": "Disruption with some GitHub services",
-      "impact": "minor",
-      "status": "resolved",
-      "createdAt": "2026-06-03T03:13:28.911Z",
-      "resolvedAt": "2026-06-03T06:46:59.476Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-06-03T06:46:59.476Z",
-          "body": "On June 2, 2026, between 21:54 UTC and June 3, 2026 06:45 UTC, the Spark service was degraded and users were unable to store or retrieve data for their Spark apps in one of our hosting regions. Users could still make changes to their app configuration during this time. The error "
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-06-03T06:45:36.560Z",
-          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-03T06:02:20.182Z",
-          "body": "We are investigating reports of issues with service(s): Spark. We will continue to keep users updated on progress towards mitigation."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-03T03:45:54.486Z",
-          "body": "We are investigating reports of impacted performance for some GitHub services.<br /><br />---<br />Relevant stamps: dotcom"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-03T03:13:28.968Z",
-          "body": "We are investigating reports of impacted performance for some GitHub services."
-        }
-      ],
-      "components": []
-    },
-    {
-      "id": "5wdgxw2rvbt3",
-      "name": "Delays with Code Scanning and Billing",
-      "impact": "minor",
-      "status": "resolved",
-      "createdAt": "2026-06-01T15:17:09.709Z",
-      "resolvedAt": "2026-06-02T00:17:58.986Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-06-02T00:17:58.986Z",
-          "body": "This incident has been resolved. Thank you for your patience and understanding as we addressed this issue. A detailed root cause analysis will be shared as soon as it is available."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-01T21:59:42.439Z",
-          "body": "We have identified the root cause and applied mitigations to address delays in billing updates and are continuing to see improvement in the processing rate. We will continue to monitor the progress and will provide an update in few hours.<br /><br />GitHub Enterprise Cloud with D"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-01T19:27:00.639Z",
-          "body": "We are continuing to investigate delayed billing updates, on GitHub.com. We have applied additional mitigations are continuing to see signs of improvement, and are continuing to work to improve the processing rate. We will continue to keep users updated on progress towards mitiga"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-01T18:48:51.094Z",
-          "body": "We are continuing to investigate delayed billing updates, on GitHub.com. We have applied additional mitigations and are seeing some more signs of improvement, and are continuing to work to improve the processing rate. We will continue to keep users updated on progress towards mit"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-01T17:28:20.209Z",
-          "body": "We are continuing to investigate delayed billing updates, on GitHub.com. We have applied multiple mitigations and are seeing some signs of improvement, and are continuing to work to improve the processing rate. We will continue to keep users updated on progress towards mitigation"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-01T16:42:27.992Z",
-          "body": "We are investigating reports of delayed billing updates, on GitHub.com. We are continuing to investigate delays in our job processing architecture. We are attempting to mitigate at the infrastructure level. Code scanning runs and notifications have recovered. We will continue to "
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-01T15:43:07.499Z",
-          "body": "We are investigating reports of delayed code scanning runs, billing updates, email and mobile push notifications. We are investigating delays in our job processing architecture. We will continue to keep users updated on progress towards mitigation."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-01T15:17:27.994Z",
-          "body": "We are investigating reports of delayed code scanning runs and delayed billing updates. We will continue to keep users updated on progress towards mitigation."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-01T15:17:09.775Z",
-          "body": "We are investigating reports of impacted performance for some GitHub services."
-        }
-      ],
-      "components": []
-    },
-    {
-      "id": "rhqcgg8lg6mm",
-      "name": "Disruption with OpenAI Models",
-      "impact": "critical",
-      "status": "resolved",
-      "createdAt": "2026-05-28T19:01:00.375Z",
-      "resolvedAt": "2026-05-28T20:41:58.586Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-05-28T20:41:58.586Z",
-          "body": "On May 28th, 2026, between approximately 18:27 and 20:41 UTC, the GitHub Copilot service was degraded due to an issue with the Responses API of an upstream provider affecting the GPT-5.2, GPT-5.3-Codex, GPT-5.4, and GPT-5.5 models. Requests routed to these models via the Response"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-28T20:06:53.683Z",
-          "body": "Open AI models are currently unavailable. We are shifting requests to other models to reduce impact."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-28T19:40:54.881Z",
-          "body": "We are investigating errors with Copilot requests using OpenAI models"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-28T19:20:58.651Z",
-          "body": "Copilot is experiencing degraded performance. We are continuing to investigate."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-28T19:01:00.444Z",
-          "body": "We are investigating reports of impacted performance for some GitHub services."
-        }
-      ],
-      "components": [
-        "Copilot"
-      ]
-    },
-    {
-      "id": "11n51rf8tf27",
-      "name": "Elevated error rates across multiple services",
-      "impact": "none",
-      "status": "resolved",
-      "createdAt": "2026-05-28T19:07:00.000Z",
-      "resolvedAt": "2026-05-28T19:07:00.000Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-05-28T23:10:36.151Z",
-          "body": "On May 28, 2026, between 19:07 UTC and 19:16 UTC, multiple GitHub services experienced elevated error rates. This was due to a change that was partially deployed to an authentication service, causing errors for dependent services including the web experience, REST API, Git operat"
-        }
-      ],
-      "components": []
-    },
-    {
-      "id": "f3kmjlk25vhd",
-      "name": "Webhook APIs and UI Degraded",
-      "impact": "minor",
-      "status": "resolved",
-      "createdAt": "2026-05-28T01:13:30.907Z",
-      "resolvedAt": "2026-05-28T01:32:27.735Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-05-28T01:32:27.735Z",
-          "body": "On May 28, 2026, between 00:54 UTC and 01:19 UTC, some users experienced errors when interacting with the Webhooks API, including webhook delivery history and configuration endpoints. On average, the error rate was 0.28% and peaked at 0.45%. This was due to a bug that caused a si"
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-05-28T01:27:22.117Z",
-          "body": "The degradation affecting Webhooks has been mitigated. We are monitoring to ensure stability."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-28T01:13:31.001Z",
-          "body": "We are investigating reports of degraded performance for Webhooks"
-        }
-      ],
-      "components": [
-        "Webhooks"
-      ]
-    },
-    {
-      "id": "xy1tt3hs572m",
-      "name": "Incident with Pull Requests, Issues, Git Operations and API Requests",
-      "impact": "minor",
-      "status": "resolved",
-      "createdAt": "2026-05-27T12:10:09.592Z",
-      "resolvedAt": "2026-05-27T13:16:54.083Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-05-27T13:16:54.083Z",
-          "body": "On May 27, 2026, between 12:07 UTC and 13:16 UTC, users experienced degraded performance for Git operations, Pull Requests, Issues, GraphQL API, and related services on github.com. During this time, operations that depended on Git file servers experienced elevated error rates (3."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-27T12:54:57.393Z",
-          "body": "We're continuing to investigate degraded performance of Git operations, Issues and Pull requests."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-27T12:10:10.134Z",
-          "body": "We are investigating reports of degraded performance for API Requests, Git Operations, Issues and Pull Requests"
+          "at": "2026-10-07T17:17:05.991Z",
+          "body": "We are investigating reports of degraded performance for Actions, Git Operations, Issues and Pull Requests"
         }
       ],
       "components": [
         "Git Operations",
-        "API Requests",
         "Issues",
-        "Pull Requests"
+        "Pull Requests",
+        "Actions"
       ]
     },
     {
-      "id": "xflkh26pm7vv",
-      "name": "Disruption with some GitHub services",
-      "impact": "minor",
-      "status": "resolved",
-      "createdAt": "2026-05-26T15:44:22.358Z",
-      "resolvedAt": "2026-05-26T16:35:57.736Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-05-26T16:35:57.736Z",
-          "body": "On May 26, 2026, between 15:10 UTC and 16:35 UTC the Copilot service was degraded and many models were no longer available for use. On average, the error rate was ~5% and peaked at 11% of requests to the service. This was due to a change that introduced a configuration mismatch i"
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-05-26T16:24:11.858Z",
-          "body": "The degradation affecting Copilot has been mitigated. We are monitoring to ensure stability."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-26T15:48:43.325Z",
-          "body": "Copilot is experiencing degraded performance. We are continuing to investigate."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-26T15:44:22.481Z",
-          "body": "We are investigating reports of impacted performance for some GitHub services."
-        }
-      ],
-      "components": [
-        "Copilot"
-      ]
-    },
-    {
-      "id": "gnftqj9htp0g",
-      "name": "Incident with Actions and Pages",
+      "id": "djlmxz2zd0j7",
+      "name": "Incident with Git Operations, Pull Requests and Actions",
       "impact": "critical",
       "status": "resolved",
-      "createdAt": "2026-05-26T10:57:13.848Z",
-      "resolvedAt": "2026-05-26T13:18:48.000Z",
+      "createdAt": "2026-10-07T15:14:45.614Z",
+      "resolvedAt": "2026-10-07T16:25:14.000Z",
       "updates": [
         {
           "status": "resolved",
-          "at": "2026-05-26T13:18:48.540Z",
-          "body": "On May 26, 2026, between 10:40 UTC and 12:56 UTC, GitHub Actions jobs were degraded. From 10:40 to 12:16 UTC, all newly queued Actions runs failed to start. From 12:16 to 12:56 UTC, Actions runs that required downloading actions for their workflows continued to fail. GitHub Pages"
+          "at": "2026-10-07T16:25:14.613Z",
+          "body": "On October 7, 2026, GitHub had two outages of write operations with the same cause, totaling about 19 minutes. The first ran from 15:06 to 15:16 UTC (about 10 minutes) and the second from 16:52 to 17:01 UTC (about 9 minutes). In both windows, actions that save or change data fail"
         },
         {
           "status": "monitoring",
-          "at": "2026-05-26T13:01:46.347Z",
+          "at": "2026-10-07T16:23:44.946Z",
+          "body": "Git Operations, Pull Requests and Actions are fully recovered and stable. The root cause has been identified and mitigations are being applied to prevent a reoccurrence."
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-10-07T15:58:35.060Z",
+          "body": "We are seeing full recovery across all systems including Git Operations, Pull Requests and Actions. We are continuing to investigate the root cause of the disruption between 15:06 UTC and 15:16 UTC, and will share another update shortly."
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-10-07T15:56:17.284Z",
           "body": "The degradation has been mitigated. We are monitoring to ensure stability."
         },
         {
           "status": "monitoring",
-          "at": "2026-05-26T13:00:45.645Z",
-          "body": "The degradation affecting Actions and Pages has been mitigated. We are monitoring to ensure stability."
+          "at": "2026-10-07T15:49:57.261Z",
+          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
         },
         {
           "status": "investigating",
-          "at": "2026-05-26T12:37:29.863Z",
-          "body": "We have identified the cause of the authentication issues affecting GitHub Actions and are actively working on mitigation"
+          "at": "2026-10-07T15:49:53.336Z",
+          "body": "The degradation affecting Git Operations and Webhooks has been mitigated. We are monitoring to ensure stability."
         },
         {
           "status": "investigating",
-          "at": "2026-05-26T12:17:55.925Z",
+          "at": "2026-10-07T15:47:07.617Z",
+          "body": "The degradation affecting Issues has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:41:29.675Z",
+          "body": "We are observing partial recovery across all systems. We are continuing to monitor and investigate the root cause of the disruption."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:35:30.140Z",
+          "body": "Git Operations is experiencing degraded performance. We are continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:32:02.178Z",
+          "body": "Actions is operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:31:55.952Z",
+          "body": "The degradation affecting Pull Requests has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:27:28.426Z",
+          "body": "Webhooks is experiencing degraded performance. We are continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:27:16.071Z",
+          "body": "Git Operations is operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:25:42.563Z",
+          "body": "Pull Requests is experiencing degraded performance. We are continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:24:11.997Z",
+          "body": "We observed widespread impact across GitHub services between 15:06 UTC and 15:16 UTC, and are investigating the root cause. We are seeing all systems recover, and will provide another update shortly."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:21:36.696Z",
+          "body": "Git Operations is experiencing degraded performance. We are continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:16:03.939Z",
+          "body": "Webhooks is experiencing degraded availability. We are continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:15:18.491Z",
+          "body": "Issues is experiencing degraded performance. We are continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:14:55.866Z",
+          "body": "Webhooks is experiencing degraded performance. We are continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-07T15:14:45.762Z",
+          "body": "We are investigating reports of degraded availability for Actions, Git Operations and Pull Requests"
+        }
+      ],
+      "components": [
+        "Git Operations",
+        "Webhooks",
+        "Issues",
+        "Pull Requests",
+        "Actions"
+      ]
+    },
+    {
+      "id": "cjwszcf57bff",
+      "name": "Several services are degraded",
+      "impact": "critical",
+      "status": "resolved",
+      "createdAt": "2026-10-06T19:57:35.445Z",
+      "resolvedAt": "2026-10-06T23:40:44.165Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-10-06T23:40:44.165Z",
+          "body": "On October 6, 2026, from 19:44 to 19:50 UTC, GitHub experienced a service outage with elevated error rates peaking at 1.30% of all requests, totaling approximately 1.16 million failed requests. This impacted 12 services across GitHub, including Pull Requests, Webhooks, Repos, OAu"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-06T22:40:56.734Z",
+          "body": "We are deploying a mitigation and plan to resume migrations shortly thereafter"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-06T21:29:46.918Z",
+          "body": "We are working towards a mitigation that will allow us to resume processing enterprise migrations."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-06T20:57:19.844Z",
+          "body": "All services are functioning normally except for enterprise migrations, which are still paused. They will resume soon."
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-10-06T20:26:46.442Z",
+          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-06T20:22:31.621Z",
+          "body": "A number of services including issues, pull requests, and webhooks, were briefly degraded, but have now recovered. Enterprise migrations are paused while we validate causes and mitigations."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-06T20:12:00.989Z",
+          "body": "Pull Requests is operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-06T20:04:28.720Z",
+          "body": "Webhooks is operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-06T19:57:35.580Z",
+          "body": "We are investigating reports of degraded performance for Pull Requests and Webhooks"
+        }
+      ],
+      "components": [
+        "Webhooks",
+        "Pull Requests"
+      ]
+    },
+    {
+      "id": "2kxnqcxcrr7f",
+      "name": "Disruption with some GitHub services",
+      "impact": "major",
+      "status": "resolved",
+      "createdAt": "2026-10-05T23:47:45.202Z",
+      "resolvedAt": "2026-10-06T01:32:43.679Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-10-06T01:32:43.679Z",
+          "body": "On October 5, 2026, between 23:05 UTC and 00:11 UTC on October 6, some users experienced slow page loads, timeouts, and errors when accessing organization and enterprise billing, licensing, and settings pages. On average, the error rate was 1.9% and peaked at 13.8% of requests to"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-06T00:05:58.926Z",
+          "body": "Users may experience issues accessing organization and enterprise billing and licensing pages. We are deploying a mitigation and monitoring for recovery."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-05T23:47:45.254Z",
+          "body": "We are investigating reports of impacted performance for some GitHub services."
+        }
+      ],
+      "components": []
+    },
+    {
+      "id": "3q1yb5m7ltvb",
+      "name": "Incident with Actions",
+      "impact": "critical",
+      "status": "resolved",
+      "createdAt": "2026-10-05T19:11:58.382Z",
+      "resolvedAt": "2026-10-05T22:49:42.660Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-10-05T22:49:42.660Z",
+          "body": "On October 5, 2026, between 18:48 and 22:49 UTC, GitHub Actions and Hosted Runners experienced degraded performance. Over the full incident, 14.3% of workflow runs using GitHub-hosted runners and 26.5% of individual GitHub-hosted jobs did not start within five minutes. <br /><br "
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-05T22:40:41.795Z",
+          "body": "Pages is operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-05T21:54:23.028Z",
+          "body": "Actions is operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-05T21:32:31.460Z",
+          "body": "We have applied mitigations to address GitHub Actions failures. Queued jobs are clearing, new jobs are not delayed, and we expect full runner recovery shortly. We continue to monitor for full recovery and are working to mitigate ongoing issues affecting other services, including "
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-05T21:31:18.177Z",
           "body": "Actions is experiencing degraded performance. We are continuing to investigate."
         },
         {
           "status": "investigating",
-          "at": "2026-05-26T11:53:31.898Z",
-          "body": "We are investigating authentication issues leading to failure in starting Actions runs and downloading actions. At this time the majority of Actions runs is impacted."
+          "at": "2026-10-05T21:22:39.017Z",
+          "body": "Pages is experiencing degraded performance. We are continuing to investigate."
         },
         {
           "status": "investigating",
-          "at": "2026-05-26T11:19:04.631Z",
+          "at": "2026-10-05T21:09:15.654Z",
+          "body": "In addition to ongoing issues with Actions and Hosted Runners, some customers are also unable to access repository list, licensing and billing pages within their GitHub accounts. We continue to investigate and are working on mitigation."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-05T20:47:22.557Z",
           "body": "Actions is experiencing degraded availability. We are continuing to investigate."
         },
         {
           "status": "investigating",
-          "at": "2026-05-26T10:57:14.019Z",
-          "body": "We are investigating reports of degraded performance for Actions and Pages"
+          "at": "2026-10-05T20:39:27.955Z",
+          "body": "We’re continuing to investigate job failures and delays affecting GitHub-hosted runner assignment and workflow start times. Our teams are actively working to mitigate the impact and will provide another update as we learn more."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-05T19:50:50.720Z",
+          "body": "We’re still investigating delays in assigning GitHub-hosted runners, affecting workflow start times across multiple runner configurations. Our teams are working to mitigate the impact; we’ll share another update as we learn more."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-05T19:15:17.486Z",
+          "body": "We’re investigating an issue causing delays when assigning GitHub-hosted runners to Actions jobs. Some workflows may take longer to start across runner configurations. Our teams are working to mitigate the issue, and we’ll provide an update as we learn more."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-05T19:11:58.492Z",
+          "body": "We are investigating reports of degraded performance for Actions"
         }
       ],
       "components": [
@@ -668,108 +934,61 @@
       ]
     },
     {
-      "id": "tm84vy58jq0h",
-      "name": "Elevated rate of Git push errors",
-      "impact": "major",
-      "status": "resolved",
-      "createdAt": "2026-05-25T09:02:00.000Z",
-      "resolvedAt": "2026-05-25T09:02:00.000Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-06-08T13:56:31.478Z",
-          "body": "On May 25, 2026, between 09:02 UTC and 09:11 UTC, Git push operations over HTTPS and SSH experienced elevated failures. During this window, an average of 31% and a peak of 43% of push requests failed. The incident was caused by a recently enabled code path that issued an unexpect"
-        }
-      ],
-      "components": []
-    },
-    {
-      "id": "k5z4d1v1tqmt",
-      "name": "Intermittent errors with app installation token authentication",
+      "id": "2dpbcq5j165n",
+      "name": "Actions Job Delays",
       "impact": "minor",
       "status": "resolved",
-      "createdAt": "2026-05-23T16:00:55.001Z",
-      "resolvedAt": "2026-05-23T19:32:26.000Z",
+      "createdAt": "2026-10-01T14:47:48.138Z",
+      "resolvedAt": "2026-10-01T17:56:54.260Z",
       "updates": [
         {
           "status": "resolved",
-          "at": "2026-05-23T19:32:26.229Z",
-          "body": "On May 23, 2026 between 06:00 UTC and 19:12 UTC, GitHub experienced intermittent errors authenticating <a href=\"https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation\" target=\"_blank\">GitHub app installati"
+          "at": "2026-10-01T17:56:54.260Z",
+          "body": "On October 1, 2026, GitHub Actions experienced two periods of delayed and failed job starts on GitHub-hosted runners, beginning at approximately 14:15 UTC. Across the 14:15–17:56 UTC incident-response window, approximately 0.68% of workflow runs experienced start delays, and 0.19"
         },
         {
           "status": "investigating",
-          "at": "2026-05-23T19:32:14.894Z",
-          "body": "This is fully mitigated, we will continue to monitor to ensure it does not reoccur."
+          "at": "2026-10-01T17:50:54.351Z",
+          "body": "GitHub Actions experienced degraded performance for some hosted runners due to throttling within an upstream Azure dependency. Service capacity has recovered, and we are continuing to monitor while working with Azure on the underlying condition."
         },
         {
           "status": "investigating",
-          "at": "2026-05-23T19:06:50.189Z",
-          "body": "We have identified and are applying additional mitigation and will continue to monitor for complete mitigation."
+          "at": "2026-10-01T16:48:51.025Z",
+          "body": "We are currently applying a mitigation and anticipate recovery within thirty minutes."
         },
         {
           "status": "investigating",
-          "at": "2026-05-23T18:42:05.584Z",
-          "body": "We see significant signs of mitigation and are monitoring for full mitigation."
+          "at": "2026-10-01T16:10:24.539Z",
+          "body": "We have identified an issue with our upstream provider which is causing Actions requests to 429 which is creating the delays. We have escalated to the owning team and are investigating how to mitigate the 429s."
         },
         {
           "status": "investigating",
-          "at": "2026-05-23T17:41:23.260Z",
-          "body": "We are seeing signs of mitigation and are continuing to monitor for complete mitigation. <br /><br />Next update in one hour."
+          "at": "2026-10-01T15:29:46.969Z",
+          "body": "We are seeing a reoccurrence in run-start delays, and are continuing to investigate to issue. Customers will potentially experience delays of up to ten minutes."
         },
         {
           "status": "investigating",
-          "at": "2026-05-23T16:35:54.772Z",
-          "body": "We are continuing to investigate an elevated error rate of authentication failures for app installation tokens. Next update in one hour."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-23T16:01:39.632Z",
-          "body": "We are seeing an increased rate of authentication failures for app installation tokens, affecting approximately 1% of tokens. We are continuing to investigate."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-23T16:00:55.076Z",
-          "body": "We are investigating reports of impacted performance for some GitHub services."
-        }
-      ],
-      "components": []
-    },
-    {
-      "id": "g6ffrm0rfvz9",
-      "name": "Incident with Actions",
-      "impact": "minor",
-      "status": "resolved",
-      "createdAt": "2026-05-20T16:58:52.281Z",
-      "resolvedAt": "2026-05-20T20:14:16.596Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-05-20T20:14:16.596Z",
-          "body": "On May 20, 2026, between 16:00 UTC and 17:45 UTC, GitHub Actions customers experienced run start delays exceeding 5 minutes. Approximately 4.5% of all runs were delayed during the impact window, with scale set jobs disproportionately affected. 30% of scale set jobs were delayed a"
+          "at": "2026-10-01T15:20:46.089Z",
+          "body": "Actions is experiencing degraded performance. We are continuing to investigate."
         },
         {
           "status": "monitoring",
-          "at": "2026-05-20T19:41:53.540Z",
-          "body": "Customer impact has fully subsided. We are maintaining yellow status while we deploy a permanent fix to prevent recurrence."
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-05-20T18:17:16.098Z",
-          "body": "We've applied a mitigation to fix the issues with queuing and running Actions jobs. We are seeing improvements in telemetry and are monitoring for full recovery."
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-05-20T17:52:28.645Z",
+          "at": "2026-10-01T15:10:52.227Z",
           "body": "The degradation affecting Actions has been mitigated. We are monitoring to ensure stability."
         },
         {
           "status": "investigating",
-          "at": "2026-05-20T17:46:07.766Z",
-          "body": "A subset of runners are taking longer than expected to connect, which may delay some jobs from beginning execution. We are actively working to mitigate the issue."
+          "at": "2026-10-01T15:02:41.043Z",
+          "body": "Run-start delays on Ubuntu runners have been resolved. We are investigating run-start delays on Windows runners and will share more information as it becomes available."
         },
         {
           "status": "investigating",
-          "at": "2026-05-20T16:58:52.362Z",
+          "at": "2026-10-01T14:54:13.101Z",
+          "body": "We have identified the cause of increased Actions run start delays on Ubuntu runners and are actively deploying a fix. Customers may continue to experience intermittent delays while the mitigation rolls out and service metrics return to normal."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-10-01T14:47:48.228Z",
           "body": "We are investigating reports of degraded performance for Actions"
         }
       ],
@@ -778,291 +997,248 @@
       ]
     },
     {
-      "id": "ykb44v068g8v",
-      "name": "Incident with Copilot",
-      "impact": "none",
-      "status": "resolved",
-      "createdAt": "2026-05-19T05:30:00.000Z",
-      "resolvedAt": "2026-05-19T05:30:00.000Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-05-28T12:40:00.317Z",
-          "body": "On May 19, 2026, between 05:30 UTC and 14:50 UTC, some Copilot users experienced failures when using code completions, chat sessions, and cloud agent sessions. At peak impact, approximately 13% of Copilot API requests failed, and approximately 24% of remote sessions failed to ini"
-        }
-      ],
-      "components": []
-    },
-    {
-      "id": "ctf7nxpq5jzn",
-      "name": "Actions is experiencing degraded availability",
-      "impact": "critical",
-      "status": "resolved",
-      "createdAt": "2026-05-15T08:13:44.570Z",
-      "resolvedAt": "2026-05-15T08:48:30.015Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-05-15T08:48:30.015Z",
-          "body": "On May 15, 2026, from approximately 07:43 UTC to 08:48 UTC, GitHub Actions experienced a degradation that caused workflow runs to fail or experience delayed starts for a subset of customers. The incident was triggered by a planned failover of supporting infrastructure used by Git"
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-05-15T08:41:47.677Z",
-          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-15T08:29:41.062Z",
-          "body": "We are monitoring an issue that was affecting GitHub Actions and causing downstream issues in GitHub Coding Agent and GitHub Code Review Agent. The issue has resolved now but we are closely monitoring our systems for full recovery."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-15T08:27:21.278Z",
-          "body": "The degradation affecting Pages has been mitigated. We are monitoring to ensure stability."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-15T08:26:58.599Z",
-          "body": "The degradation affecting Actions has been mitigated. We are monitoring to ensure stability."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-15T08:14:10.571Z",
-          "body": "Pages is experiencing degraded availability. We are continuing to investigate."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-15T08:13:44.639Z",
-          "body": "We are investigating reports of degraded availability for Actions"
-        }
-      ],
-      "components": [
-        "Actions",
-        "Pages"
-      ]
-    },
-    {
-      "id": "t5mch8tlq6vl",
-      "name": "[Retroactive] Incident with GitHub.com",
-      "impact": "none",
-      "status": "resolved",
-      "createdAt": "2026-05-15T01:30:00.000Z",
-      "resolvedAt": "2026-05-15T02:30:00.000Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-05-15T03:57:42.812Z",
-          "body": "Beginning at 02:49 UTC on May 15 2026 and lasting until 03:04 UTC, GitHub.com was unavailable for a subset of customers. This impact has been mitigated and normal service resumed. The issue was rooted in a sudden spike in traffic, with intermittent impact. We've identified the so"
-        }
-      ],
-      "components": []
-    },
-    {
-      "id": "8wxkrmhm6744",
-      "name": "Incident with CodeQL",
+      "id": "c8466lzvnmsv",
+      "name": "Elevated request latency",
       "impact": "minor",
       "status": "resolved",
-      "createdAt": "2026-05-13T14:41:28.123Z",
-      "resolvedAt": "2026-05-13T16:03:53.103Z",
+      "createdAt": "2026-10-01T13:37:33.066Z",
+      "resolvedAt": "2026-10-01T13:57:59.327Z",
       "updates": [
         {
           "status": "resolved",
-          "at": "2026-05-13T16:03:53.103Z",
-          "body": "On May 13, 2026, between 14:31 and 16:03 UTC, the Code Scanning service experienced processing delays and 12% of check runs took over 15 minutes to complete. The delays were caused by replication lag due to an internal database migration, resulting in insufficient worker capacity"
+          "at": "2026-10-01T13:57:59.327Z",
+          "body": "On October 1, 2026, between 13:04 UTC and 13:34 UTC, users experienced two periods of slow page loads and intermittent request failures on GitHub.com. On average, the error rate was 0.52% and peaked at 6.13%. An unusually high volume of incoming traffic placed additional load on "
         },
         {
           "status": "monitoring",
-          "at": "2026-05-13T15:30:52.761Z",
-          "body": "CodeQL impact has been mitigated. We are continuing to monitor for durable recovery."
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-05-13T15:26:42.706Z",
+          "at": "2026-10-01T13:51:20.147Z",
           "body": "The degradation has been mitigated. We are monitoring to ensure stability."
         },
         {
           "status": "investigating",
-          "at": "2026-05-13T14:58:50.126Z",
-          "body": "We have applied a mitigation to increase processing capacity. We are continuing to monitor to confirm full recovery. We will provide another update by 15:30 UTC."
+          "at": "2026-10-01T13:39:10.094Z",
+          "body": "We are investigating recurrent periods of elevated latency affecting web requests. We’ll share updates as more information becomes available."
         },
         {
           "status": "investigating",
-          "at": "2026-05-13T14:43:50.979Z",
-          "body": "We are investigating delays affecting CodeQL, the code analysis engine used by Code Scanning. Some users may experience delayed or incomplete code scanning results. Our engineering team is investigating. We will provide another update by 15:15 UTC."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-13T14:41:28.152Z",
+          "at": "2026-10-01T13:37:33.128Z",
           "body": "We are investigating reports of impacted performance for some GitHub services."
         }
       ],
       "components": []
     },
     {
-      "id": "z3jhyg3l0dvx",
-      "name": "Incident with CodeQL, Webhooks, Notifications, and Slack Integration",
+      "id": "dqn46wtvbdzv",
+      "name": "[Retroactive] Actions workflow run failures after deployment gate approvals",
       "impact": "minor",
       "status": "resolved",
-      "createdAt": "2026-05-12T14:38:14.000Z",
-      "resolvedAt": "2026-05-12T17:43:32.963Z",
+      "createdAt": "2026-10-01T02:00:00.000Z",
+      "resolvedAt": "2026-10-01T02:00:00.000Z",
       "updates": [
         {
           "status": "resolved",
-          "at": "2026-05-12T17:43:32.963Z",
-          "body": "On May 12, 2026, between 13:41 and 17:43 UTC, some services experienced delays in processing. For the Code Scanning service, 53% of check runs took over 15 minutes to complete. Additionally, notifications took an average of 22 minutes to be delivered and Slack integration webhook"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-12T17:43:26.736Z",
-          "body": "All services have fully recovered."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-12T16:59:58.033Z",
-          "body": "CodeQL has fully recovered. We're continuing to work on recovery for the remaining impacted services."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-12T16:29:23.426Z",
-          "body": "Webhooks have fully recovered. Continuing to work on recovery for the other services."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-12T16:28:53.724Z",
-          "body": "Webhooks is operating normally."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-12T16:18:49.335Z",
-          "body": "We've established that most delays are related to a queuing service and are working to scale out. Early signals from the scale-out are showing signs of recovery for some services. We'll provide an update when services are fully recovered."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-12T15:44:44.573Z",
-          "body": "Webhooks is experiencing degraded performance. We are continuing to investigate."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-12T15:42:52.456Z",
-          "body": "We're continuing to investigate issues with CodeQL actions workflows. We're additionally seeing delays for notifications, webhooks, and the Slack integration."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-12T15:13:26.045Z",
-          "body": "CodeQL actions are currently experiencing delays, which may result in those actions being stuck in a pending state or having failed due to a timeout."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-12T14:38:14.686Z",
-          "body": "We are investigating reports of degraded performance for CodeQL"
+          "at": "2026-10-01T11:34:16.913Z",
+          "body": "On October 1, around 02:00 UTC, an isolated infrastructure failure caused GitHub Actions to lose execution state for a small number of existing workflow runs. Affected runs may remain stuck, fail deployment approvals, or return errors when cancelled. Service connectivity has reco"
         }
       ],
-      "components": [
-        "Webhooks",
-        "Actions"
-      ]
+      "components": []
     },
     {
-      "id": "81b05nqkhylj",
-      "name": "Incident with high errors on Git Operations",
-      "impact": "minor",
-      "status": "resolved",
-      "createdAt": "2026-05-11T14:25:30.205Z",
-      "resolvedAt": "2026-05-11T14:33:52.815Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-05-11T14:33:52.815Z",
-          "body": "On May 11th, 2026, between 14:00 UTC and 14:33 UTC, HTTP-based Git read operations were degraded. On average, the error rate was 2.8% and peaked at 7.5% of requests to the service. This was due to resource exhaustion in a networking gateway between GitHub.com’s frontend service f"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-11T14:25:30.275Z",
-          "body": "We are investigating reports of degraded performance for Git Operations"
-        }
-      ],
-      "components": [
-        "Git Operations"
-      ]
-    },
-    {
-      "id": "qp0lxr014sw8",
-      "name": "CCR and CCA failing to start for PR comments",
+      "id": "169pg72gg9jr",
+      "name": "Copilot Code Review is unable to complete reviews",
       "impact": "critical",
       "status": "resolved",
-      "createdAt": "2026-05-07T05:02:01.482Z",
-      "resolvedAt": "2026-05-07T06:56:16.253Z",
+      "createdAt": "2026-09-28T21:16:39.012Z",
+      "resolvedAt": "2026-09-28T22:08:20.216Z",
       "updates": [
         {
           "status": "resolved",
-          "at": "2026-05-07T06:56:16.253Z",
-          "body": "On May 7, 2026, between 04:12 UTC and 06:13 UTC, Copilot Cloud Agent and Copilot Code Review Agent sessions for pull requests were delayed or failed to start.<br /><br />The issue was caused by follow-up recovery work from a separate Pull Requests incident (https://www.githubstat"
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-05-07T06:14:57.244Z",
-          "body": "Copilot code review and cloud agents are starting again for pull requests, we are monitoring for full recovery."
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-05-07T06:13:29.995Z",
-          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
+          "at": "2026-09-28T22:08:20.216Z",
+          "body": "On September 28, 2026, between 19:23 UTC and 22:08 UTC the Copilot Code Review service was degraded and pull request reviews did not complete in all environments. On average, approximately 70% of requested reviews did not complete. Reviews requested during this window were not au"
         },
         {
           "status": "investigating",
-          "at": "2026-05-07T05:02:01.523Z",
+          "at": "2026-09-28T22:08:12.851Z",
+          "body": "Copilot Code review has recovered, for reviews that were previously not successful you can re-request review from your PR."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-28T21:23:59.226Z",
+          "body": "Revert of the impacted change is in flight, expect full recovery once the deployment is done."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-28T21:16:39.060Z",
           "body": "We are investigating reports of impacted performance for some GitHub services."
         }
       ],
       "components": []
     },
     {
-      "id": "f5pb5d5mr9yh",
+      "id": "1dk955gg3bvz",
+      "name": "Disruption with billing information updates",
+      "impact": "minor",
+      "status": "resolved",
+      "createdAt": "2026-09-24T16:51:32.619Z",
+      "resolvedAt": "2026-09-24T20:41:12.518Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-09-24T20:41:12.518Z",
+          "body": "Beginning on September 22, 2026 at 11:51 UTC, approximately 1,700 users experienced delays and errors when adding or updating billing address information because requests to the address validation service timed out or failed. Within the affected address validation flow, requests "
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-09-24T20:24:57.876Z",
+          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-24T20:10:12.006Z",
+          "body": "We have applied the mitigation and are seeing signs of recovery. We are continuing to monitor the system closely."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-24T18:22:35.640Z",
+          "body": "We are continuing to work on mitigation. We will post another update in approximately one hour."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-24T17:40:15.902Z",
+          "body": "We have identified the problem and are actively working on mitigation."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-24T16:51:48.684Z",
+          "body": "We are investigating failures on billing information updates. Customers may be unable to create or update their billing information in the meantime."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-24T16:51:32.660Z",
+          "body": "We are investigating reports of impacted performance for some GitHub services."
+        }
+      ],
+      "components": []
+    },
+    {
+      "id": "8zc63m64hy36",
+      "name": "Incident across several services",
+      "impact": "minor",
+      "status": "resolved",
+      "createdAt": "2026-09-23T10:11:12.845Z",
+      "resolvedAt": "2026-09-24T04:55:33.949Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-09-24T04:55:33.949Z",
+          "body": "Starting at 07:57 UTC on September 23, GitHub experienced elevated 500 and 404 responses across several application pages. This caused failures when installing GitHub Apps, creating organizations, and making some organization membership changes. Customers also experienced delayed"
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-09-24T04:55:27.414Z",
+          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-24T03:14:15.709Z",
+          "body": "We are continuing to process the backlog of issue label updates for Projects. Label changes may still be delayed. All other services are operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-24T02:00:37.040Z",
+          "body": "We are continuing to process the backlog of issue label updates for Projects. Users may still see delays before label changes are reflected in Projects. All other services are operating normally."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-24T00:16:49.448Z",
+          "body": "We've deployed a change intended to accelerate processing of the backlog of issue label updates in Projects. A sizable backlog still remains and we continue working through it. All other services are operating normally. We will provide another update within the next hour."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-23T21:39:30.068Z",
+          "body": "Updates to issue labels may be delayed in being reflected in Projects. We are continuing to deploy a change that will accelerate processing of the backlog of label updates. All other services are available. We will provide another update within the next hour."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-23T20:26:02.259Z",
+          "body": "We are preparing to deploy a change that will mitigate the impact."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-23T18:42:01.379Z",
+          "body": "Continuing to investigate the lag that may be experienced in issue labels being accurately reflected in Projects. We are working on alternate solutions to process the backlog of label updates."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-23T17:30:30.444Z",
+          "body": "We will post another update in approximately one hour to share our progress."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-23T17:01:27.947Z",
+          "body": "Updates to issue labels may be delayed in being reflected in Projects by about ~10 minutes. We have added some capacity to work through the backlog more quickly, but it'll likely be a few hours to complete processing the full backlog of messages. All other services are available."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-23T13:35:44.672Z",
+          "body": "Users may experience stale Project search results. We are working to increase indexing speed. All other services are available."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-23T11:38:30.053Z",
+          "body": "We are seeing recovery for Projects. Users may experience stale search results for Projects while indexing catches up."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-23T10:58:27.097Z",
+          "body": "The degradation affecting API Requests has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-23T10:57:57.451Z",
+          "body": "Database replicas have been restored. Org creation and the GitHub API are no longer degraded."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-23T10:20:06.970Z",
+          "body": "Database replicas have detached. We're working to restore the database replicas. Users may experience issues beyond creating organizations and a degraded experience with the GitHub API and Projects."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-23T10:11:12.927Z",
+          "body": "We are investigating reports of degraded performance for API Requests"
+        }
+      ],
+      "components": [
+        "API Requests"
+      ]
+    },
+    {
+      "id": "f6yrxnz5f7bs",
       "name": "Incident with Pull Requests",
-      "impact": "critical",
+      "impact": "minor",
       "status": "resolved",
-      "createdAt": "2026-05-06T15:25:23.789Z",
-      "resolvedAt": "2026-05-06T19:04:36.034Z",
+      "createdAt": "2026-09-20T22:13:37.889Z",
+      "resolvedAt": "2026-09-20T23:22:16.710Z",
       "updates": [
         {
           "status": "resolved",
-          "at": "2026-05-06T19:04:36.034Z",
-          "body": "On May 6, 2026 between 15:12 and 19:02 UTC creation of new pull request review threads on GitHub.com failed. This included new line comments and file comments on pull requests. Existing PRs and previously created comments were unaffected. <br /><br />This incident was caused by a"
+          "at": "2026-09-20T23:22:16.710Z",
+          "body": "On September 20, 2026, between 21:46 and 22:24 UTC the Pull Requests service was degraded and pull request merge and test-merge commits were created late, with delays reaching approximately four minutes at peak. Merge commits were delayed rather than lost. Because some Actions wo"
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-09-20T22:32:02.624Z",
+          "body": "A git fileserver issue caused a brief delay in creating some merge commits - we've isolated the underlying server and already observed recovery."
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-09-20T22:27:28.769Z",
+          "body": "The degradation affecting Pull Requests has been mitigated. We are monitoring to ensure stability."
         },
         {
           "status": "investigating",
-          "at": "2026-05-06T19:04:12.561Z",
-          "body": "Mitigations have been fully applied and we are seeing full recovery of functionality on Pull Request threads. We are continuing to monitor to ensure sustained recovery."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-06T17:52:49.530Z",
-          "body": "Creation of new Pull Request threads (including line and file comments) continues to be affected although we are seeing partial recovery.<br /><br />A mitigation is being applied to continue to accelerate recovery with complete recovery expected by 8:00pm UTC.<br /><br />Top-leve"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-06T16:20:41.678Z",
-          "body": "Creation of new Pull Request threads (including line and file comments) continues to be affected. <br /><br />Top-level comments on pull requests still function and should remain usable during recovery. Opening and merging pull requests, actions, and other pull request operations"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-06T16:07:50.858Z",
-          "body": "Pull Requests is experiencing degraded availability. We are continuing to investigate."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-06T15:55:59.768Z",
-          "body": "Creation of new Pull Request threads (including line and file comments) continues to be affected. We have identified the cause of the issue and have started taking steps to mitigate this issue."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-06T15:28:49.998Z",
-          "body": "We are investigating failures for new thread creation on Pull Requests. Responses to existing pull request threads are unaffected."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-06T15:25:23.845Z",
+          "at": "2026-09-20T22:13:37.969Z",
           "body": "We are investigating reports of degraded performance for Pull Requests"
         }
       ],
@@ -1071,126 +1247,274 @@
       ]
     },
     {
-      "id": "n8htfgj6wv3t",
-      "name": "Disruption with some GitHub services",
-      "impact": "critical",
+      "id": "nvy2q96mcmyg",
+      "name": "Elevated rate of errors for OpenAI models provided by Copilot",
+      "impact": "minor",
       "status": "resolved",
-      "createdAt": "2026-05-06T11:21:28.353Z",
-      "resolvedAt": "2026-05-06T11:59:51.901Z",
+      "createdAt": "2026-09-17T20:59:02.074Z",
+      "resolvedAt": "2026-09-17T21:49:01.417Z",
       "updates": [
         {
           "status": "resolved",
-          "at": "2026-05-06T11:59:51.901Z",
-          "body": "On May 6, 2026 between 11:02 UTC and 11:13 UTC, users were unable to start or view Copilot Cloud Agent or remote sessions. During this time, requests to the session API returned errors, preventing users from creating new sessions or viewing existing ones. The issue was caused by "
+          "at": "2026-09-17T21:49:01.417Z",
+          "body": "Between 20:26 and 21:17 UTC on September 17, 2026, GitHub Copilot experienced degradation affecting several GPT models, including GPT-5.6 Luna, GPT-5.6 Terra, GPT-5.6 Sol, GPT-5.3-Codex, and GPT-6 Astra. Users encountered elevated error rates when using these models.<br /><br />T"
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-09-17T21:39:28.929Z",
+          "body": "We are experiencing degraded availability for GPT-5.6 Luna, GPT-5.6 Terra, GPT-5.6 Sol, GPT-6 Astra, GPT-5.3-Codex in Copilot products and IDE surfaces. This is due to an issue with an upstream model provider. The provider is working to mitigate the problem and we are monitoring "
         },
         {
           "status": "investigating",
-          "at": "2026-05-06T11:59:42.257Z",
-          "body": "We have applied a mitigation and Copilot services have recovered."
+          "at": "2026-09-17T20:59:02.127Z",
+          "body": "We are investigating reports of degraded performance for Copilot AI Model Providers"
+        }
+      ],
+      "components": [
+        "Copilot AI Model Providers"
+      ]
+    },
+    {
+      "id": "nlxnbqnkdzdl",
+      "name": "Degradation with Gemini 3.8 Flash",
+      "impact": "major",
+      "status": "resolved",
+      "createdAt": "2026-09-16T07:20:59.980Z",
+      "resolvedAt": "2026-09-16T17:48:49.246Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-09-16T17:48:49.246Z",
+          "body": "On September 16, 2026, between 04:40 and 11:45 UTC, the Gemini 3.8 Flash model in GitHub Copilot experienced degraded availability. Requests to this model failed at an average rate of 6.4%, and the impact was highest during peak traffic hours. Other Copilot models were not affect"
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-09-16T11:45:34.367Z",
+          "body": "The degradation affecting Copilot AI Model Providers has been mitigated. We are monitoring to ensure stability."
         },
         {
           "status": "investigating",
-          "at": "2026-05-06T11:25:34.849Z",
-          "body": "We are investigating issues with the ability to start Copilot Cloud Agent sessions and view them."
+          "at": "2026-09-16T10:58:41.042Z",
+          "body": "Copilot AI Model Providers is experiencing degraded performance. We are continuing to investigate."
         },
         {
           "status": "investigating",
-          "at": "2026-05-06T11:21:28.407Z",
+          "at": "2026-09-16T08:28:57.275Z",
+          "body": "Copilot AI Model Providers is experiencing degraded performance. We are continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-16T07:21:00.055Z",
+          "body": "We are investigating reports of degraded availability for Copilot AI Model Providers"
+        }
+      ],
+      "components": [
+        "Copilot AI Model Providers"
+      ]
+    },
+    {
+      "id": "bk7zgdcq7s9t",
+      "name": "Disruption with some GitHub services",
+      "impact": "minor",
+      "status": "resolved",
+      "createdAt": "2026-09-15T19:11:31.344Z",
+      "resolvedAt": "2026-09-15T20:00:50.512Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-09-15T20:00:50.512Z",
+          "body": "On September 15, 2026 between 15:30 and 20:00 UTC, some Copilot code reviews on pull requests failed to complete. The cause was increased latency in an internal caching service that GitHub Copilot Code Review relies on to coordinate its review jobs. This caused a timeout in lock "
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-09-15T19:48:02.813Z",
+          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-15T19:11:31.396Z",
           "body": "We are investigating reports of impacted performance for some GitHub services."
         }
       ],
       "components": []
     },
     {
-      "id": "1qzncbrxcsy4",
-      "name": "Incident with Actions, we are investigating reports of degraded availability",
-      "impact": "major",
-      "status": "resolved",
-      "createdAt": "2026-05-06T07:19:07.862Z",
-      "resolvedAt": "2026-05-06T09:44:26.204Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-05-06T09:44:26.204Z",
-          "body": "On May 6, 2026, from approximately 06:45 UTC to 09:15 UTC, GitHub Actions Standard Ubuntu hosted runners were degraded. 17.1% of jobs requesting a standard runner failed.<br /><br />This was caused by an unexpected data shape in the allocation configuration data for standard runn"
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-05-06T09:44:17.265Z",
-          "body": "Actions wait times have fully recovered."
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-05-06T09:19:48.488Z",
-          "body": "The degradation affecting Actions has been mitigated. We are monitoring to ensure stability."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-06T09:08:07.350Z",
-          "body": "We've applied a mitigation to fix the issues with queuing and running Actions jobs. We are seeing improvements in telemetry and are monitoring for full recovery."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-06T08:00:18.919Z",
-          "body": "Actions is experiencing issues with ubuntu standard hosted runners leading to high wait times. We are actively investigating the issue"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-05-06T07:19:07.931Z",
-          "body": "We are investigating reports of degraded availability for Actions"
-        }
-      ],
-      "components": [
-        "Actions"
-      ]
-    },
-    {
-      "id": "8kn8t67gdy36",
-      "name": "Increased Latency and Failures for SSH Git Operations",
+      "id": "qwdwmtqghpk5",
+      "name": "Disruption with some GitHub services",
       "impact": "minor",
       "status": "resolved",
-      "createdAt": "2026-05-05T16:49:36.780Z",
-      "resolvedAt": "2026-05-05T18:35:41.881Z",
+      "createdAt": "2026-09-15T09:47:15.093Z",
+      "resolvedAt": "2026-09-15T11:17:22.038Z",
       "updates": [
         {
           "status": "resolved",
-          "at": "2026-05-05T18:35:41.881Z",
-          "body": "Between approximately 14:00 and 16:10 UTC on May 5, 2026, SSH-based Git operations experienced elevated latency and intermittent failures. On average, the error rate was 0.46% and peaked at 0.6% of SSH write requests. HTTP-based Git operations, including web UI and HTTPS clones, "
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-05-05T18:35:36.336Z",
-          "body": "We've completed our mitigation to prevent further impact. At this time the incident is considered resolved."
-        },
-        {
-          "status": "monitoring",
-          "at": "2026-05-05T18:25:36.979Z",
-          "body": "The degradation affecting Git Operations has been mitigated. We are monitoring to ensure stability."
+          "at": "2026-09-15T11:17:22.038Z",
+          "body": "On September 15, 2026, between 05:45 and 09:50 UTC, the Claude Fable 5.1 model in GitHub Copilot experienced intermittently degraded availability, with an average error rate of 2.8%. During brief recurring 15 minute periods that recurred every ~45 minutes, availability for Claude"
         },
         {
           "status": "investigating",
-          "at": "2026-05-05T17:26:03.498Z",
-          "body": "We're continuing to work on preventing further impact from the earlier issue. No SSH-based impact is expected at this time. We'll post new updates if impact recurs or once our mitigation is in place."
+          "at": "2026-09-15T11:17:13.405Z",
+          "body": "The issues with our upstream model provider have been resolved, and Claude Fable 5.1 is once again available in Copilot products and IDE surfaces.<br /><br />We will continue monitoring to ensure stability, but mitigation is complete."
         },
         {
           "status": "investigating",
-          "at": "2026-05-05T17:23:59.163Z",
-          "body": "Git Operations is experiencing degraded performance. We are continuing to investigate."
+          "at": "2026-09-15T11:09:33.869Z",
+          "body": "We continue to monitor intermittent errors affecting Claude Fable 5.1 in some Copilot products and integrated development environments. Customer-facing metrics have recovered, and we are awaiting confirmation from our upstream provider that the issue will not recur. Customers can"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-15T10:32:25.736Z",
+          "body": "We continue to investigate intermittent errors affecting Claude Fable 5.1 in some Copilot products and integrated development environments. Customers can use another model or select Auto while we monitor the situation."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-15T10:20:13.627Z",
+          "body": "Copilot AI Model Providers is experiencing degraded performance. We are continuing to investigate."
         },
         {
           "status": "monitoring",
-          "at": "2026-05-05T16:54:25.170Z",
-          "body": "Between approximately 14:00 and 16:10 UTC, customers using SSH-based Git operations may have experienced elevated latency and failures. HTTP-based operations were not impacted. We've identified a suspected root cause and are working to implement a mitigation to prevent further im"
+          "at": "2026-09-15T09:48:04.095Z",
+          "body": "We are investigating degraded availability for Claude Fable 5.1, affecting some Copilot products and integrated development environments. The issue is caused by a problem with our upstream model provider. Customers can use another model or select Auto while we investigate."
         },
         {
           "status": "investigating",
-          "at": "2026-05-05T16:49:36.816Z",
+          "at": "2026-09-15T09:47:15.162Z",
           "body": "We are investigating reports of impacted performance for some GitHub services."
         }
       ],
       "components": [
-        "Git Operations"
+        "Copilot AI Model Providers"
       ]
+    },
+    {
+      "id": "kzh5j0mt7qwc",
+      "name": "Actions Larger Runner Jobs for some customers may be slow to start",
+      "impact": "minor",
+      "status": "resolved",
+      "createdAt": "2026-09-14T18:40:25.082Z",
+      "resolvedAt": "2026-09-14T19:35:48.136Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-09-14T19:35:48.136Z",
+          "body": "On September 14, 2026, between 16:10 and 19:01 UTC, some customers using GitHub Actions larger runners experienced longer-than-normal wait times for jobs to start. During this period, <b>5.7%</b> of larger-runner jobs were affected. <br /><br />A routine expansion of our compute "
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-09-14T19:01:52.783Z",
+          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-14T18:40:25.134Z",
+          "body": "We are investigating reports of impacted performance for some GitHub services."
+        }
+      ],
+      "components": []
+    },
+    {
+      "id": "0rn90wk115q9",
+      "name": "Incident with several GitHub Services",
+      "impact": "critical",
+      "status": "resolved",
+      "createdAt": "2026-09-13T09:16:11.480Z",
+      "resolvedAt": "2026-09-13T10:44:55.016Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-09-13T10:44:55.016Z",
+          "body": "On September 13, 2026, between 08:43 and 10:44 UTC, GitHub experienced degraded availability across approximately 28 services, including Issues, Pull Requests, Actions, Codespaces, Pages, Notifications, Code Scanning, Git LFS, and new account signup. At peak, 8.8% of requests to "
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-13T10:28:45.961Z",
+          "body": "Pull Requests is experiencing degraded performance. We are continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-13T10:26:55.219Z",
+          "body": "We have reduced load on this cluster with internal load-shedding and are seeing signs of recovery but continue to monitor"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-13T09:36:23.221Z",
+          "body": "We're seeing increased database replication delays on collab which is causing increased error rates in authorization endpoints and follow-on increased error rates across the system - we are investigating"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-13T09:25:56.000Z",
+          "body": "Actions is experiencing degraded performance. We are continuing to investigate."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-13T09:16:11.624Z",
+          "body": "We are investigating reports of degraded availability for API Requests, Issues, Pages and Pull Requests"
+        }
+      ],
+      "components": [
+        "API Requests",
+        "Issues",
+        "Pull Requests",
+        "Actions",
+        "Pages"
+      ]
+    },
+    {
+      "id": "zw1hbx2yyhvr",
+      "name": "Disruption with Copilot Code Review",
+      "impact": "major",
+      "status": "resolved",
+      "createdAt": "2026-09-04T20:39:03.203Z",
+      "resolvedAt": "2026-09-04T22:26:46.740Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-09-04T22:26:46.740Z",
+          "body": "On September 4, 2026, between 20:04 and 22:26 UTC, GitHub Copilot code review experienced an increased failure rate. Affected pull request reviews failed to complete or post review comments.<br /><br />The incident was caused by a change to the service’s authentication permission"
+        },
+        {
+          "status": "monitoring",
+          "at": "2026-09-04T22:25:44.372Z",
+          "body": "The degradation has been mitigated. We are monitoring to ensure stability."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-04T21:54:22.688Z",
+          "body": "We are applying the mitigation and expect recovery within approximately 30 minutes."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-04T20:57:53.116Z",
+          "body": "Some users may be experiencing failures when using Copilot code review. We have identified the root cause and are working on a mitigation."
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-04T20:39:03.249Z",
+          "body": "We are investigating reports of impacted performance for some GitHub services."
+        }
+      ],
+      "components": []
+    },
+    {
+      "id": "r05vk75c594j",
+      "name": "Degradation in repos contents API",
+      "impact": "minor",
+      "status": "resolved",
+      "createdAt": "2026-09-04T22:02:15.790Z",
+      "resolvedAt": "2026-09-04T22:23:34.887Z",
+      "updates": [
+        {
+          "status": "resolved",
+          "at": "2026-09-04T22:23:34.887Z",
+          "body": "On September 4, 2026, between approximately 21:45 and 22:07 UTC, some users experienced errors and elevated latency for repository operations. The incident was fully resolved at 22:23 UTC.<br /><br />The cause was a capacity change that spread one of our clusters across additiona"
+        },
+        {
+          "status": "investigating",
+          "at": "2026-09-04T22:02:15.829Z",
+          "body": "We are investigating reports of impacted performance for some GitHub services."
+        }
+      ],
+      "components": []
     }
   ]
 }
