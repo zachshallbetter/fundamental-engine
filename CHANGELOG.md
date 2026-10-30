@@ -7,12 +7,19 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **DOM morph bodies can target an inline SVG path.** Set `data-target="#path-id"` on a body using `morph`; the DOM host samples the path in viewport coordinates and supplies the target points to the existing field behavior.
+
 ### Fixed
+
+- **Captured particles no longer orbit visibly inside a sink.** Matter is held out of view while the sink accumulates load, then released with the sink's tint and an energy-scaled burst.
 
 - **`mountXRay`: the hotkey no longer fires while you type, and the panel follows a swapped `<body>`** (`@fundamental-engine/dom`). `onKey` toggled the panel on any keydown whose key matched, so typing `?` into a search box, a form field or a contenteditable editor opened and closed it; it now ignores the hotkey when the event target or the focused element is editable, or with Ctrl/Meta/Alt held (Escape still closes). The panel's parent was captured as `document.body` at mount, so under an SPA router that replaces `<body>` (Astro view transitions) the panel was appended to the detached old body and the hotkey seemed to do nothing; the parent is now resolved when the panel opens. Found wiring x-ray into zachshallbetter.com.
 
 ### Site
 
+- **The homepage is a guided, inspectable field tutorial.** Visitors can start a six-step walkthrough or explore each section independently; the Trust section demonstrates particle morphing toward the data console and distinguishes diagnostics from `field.query()`. Claim-to-source links are declared in the DOM, and a particle becomes inspectable only in the evidence section.
 - **The homepage reads as a progression: interaction → behavior → relationships → computation → substrate.** It cycled interaction → behavior → adoption → interaction → agent → substrate → relationships → install → platforms → agent, with cross-platform three times and install in the middle of the doctrine. Now: the hero ("Elements have mass.") and the try-it field, the inbox proof, what the field replaces, how it works / built to be inspected / the counts, then shipped work, hosts, the AI application and the invisible fields, then install and explore. Sections are moved, not rewritten; the hero's secondary CTA is now Install.
 - **fundamental-engine.com truth and provenance pass.** `/docs/getting-started` told readers the field writes `--field-attention` and `--field-temperature`; the default sink writes neither, so its example CSS never changed — it now uses `--d`, lists the variables the sink actually writes, and leads with `npm create @fundamental-engine` (working since 0.11.1). `/use-cases` and `docs/canonical/use-cases.md` named APIs that don't exist (`field.setBodyStrength`, `ScrollAgent`, `data-truth`, a "pressure formation", the `coherent`/`dwell` body conditions) — each now names the real mechanism (`data-strength` re-read live, `focus()`, `bindData`, the `scrolling` condition, `setFormation('wells')`) or is marked a proposal, and the page no longer calls planning sketches "not demos". The homepage drops "identical output … every commit" (it's within a stated tolerance, on plane changes), "a frozen public API", "enforced and linted" reduced motion, "the job itself goes away", and the Ascent card's wrong package; concepts / natural-fields / support stop saying "all shipped" and "frozen". The changelog's "Recently shipped" covers 0.10–0.11.1, and the implementations table lists the Rust plane. Provenance: the footer shows the engine version, the build commit and build date on every page; the nav, the footer and the homepage's structured data read one version source; `llms.txt` / `llms-full.txt` carry version + commit; the sitemap carries `lastmod`.
 

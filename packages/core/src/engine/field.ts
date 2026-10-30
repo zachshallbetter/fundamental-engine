@@ -19,6 +19,8 @@ import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
 import { scanBodies, measureBodies, bodyFromElement } from './scanner.ts';
+
+type MorphTargetHost = { resolveMorphTarget?: (body: HTMLElement, selector: string, originX: number, originY: number) => readonly { x: number; y: number }[] | undefined };
 import {
   ShadowRegistry,
   REGISTER_BODY,
@@ -890,6 +892,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // is conserved: released particles stay in the pool. `releaseCaptured` resets b.accreted to 0.
       const released = releaseCaptured(store.particles, b, rng);
       const justReleased = new Set(released);
+      // High-energy incandescent spark shower scaling with accreted energy
+      if (released.length > 0) {
+        const sparkPower = Math.min(3.5, 1 + released.length * 0.12);
+        const sparkColor = b.tint || (b.el?.dataset?.color ? b.el.dataset.color : undefined);
+        spawnSpark(b.cx, b.cy, sparkPower, sparkColor);
+      }
       // the blast shoves nearby *free* matter outward (but not the matter it just released).
       for (const q of store.particles) {
         if (justReleased.has(q)) continue;
@@ -1140,7 +1148,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
       }
     }
-    if (measureBodies(bodies, W, H, originX, originY)) pruneDetachedBodies();
+    if (measureBodies(bodies, W, H, originX, originY, (host as FieldHost & MorphTargetHost).resolveMorphTarget)) pruneDetachedBodies();
     bindEngagement();
     // Reconcile movers: carry forward offset + dock state for elements that persist across
     // rescans (shadow-DOM re-register, Astro nav re-mounts, explicit rescan()). An element that
@@ -1707,7 +1715,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         if (p.report === undefined) p.y %= H;
         else p.y = H;
       }
-      if (bodies.length && measureBodies(bodies, W, H, originX, originY)) pruneDetachedBodies();
+      if (bodies.length && measureBodies(bodies, W, H, originX, originY, (host as FieldHost & MorphTargetHost).resolveMorphTarget)) pruneDetachedBodies();
       return;
     }
     builtW = W;
@@ -2123,16 +2131,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
     const tintBodies = tintCache;
     if (showMatter) for (const p of store.particles) {
-      // captured matter is held in orbit by the sink — drawn dim and small (the accretion's orbital
-      // work), distinct from the free swarm. It stays visible: the body gathers and holds a real
-      // cloud, then the supernova flings it back out. (Conserved either way — see accretion.ts.)
-      if (p.cap) {
-        ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.55 * boot})`;
-        ctx!.beginPath();
-        ctx!.arc(p.x, p.y, 1.3, 0, 6.28318);
-        ctx!.fill();
-        continue;
-      }
+      // Captured matter is absorbed inside the sink body — held out of sight while
+      // accumulating load, eliminating any clustering or circling. Released in full on supernova.
+      if (p.cap) continue;
       const d = Math.min(1, Math.hypot(p.x - cx, p.y - cy) / maxD);
       const rs = d * d;
       const h = p.heat;
@@ -2950,7 +2951,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       w.offsetY += (target - w.offsetY) * 0.04;
     }
     if (bodies.length && frameN % 6 === 0) {
-      if (measureBodies(bodies, W, H, originX, originY)) pruneDetachedBodies();
+      if (measureBodies(bodies, W, H, originX, originY, (host as FieldHost & MorphTargetHost).resolveMorphTarget)) pruneDetachedBodies();
       detectProximityEvents(bodies); // #441 enter/exit/met — on the measure cadence, lazy
       // attention-gated discharge (#365): an engagement-gated sink releases on the falling
       // edge of engagement — the same conserved supernova ritual as saturation.

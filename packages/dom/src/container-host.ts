@@ -8,11 +8,12 @@
  */
 import { FIELD_BOUNDARY_ATTR, type FieldHost } from '@fundamental-engine/core';
 import { prefersReducedMotion, pageHidden } from './env.ts';
+import { sampleSvgTarget } from './svg-target.ts';
 
 const INPUT_EVENTS = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const;
 
 /** Build a FieldHost scoped to `el` — a contained field in the element's local coordinate space. */
-export function containerHost(el: HTMLElement): FieldHost {
+export function containerHost(el: HTMLElement): FieldHost & { resolveMorphTarget: (body: HTMLElement, selector: string, originX: number, originY: number) => readonly { x: number; y: number }[] | undefined } {
   // Nearest-enclosing-field ownership (#980): mark the bounds element as a field boundary at
   // attach, so an OUTER field's scan (the page `<field-root>` scans `document`) skips the bodies
   // this contained field owns — two engines writing `--d` on the same elements is the per-frame
@@ -21,6 +22,7 @@ export function containerHost(el: HTMLElement): FieldHost {
   el.setAttribute(FIELD_BOUNDARY_ATTR, '');
   return {
     root: el,
+    resolveMorphTarget: (body, selector, originX, originY) => sampleSvgTarget(el, body, selector, originX, originY),
     detach: () => el.removeAttribute(FIELD_BOUNDARY_ATTR),
     viewport: () => {
       const r = el.getBoundingClientRect();

@@ -285,6 +285,19 @@ for (const route of ["/", "/engine-tour", "/eli5"] as const) {
     test("the atom inspector: dwell focuses a seeded particle, click opens the card, × closes", async ({
       page,
     }) => {
+      const evidence = page.locator("#evidence .wf-plane");
+      if (await evidence.count()) {
+        await page.locator("#evidence").scrollIntoViewIfNeeded();
+        const invitation = page.locator(".atom-ring");
+        await expect(invitation).toBeVisible({ timeout: 20000 });
+        await invitation.click();
+        const card = page.locator(".atom-card");
+        await expect(card).toBeVisible();
+        await card.locator(".at-close").click();
+        await expect(card).toBeHidden();
+        return;
+      }
+
       // find a seeded particle with the engine's own picker, then drive a real pointer to it
       const hit = await page.evaluate(async () => {
         const fr = document.querySelector("field-root") as any;

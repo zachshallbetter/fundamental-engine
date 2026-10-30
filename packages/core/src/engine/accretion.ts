@@ -31,10 +31,11 @@ export function releaseCaptured(
 ): Particle[] {
   const released: Particle[] = [];
   const rim = b.absorbR + 6; // clear the capture horizon so it isn't re-captured next frame
+  const energyDensity = b.capacity > 0 ? Math.min(1, b.accreted / b.capacity) : 0.5;
   for (const q of particles) {
     if (q.cap !== b) continue;
     const ang = rng() * Math.PI * 2;
-    const spd = 4 + rng() * 3;
+    const spd = 4 + rng() * 3 + energyDensity * 2.5;
     q.cap = null;
     q.x = b.cx + Math.cos(ang) * rim;
     q.y = b.cy + Math.sin(ang) * rim;
@@ -44,6 +45,7 @@ export function releaseCaptured(
     if (q.z) q.z = 0;
     if (q.vz) q.vz = 0;
     q.heat = 1;
+    if (b.tint) q.color = b.tint; // carried pigment from the sink that absorbed it
     // A supernova is a CONSERVATION event: the ejected matter rejoins the PERSISTENT
     // field. Mortal (class-[S] source-spawned) matter that a sink captured and held is
     // released immortal — so a source→sink→supernova loop visibly conserves (the matter

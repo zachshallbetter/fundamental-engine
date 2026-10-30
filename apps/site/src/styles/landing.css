@@ -159,6 +159,9 @@ html[data-field='on'] .hero-antimass:hover {
 .wf-legend .wf-k {
   color: var(--text-3);
 }
+.wf-sources { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.7rem; }
+.wf-sources a { border: 1px solid var(--line); border-radius: 999px; padding: 0.4rem 0.65rem; color: var(--state-signal); font: 0.65rem var(--mono); text-decoration: none; }
+.wf-sources a:hover, .wf-sources a:focus-visible { border-color: var(--state-signal); }
 @media (max-width: 860px) {
   .lp-ai-grid {
     grid-template-columns: 1fr;
@@ -166,6 +169,12 @@ html[data-field='on'] .hero-antimass:hover {
   .wedge-field {
     max-width: 480px;
   }
+}
+@media (max-width: 480px) {
+  #claim-confirmed { --x: 24% !important; }
+  #claim-single { --x: 74% !important; --y: 20% !important; }
+  #claim-corroborated { --x: 38% !important; --y: 45% !important; }
+  #claim-conflict { --x: 70% !important; --y: 72% !important; }
 }
 /* Section break: a soft centred hairline that fades out at the edges instead of a hard full-bleed
    rule — it reads as a seam in the field, not a divider drawn on top of it. */
@@ -244,18 +253,16 @@ html[data-field='on'] .hero-antimass:hover {
   color: var(--text-4);
 }
 .lp .install:hover {
-  border-color: var(--state-attention);
+  border-color: var(--cat, var(--state-signal));
 }
 .lp .install.copied::after {
   content: 'copied ✓';
-  /* a state change, which is precisely what the warm accent is for (#914 D2) */
-  color: var(--state-attention);
+  color: var(--cat, var(--state-signal));
 }
 
-/* install block — a 'start here' hero accretion card spanning the row, then a 3-up of surface cards.
+/* install block — a 'start here' hero card spanning the row, then a 3-up of surface cards.
    Solid design-system surfaces (--bg-card / --shadow / --r-lg), each a live field body that CONSUMES
-   its feedback vars: the borders + the top hairline brighten with --field-density as matter gathers,
-   and the hero FILLS with --load as its sink accretes (Body Matter Interaction). */
+   its feedback vars: the borders + top hairline respond to local --field-density. */
 .lp-pkgs {
   margin: 1.9rem 0 0;
   display: grid;
@@ -269,7 +276,6 @@ html[data-field='on'] .hero-antimass:hover {
 }
 .lp-pkg {
   --field-density: 0;
-  --load: 0;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -313,49 +319,30 @@ html[data-field='on'] .hero-antimass:hover {
   z-index: 1;
 }
 
-/* hero: the 'start here' vanilla card spans the row and is an accretion vessel — it fills with --load
-   from the base as its sink gathers matter, then supernovas + resets (Sink / Accretion).
-   The box-shadow swells into a warm glow as --load rises so the card visibly charges. */
+/* hero: the 'start here' vanilla card is a restrained local attractor. */
 .lp-pkg--hero {
   grid-column: 1 / -1;
   padding: 1.5rem 1.6rem 1.6rem;
   transition: border-color 0.35s var(--ease);
 }
-/* #914 D4 — the accretion glow becomes a METER. --load (the sink fill the engine writes onto
-   this data-feedback body every frame) is still consumed and still legible, but as a flat fill
-   rising from the base of the card: an instrument reading its own vessel, not a bloom. Keeping
-   a --load consumer here also keeps the card clear of the silent-contract lint. */
-.lp-pkg--hero::before {
-  content: '';
-  position: absolute;
-  inset: auto 0 0 0;
-  height: calc(var(--load) * 100%);
-  max-height: 100%;
-  z-index: 0;
-  pointer-events: none;
-  background: color-mix(in srgb, var(--cat, var(--accent)) 9%, transparent);
-  border-top: 1px solid
-    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--load) * 45%), transparent);
-}
-
-/* the state chip (#914 D2/D4). "Start here" is a state the chrome is reporting, not a force,
-   so it takes the attention accent instead of the card's per-force hue — and it is squared off,
-   because the pill is the SaaS grammar #914 asks this page to drop. */
+/* The install label follows its package card's host accent; it is a category marker, not an alert. */
 .lp-pkg-tag {
   font-family: var(--mono);
   font-size: var(--label-size);
   letter-spacing: var(--label-track);
   text-transform: uppercase;
-  color: var(--state-attention);
+  color: var(--cat, var(--accent));
   padding: 0.22rem 0.55rem;
-  border: 1px solid color-mix(in srgb, var(--state-attention) 40%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 45%, var(--line));
   border-radius: var(--r-sm);
 }
 .lp-pkg-desc {
-  font-size: 0.86rem;
+  font-size: 0.92rem;
   line-height: 1.5;
-  color: var(--text-3);
+  color: var(--text-2);
 }
+.lp-pkg-desc b { color: var(--text); }
+.lp-pkg-desc a { display: inline-block; white-space: nowrap; }
 .lp-pkg .install {
   --accent: var(--cat, var(--accent));
   align-self: stretch;
@@ -372,6 +359,17 @@ html[data-field='on'] .hero-antimass:hover {
 .lp-pkg .install::after {
   font-size: 0.55rem;
   opacity: 0.55;
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .lp-pkg .install {
+    gap: 0.35rem;
+    padding: 0.62rem 0.65rem;
+    font-size: 0.68rem;
+    white-space: normal;
+    overflow: visible;
+    overflow-wrap: anywhere;
+  }
 }
 .lp-pkg code:not(.install) {
   font-family: var(--mono);
@@ -389,6 +387,7 @@ html[data-field='on'] .hero-antimass:hover {
   font-size: 0.8rem;
   color: var(--text-2);
 }
+.lp-cdn-note code { display: block; margin-top: 0.35rem; overflow-wrap: anywhere; }
 .lp-note a {
   color: var(--state-signal);
   text-decoration: none;
@@ -434,6 +433,7 @@ html[data-field='on'] .hero-antimass:hover {
   padding: 0.7rem 0.9rem;
   border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
 }
+.lp-ask:focus-visible { outline: 2px solid var(--state-signal); outline-offset: 3px; }
 .lp-ask:last-child {
   border-bottom: 0;
 }
@@ -487,18 +487,24 @@ html[data-field='on'] .hero-antimass:hover {
   font-size: 0.78rem;
 }
 .lp-flow .lp-step {
+  min-width: 0;
+  max-width: 100%;
   display: inline-flex;
   flex-direction: column;
   gap: 0.2rem;
+  padding: 0.2rem 0.35rem;
+  border-radius: 8px;
 }
 .lp-flow .lp-step code {
   color: var(--text);
 }
 .lp-flow .lp-step span {
+  max-width: 100%;
   font-size: 0.6rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-4);
+  overflow-wrap: anywhere;
 }
 .lp-flow .lp-arrow {
   color: var(--state-signal);

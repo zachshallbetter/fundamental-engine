@@ -46,9 +46,9 @@ by a *truth mode* and an inspectable *passport*; and (4) a uniform authoring con
 `[data-body]` markup compiling identically across native HTML, web components, and React. We
 describe the model, the architecture, and the emergent interface primitives the reciprocal loop
 makes possible (conserved attention, material typography, cross-boundary causality, memory fields),
-and we are candid about what is shipped versus aspirational. The companion papers each validate the
-paradigm in one specific domain — reading, evidence and trust, accessibility, runtime architecture,
-authoring, data binding, and diagnostics.
+and we are candid about what is shipped versus aspirational. The companion papers examine bounded
+claims in reading, evidence and trust, accessibility, runtime architecture, authoring, data binding,
+and diagnostics; their proposed human-outcome studies have not produced results.
 
 ---
 
@@ -65,11 +65,22 @@ logic. The relations are real — this card *depends on* that one; this result i
 its neighbors; this section has *already been read* — but they live nowhere in particular and are
 re-derived, inconsistently, wherever they happen to surface.
 
-Fundamental starts from a different question. Instead of asking *"what animation should this component
-play?"* it asks *"why is this element emphasized? what is pulling attention? which relationship is
+Fundamental began with a physics question: **what happens when a field surrounds the DOM and the DOM
+interacts with it?** The question was about placing a field around interface elements and letting
+those elements participate in its dynamics—not drawing a particle layer behind an otherwise unchanged
+page. The reciprocal behavior that followed became the runtime's organizing model.
+
+Fundamental then asks a different question from *"what animation should this component play?"*: *"why
+is this element emphasized? what is pulling attention? which relationship is
 active? what caused this state?"* The answer is to treat the interface not as a collection of
 isolated components with decorative transitions, but as **one shared, inspectable field of meaning**
 in which those relations are first-class, measurable, and reciprocal.
+
+Trying to explain this model exposed a separate problem: interaction itself lacked a shared scientific
+vocabulary that made the idea clear to others. That communication need later prompted Foundations of
+Computational Interaction (FCI), now an independent research program with a broader scope. Fundamental
+is one possible computational substrate for bounded FCI distinctions; it does not implement or validate
+FCI as a whole. See the [canonical relationship note](../canonical/computational-interaction-alignment.md).
 
 ### 1.2 The reframe: a relational field, not a particle background
 
@@ -665,8 +676,9 @@ Three case studies anchor the family:
   headings, citations, a table of contents — wired to `createFieldPlatform` and exercising all six
   registries on the scheduler. Sections are measured bodies; viewport-centre proximity becomes
   attention; attention accumulates into memory over dwell; the table of contents reflects the field
-  state; citations resolve into typed relationships. Reduced motion preserves the meaning. It proves
-  the substrate on prose, *without spectacle.* Paper 2 turns it into an empirical study.
+  state; citations resolve into typed relationships. The reduced-motion path preserves the declared
+  signals in the demo. It demonstrates that the substrate runs on prose, *without spectacle*; it does
+  not establish a reader benefit. Paper 2 turns the case into a planned empirical study.
 - **Evidence Field.** Claims, sources, contradictions, confidence, and provenance modeled as
   inspectable field relationships — support as binding, contradiction as charge, uncertainty as
   entropy, correction as memory overwrite. The target domain is AI answers and other source-backed
@@ -782,10 +794,11 @@ uniform authoring contract that compiles identically across native HTML, web com
 The reciprocal loop yields interface primitives — conserved attention, material typography,
 cross-boundary causality, and memory fields — that local component state cannot express. We have been
 explicit about the boundary between what is shipped and what is aspirational, and about the model's
-deliberate physical limitations. The companion papers validate the paradigm in specific domains:
+deliberate physical limitations. The companion papers develop and operationalize bounded claims in
 reading (Paper 2), evidence and trust in AI interfaces (Paper 3), reduced-motion equivalence
-(Paper 4), the host-driven runtime architecture in depth (Paper 5), portable pattern authoring
-(Paper 6), data binding (Paper 7), and explainable diagnostics (Paper 8).
+(Paper 4), host-driven runtime architecture (Paper 5), portable pattern authoring (Paper 6), data
+binding (Paper 7), and explainable diagnostics (Paper 8). Proposed evaluations remain proposals until
+they are run and their results reported.
 
 ---
 

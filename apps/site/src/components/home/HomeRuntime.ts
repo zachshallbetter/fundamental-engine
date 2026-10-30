@@ -35,6 +35,176 @@ export function initHomeRuntime(): () => void {
   const field = document.querySelector("field-root") as FieldEl | null;
   const rescan = () => field && field.rescan && field.rescan();
 
+  // Guided entry is optional: links and controls in every lesson keep working independently.
+  const guide = document.querySelector<HTMLElement>("[data-field-guide]");
+  const lessons = [
+    ["try", "Try it: edit the DOM input"],
+    ["proof", "Inbox: authored importance"],
+    ["why", "Tradeoffs: measured signals"],
+    ["how", "The loop: five verbs"],
+    ["trust", "Trust: inspect both readings"],
+    ["evidence", "Evidence: inspect declared sources"],
+  ] as const;
+  let lesson = 0;
+  let guideNavigating = false;
+  let guideNavigationTimer = 0;
+  const showLesson = (index: number) => {
+    lesson = Math.max(0, Math.min(lessons.length - 1, index));
+    const section = document.getElementById(lessons[lesson]![0]);
+    const progress = guide?.querySelector("[data-guide-progress]");
+    const title = guide?.querySelector("[data-guide-title]");
+    const prev = guide?.querySelector<HTMLButtonElement>("[data-guide-prev]");
+    const next = guide?.querySelector<HTMLButtonElement>("[data-guide-next]");
+    if (progress) progress.textContent = `Walkthrough · ${lesson + 1} of ${lessons.length}`;
+    if (title) title.textContent = lessons[lesson]![1];
+    if (prev) prev.disabled = lesson === 0;
+    if (next) next.textContent = lesson === lessons.length - 1 ? "Finish walkthrough" : "Next lesson →";
+    guideNavigating = true;
+    window.clearTimeout(guideNavigationTimer);
+    guideNavigationTimer = window.setTimeout(() => { guideNavigating = false; }, 1400);
+    section?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  };
+  document.querySelectorAll<HTMLElement>("[data-guide-start]").forEach((start) => start.addEventListener("click", (event) => {
+    event.preventDefault();
+    if (guide) guide.hidden = false;
+    showLesson(0);
+    guide?.querySelector<HTMLElement>("[data-guide-next]")?.focus({ preventScroll: true });
+  }, { signal: sig }));
+  guide?.querySelector("[data-guide-prev]")?.addEventListener("click", () => showLesson(lesson - 1), { signal: sig });
+  guide?.querySelector("[data-guide-next]")?.addEventListener("click", () => {
+    if (lesson === lessons.length - 1) { if (guide) guide.hidden = true; return; }
+    showLesson(lesson + 1);
+  }, { signal: sig });
+  guide?.querySelector("[data-guide-close]")?.addEventListener("click", () => { if (guide) guide.hidden = true; }, { signal: sig });
+  if (guide) {
+    const guideObserver = new IntersectionObserver((entries) => {
+      if (guide.hidden || guideNavigating) return;
+      const current = entries.find((entry) => entry.isIntersecting);
+      const idx = lessons.findIndex(([id]) => current?.target === document.getElementById(id));
+      if (idx >= 0 && idx !== lesson) {
+        lesson = idx;
+        const progress = guide.querySelector("[data-guide-progress]");
+        const title = guide.querySelector("[data-guide-title]");
+        const prev = guide.querySelector<HTMLButtonElement>("[data-guide-prev]");
+        const next = guide.querySelector<HTMLButtonElement>("[data-guide-next]");
+        if (progress) progress.textContent = `Walkthrough · ${lesson + 1} of ${lessons.length}`;
+        if (title) title.textContent = lessons[lesson]![1];
+        if (prev) prev.disabled = lesson === 0;
+        if (next) next.textContent = lesson === lessons.length - 1 ? "Finish walkthrough" : "Next lesson →";
+      }
+    }, { rootMargin: "-15% 0px -55% 0px" });
+    lessons.forEach(([id]) => { const section = document.getElementById(id); if (section) guideObserver.observe(section); });
+    obs.push(guideObserver);
+  }
+
+  // Trust's morph cue is opt-in and owns only its temporary body declaration/render mode.
+  const trust = document.getElementById("trust");
+  const trustToggle = document.querySelector<HTMLButtonElement>("[data-trust-morph]");
+  const consoleTrigger = document.getElementById("dc-trigger") as FieldEl | null;
+  const trustPath = document.getElementById("trust-arrow-path");
+  const trustArrow = trustPath?.ownerSVGElement;
+  let priorRender: string | null = null;
+  let cueOn = false;
+  let cueSourceY = 0;
+  let burstTimer = 0;
+  const cueAttrs = ["data-body", "data-target", "data-strength", "data-range", "data-color"] as const;
+  let priorCueAttrs = new Map<string, string | null>();
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const restoreCueAttrs = () => {
+    if (!consoleTrigger) return;
+    for (const name of cueAttrs) {
+      const value = priorCueAttrs.get(name);
+      if (value == null) consoleTrigger.removeAttribute(name);
+      else consoleTrigger.setAttribute(name, value);
+    }
+    priorCueAttrs.clear();
+  };
+  const updateTrustTarget = () => {
+    if (!trustArrow || !trustPath || !trustToggle || !consoleTrigger || !cueOn) return;
+    const source = trustToggle.getBoundingClientRect();
+    if (source.bottom <= 0 || source.top >= window.innerHeight || source.right <= 0 || source.left >= window.innerWidth) {
+      setTrustCue(false, true);
+      return;
+    }
+    const target = consoleTrigger.getBoundingClientRect();
+    const x = target.left + target.width / 2;
+    const tipY = target.top - 10;
+    const shaftTop = tipY - 48;
+    const headTop = tipY - 12;
+    trustArrow.setAttribute("viewBox", `0 0 ${window.innerWidth} ${window.innerHeight}`);
+    trustPath.setAttribute("d", `M${x} ${shaftTop}L${x} ${tipY}M${x - 10} ${headTop}L${x} ${tipY}L${x + 10} ${headTop}`);
+  };
+  const restoreTrustCue = () => {
+    if (!field || !consoleTrigger) return;
+    window.clearTimeout(burstTimer);
+    burstTimer = 0;
+    restoreCueAttrs();
+    if (priorRender !== null) field.setAttribute("render", priorRender);
+    priorRender = null;
+    field.rescan?.();
+  };
+  const setTrustCue = (on: boolean, burst = false) => {
+    if (!trustToggle || !consoleTrigger || !field) return;
+    if (on === cueOn) return;
+    if (on && reduced.matches) return;
+    if (on && burstTimer) restoreTrustCue();
+    cueOn = on;
+    trustToggle.setAttribute("aria-pressed", String(on));
+    trustToggle.textContent = on ? "Stop particle arrow" : "Form an arrow with particles";
+    if (on && !reduced.matches) {
+      priorCueAttrs = new Map(cueAttrs.map((name) => [name, consoleTrigger.getAttribute(name)]));
+      priorRender = field.getAttribute("render") ?? "none";
+      if (priorRender === "none") field.setAttribute("render", "dots");
+      consoleTrigger.setAttribute("data-body", "morph pigment");
+      consoleTrigger.setAttribute("data-target", "#trust-arrow-path");
+      consoleTrigger.setAttribute("data-strength", "0.65");
+      consoleTrigger.setAttribute("data-range", "120");
+      consoleTrigger.setAttribute("data-color", "#52d8ff");
+      cueSourceY = trustToggle.getBoundingClientRect().top;
+      updateTrustTarget();
+    } else {
+      if (burst && !reduced.matches) {
+        consoleTrigger.removeAttribute("data-target");
+        consoleTrigger.setAttribute("data-body", "repel thermal");
+        consoleTrigger.setAttribute("data-strength", "4.5");
+        consoleTrigger.setAttribute("data-range", String(Math.ceil(Math.hypot(window.innerWidth, window.innerHeight) * 1.5)));
+        if (priorRender === "none") field.setAttribute("render", "dots");
+        burstTimer = window.setTimeout(() => {
+          consoleTrigger.setAttribute("data-body", "viscosity");
+          consoleTrigger.setAttribute("data-strength", "3.2");
+          field.rescan?.();
+          burstTimer = window.setTimeout(restoreTrustCue, 800);
+        }, 400);
+      } else {
+        restoreCueAttrs();
+        if (priorRender !== null) field.setAttribute("render", priorRender);
+        priorRender = null;
+      }
+    }
+    rescan();
+  };
+  window.addEventListener("resize", updateTrustTarget, { passive: true, signal: sig });
+  document.addEventListener("scroll", () => {
+    if (!cueOn) return;
+    updateTrustTarget();
+    if (cueOn && Math.abs(trustToggle!.getBoundingClientRect().top - cueSourceY) > 8) setTrustCue(false, true);
+  }, { passive: true, capture: true, signal: sig });
+  trustToggle?.addEventListener("click", () => setTrustCue(trustToggle.getAttribute("aria-pressed") !== "true"), { signal: sig });
+  const trustObserver = trust && new IntersectionObserver((entries) => {
+    if (entries.some((entry) => !entry.isIntersecting)) setTrustCue(false, true);
+  }, { threshold: 0.08 });
+  if (trust && trustObserver) { trustObserver.observe(trust); obs.push(trustObserver); }
+  const trustCueObserver = trustToggle && new IntersectionObserver((entries) => {
+    if (cueOn && entries.some((entry) => !entry.isIntersecting)) setTrustCue(false, true);
+  });
+  if (trustToggle && trustCueObserver) { trustCueObserver.observe(trustToggle); obs.push(trustCueObserver); }
+  reduced.addEventListener?.("change", () => { if (reduced.matches) setTrustCue(false); }, { signal: sig });
+  document.querySelector("[data-open-console]")?.addEventListener("click", () => {
+    if (consoleTrigger?.getAttribute("aria-expanded") !== "true") consoleTrigger?.click();
+    consoleTrigger?.focus();
+  }, { signal: sig });
+  obs.push({ disconnect: () => setTrustCue(false) });
+
   // flow focus (field.flowTo): when on, the field bends toward the pointer — matter streams
   // in, the streamlines/spine curve to it. A live demo of the controlled flow-field API.
   const flowToggle = document.getElementById("flowToggle");
@@ -444,6 +614,7 @@ export function initHomeRuntime(): () => void {
 
   return () => {
     clearTimeout(startupRescan);
+    clearTimeout(guideNavigationTimer);
     ac.abort();
     obs.forEach((o) => o.disconnect());
     // reset any attribute-driven state so a re-init (astro:page-load) starts clean

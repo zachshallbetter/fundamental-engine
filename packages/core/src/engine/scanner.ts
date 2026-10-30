@@ -52,7 +52,10 @@ export type StaticBody = Pick<
   | 'screenMin'
   | 'classified'
   | 'M'
->;
+> & { targetRef?: string };
+
+const morphTargets = new WeakMap<Body, string>();
+export function morphTargetRef(body: Body): string | undefined { return morphTargets.get(body); }
 
 /** Parse a body's static parameters from its `data-*` attributes (pure). */
 export function parseBodyParams(a: BodyAttrs): StaticBody {
@@ -83,6 +86,7 @@ export function parseBodyParams(a: BodyAttrs): StaticBody {
   const authority = authRaw === 'kinematic' || authRaw === 'dynamic' ? authRaw : 'anchored';
   return {
     tokens,
+    ...(a.get('target') ? { targetRef: a.get('target')! } : {}),
     authority,
     classified,
     ...(Number.isFinite(life) && life > 0 ? { life } : {}),
@@ -207,9 +211,10 @@ export function guardSourceBudget(sb: StaticBody, name = '<body>'): void {
 /** A fresh Body from static params, all runtime fields zeroed — shared by both paths. */
 function makeBody(el: HTMLElement, sb: StaticBody): Body {
   guardSourceBudget(sb, describeEl(el));
-  return {
+  const { targetRef, ...params } = sb;
+  const body: Body = {
     el,
-    ...sb,
+    ...params,
     tint: el.dataset.color, // data-color → pigment tint (§20.8); undefined if absent
     cx: 0,
     cy: 0,
@@ -222,6 +227,8 @@ function makeBody(el: HTMLElement, sb: StaticBody): Body {
     d: 0,
     attn: 1,
   };
+  if (targetRef) morphTargets.set(body, targetRef);
+  return body;
 }
 
 /** Read an element's own `data-*` attributes as a `BodyAttrs` view. */
@@ -429,6 +436,7 @@ export function measureBodies(
   H: number,
   originX = 0,
   originY = 0,
+  resolveTarget?: (el: HTMLElement, selector: string, originX: number, originY: number) => readonly { x: number; y: number }[] | undefined,
 ): boolean {
   const margin = H * 0.15;
   let detached = false;
@@ -454,6 +462,8 @@ export function measureBodies(
     b.vis =
       top + r.height > -margin && top < H + margin && left + r.width > -margin && left < W + margin;
     refreshBodyParams(b); // reactive force params (live, no rescan)
+    const targetRef = morphTargetRef(b);
+    b.targets = targetRef && resolveTarget ? resolveTarget(b.el, targetRef, originX, originY) : undefined;
   }
   return detached;
 }

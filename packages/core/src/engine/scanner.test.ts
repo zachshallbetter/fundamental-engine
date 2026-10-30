@@ -50,6 +50,11 @@ test('parses composed tokens, numbers, angle, and feedback', () => {
   assert.equal(b.M, 0.8);
 });
 
+test('parses data-target as the DOM host morph target reference', () => {
+  const body = parseBodyParams(attrs({ body: 'morph', target: '#trust-arrow-path' }));
+  assert.equal(body.targetRef, '#trust-arrow-path'); // data-target is resolved by the DOM host
+});
+
 test('expandPreset: blackhole → well + frame-drag + horizon + lens, each own-tuned (§20.9)', () => {
   const vb = expandPreset('blackhole');
   assert.equal(vb.length, 4);
