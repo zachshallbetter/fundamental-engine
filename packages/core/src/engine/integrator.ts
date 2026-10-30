@@ -298,6 +298,7 @@ export function step(input: StepInput): void {
       p.x += (p.cap.cx - p.x) * 0.18;
       p.y += (p.cap.cy - p.y) * 0.18;
       if (p.z) p.z += -p.z * 0.18;
+      p.heat = 1;
       // held matter has no acceleration of its own — drop any stored Verlet lane so a later
       // release doesn't extrapolate a stale a(t). Only ever defined under the opt-in mode.
       if (p.ax !== undefined) p.ax = p.ay = p.az = 0;

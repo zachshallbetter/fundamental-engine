@@ -2497,13 +2497,14 @@
         "species",
         "spin",
         "strength",
+        "target",
         "tokens",
         "twist",
         "warp",
         "when"
       ],
       "counts": {
-        "js": 41,
+        "js": 42,
         "swift": 4,
         "kotlin": 4
       },
@@ -2546,6 +2547,7 @@
           "species",
           "spin",
           "strength",
+          "target",
           "tokens",
           "twist",
           "warp",
@@ -2786,6 +2788,12 @@
           "js": true,
           "swift": true,
           "kotlin": true
+        },
+        {
+          "symbol": "target",
+          "js": true,
+          "swift": false,
+          "kotlin": false
         },
         {
           "symbol": "tokens",

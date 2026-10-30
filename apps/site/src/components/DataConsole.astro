@@ -8,7 +8,8 @@
 <button
   id="dc-trigger"
   class="dc-trigger"
-  aria-label="Open data console"
+  aria-label="Open performance and platform data console"
+  title="Open data console"
   aria-expanded="false"
   aria-controls="dc-panel"
   transition:persist
@@ -213,8 +214,8 @@
   left: clamp(0.7rem, 1.8vw, 1.5rem);
   bottom: 1.5rem;
   z-index: 910;
-  width: 30px;
-  height: 30px;
+  width: 38px;
+  height: 38px;
   padding: 0;
   border-radius: var(--r-sm);
   background: var(--bg-surface);
@@ -524,7 +525,7 @@
 /* Hide on small screens — this is a dev tool */
 @media (max-width: 600px) {
   .dc-grid { grid-template-columns: repeat(2, 1fr); }
-  .dc-trigger { display: none; }
+  .dc-trigger { display: flex; bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem); left: 0.75rem; }
 }
 </style>
 

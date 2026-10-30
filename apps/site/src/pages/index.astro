@@ -84,13 +84,18 @@ const sourceLd = {
 ---
 
 <Base
-  title="Fundamental — a physics engine for interfaces"
-  description="Elements attract, repel and settle like real matter, so a layout shows its relationships instead of listing them. Nothing is animated — you add a data-body attribute and style the live --field-* variables the runtime hands back. Runs on the web, in WebGL, and natively on Apple and Android."
+  title="Fundamental — a relational field runtime for interfaces"
+  description="Fundamental places a shared, inspectable field around interface elements and data. Participants shape the field; its measurements feed back to the host as signals and optional visuals. Inspired by physics, it keeps semantic HTML and application data authoritative."
   jsonLd={[softwareLd, sourceLd]}
 >
   <SiteNav current="home" />
   <main id="main" class="manual-shell">
-    <ManualHero kicker="Fundamental · a physics engine for interfaces">
+    <nav class="field-guide" data-field-guide hidden aria-label="Homepage field walkthrough">
+      <span data-guide-progress>Walkthrough · 1 of 6</span>
+      <b data-guide-title>Inbox: authored importance</b>
+      <div><button type="button" data-guide-prev disabled>Back</button><button type="button" data-guide-next>Next lesson →</button><button type="button" data-guide-close aria-label="Close walkthrough">×</button></div>
+    </nav>
+    <ManualHero kicker="Fundamental · a relational field runtime for interfaces">
       <h1 slot="title">Elements have <span
           class="hero-mass"
           data-hot
@@ -110,10 +115,11 @@ const sourceLd = {
           style="--cat:#ff9d5c;">.</span></h1>
       <p slot="standfirst" class="standfirst"
         data-body="attract swirl pigment" data-shaped data-strength="0.5" data-range="260" data-spin="1.1" data-color="#ffce6b" style="--cat:#ffce6b">
-        Elements attract, repel and settle like real matter, so a layout <em>shows</em> its
-        relationships instead of listing them. Nothing on this page is animated — every motion
-        you can see is the field resolving. You add a <code>data-body</code> attribute; the
-        runtime measures and hands back live <code>--field-*</code> variables you style with.
+        Physics began the question: what if a page could place a field around its elements and let
+        declared participants influence one another? Fundamental measures that interaction and
+        returns signals the host can use. The DOM and application keep meaning; particles render
+        field activity, while text, CSS, and queries offer other readings. Add a <code>data-body</code>
+        attribute and the runtime returns live <code>--field-*</code> signals.
       </p>
       <p slot="thesis" class="thesis"
         data-body="attract swirl pigment" data-strength="0.45" data-range="280" data-spin="1.1" data-color="#f0628e" style="--cat:#f0628e">
@@ -121,12 +127,10 @@ const sourceLd = {
         Priority becomes a force, not a flag — emphasize one thing, and the rest yield.
       </p>
       <Fragment slot="cta">
-        {/* Resting mass: ungate the default attention-gated vessel (data-when="") and lead with a
-            continuous attract so the CTAs pull the field at rest — they read as live, moving call-to-
-            actions, not inert until hovered. Engagement still amplifies on hover. */}
-        <Button href="https://habitat.fundamental-engine.com" variant="primary" data-color="#4da3ff" data-body="attract swirl pigment" data-when="" data-strength="0.95" data-range="230" data-spin="1.1">Enter the garden →</Button>
-        <Button href="#proof" data-color="#2dd4bf" data-body="attract swirl pigment" data-when="" data-strength="0.85" data-range="215" data-spin="1.1">See it work →</Button>
-        <Button href="#install" data-color="#a78bfa" data-body="attract swirl pigment" data-when="" data-strength="0.8" data-range="210" data-spin="1.1">Install →</Button>
+        <Button href="#proof" variant="primary" data-guide-start>Take the field walkthrough →</Button>
+        <Button href="https://habitat.fundamental-engine.com" variant="primary">Enter the garden →</Button>
+        <Button href="#proof">See it work →</Button>
+        <Button href="#install">Install →</Button>
       </Fragment>
       <div slot="meta" class="meta">
         <span><b>Category</b> &nbsp;add a data-* attribute, get --field-* back</span>
@@ -148,17 +152,12 @@ const sourceLd = {
       </Fragment>
     </ManualHero>
 
-    <section class="lp lp-apply" id="proof">
+    <section class="lp lp-apply" id="proof" data-attention-demo>
       <div class="wrap">
         <span class="concept-no">A real interface</span>
         <h2>A real interface you’d actually build.</h2>
-        <p class="lp-lede">
-          An inbox of real unanswered questions, ranked by urgency — recency, votes, and
-          views become mass. But the page holds one fixed attention budget, so brightening
-          one ask dims the rest. No particle swarm; the measurement comes back as type and
-          ink.
-        </p>
-        <div class="lp-inbox" aria-hidden="true">
+        <p class="lp-lede">These questions are ordinary DOM elements. Their authored urgency sets relative influence; the field measures local activity and writes a signal back to the page. Focus or point at a question to see the hierarchy respond.</p>
+        <div class="lp-inbox" aria-label="Inbox example: urgency is authored and emphasis responds to the field">
           <div class="lp-inbox-head"><span>Inbox · attention is conserved</span><span>urgency → mass</span></div>
           {ASKS.map((a) => (
             <div
@@ -166,6 +165,8 @@ const sourceLd = {
               data-body="attract"
               data-feedback
               data-hot
+              tabindex="0"
+              role="group"
               data-strength={a.urgency.toFixed(2)}
               data-range={String(Math.round(120 + a.urgency * 80))}
               style={`--u0:${a.urgency};`}
@@ -183,9 +184,7 @@ const sourceLd = {
       <div class="wrap">
         <span class="concept-no">Shipped</span>
         <h2>Built on this, running now.</h2>
-        <p class="lp-lede">
-          Four doors into one core. Not ports — the same engine, reached differently.
-        </p>
+        <p class="lp-lede">Each card is a real link and field participant. Open one to see how a host applies the shared model in a shipped project.</p>
         <div class="lp-shipped-grid">
           <a class="lp-ship" href="https://habitat.fundamental-engine.com"
             data-body="attract swirl" data-feedback data-strength="0.9" data-range="180" data-spin="1.1"
@@ -222,21 +221,19 @@ const sourceLd = {
     {/* Hands-on: touch the engine — rewrite a body's data-* and watch the field answer live. */}
     <TryItField />
 
-    <section class="lp lp-ai">
+    <section class="lp lp-ai" id="evidence">
       <div class="wrap lp-ai-grid">
         <div class="lp-col">
           <span class="concept-no">The wedge</span>
           <h2>Make model output you can read at a glance.</h2>
           <p class="lp-lede">
-            A model hands you answers; it rarely shows how sure it is. Make each claim a body in the
-            field, and confidence becomes weight, agreement becomes proximity, and contradictions pull
-            apart — so a shaky answer <em>looks</em> shaky and its sources are one hop away, before anyone
-            acts on it. The interface projects that state as type and layout; an agent reads the same field as JSON through <code>field.query()</code>. The same deterministic math drives the Evidence and Search studies.
+            A host can declare claims, sources, confidence, and support relationships as data. The field measures the declared arrangement; the host decides what confidence means and what actions are allowed. Inspect the source links below, then compare the visual projection with the serializable query.
           </p>
           <div class="lp-cta-row">
             <Button href="/ai-evidence" variant="primary">See AI Evidence →</Button>
             <Button href="/docs/studies/evidence-field">How it works →</Button>
           </div>
+          <p class="atom-invite" data-atom-invite role="status" hidden>One particle has paused. Click its pulsing ring to inspect the data it carries.</p>
         </div>
 
         {/* Live claims field — each chip is a REAL body the page field measures. Confidence sets
@@ -244,18 +241,19 @@ const sourceLd = {
             the engine onto data-feedback) drives the glow: a well-supported claim accretes field and
             reads heavy; the contradiction uses `repel`, opening a visible gap. Honors the Wallpaper
             Rule — no fake decoration; the chips are bodies and the emphasis is measured. */}
-        <div class="wedge-field" aria-hidden="true">
+        <div class="wedge-field" aria-label="Evidence example: claims and sources are host-supplied data">
           <div class="wf-plane">
-            <span class="claim claim-hi" data-body="attract swirl" data-feedback data-strength="1.3" data-range="150" data-spin="1.1"
-              style="--x:16%; --y:20%; --conf:0.94"><b>Confirmed</b><i>0.94</i></span>
-            <span class="claim claim-hi" data-body="attract swirl" data-feedback data-strength="1.1" data-range="140" data-spin="1.1"
-              style="--x:36%; --y:42%; --conf:0.87"><b>Corroborated</b><i>0.87</i></span>
-            <span class="claim claim-mid" data-body="attract swirl" data-feedback data-strength="0.6" data-range="120" data-spin="1.1"
-              style="--x:58%; --y:26%; --conf:0.41"><b>One source</b><i>0.41</i></span>
-            <span class="claim claim-lo" data-body="repel" data-feedback data-strength="0.95" data-range="165"
-              style="--x:74%; --y:70%; --conf:0.18"><b>Contradicted</b><i>0.18</i></span>
+            <span id="claim-confirmed" class="claim claim-hi" data-body="attract swirl" data-feedback data-strength="1.3" data-range="150" data-spin="1.1" style="--x:16%; --y:20%; --conf:0.94"><b>Confirmed</b><i>0.94</i></span>
+            <span id="claim-corroborated" class="claim claim-hi" data-body="attract swirl" data-feedback data-strength="1.1" data-range="140" data-spin="1.1" style="--x:36%; --y:42%; --conf:0.87"><b>Corroborated</b><i>0.87</i></span>
+            <span id="claim-single" class="claim claim-mid" data-body="attract swirl" data-feedback data-strength="0.6" data-range="120" data-spin="1.1" style="--x:58%; --y:26%; --conf:0.41"><b>One source</b><i>0.41</i></span>
+            <span id="claim-conflict" class="claim claim-lo" data-body="repel" data-feedback data-strength="0.95" data-range="165" style="--x:74%; --y:70%; --conf:0.18"><b>Contradicted</b><i>0.18</i></span>
           </div>
-          <p class="wf-legend"><span class="wf-k">weight</span> = confidence · <span class="wf-k">proximity</span> = agreement · <span class="wf-k">repel</span> = contradiction</p>
+          <nav class="wf-sources" aria-label="Declared evidence relationships">
+            <a href="#claim-confirmed" data-field-relation="supports" data-field-target="#claim-confirmed">Source A → Confirmed</a>
+            <a href="#claim-corroborated" data-field-relation="supports" data-field-target="#claim-corroborated">Source B → Corroborated</a>
+            <a href="#claim-conflict" data-field-relation="contradicts" data-field-target="#claim-conflict">Source C → Contradicted</a>
+          </nav>
+          <p class="wf-legend">Host-supplied: confidence, source identity, and declared support. Engine-measured: arrangement and density. The geometry does not validate a claim.</p>
         </div>
       </div>
     </section>
@@ -266,9 +264,7 @@ const sourceLd = {
         <span class="concept-no">How it works</span>
         <h2>Declare, influence, read, reveal, govern.</h2>
         <p class="lp-lede">
-          Five verbs are the whole loop. You declare host objects into the field; forces influence them
-          through declared channels; you read the state back; projections reveal it; policy governs what
-          may run and what an agent may read.
+          You have already changed authored attributes, watched measured feedback, and followed declared source links. These five verbs name that same loop; the host keeps ownership of its data and policy.
         </p>
         {/* The five verbs are five bodies, each carrying the force that embodies it — so the row
             demonstrates the loop it describes: declare pulls matter in (attract), influence pushes a
@@ -290,15 +286,12 @@ const sourceLd = {
       </div>
     </section>
 
-    <section class="lp lp-diff">
+    <section class="lp lp-diff" id="why">
       <div class="wrap">
         <span class="concept-no">Why it’s different</span>
-        <h2>Most interfaces <em>store</em> meaning, then <em>fake</em> its effects.</h2>
+        <h2>Keep meaning in data. Let the field measure interaction.</h2>
         <p class="lp-lede">
-          You can’t style everything as urgent — the attention budget is conserved.
-          Express “these are related,” “the user has dwelled here,” or “this is unstable”
-          as first-class runtime state, instead of hand-rolling badges, spinners, and
-          bespoke animation for each. <a href="/engine-tour#concept-conserved">See conserved attention →</a>
+          A page can author importance, declared relationships, and interaction state as inputs. The field measures how those inputs combine over time; the host chooses how to present each signal and when to recompute product data. <a href="/engine-tour#concept-conserved">See conserved attention →</a>
         </p>
 
         {/* The pipeline is a literal current: each step is a `stream` body heading right (data-angle=0),
@@ -318,23 +311,16 @@ const sourceLd = {
 
         <div class="lp-elim">
           <h3>Stop building the systems that exist because the DOM is blind.</h3>
-          <p>
-            The DOM can’t see what matters, what’s related, or what’s gone stale — so
-            teams build that sight by hand, again and again. Fundamental gives the DOM a
-            continuous answer, and a whole category of code stops being yours to write
-            and maintain.
-          </p>
+          <p>The DOM stores structure and meaning, while application code often computes rankings, relations, and freshness separately. Fundamental offers a shared runtime for declared inputs and measured signals; the application still owns its data, rules, and consequential decisions.</p>
           <ul>
-            <li><b>Priority you don’t store or sort.</b> Importance is a live field reading (<code>--d</code>, with <code>--field-density</code> as the field-namespaced alias), not state you keep in a store and re-sort on every change. <a href="/engine-tour#concept-material">See it work →</a></li>
+            <li><b>Priority can be measured continuously.</b> Authored strength and live density (<code>--d</code>, also <code>--field-density</code>) are separate inputs and readings. A host can use the reading in its own ordering or presentation code. <a href="/engine-tour#concept-material">See it work →</a></li>
             <li><b>“Everything is P1,” solved by a law.</b> Attention is one conserved budget — emphasize one thing and the rest necessarily yield. The normalization pass teams enforce with scoring schemes and meetings becomes something the runtime cannot violate. <a href="/engine-tour#concept-conserved">See it work →</a></li>
-            <li><b>Relationships you can read.</b> Declared associations become field-visible structure — a Field Pattern decides when association becomes coupling, not adjacency lists and graph traversal you maintain by hand. <a href="/engine-tour#concept-threads">See it work →</a></li>
-            <li><b>Staleness without timers.</b> Recency and decay are a force in the runtime, continuous, not a cron job or a computed column you babysit. <a href="/evidence/memory">See it work →</a></li>
-            <li><b>One model, always current.</b> The field re-resolves every frame, so a priority shift doesn’t fire a sort-and-re-render pass — the readout is simply already current. <a href="/engine-tour#concept-layout">See it work →</a></li>
+            <li><b>Declared relationships can shape influence.</b> The host supplies edges; a selected pattern determines how they affect the field. The app still owns the relationship data. <a href="/engine-tour#concept-threads">See it work →</a></li>
+            <li><b>Freshness needs an authored time signal.</b> A decay force can continuously interpret age or recency supplied by the host; it does not replace persistence or scheduled work. <a href="/evidence/memory">See it work →</a></li>
+            <li><b>One measured field, several projections.</b> CSS feedback, DOM state, and query output can read the same simulation; each host decides when to project or update its own view. <a href="/engine-tour#concept-layout">See it work →</a></li>
           </ul>
           <p class="lp-elim-close">
-            Fundamental doesn’t hand you a better abstraction over these jobs. It makes the
-            question each one answered — what matters, what’s related, what’s stale —
-            answerable by the field, so the job itself goes away.
+            Fundamental supplies a common place to combine declared forces and relationships. It can reduce duplicated measurement and presentation logic, while application data, policy, persistence, and decisions remain with the host.
           </p>
         </div>
 
@@ -350,12 +336,11 @@ const sourceLd = {
           engine (<code>core</code> + the DOM binding) for you; there’s nothing to wire together.
         </p>
         <div class="lp-pkgs">
-          <!-- the 'start here' card spans the row and is a live accretion vessel: `sink attract` gathers
-               the field's matter, `--load` fills it from the base, and it supernovas + resets on saturation. -->
-          <div class="lp-pkg lp-pkg--hero" data-body="sink attract pigment" data-feedback data-absorb="44" data-max="90" data-strength="0.7" data-range="300" data-color="#ff8a5c" style="--cat:#ff8a5c">
+          <!-- The start card is a restrained local attractor: it participates without cycling a sink discharge. -->
+          <div class="lp-pkg lp-pkg--hero" data-body="attract pigment" data-feedback data-strength="0.45" data-range="190" data-color="#4da3ff" style="--cat:#4da3ff">
             <span class="lp-pkg-tag">Start here</span>
             <code class="install" data-copy="npm i @fundamental-engine/vanilla">npm i @fundamental-engine/vanilla</code>
-            <span class="lp-pkg-desc"><b>Plain TS / JS</b>, no framework — the typed <code>FieldField</code> class; one call mounts a field. This card is itself a live field body: it accretes the swarm and fills as it gathers. <a href="/docs/guides/typescript">Guide →</a></span>
+            <span class="lp-pkg-desc"><b>Plain TS / JS</b>, no framework — the typed <code>FieldField</code> class mounts the field in one call. <a href="/docs/guides/typescript">Guide →</a></span>
           </div>
           <div class="lp-pkg" data-body="wall pigment" data-feedback data-color="#f0628e" data-strength="0.55" data-range="170" style="--cat:#f0628e">
             <code class="install" data-copy="npm i @fundamental-engine/react">npm i @fundamental-engine/react</code>
@@ -376,9 +361,9 @@ const sourceLd = {
           don’t install <code>@fundamental-engine/dom</code> directly — the packages above already
           bundle it for you.
         </p>
-        <p class="lp-note">
+        <p class="lp-note lp-cdn-note">
           No build step? Import from a CDN (playground / prototyping only):
-          <code>import {'{'} createField {'}'} from 'https://esm.sh/@fundamental-engine/vanilla'</code>
+          <code>import {'{'} createField {'}'}<br />from 'https://esm.sh/@fundamental-engine/vanilla'</code>
         </p>
         <p class="lp-note">
           The full package map and an install-to-reacting-headline walkthrough live in the
@@ -392,31 +377,30 @@ const sourceLd = {
         <span class="concept-no">Hosts</span>
         <h2>One engine, many hosts.</h2>
         <p class="lp-lede">
-          The core computes the field against plain data and imports zero DOM. A thin host binds it to
-          a host — so the same physics runs on the web, natively, in your renderer, or headless:
+          The core computes field behavior from host supplied state and imports zero DOM. Adapters connect it to web, native, custom-renderer, and headless surfaces; supported capabilities differ by host:
         </p>
         {/* One engine, many hosts — so the four bind as one: each host is a `cohesion` body, and the
             field's matter coheres across them (binding, not a single well). */}
         <ul class="model">
           <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#4da3ff" style="--cat:#4da3ff">
-            <b>Web</b> — <code>@fundamental-engine/dom</code> binds the engine to the page: every
+            <b>Web</b>{' '}<code>@fundamental-engine/dom</code> binds the engine to the page: every
             <code>[data-body]</code> element a body, feedback returned as <code>--field-*</code>
             variables. The primary surface — and what this page runs on.
           </li>
           <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#86e57f" style="--cat:#86e57f">
-            <b>Native</b> — a Swift port runs the same field on Apple platforms (Metal / SwiftUI), and a
+            <b>Native</b>{' '}a Swift port runs the same field on Apple platforms (Metal / SwiftUI), and a
             Kotlin port runs it on Android (Jetpack Compose, plus a non-Compose <code>View</code>/<code>Canvas</code>
             host) — both free of the browser’s compositing ceiling. The <a href="/docs/implementations">Field Lab</a>
             is the showcase: a native app to explore every force live.
           </li>
           <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#ffce6b" style="--cat:#ffce6b">
-            <b>Your renderer</b> — <code>@fundamental-engine/three</code> drives a
+            <b>Your renderer</b>{' '}<code>@fundamental-engine/three</code> drives a
             <code>THREE.Points</code> swarm in your own WebGL scene; the read primitives
             (<code>sample</code>, <code>readParticles</code>, <code>addField</code>) bind the engine to
             anything that draws.
           </li>
           <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#c084fc" style="--cat:#c084fc">
-            <b>Headless</b> — no DOM, no canvas: records become bodies and relationships become edges,
+            <b>Headless</b>{' '}no DOM, no canvas: records become bodies and relationships become edges,
             and a tool reads the field through <code>query()</code> and <code>snapshot()</code>. The
             smallest conformant host — for servers, tests, and agents.
           </li>
@@ -433,19 +417,36 @@ const sourceLd = {
       <div class="wrap">
         <span class="concept-no">Trust</span>
         <h2>Built to be inspected.</h2>
+        <div class="trust-layout">
         <ul class="lp-calib">
           <li><b>Zero runtime dependencies.</b> The core engine ships with none.</li>
           <li><b>Signals-first by default.</b> A field renders nothing unless you ask for it — the invisible field is the baseline.</li>
           <li><b>Accessible by construction.</b> Semantic HTML stays the source of meaning; reduced motion removes motion, not meaning — enforced and linted.</li>
-          <li><b>Measured, not guessed.</b> Sub-millisecond <em>compute</em> per frame at real-page scale; fill-rate is the real budget and is <a href="/docs/performance">measured on real hardware</a>.</li>
+          <li><b>Measured, not guessed.</b> Frame and fill-rate budgets are measured on real hardware; see the <a href="/docs/performance">performance methodology</a>.</li>
           <li><b>Stable 0.x surface, cross-plane conformance.</b> Code-verified docs, a frozen public API, and shared-physics conformance across web, Apple, and Android.</li>
         </ul>
         {/* Built to be inspected — so show it: a live field.query() of THIS page's field, the same
             serializable payload an agent reads. Updates on a calm cadence. */}
-        <figure class="lp-inspect" aria-hidden="true">
-          <figcaption><span class="lp-inspect-tag">field.query()</span> — this page's field, as an agent reads it</figcaption>
-          <pre class="lp-inspect-json" data-inspect-json>reading the field…</pre>
-        </figure>
+        <div class="trust-cue">
+          <div><p class="trust-cue-label">Try the field</p><h3>Follow the particles to the data console.</h3><p>When enabled, this DOM button declares a morph target sampled from the inline SVG path. The particles form a short arrow above the fixed console control.</p>
+            <button type="button" class="trust-morph-toggle" data-trust-morph aria-pressed="false">Form an arrow with particles</button>
+            <p class="trust-reduced-note">With reduced motion, particle travel stays off; the explanation and console remain available.</p>
+          </div>
+          <svg class="trust-arrow" data-trust-arrow aria-hidden="true" viewBox="0 0 76 116"><path id="trust-arrow-path" d="M30 6L40 88M10 58L40 94 68 58" /></svg>
+        </div>
+        <div class="trust-readings">
+          <figure class="lp-inspect">
+            <figcaption><span class="lp-inspect-tag">Data console</span> — frame timing, runtime budgets, platform diagnostics</figcaption>
+            <p>The fixed console button opens performance and platform diagnostics. It answers how this page is running.</p>
+            <button type="button" class="trust-console-link" data-open-console>Open the data console</button>
+          </figure>
+          <figure class="lp-inspect">
+            <figcaption><span class="lp-inspect-tag">field.query()</span> — serializable state from this page's field</figcaption>
+            <p>This query reports field state, including bodies, forces, and simulation metrics. It answers what the field currently contains.</p>
+            <pre class="lp-inspect-json" data-inspect-json>reading the field…</pre>
+          </figure>
+        </div>
+        </div>
       </div>
     </section>
 
@@ -584,11 +585,40 @@ const sourceLd = {
 
 
 <style>
+  .field-guide { position: fixed; z-index: 905; top: 5.8rem; right: clamp(0.75rem, 2vw, 2rem); display: grid; gap: 0.45rem; width: min(22rem, calc(100vw - 1.5rem)); padding: 0.9rem 1rem; border: 1px solid var(--line-2); border-radius: 12px; background: color-mix(in srgb, var(--bg, #05070b) 94%, transparent); box-shadow: 0 12px 40px #0008; }
+  .field-guide[hidden] { display: none; }
+  .field-guide > span, .trust-cue-label { color: var(--state-signal); font: 0.68rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+  .field-guide > b { font-size: 0.92rem; }
+  .field-guide > div { display: flex; gap: 0.45rem; }
+  .field-guide button, .trust-morph-toggle, .trust-console-link { border: 1px solid var(--line-2); border-radius: 999px; padding: 0.52rem 0.8rem; background: var(--bg-surface); color: var(--text); font: 0.72rem var(--mono); cursor: pointer; }
+  .field-guide button:disabled { opacity: 0.4; cursor: default; }
+  .field-guide [data-guide-next] { color: var(--state-signal); }
+  .trust-layout { max-width: 1100px; }
+  .trust-cue { display: grid; gap: 0.5rem; align-items: center; margin: 2rem 0; padding: clamp(1.2rem, 3vw, 2rem); border: 1px solid var(--line-2); border-radius: var(--r-md); background: color-mix(in srgb, var(--bg-card) 94%, transparent); }
+  .trust-cue h3 { margin: 0.2rem 0 0.6rem; font-size: clamp(1.25rem, 2.6vw, 1.8rem); }
+  .trust-cue p { max-width: 62ch; color: var(--text-3); line-height: 1.55; }
+  .trust-reduced-note { font-size: 0.8rem; }
+  .trust-arrow { position: fixed; z-index: 908; inset: 0; width: 100vw; height: 100vh; overflow: visible; opacity: 0; pointer-events: none; }
+  .trust-arrow path { fill: none; stroke: transparent; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .trust-readings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .trust-readings figure { min-width: 0; margin: 0; padding: 1rem; border: 1px solid var(--line-2); border-radius: var(--r-md); background: color-mix(in srgb, var(--bg-card) 94%, transparent); }
+  .trust-readings p { color: var(--text-3); font-size: 0.86rem; line-height: 1.5; }
+  .trust-console-link { margin-top: 0.3rem; color: var(--state-signal); }
+  .lp-hosts .model { list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin: 1.5rem 0; padding: 0; }
+  .lp-hosts .model li { min-width: 0; padding: 1rem 1.1rem; border: 1px solid color-mix(in srgb, var(--cat) 32%, var(--line-2)); border-left: 3px solid var(--cat); border-radius: var(--r-md); background: color-mix(in srgb, var(--bg-card) 94%, transparent); color: var(--text-2); font-size: 0.92rem; line-height: 1.55; }
+  .lp-hosts .model li b { display: block; margin-bottom: 0.35rem; color: var(--cat); font-size: 0.96rem; }
+  .lp-hosts .model li code { color: var(--text); }
+  .atom-invite { margin: 0.75rem 0 0; padding: 0.7rem 0.85rem; border-left: 2px solid var(--state-signal); border-radius: 0 var(--r-sm) var(--r-sm) 0; background: color-mix(in srgb, var(--bg-card) 94%, transparent); color: var(--text-2); font-size: 0.86rem; line-height: 1.5; }
+  .atom-invite[hidden] { display: none; }
+  @media (max-width: 700px) {
+    .field-guide { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem); right: 0.75rem; }
+    .trust-readings { grid-template-columns: 1fr; }
+  }
   /* P3 new-section layouts — calm + list-based; the full art-direction pass is P4. */
-  .lp-verbs { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; gap: 0; }
-  .lp-verbs li { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1rem; align-items: baseline; padding: 0.85rem 0; border-top: 1px solid color-mix(in oklch, currentColor 10%, transparent); }
+  .lp-verbs { min-width: 0; list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; gap: 0.45rem; }
+  .lp-verbs li { min-width: 0; display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 1rem; align-items: baseline; padding: 0.95rem 1.1rem; border: 1px solid color-mix(in oklch, currentColor 10%, transparent); }
   .lp-verbs li b { font-family: var(--mono); font-size: 0.92rem; letter-spacing: 0.02em; }
-  .lp-verbs li span { opacity: 0.82; line-height: 1.55; }
+  .lp-verbs li span { min-width: 0; opacity: 0.82; line-height: 1.55; }
   .lp-explore-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.75rem; margin-top: 1.5rem; }
   .lp-explore-grid a { display: block; padding: 1rem 1.1rem; border: 1px solid color-mix(in oklch, currentColor 12%, transparent); border-radius: var(--r-md); text-decoration: none; transition: border-color 0.15s ease; }
   .lp-explore-grid a:hover { border-color: color-mix(in oklch, var(--state-signal) 55%, transparent); }
@@ -645,8 +675,9 @@ const sourceLd = {
   .lp-verbs li[data-feedback],
   .lp-flow .lp-step[data-feedback],
   .lp-hosts .model li[data-feedback] {
-    background: color-mix(in srgb, var(--cat, var(--accent, #4da3ff)) calc(var(--d, 0) * 11%), transparent);
+    background: color-mix(in srgb, var(--bg-card) 94%, var(--cat, #4da3ff) calc(6% + var(--d, 0) * 8%));
     border-radius: 8px;
     transition: background 0.45s ease;
   }
+  @media (max-width: 760px) { .lp-hosts .model { grid-template-columns: 1fr; } }
 </style>

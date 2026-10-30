@@ -1229,7 +1229,7 @@ words/letterforms** (the punctuation rule, §11); for words use `--d` glow/grow 
 assign p → target t_k (stable hash) ;   v += (t_k − p)·k_m + jitter·(1 − arrived)
 arrived = clamp(1 − |t_k − p|/ε, 0, 1)
 ```
-Attrs: `data-target`(SVG path | image | dataset id), `data-strength`(=k_m). Needs target store.
+Attrs: `data-target` (DOM host CSS id selector for an inline SVG `<path>`, such as `#mark-path`), `data-strength` (=k_m). The DOM host samples the referenced path in viewport coordinates and converts it to field-local points. Headless and other hosts need to provide target points through their own renderer integration; image and dataset targets are not part of this DOM attribute contract.
 
 **Pigment — `pigment` [E].** Conserved color advected with matter; subtractive mixing.
 ```

@@ -21,10 +21,8 @@ const FORCES = [
     <div class="lp-col">
       <span class="concept-no">Try it</span>
       <h2>Change a <code>data-*</code> and watch the field answer.</h2>
-      <p class="lp-lede">
-        Every control rewrites one attribute on the real element to the right — the same
-        <code>data-*</code> you'd author. The engine re-reads it and the field responds. That's the
-        whole surface: attributes in, motion out. Move your cursor through it, too.
+        <p class="lp-lede">
+        Edit the attributes on the actual DOM body. The host authors force and strength; the field computes a reading; CSS projects feedback onto that same element.
       </p>
       <div class="tryit-controls">
         <label class="tryit-ctl">
@@ -47,6 +45,11 @@ const FORCES = [
         </label>
       </div>
       <pre class="tryit-code" data-try-code aria-live="polite">data-body="attract"</pre>
+      <ol class="tryit-loop" aria-label="How this interaction works">
+        <li><b>Authored</b><code data-try-authored>attract · strength 0.9</code></li>
+        <li><b>Measured</b><code>local field density <output data-try-measured>0.00</output></code></li>
+        <li><b>Projected</b><span>The same DOM body changes emphasis through its <code>--d</code> feedback signal.</span></li>
+      </ol>
     </div>
     <div class="tryit-stage" aria-hidden="true">
       <span
@@ -82,6 +85,7 @@ const FORCES = [
     root.dataset.bound = '1';
 
     const codeEl = root.querySelector<HTMLElement>('[data-try-code]');
+    const authoredEl = root.querySelector<HTMLElement>('[data-try-authored]');
     const forceSel = root.querySelector<HTMLSelectElement>('[data-try-force]');
     const val = (n: string) => root.querySelector<HTMLInputElement>(`[data-try-${n}]`)?.value ?? '';
     const out = (n: string, v: string) => {
@@ -109,6 +113,7 @@ const FORCES = [
       body.setAttribute('data-color', color);
       body.style.setProperty('--cat', color);
       body.textContent = force;
+      if (authoredEl) authoredEl.textContent = `${force} · strength ${strength}`;
       out('strength', strength);
       out('spin', spin);
       out('range', range);
@@ -124,6 +129,22 @@ const FORCES = [
       root.querySelector(`[data-try-${n}]`)?.addEventListener('input', apply);
     });
     apply();
+    const measured = root.querySelector<HTMLOutputElement>('[data-try-measured]');
+    if (measured) {
+      let pending = false;
+      const observer = new MutationObserver(() => {
+        if (pending) return;
+        pending = true;
+        requestAnimationFrame(() => {
+          pending = false;
+          const density = Number.parseFloat(getComputedStyle(body).getPropertyValue('--d')) || 0;
+          measured.value = density.toFixed(2);
+          measured.textContent = density.toFixed(2);
+        });
+      });
+      observer.observe(body, { attributes: true, attributeFilter: ['style'] });
+      document.addEventListener('astro:before-swap', () => observer.disconnect(), { once: true });
+    }
   }
 
   document.addEventListener('astro:page-load', initTryIt);
@@ -146,6 +167,10 @@ const FORCES = [
     margin: 1.6rem 0 1.2rem;
     max-width: 26rem;
   }
+  .tryit-loop { list-style: none; padding: 0; margin: 1.6rem 0 0; display: grid; gap: 0.55rem; }
+  .tryit-loop li { display: grid; grid-template-columns: 6.5rem 1fr; gap: 0.7rem; align-items: baseline; font-size: 0.82rem; color: var(--text-3); }
+  .tryit-loop b { color: var(--text-2); }
+  .tryit-loop code { color: var(--state-signal); }
   .tryit-ctl {
     display: grid;
     grid-template-columns: 5.5rem 1fr;
