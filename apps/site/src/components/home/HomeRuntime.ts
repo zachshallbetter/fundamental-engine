@@ -38,15 +38,23 @@ export function initHomeRuntime(): () => void {
   // Guided entry is optional: links and controls in every lesson keep working independently.
   const guide = document.querySelector<HTMLElement>("[data-field-guide]");
   const lessons = [
+    ["top", "Start here: the field and the DOM"],
     ["try", "Try it: edit the DOM input"],
     ["proof", "Inbox: authored importance"],
     ["why", "Tradeoffs: measured signals"],
     ["how", "The loop: five verbs"],
     ["trust", "Trust: inspect both readings"],
+    ["engine", "Engine: one contract, many forces"],
+    ["shipped", "Shipped: working applications"],
+    ["hosts", "Hosts: one model across runtimes"],
     ["evidence", "Evidence: inspect declared sources"],
+    ["invisible-fields", "Examples: fields over real data"],
+    ["install", "Install: choose your host package"],
+    ["explore", "Explore: continue into the docs"],
   ] as const;
   let lesson = 0;
   let guideNavigating = false;
+  let guideTargetId: string | null = null;
   let guideNavigationTimer = 0;
   const showLesson = (index: number) => {
     lesson = Math.max(0, Math.min(lessons.length - 1, index));
@@ -60,8 +68,9 @@ export function initHomeRuntime(): () => void {
     if (prev) prev.disabled = lesson === 0;
     if (next) next.textContent = lesson === lessons.length - 1 ? "Finish walkthrough" : "Next lesson →";
     guideNavigating = true;
+    guideTargetId = lessons[lesson]![0];
     window.clearTimeout(guideNavigationTimer);
-    guideNavigationTimer = window.setTimeout(() => { guideNavigating = false; }, 1400);
+    guideNavigationTimer = window.setTimeout(() => { guideNavigating = false; guideTargetId = null; }, 4000);
     section?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
   };
   document.querySelectorAll<HTMLElement>("[data-guide-start]").forEach((start) => start.addEventListener("click", (event) => {
@@ -78,8 +87,18 @@ export function initHomeRuntime(): () => void {
   guide?.querySelector("[data-guide-close]")?.addEventListener("click", () => { if (guide) guide.hidden = true; }, { signal: sig });
   if (guide) {
     const guideObserver = new IntersectionObserver((entries) => {
-      if (guide.hidden || guideNavigating) return;
-      const current = entries.find((entry) => entry.isIntersecting);
+      if (guide.hidden) return;
+      if (guideNavigating) {
+        const reachedTarget = entries.some((entry) => entry.target.id === guideTargetId && entry.isIntersecting);
+        if (!reachedTarget) return;
+        guideNavigating = false;
+        guideTargetId = null;
+        window.clearTimeout(guideNavigationTimer);
+        return;
+      }
+      const current = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
       const idx = lessons.findIndex(([id]) => current?.target === document.getElementById(id));
       if (idx >= 0 && idx !== lesson) {
         lesson = idx;
