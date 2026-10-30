@@ -33,7 +33,8 @@
   padding: clamp(1.4rem, 3.5vh, 2.2rem) 0 0;
 }
 /* only the nav list scrolls — search stays pinned at the top, toggle pinned at the bottom */
-#docsSide {
+#docsSide,
+#writingsSide {
   flex: 1 1 auto;
   min-height: 0; /* required so the flex child can shrink and scroll */
   overflow-y: auto;
@@ -50,17 +51,21 @@
     transparent 100%
   );
 }
-#docsSide::-webkit-scrollbar {
+#docsSide::-webkit-scrollbar,
+#writingsSide::-webkit-scrollbar {
   width: 4px;
 }
-#docsSide::-webkit-scrollbar-thumb {
+#docsSide::-webkit-scrollbar-thumb,
+#writingsSide::-webkit-scrollbar-thumb {
   background: var(--line-2);
   border-radius: 3px;
 }
-#docsSide:hover::-webkit-scrollbar-thumb {
+#docsSide:hover::-webkit-scrollbar-thumb,
+#writingsSide:hover::-webkit-scrollbar-thumb {
   background: var(--line-3, var(--text-4));
 }
-#docsSide::-webkit-scrollbar-track {
+#docsSide::-webkit-scrollbar-track,
+#writingsSide::-webkit-scrollbar-track {
   background: transparent;
 }
 .docs-side-toggle {
@@ -452,10 +457,12 @@
     margin-bottom: 0.8rem;
     cursor: pointer;
   }
-  #docsSide {
+  #docsSide,
+  #writingsSide {
     display: none;
   }
-  #docsSide.open {
+  #docsSide.open,
+  #writingsSide.open {
     display: block;
   }
 }

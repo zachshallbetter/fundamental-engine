@@ -7,16 +7,27 @@
 
 # Fundamental and Foundations of Computational Interaction
 
-Fundamental and FCI were built from opposite directions and met in the middle.
+## Historical relationship
 
-- **FCI** is a research program (top-down, from epistemology). It studies interaction as an explanatory
+Fundamental began with a physics question: what happens when a field is placed around the DOM and
+interface elements participate in it? The engine developed as a concrete runtime for that reciprocal
+field model.
+
+FCI grew later from a communication problem. In trying to explain Fundamental to other people, its
+author found that no shared scientific vocabulary made interaction itself clear. That need prompted
+the broader Foundations of Computational Interaction research program. FCI is now maintained as a
+separate program with a scope wider than Fundamental; this origin does not make Fundamental an
+implementation of FCI as a whole.
+
+- **FCI** is a research program prompted by the need to explain Fundamental. It studies interaction as an explanatory
   target by separating declared *domain commitments, state, semantics, projection, representation,
   interpretation, opportunity, coupling, behavior, measurement, similarity, strategy, and evidence* so
   their relationships can be examined rather than assumed. FCI is pre-empirical and says so.
 - **Fundamental** is a runtime (bottom-up, from code). It turns host objects into bodies in a shared
   field, applies forces, and exposes the running field as inspectable, queryable, replayable data.
 
-They converge because both refuse the same shortcut: **presentation is not the system.** FCI separates
+Their connection is historical and methodological, not a claim that one validates the other. Both refuse
+the same shortcut: **presentation is not the system.** FCI separates
 projection from meaning from behavior so confounds can be isolated; Fundamental separates
 `FieldHost` / state / operational semantics / projection so a representation change does not silently
 change the modeled system. This document maps one onto the other and — just as importantly — fences the

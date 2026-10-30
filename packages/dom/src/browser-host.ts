@@ -8,16 +8,18 @@
 import type { FieldHost } from '@fundamental-engine/core';
 import { prefersReducedMotion, pageHidden } from './env.ts';
 import { registerFieldProperties } from './register-properties.ts';
+import { sampleSvgTarget } from './svg-target.ts';
 
 const INPUT_EVENTS = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const;
 
 /** Build a FieldHost backed by `window` / `document`. */
-export function browserHost(): FieldHost {
+export function browserHost(): FieldHost & { resolveMorphTarget: (body: HTMLElement, selector: string, originX: number, originY: number) => readonly { x: number; y: number }[] | undefined } {
   // Register the field-density channels as typed, compositor-interpolable CSS properties once at
   // boot so consumers can transition/animate var(--field-density)/var(--d). No-op if unsupported.
   registerFieldProperties();
   return {
     root: document,
+    resolveMorphTarget: (body, selector, originX, originY) => sampleSvgTarget(document, body, selector, originX, originY),
     viewport: () => ({ width: window.innerWidth, height: window.innerHeight, dpr: window.devicePixelRatio || 1 }),
     scrollY: () => window.scrollY || 0,
     scrollHeight: () => document.documentElement.scrollHeight,

@@ -111,7 +111,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.8rem;
+  gap: 0.5rem;
 }
 .hero-cta .install {
   position: relative;
@@ -1363,6 +1363,41 @@ html.hide-field-lines .stage-field {
 
 /* the inspect tooltip — appended to <body>, follows the cursor over the field. */
 .atom-card[hidden] { display: none; }
+.atom-ring[hidden] { display: none; }
+.atom-ring {
+  position: fixed;
+  z-index: 59;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.atom-ring::before,
+.atom-ring::after {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  border: 2px solid #52d8ff;
+  border-radius: 50%;
+  box-shadow: 0 0 12px color-mix(in srgb, #52d8ff 65%, transparent);
+}
+.atom-ring::after {
+  inset: 6px;
+  border-width: 1px;
+  animation: atom-ring-pulse 1.7s ease-out infinite;
+}
+.atom-ring:focus-visible { outline: 2px solid #e8f9ff; outline-offset: 2px; }
+@keyframes atom-ring-pulse {
+  0% { transform: scale(0.65); opacity: 0.85; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atom-ring::after { animation: none; opacity: 0.55; transform: none; }
+}
 .atom-card {
   position: fixed;
   z-index: 60;

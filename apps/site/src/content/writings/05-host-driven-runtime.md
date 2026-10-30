@@ -722,10 +722,10 @@ shaped path to WebGL, native, or a different document — and we have been candi
 legacy element write-back path in `engine/field.ts` is still being migrated behind the platform
 registries (Phase 5; #228), and there is no shipping non-DOM production renderer yet. Portability is
 demonstrated by a proven boundary plus host injection, not by a second production renderer. The
-companion papers validate the paradigm this runtime serves in their own domains — reading (Paper 2),
+companion papers examine bounded claims about the applications this runtime serves — reading (Paper 2),
 evidence and trust (Paper 3), reduced-motion equivalence (Paper 4), pattern authoring (Paper 6), data
 binding (Paper 7), and explainable diagnostics (Paper 8) — and the flagship (Paper 1) names the
-paradigm itself.
+paradigm itself. Proposed human-outcome evaluations have not established those claims.
 
 ---
 

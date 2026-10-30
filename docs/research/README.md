@@ -16,29 +16,38 @@
 > [`../canonical/dimensional-coupling.md`](../canonical/dimensional-coupling.md) and
 > [`../canonical/deprecation-plan.md`](../canonical/deprecation-plan.md).
 
-This folder holds a **small family of focused papers** on the ideas behind
-[Fundamental](../../README.md), a platform-native relational field runtime for the DOM. The family is
-deliberately split: one flagship paper *names the paradigm*, and the supporting papers *validate one
-specific claim each* (reading, evidence/trust, accessibility, runtime architecture, authoring, data
-binding, diagnostics). The system has at least eight distinct research claims; combining them into a
-single paper would weaken every argument.
+This folder holds a **focused family of research drafts** about
+[Fundamental](../../README.md), a relational field runtime that began with a physics question: what
+happens when a field surrounds the DOM and its elements participate in that field? The first paper
+names the runtime model. The supporting papers examine a specific application or system claim—reading,
+evidence, accessibility, runtime architecture, authoring, data binding, or diagnostics—and define what
+would make that claim testable. They do not establish those claims merely by describing the engine or
+showing a demo.
 
 ## The unifying thesis
 
-> Interfaces are not only layouts of components. They are **relational fields of meaning.**
+> Interfaces are not only layouts of components. They also contain **relationships that can be modeled
+> as shared, inspectable runtime state.**
 
-- **Practical claim:** Fundamental makes those fields *executable, inspectable, accessible, and
-  authorable* on top of semantic HTML.
-- **Research claim:** a field-based model can improve *orientation, trust, explainability, and
-  interaction coherence* in complex web interfaces *without replacing native platform semantics*.
+- **Implemented claim:** Fundamental can make declared field behavior executable and inspectable over
+  semantic HTML. Its data binding maps records to bodies, record links to typed relationships, and
+  supplied record values to field metrics; it does not invent domain truth or user interpretation.
+- **Research hypothesis:** a field-based model may improve orientation, trust calibration,
+  explainability, or interaction coherence in selected interfaces while preserving their semantic
+  source and host application. Accessibility and human outcomes require conformance work and empirical
+  evaluation; they are not guaranteed by using the runtime.
 
-The first paper names the paradigm. The rest prove it in specific interface domains.
+The first paper presents the paradigm. The rest scope, operationalize, and propose tests of particular
+claims. The demos and reference implementation establish that selected mechanisms run; they do not
+establish that the model improves human outcomes.
 
-> **Relationship to Foundations of Computational Interaction (FCI).** An external research framework,
-> FCI, names Fundamental as a computational substrate for a subset of its distinctions. The concept
-> mapping and the bounded "neither proves the other" claim are recorded in
+> **Relationship to Foundations of Computational Interaction (FCI).** FCI grew from the need to explain
+> Fundamental and the recognition that interaction lacked a shared scientific vocabulary. It is now a
+> separate, broader research program that names Fundamental as a computational substrate for a bounded
+> subset of its distinctions. The concept mapping and the bounded "neither proves the other" claim are recorded in
 > [`../canonical/computational-interaction-alignment.md`](../canonical/computational-interaction-alignment.md).
-> This paper family is Fundamental's own, self-authored research and is independent of FCI's corpus.
+> Fundamental's paper family is independent of FCI's corpus; the historical connection does not make
+> the engine an implementation of all FCI concepts or evidence that either program is correct.
 
 ## The paper family
 
@@ -64,7 +73,7 @@ Do not start with all eight. Publish in this order; each paper assumes the vocab
 before it:
 
 1. **Field Translation Runtime** (paradigm)
-2. **Reading Field** (clearest empirical case study)
+2. **Reading Field** (clearest planned empirical evaluation)
 3. **Evidence Fields** (connects to the most urgent current problem: trust in AI output)
 4. Motion Equivalence (accessibility)
 5. Host-Driven Runtime (systems architecture)
@@ -74,9 +83,9 @@ before it:
 
 ### The best first three
 
-If only three are written, write **1, 2, 3**: paper 1 names the paradigm, paper 2 gives the clearest
-and least speculative empirical case study, and paper 3 connects the system to the most urgent
-current interface problem.
+If only three are prioritized, choose **1, 2, 3**: paper 1 names the paradigm, paper 2 gives the
+clearest and least speculative empirical study design, and paper 3 connects the system to trust in AI
+output. The studies have not produced results yet.
 
 **Status: all eight papers are drafted in full.** Drafted is not evaluated: every empirical paper
 (Reading Field, Evidence Field, Motion Equivalence, Data as Field Participants) ships as a
@@ -155,8 +164,10 @@ generalizing expansion family.
 - **Audience & register.** Technical-preprint (arXiv) voice: precise, citable, honest about
   limitations. Not peer-review-gated, so the papers may be comprehensive and opinionated, but every
   empirical-sounding claim is either backed by code, marked as a *plan*, or marked as a *limitation*.
-- **One claim per paper.** Each supporting paper validates exactly one claim and defers everything
-  else to the flagship or a sibling. Resist scope creep; cross-reference instead.
+- **One claim per paper.** Each supporting paper examines one bounded claim and defers everything else
+  to the flagship or a sibling. It may document implementation conformance or propose an empirical
+  test; do not call a claim validated unless the relevant evidence exists. Resist scope creep;
+  cross-reference instead.
 - **Format.** Drafted in GitHub-flavored markdown for fast iteration and diffing. Math is written in
   LaTeX-compatible notation so conversion to a LaTeX/PDF preprint is mechanical. Figures are
   described in prose + a `Figure N` caption; diagrams are produced at conversion time.
