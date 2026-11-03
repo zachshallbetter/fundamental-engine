@@ -142,6 +142,10 @@ export function makeFeedbackSink(platform: FieldPlatform): FeedbackSink {
     // the tab-order cue (#943). Mirrored here or the channel works on a hand-wired createField and
     // silently vanishes on a <field-root> page, which is the route every real site uses.
     if (ch.next !== undefined) platform.feedback.set(el, { '--field-next': f3(ch.next) });
+    // transient flare (#567) → --field-pulse. Must be mirrored here or the channel exists on a
+    // hand-wired createField and silently vanishes on a <field-root> page, which is the platform
+    // route every real site uses.
+    if (ch.pulse !== undefined) platform.feedback.set(el, { '--field-pulse': f3(ch.pulse) });
     // lit → --lit (continuous) + a thresholded field:lit/field:dim (discrete, hysteretic) via state
     if (ch.lit !== undefined) {
       platform.feedback.set(el, { '--lit': f3(ch.lit) });

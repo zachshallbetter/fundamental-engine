@@ -61,6 +61,7 @@ import { registerNaturalForces } from '../forces/natural.ts';
 import { registerExtendedForces } from '../forces/extended.ts';
 import { ScalarGridImpl } from './scalar-grid.ts';
 import { sparkCount, burstImpulse, BURST_RADIUS } from './reactions.ts';
+import { pulseAdd, pulseDecay, PULSE_FLOOR } from './pulse.ts';
 import {
   linkAlpha,
   marchingCell,
@@ -935,6 +936,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // Simulation phase starts at the first frame, independently of construction wall time (#1207).
   // Keep t0 for input-idle tracking, which deliberately uses the host's wall clock.
   let simT0: number | undefined;
+  /** Real seconds elapsed since the previous frame, capped at 1s. The pulse decay reads this
+   *  rather than `env.dt`: `env.dt` folds the motion budget, and a reduced-motion field would
+   *  otherwise hold a flare lit forever (#567). Capped so a tab-switch stall resolves flares to
+   *  rest in one step instead of leaving the decay to a huge exponent. */
+  let frameSeconds = 1 / 60;
 
   const env: Env = {
     dx: 0,
@@ -2117,6 +2123,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const isNext = tabNext !== null && (b.el === tabNext || b.writeTarget === tabNext);
       const next = isNext ? 1 : b.wasNext ? 0 : undefined;
       b.wasNext = isNext;
+      // the transient flare (#567). Emitted at full energy on the frame after `pulse()` — the
+      // flare starts hot, it does not ease in like `d` — then decayed on wall time. `pulse === 0`
+      // is the one final exact-rest write; the frame after that the body leaves the pulse path.
+      let pulse: number | undefined;
+      if (b.pulse !== undefined) {
+        pulse = b.pulse;
+        const decayed = pulseDecay(b.pulse, frameSeconds);
+        b.pulse = pulse === 0 ? undefined : decayed < PULSE_FLOOR ? 0 : decayed;
+      }
 
       const channels = {
         density: b.d,
@@ -2126,6 +2141,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         coherence: m.coherence,
         temperature: m.temperature,
         next,
+        pulse,
       };
       cfg.feedbackSink(writeEl, channels);
       // per-body feedback (addBody): demux this body's channels to its own callback.
@@ -3138,6 +3154,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // Still 0 under reduce-motion: the integrator and the `if (env.dt)` gates read it as the
     // "is the field animating" flag, so it must stay falsy when still and >0 when moving.
     const dtRaw = Number.isFinite(lastNow) ? (now - lastNow) / 16.6667 : 1;
+    frameSeconds = Number.isFinite(lastNow) ? Math.min((now - lastNow) / 1000, 1) : 1 / 60;
     lastNow = now;
     // Effective motion budget (0..1) folds reduced-motion + policy (+ perf pressure). At 0 the field is
     // frozen exactly as reduced-motion (`dt = 0` — the "is animating" flag stays falsy); a partial
@@ -3699,6 +3716,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // detach nearby bound matter so the shock is actually felt (§2.4, like supernova)
       tearBoundNear(bound, waves, x, y, R, W, H, env.t, (p) => void store.add(newParticle(p)));
       spawnSpark(x, y, 2, hex); // a visible pop at the blast point (§23)
+    },
+    pulse: (target, energy = 1) => {
+      // A transient flare on ONE body (#567). All this does is deposit energy; the frame loop
+      // decays it and the feedback sink publishes it as `--field-pulse`. Nothing here touches
+      // matter, which is the whole distinction from `burst` directly above.
+      const body = handleToBody.get(target as BodyHandle) ?? bodies.find((b) => b.el === target || b.writeTarget === target);
+      if (!body) return; // an element that is not a body of this field — the same silent no-op
+      // the rest of the handle gives an unknown target.
+      body.pulse = pulseAdd(body.pulse ?? 0, energy);
     },
     flowTo: (x: number, y: number, opts?: FlowOptions) => {
       // place/move the flow focus; the frame loop eases the spine + pulls matter toward it, and the

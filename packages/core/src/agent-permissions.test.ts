@@ -273,6 +273,9 @@ const AGENT_WITHHELD = new Set<string>([
   // stir matter with it, the third throws a page element. An agent reading the field never gets to
   // move the user's cursor or their UI. Read-only view ⇒ withheld.
   'pointer', 'clearPointer', 'fling',
+  // pulse() is a WRITE even though it moves no matter (#567): it drives a channel the page's own
+  // CSS reacts to, so an agent holding it could flash a body's UI. Read-only view ⇒ withheld.
+  'pulse',
   // point / particle / grid readers (raw substrate, not the scoped agent reading)
   'readEdges', 'atomAt', 'focusAt', 'clearFocus', 'sampleField', 'particleCount', 'readParticles',
   'readParticleIds', 'readParticleChannels', 'energy', 'sample', 'sampleScalar', 'sampleGradient',
