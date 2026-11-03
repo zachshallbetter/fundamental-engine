@@ -1,6 +1,6 @@
 # Cross-platform parity matrix
 
-> **The authoritative matrix is the live page: [`/docs/api/parity`](https://fundamental-engine.com/docs/api/parity)**
+> **The authoritative matrix is the live page: [`/docs/api/parity`](https://fundamentalengine.com/docs/api/parity)**
 > (source: `apps/site/src/pages/docs/api/parity.astro`, whose counts are *computed* from a single
 > `METHODS` array — not a separate hand-copy). This canonical note used to carry a hand-maintained copy
 > of that table and later a hardcoded "44/44/44" summary; both drifted and were removed. **Do not restate
@@ -17,8 +17,8 @@ set — handle methods *and* handle properties, field configuration, the declara
 body spec and body handle, forces, render/overlay/host-render modes, palette, feedback channels,
 conditions, formations, events, agent capabilities, snapshot profiles and policy budgets. Per-entry
 support rows for the declarative half render on
-[`/docs/api/declarative`](https://fundamental-engine.com/docs/api/declarative) and for the imperative
-half on [`/docs/api/imperative`](https://fundamental-engine.com/docs/api/imperative). **Methods and
+[`/docs/api/declarative`](https://fundamentalengine.com/docs/api/declarative) and for the imperative
+half on [`/docs/api/imperative`](https://fundamentalengine.com/docs/api/imperative). **Methods and
 properties are separate dimensions on purpose** (#998): comparing one plane's properties against
 another plane's methods invented gaps for `policy` and `projections`, which all three planes have.
 
@@ -33,7 +33,7 @@ another plane's methods invented gaps for `policy` and `projections`, which all 
 ## Two different "parity" claims — keep them separate
 
 - **API-surface parity** — which callable `FieldHandle` methods exist on each platform. This is what the
-  [parity page](https://fundamental-engine.com/docs/api/parity) tracks.
+  [parity page](https://fundamentalengine.com/docs/api/parity) tracks.
 - **Mathematical conformance** — the force *physics* being identical across JS, Swift, and Kotlin. This is
   verified separately by the shared golden fixture (`swift/Tests/.../Fixtures/conformance-golden.json`) and
   the per-platform `GoldenConformanceTests` (`pnpm check:golden`). API parity and physics conformance are

@@ -5,7 +5,7 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 
-const SITE = 'https://fundamental-engine.com';
+const SITE = 'https://fundamentalengine.com';
 
 const esc = (s: string): string =>
   s

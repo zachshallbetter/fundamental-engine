@@ -148,7 +148,7 @@ Each diagnostic answers "which invisible relation am I revealing?"
 | Inspector | all of the above | system |
 
 All diagnostic render modes are shipped — see [visualization-methods-taxonomy.md](visualization-methods-taxonomy.md)
-and the live [/docs/diagnostics](https://fundamental-engine.com/docs/diagnostics).
+and the live [/docs/diagnostics](https://fundamentalengine.com/docs/diagnostics).
 
 ## Formations by meaning
 

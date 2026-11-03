@@ -256,7 +256,7 @@ Sources: `packages/core/src/engine/types.ts` (`FeedbackChannels`),
 `swift/Sources/FundamentalCore/Engine/FieldHandle.swift`,
 `android/fundamental-platform/.../Registries.kt`. The set is generated into the
 `feedback-channels` dimension of `data/parity-matrix.json` and rendered as support rows on
-[`/docs/api/declarative`](https://fundamental-engine.com/docs/api/declarative); `pnpm check:docs`
+[`/docs/api/declarative`](https://fundamentalengine.com/docs/api/declarative); `pnpm check:docs`
 fails if a plane gains or loses one.
 
 **What differs is DELIVERY, and it is the thing to know before porting a design:**

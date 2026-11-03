@@ -17,7 +17,7 @@ const { crumbs } = Astro.props;
 // BreadcrumbList structured data — Google shows a breadcrumb trail in the SERP from this.
 // Google requires `item` on every non-final ListItem, so label-only section crumbs (no URL)
 // stay in the visible trail but are dropped from the LD list; positions renumber.
-const site = Astro.site ?? 'https://fundamental-engine.com';
+const site = Astro.site ?? 'https://fundamentalengine.com';
 const ldCrumbs = crumbs.filter((c, i) => c.href || i === crumbs.length - 1);
 const breadcrumbLd = {
   '@context': 'https://schema.org',

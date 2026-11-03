@@ -32,8 +32,8 @@ const {
 const canonical =
   canonicalProp === false
     ? null
-    : (canonicalProp ?? new URL(Astro.url.pathname, Astro.site ?? 'https://fundamental-engine.com').href);
-const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.com').href;
+    : (canonicalProp ?? new URL(Astro.url.pathname, Astro.site ?? 'https://fundamentalengine.com').href);
+const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamentalengine.com').href;
 const pageJsonLd = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || Astro.url.pathname.endsWith('/eli5/');
 ---
@@ -87,7 +87,7 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
         '@type': 'WebSite',
         name: 'Fundamental',
         alternateName: 'Fundamental Engine',
-        url: 'https://fundamental-engine.com/',
+        url: 'https://fundamentalengine.com/',
         description:
           'A relational field runtime — an inspectable substrate where software meaning becomes behavior: importance pulls, relations bind, state decays.',
         sameAs: [
@@ -136,6 +136,24 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
         src="https://static.cloudflareinsights.com/beacon.min.js"
         data-cf-beacon='{"token": "213f3815b2ea46599d150c3938b32799"}'
       ></script>
+    )}
+
+    <!-- Google Analytics 4 (gtag.js). PROD only, like the Cloudflare beacon.
+         send_page_view:false — the SPA (ClientRouter) sends page_views itself from
+         src/lib/analytics.ts on every astro:page-load, so single-page navigations
+         are counted. (Disable Enhanced Measurement's "page changes based on browser
+         history events" in GA to avoid double counting those SPA navigations.) -->
+    {import.meta.env.PROD && (
+      <>
+        <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-M22BZ4PNB6"></script>
+        <script is:inline>
+          window.dataLayer = window.dataLayer || [];
+          function gtag() { dataLayer.push(arguments); }
+          window.gtag = gtag;
+          gtag('js', new Date());
+          gtag('config', 'G-M22BZ4PNB6', { send_page_view: false });
+        </script>
+      </>
     )}
   </head>
   <body>
@@ -188,6 +206,17 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
     <div class="scrim" aria-hidden="true" transition:persist></div>
     <slot />
     <DataConsole />
+
+    <script>
+      // Google Analytics behaviour layer: SPA page_views + one delegated
+      // interaction tracker over the existing DOM. Runs everywhere, but self-gates
+      // at runtime — every call goes through window.gtag?.(), and the gtag loader in
+      // <head> is PROD-only, so in dev (no gtag) initAnalytics attaches its listeners
+      // and they all no-op. (Gating this on import.meta.env.PROD would tree-shake the
+      // whole module out of the client bundle.)
+      import { initAnalytics } from '../lib/analytics';
+      initAnalytics();
+    </script>
 
     <script>
       // Idle-until-urgent engine boot. The field is ambiance — a slightly late start is

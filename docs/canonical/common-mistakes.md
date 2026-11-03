@@ -59,8 +59,8 @@ canon in [definition-document.md](definition-document.md).
 ## 7. "I can infer the API from the name."
 
 **Don't infer — the surface is small and documented.** Entry points and the which-`createField` map are
-on the [docs overview](https://fundamental-engine.com/docs); every option is in
-[/docs/api/options](https://fundamental-engine.com/docs/api/options); the protected 0.x surface is
+on the [docs overview](https://fundamentalengine.com/docs); every option is in
+[/docs/api/options](https://fundamentalengine.com/docs/api/options); the protected 0.x surface is
 `scripts/api-surface.data.mjs` (CI-enforced). If a method or option is not in those, it does not exist —
 do not invent it.
 
@@ -68,7 +68,7 @@ do not invent it.
 
 **No — reduced motion loses motion, not meaning.** The simulation and the `--field-*` signals still
 track under `prefers-reduced-motion`; only the CSS easing and the drawn surface drop. Style your reactive
-states so they read without animation. See [accessibility](https://fundamental-engine.com/docs/accessibility).
+states so they read without animation. See [accessibility](https://fundamentalengine.com/docs/accessibility).
 
 ## What not to build
 

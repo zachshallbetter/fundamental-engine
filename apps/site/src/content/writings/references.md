@@ -20,7 +20,7 @@ author: "Zach Shallbetter"
 
 The papers treat the codebase and canonical docs as primary evidence, cited inline by path. Anchors:
 
-- `[fundamental-site]` Fundamental public site and docs — <https://fundamental-engine.com>. Public product framing: renderer-agnostic relational field engine; DOM as first surface, not the only surface; packages under `@fundamental-engine/*`.
+- `[fundamental-site]` Fundamental public site and docs — <https://fundamentalengine.com>. Public product framing: renderer-agnostic relational field engine; DOM as first surface, not the only surface; packages under `@fundamental-engine/*`.
 - `[fundamental-engine-repo]` Fundamental monorepo — `packages/core`, `packages/dom`, `packages/{elements,react,vanilla,three}` and related adapters.
 - `[fundamental-engine-contracts]` `docs/canonical/system-contracts.md` — the hard contracts.
 - `[fundamental-engine-platform]` `docs/canonical/platform-architecture.md` — scheduler + registries.
