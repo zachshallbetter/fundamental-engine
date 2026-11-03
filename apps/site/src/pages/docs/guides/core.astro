@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
 const create = `// @fundamental-engine/core is renderer-agnostic — createField requires an explicit host.
@@ -29,7 +30,7 @@ field.scan();`;
 const custom = `import type { Force } from '@fundamental-engine/core';
 
 // Every force is one object: a token + an apply(body, particle, env).
-// This is the exact contract all 36 built-ins implement.
+// This is the exact contract every built-in implements.
 const lift: Force = {
   token: 'lift',
   label: 'Lift',
@@ -48,6 +49,7 @@ const lift: Force = {
   <header class="docs-hero">
     <p class="kicker">Guides</p>
     <h1>The <span class="accent">core engine</span></h1>
+    <StatusChip label="Shipped · the unguarded low-level door" tone="stable" />
     <p class="lede">
       Skip every wrapper and drive the engine on a canvas you own. The core is zero-dependency
       TypeScript. For a managed canvas and an ergonomic class, reach for the
@@ -74,7 +76,7 @@ const lift: Force = {
     <h2>createField — your own canvas</h2>
     <p>
       When you want to place and size the canvas yourself, hand it to <code>createField</code>.
-      You get the <a href="/docs/api/handle">FieldHandle</a>. This is the lowest-level entry
+      You get the <a href="/docs/api/imperative#handle">FieldHandle</a>. This is the lowest-level entry
       point; the web component, the React adapter, and <code>@fundamental-engine/vanilla</code> all wrap it.
     </p>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: create }]} />
@@ -105,17 +107,17 @@ const lift: Force = {
     <h2>The force contract</h2>
     <p>
       A force is one small object — a <code>token</code> and an
-      <code>apply(body, particle, env)</code> that nudges a particle's velocity. Every one of the
-      36 built-ins implements this exact contract, and the engine never special-cases any of them,
-      which is why they compose. The shape:
+      <code>apply(body, particle, env)</code> that nudges a particle's velocity. Every built-in in the
+      catalog implements this exact contract, and the engine never special-cases any of them, which is
+      why they compose. The shape:
     </p>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: custom }]} />
     <div class="callout">
       <b>Registering your own.</b> The built-in catalog is registered for you, and the registry
       that holds it lives inside <code>createField</code> — so authoring a brand-new force today
-      means building against the <a href="/docs/api/types">Force</a> contract at the engine level
+      means building against the <a href="/docs/api/imperative#types">Force</a> contract at the engine level
       rather than passing it in as an option. The documented catalog covers most needs; compose
-      forces with <a href="/docs/api/presets">presets</a> for bigger effects.
+      forces with <a href="/docs/api/declarative#presets">presets</a> for bigger effects.
     </div>
   </section>
 

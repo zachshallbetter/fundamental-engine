@@ -287,7 +287,7 @@ Example:
 
 > **Implemented.** All **sixty-four** ship as validated `FieldPattern`s in
 > `packages/core/src/recipes/catalog.ts` (`FIELD_RECIPES`; `gallery.ts` re-exports it), grouped into four tiers (`RECIPE_TIERS`),
-> live on [`/docs/gallery`](https://fundamental-engine.com/docs/gallery). They are the four-field translation
+> live on [`/patterns`](https://fundamental-engine.com/patterns). They are the four-field translation
 > model made practical — and classification/authoring artifacts only: they **compose existing
 > primitives and add no new engine behavior**. Eight are the recommended first-release set
 > (`FIRST_RELEASE_RECIPE_IDS`).

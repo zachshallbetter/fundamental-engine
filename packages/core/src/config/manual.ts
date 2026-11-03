@@ -614,7 +614,7 @@ export const MANUAL_CONDITIONS: readonly { id: string; desc: string }[] = [
 // Fundamental does not copy physics into UI; it TRANSLATES the four fundamental fields into
 // interface behavior. Natural fields are conceptual; engine primitives are translations; canonical
 // forces are designed verbs. This classification is data — the manual cards, the Lab badges/filters,
-// and /docs/natural-fields all read it, and `natural-fields.test.ts` checks it covers every force, so
+// and /docs/concepts#natural-fields all read it, and `natural-fields.test.ts` checks it covers every force, so
 // the taxonomy can never drift from the catalog. It changes NO particle/engine behavior — only how
 // each token is explained and organized.
 

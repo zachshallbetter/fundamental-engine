@@ -119,4 +119,4 @@ The invisible field is the baseline. The pixels are the choice.
 - [The Field Is Fill-Rate-Bound](/writings/the-field-is-fill-rate-bound) — why no draw means no cost.
 - [One Engine, Four Runtimes](/writings/one-engine-four-runtimes) — headless is `render: 'none'` taken to its limit.
 - [Host-driven runtime](/writings/05-host-driven-runtime) — the architecture paper behind zero-DOM portability.
-- [`render` and `setRender`](/docs/api/options) — the option and handle method that flip the default.
+- [`render` and `setRender`](/docs/api/imperative#options) — the option and handle method that flip the default.

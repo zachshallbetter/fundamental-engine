@@ -301,7 +301,7 @@ fill-rate-bound, not particle-bound; `<field-root>` applies it automatically.
 
 Ten of the forces also carry a four-field classification — gravity, electromagnetic, strong, weak
 (`FORCE_FIELD` / `classifyForce()`); the other 27, including the canonical nine, are unclassified. See
-[`/docs/natural-fields`](https://fundamental-engine.com/docs/natural-fields).
+[`/docs/concepts#natural-fields`](https://fundamental-engine.com/docs/concepts#natural-fields).
 
 **9 presets** compose primitives into cosmology with no new engine code: `blackhole`, `whitehole`,
 `wormhole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
@@ -376,7 +376,7 @@ bindData(listEl, tasks, (t) => ({                   // records → bodies; data 
 }), { pattern: 'priority-well' });
 ```
 
-Browse and run all 64 patterns at the [pattern gallery](https://fundamental-engine.com/docs/patterns), pick apart a
+Browse and run all 64 patterns at the [pattern gallery](https://fundamental-engine.com/patterns), pick apart a
 compiled plan in the [inspector](https://fundamental-engine.com/docs/inspector), and see the three
 surfaces wired together in the [starter app](apps/starter). The
 [concept studies](https://fundamental-engine.com/docs/studies/reading-field) (Reading, Review, Search,
@@ -568,7 +568,7 @@ surface is frozen, with new surface added additively; the support and versioning
   over the engine.
 - **Lab** at [fundamental-engine.com/lab](https://fundamental-engine.com/lab): fire particles into a
   force, watch the track, share the result through a URL.
-- **Pattern gallery** at [fundamental-engine.com/docs/patterns](https://fundamental-engine.com/docs/patterns)
+- **Pattern gallery** at [fundamental-engine.com/patterns](https://fundamental-engine.com/patterns)
   and the **inspector** at [fundamental-engine.com/docs/inspector](https://fundamental-engine.com/docs/inspector).
 - [`docs/README.md`](docs/README.md): the full documentation map.
 - [`docs/canonical/api-stability.md`](docs/canonical/api-stability.md) ·

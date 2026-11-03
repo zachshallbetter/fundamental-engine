@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 import ReactiveList from '../../components/ReactiveList.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 
@@ -40,6 +41,7 @@ const css = `/* the field wrote --d (the canonical raw density channel; --field-
   description="The field as a behaviour layer on a real interface: a contained, signals-only field gives an ordinary list weight and reactivity through --field-* CSS variables, with nothing drawn to its canvas."
 >
   <h1>A reactive component — no particles</h1>
+  <StatusChip label="Shipped · the demo runs on this page" tone="stable" />
   <p class="lede">
     The field is a <strong>behaviour layer</strong>, not a particle background. Here it runs
     <em>contained</em> inside one list and <em>signals-only</em> — nothing is drawn. The only thing

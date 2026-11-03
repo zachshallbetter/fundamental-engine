@@ -115,7 +115,7 @@ when you want one field across a whole page regardless of framework.
 
 To apply a named recipe over your markup (or bind data to it) rather than wire bodies by hand, use
 `applyRecipe()` / `bindData()` from [`@fundamental-engine/dom`](../dom); browse all 64 recipes at
-[`/docs/gallery`](https://fundamental-engine.com/docs/gallery). The starter app in
+[`/patterns`](https://fundamental-engine.com/patterns). The starter app in
 [`apps/starter`](../../apps/starter) shows the declarative element, `applyRecipe`, and `bindData`
 together.
 

@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 import { DOCS_NAV } from '../../lib/docs-nav.ts';
 import { INVISIBLE_FIELDS } from '../../lib/invisible-fields.ts';
 
@@ -14,25 +15,19 @@ import { INVISIBLE_FIELDS } from '../../lib/invisible-fields.ts';
 const HOOKS: Record<string, string> = {
   '/docs': 'this page — the map',
   '/docs/tutorial': 'npm install to a glowing, reacting headline, step by step',
-  '/docs/concepts': 'bodies, the shared field context, reciprocity — the mental model',
-  '/docs/natural-fields': 'gravity → priority, EM → polarity, strong → binding, weak → transformation',
+  '/docs/concepts': 'bodies, reciprocity, the four fields, and one element revealed layer by layer',
   '/docs/platform': 'six registries on a six-phase scheduler — the DOM participation layer',
-  '/docs/narrative': 'one ordinary element, revealed as a field participant layer by layer',
   '/docs/reading-field': 'the flagship platform demo — a content page that measures your attention',
   '/docs/guides/web-component': '<field-root> in any framework or plain HTML',
   '/docs/guides/typescript': 'the typed FieldField class — no custom elements, no framework',
   '/docs/guides/react': 'the <FieldField> component and the useFieldField hook',
   '/docs/guides/core': 'createField on a canvas you own, host injected',
   '/docs/api': 'the whole surface, generated from the engine catalog',
-  '/docs/api/options': 'createField(canvas, opts) and every FieldOptions field',
-  '/docs/api/handle': 'the FieldHandle every entry point returns',
-  '/docs/api/attributes': 'the data-* contract bodies are written in',
-  '/docs/api/metrics': 'every --field-* variable the field writes back, with ranges and cadence',
-  '/docs/api/types': 'the exported TypeScript contracts, core and platform',
+  '/docs/api/declarative': 'everything written in markup — the contract, the forces, the channels, the vocabularies',
+  '/docs/api/imperative': 'everything reached from code — createField, the handle, the reads, the types',
+  '/docs/api/utilities': 'seven web-only helpers that are load-bearing and none of them frozen',
   '/docs/api/stability': 'the frozen 0.x surface — the same data CI enforces',
-  '/docs/api/forces': 'all 37 forces: law, attributes, example — from the catalog',
-  '/docs/api/presets': 'blackhole, galaxy, tornado — composites, not new engine code',
-  '/docs/api/catalog': 'conditions, formations, render modes, palettes',
+  '/docs/api/parity': 'what each plane actually has, generated from the port sources',
   '/docs/studies/reading-field': 'a long-form article reinterpreted as a field',
   '/docs/studies/review-field': 'a pull request as heat, tension, and a reviewer constellation',
   '/docs/studies/search-field': 'search results as a trust gradient with polarity',
@@ -92,6 +87,7 @@ const hookFor = (href: string): string | undefined =>
   <header class="docs-hero">
     <p class="kicker">Documentation</p>
     <h1>Build with <span class="accent">Fundamental</span>.</h1>
+    <StatusChip label="Shipped · rendered from the nav tree" tone="stable" />
     <p class="lede">
       A platform-native relational field runtime; the DOM is its first host — framework-agnostic, with a
       renderer-agnostic core. This page is the map; every card below is drawn from the same
