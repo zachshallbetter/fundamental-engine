@@ -4,6 +4,7 @@ import { ClientRouter } from 'astro:transitions';
 // on every page (the homepage and Lab included), not just the docs surfaces.
 import '../styles/ds-tokens.css';
 import DataConsole from '../components/DataConsole.astro';
+import { ogImageForPath } from '../lib/og-cards';
 interface Props {
   title?: string;
   description?: string;
@@ -22,7 +23,7 @@ interface Props {
 const {
   title = 'Fundamental — a relational field runtime for interfaces',
   description = "Fundamental is a relational field runtime: UI and data become bodies in an inspectable field — importance pulls, relations bind, state decays.",
-  ogImage = '/og.jpg',
+  ogImage,
   ogImageAlt,
   robots = 'index, follow',
   ogType = 'website',
@@ -33,7 +34,11 @@ const canonical =
   canonicalProp === false
     ? null
     : (canonicalProp ?? new URL(Astro.url.pathname, Astro.site ?? 'https://fundamentalengine.com').href);
-const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamentalengine.com').href;
+// og:image resolution: an explicit prop wins; otherwise use this page's generated
+// OG card (src/pages/og/[...route].png, keyed by the shared og-cards list); else
+// the static fallback. Keeps every page's social card specific without per-page wiring.
+const resolvedOgImage = ogImage ?? ogImageForPath(Astro.url.pathname) ?? '/og.jpg';
+const ogImageUrl = new URL(resolvedOgImage, Astro.site ?? 'https://fundamentalengine.com').href;
 const pageJsonLd = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || Astro.url.pathname.endsWith('/eli5/');
 ---

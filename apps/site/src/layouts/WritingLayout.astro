@@ -7,6 +7,7 @@ import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import Breadcrumbs, { type Crumb } from '../components/Breadcrumbs.astro';
 import { WRITING_CATS, writingCat, writingCatColor } from '../lib/writings-meta.ts';
+import { ogImageForPath } from '../lib/og-cards';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import '../styles/ds-tokens.css';
 import '../styles/docs.css';
@@ -66,7 +67,7 @@ const articleLd = {
   ...(description ? { description } : {}),
   ...(date ? { datePublished: date.toISOString() } : {}),
   ...(date ? { dateModified: (updated ?? dateModified ?? date).toISOString() } : {}),
-  image: new URL(ogImage ?? '/og.jpg', Astro.site).href,
+  image: new URL(ogImage ?? ogImageForPath(path) ?? '/og.jpg', Astro.site).href,
   author: {
     '@type': 'Person',
     name: author || 'Zach Shallbetter',
