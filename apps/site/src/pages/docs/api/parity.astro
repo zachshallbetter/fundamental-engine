@@ -64,6 +64,8 @@ const ORDERED_METHODS: Array<{ method: string; note?: string }> = [
   { method: 'pointer',              note: 'JS only — the cursor as a transient body + its wake (#666)' },
   { method: 'clearPointer',         note: 'JS only (#666)' },
   { method: 'fling',                note: 'JS only — DOM movers have no port counterpart (#666)' },
+  { method: 'navigate',             note: 'JS only — obstacle-aware navigation + goal flow-fields (#439)' },
+  { method: 'clearNavigation',      note: 'JS only (#439)' },
   { method: 'seed' },
   { method: 'addAgent',             note: 'AgentSpec / AgentHandle; Kotlin init-block wires tickAgents() via onAfterTick; Swift uses UUID-keyed agent list' },
   { method: 'addBody' },
