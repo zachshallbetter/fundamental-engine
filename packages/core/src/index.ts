@@ -27,6 +27,9 @@ export * from './engine/projection-agent-json.ts';
 export * from './engine/query-lens.ts';
 export * from './engine/streamlines.ts';
 export * from './engine/flow.ts';
+// Pointer dynamics + throw (the cursor as a transient body, its wake, and the release velocity a
+// flung [data-move] element carries). Pure math, so a host can reuse it for its own input handling.
+export * from './engine/pointer.ts';
 export * from './engine/fieldlines.ts';
 export * from './engine/fieldline-seeds.ts';
 export * from './engine/reactions.ts';

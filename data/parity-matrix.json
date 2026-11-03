@@ -43,12 +43,14 @@
         "burst",
         "clearFlow",
         "clearFocus",
+        "clearPointer",
         "destroy",
         "diff",
         "effectiveMotion",
         "energy",
         "feedReducedMotion",
         "feedScrollV",
+        "fling",
         "flowTo",
         "focus",
         "focusAt",
@@ -58,6 +60,7 @@
         "on",
         "particleCount",
         "pause",
+        "pointer",
         "query",
         "readEdges",
         "readParticleChannels",
@@ -97,7 +100,7 @@
         "tick"
       ],
       "counts": {
-        "js": 52,
+        "js": 55,
         "swift": 53,
         "kotlin": 59
       },
@@ -111,9 +114,11 @@
           "burst",
           "clearFlow",
           "clearFocus",
+          "clearPointer",
           "destroy",
           "diff",
           "energy",
+          "fling",
           "flowTo",
           "focus",
           "focusAt",
@@ -122,6 +127,7 @@
           "grid",
           "on",
           "particleCount",
+          "pointer",
           "query",
           "readEdges",
           "readParticleChannels",
@@ -329,6 +335,12 @@
           "kotlin": true
         },
         {
+          "symbol": "clearPointer",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
           "symbol": "destroy",
           "js": true,
           "swift": true,
@@ -363,6 +375,12 @@
           "js": false,
           "swift": false,
           "kotlin": true
+        },
+        {
+          "symbol": "fling",
+          "js": true,
+          "swift": false,
+          "kotlin": false
         },
         {
           "symbol": "flowTo",
@@ -417,6 +435,12 @@
           "js": false,
           "swift": true,
           "kotlin": true
+        },
+        {
+          "symbol": "pointer",
+          "js": true,
+          "swift": false,
+          "kotlin": false
         },
         {
           "symbol": "query",
