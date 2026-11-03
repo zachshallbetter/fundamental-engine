@@ -31,6 +31,19 @@ public enum OverlayMode: String {
 public enum OverlayInput {
     case single(OverlayMode)
     case stack([OverlayMode])
+
+    /// The readings that would actually draw — `.off` filtered out, order preserved. The ONE
+    /// definition of "is a reading active", so the host's surface attach and the engine's draw
+    /// gate can never disagree about it (mirrors JS `overlayStack`).
+    public var activeModes: [OverlayMode] {
+        switch self {
+        case .single(let m): return m == .off ? [] : [m]
+        case .stack(let ms): return ms.filter { $0 != .off }
+        }
+    }
+
+    /// `true` when at least one reading would draw.
+    public var isActive: Bool { !activeModes.isEmpty }
 }
 
 /// Per-frame energy snapshot.

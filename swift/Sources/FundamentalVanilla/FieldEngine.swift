@@ -634,8 +634,12 @@ final class FieldEngine: FieldHandle {
             focused.heat = 1
         }
 
-        // render (skipped while invisible or signals-only — the sim stays live).
-        if visible, options.render != .none_, let renderer {
+        // Render — skipped while invisible; the sim stays live either way. The two surfaces gate
+        // SEPARATELY (§13.7 as amended by Field Surfaces): `render: .none_` is signals-only for
+        // MATTER, and the renderer's own `case .none_: break` already draws none of it, but a
+        // declared overlay READING still draws. A field with no reading declared and `.none_` has
+        // no renderer attached at all (FieldField), so this frame does nothing, exactly as before.
+        if visible, options.render != .none_ || options.overlay.isActive, let renderer {
             let bodiesRef = bodies
             let forcesRef = registry.forces
             let envRef = env
@@ -677,12 +681,7 @@ final class FieldEngine: FieldHandle {
         b.feedbackCallback?(ch)
     }
 
-    private func activeOverlays() -> [OverlayMode] {
-        switch options.overlay {
-        case .single(let m): return m == .off ? [] : [m]
-        case .stack(let ms): return ms.filter { $0 != .off }
-        }
-    }
+    private func activeOverlays() -> [OverlayMode] { options.overlay.activeModes }
 
     private func boxVisible(_ box: Box, in vol: FieldVolume) -> Bool {
         let mn = box.center - box.halfExtents

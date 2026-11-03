@@ -76,10 +76,13 @@ public final class FieldField: FieldHandle {
         self.managedScale = CGFloat(host.volume.scale)
         self.mountPoint = mountPoint
 
-        // managed render surfaces — skipped entirely in signals-only mode (render "none"),
-        // matching the JS no-allocation guarantee (§13.7). `setRender` out of "none" attaches
-        // them lazily (so a signals-only field can start drawing later, like the JS engine).
-        if options.render != .none_ { attachManagedSurfaces() }
+        // Managed render surfaces — skipped entirely in signals-only mode (render "none") with no
+        // reading declared, matching the JS no-allocation guarantee (§13.7). `setRender` out of
+        // "none", or a `setOverlay` that turns a reading on, attaches them lazily (so a signals-only
+        // field can start drawing later, like the JS engine). A signals-only field that declares a
+        // READING gets its surface now: §13.7 as amended by Field Surfaces gates matter and readings
+        // separately, and on this plane they share one surface stack.
+        if options.render != .none_ || options.overlay.isActive { attachManagedSurfaces() }
     }
 
     /// Drive a field on a host you supply — the unmanaged form.
@@ -128,7 +131,12 @@ public final class FieldField: FieldHandle {
         // attach one now so it actually draws (idempotent once surfaces exist).
         if mode != .none_ { attachManagedSurfaces() }
     }
-    public func setOverlay(_ input: OverlayInput)         { handle.setOverlay(input) }
+    public func setOverlay(_ input: OverlayInput) {
+        handle.setOverlay(input)
+        // a reading going active on a signals-only field needs a surface to draw on — the Swift
+        // counterpart of core's lazy `ensureOverlaySurface` (idempotent once surfaces exist).
+        if input.isActive { attachManagedSurfaces() }
+    }
     public func setWaveStyle(_ style: WaveStyle)          { handle.setWaveStyle(style) }
     public func setWaveCenter(_ center: WaveCenter?)      { handle.setWaveCenter(center) }
     public func setSeparation(_ strength: Float)          { handle.setSeparation(strength) }

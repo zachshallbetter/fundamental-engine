@@ -186,7 +186,11 @@ Readings are **additive**: `setOverlay` takes one reading or a stack (an array; 
 the `overlay` attribute), drawn in order on the one front surface — so matter (underlay) + the
 heatmap layer + several overlay readings compose into a single legible picture of the same field.
 
-**Placement is orthogonal to mode** — any overlay-suitable method renders on either surface.
+**Placement is orthogonal to mode** — any overlay-suitable method renders on either surface. It is
+also orthogonal to the *underlay's* render mode: a field with `render: 'none'` draws no matter and
+still draws whatever readings it declares, because a reading is a separate surface
+([forces-system.md §13.7](../engine-reference/forces-system.md), amended by Field Surfaces). A field
+declaring no reading draws nothing at all, which remains the default.
 `<field-root>` owns the overlay canvas (created in the light DOM, since the shadow host is `z-index:0`);
 `createField` callers pass their own `overlayCanvas`. Core stays renderer-agnostic: it only draws to
 the canvases it is handed.
