@@ -750,6 +750,7 @@ export type RenderModeName =
   | 'redshift'
   | 'blackbody'
   | 'depth'
+  | 'lic'
   | 'none';
 
 /**
@@ -769,6 +770,7 @@ export const RENDER_MODE_LIST = [
   'redshift',
   'blackbody',
   'depth',
+  'lic',
   'none',
 ] as const satisfies readonly RenderModeName[];
 
@@ -883,7 +885,10 @@ export interface FieldOptions {
    *  (dots tinted by spectral shift — Doppler from radial velocity + gravitational red
    *  near body wells, #668), 'blackbody' (dots tinted by energy on a thermal ramp, ember
    *  → white → blue-white, #669), 'depth' (the z lane made visible: far-to-near painter's
-   *  sorting, perspective parallax, defocus with distance — pairs with `depth > 0`, #670). */
+   *  sorting, perspective parallax, defocus with distance — pairs with `depth > 0`, #670), 'lic'
+   *  (the force field as TEXTURE rather than as arrows — line-integral convolution, #671: short
+   *  streamlines traced from a noise-seeded lattice, so the flow reads like iron filings instead of
+   *  a vector list. REPLACES the dots, as `streamlines` does). */
   render?: RenderModeName;
   /**
    * DECLARED render reference point (Wallpaper Rule, #975): the center of the cool→warm heat

@@ -33,7 +33,7 @@ test('every mode routes exactly where it did before the vocabulary was unified',
   const expected: Record<string, 'underlay' | 'unapplied'> = {
     dots: 'underlay', trails: 'underlay', links: 'underlay', metaballs: 'underlay',
     voronoi: 'underlay', knockout: 'underlay', redshift: 'underlay', blackbody: 'underlay',
-    depth: 'underlay',
+    depth: 'underlay', lic: 'underlay', // lic replaces the swarm as a matter layer (#671)
     streamlines: 'underlay', // its own branch: prefers the overlay unless it is the only layer
     flow: 'unapplied',
     none: 'unapplied',

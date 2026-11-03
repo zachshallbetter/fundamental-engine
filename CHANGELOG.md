@@ -10,6 +10,12 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
 ### Added
 
 - **DOM morph bodies can target an inline SVG path.** Set `data-target="#path-id"` on a body using `morph`; the DOM host samples the path in viewport coordinates and supplies the target points to the existing field behavior.
+- **`render: 'lic'` — the force field as texture rather than as arrows** (#671). Where `streamlines` draws one arrow per lattice cell, LIC traces a few hundred short streamlines from a noise-seeded lattice and strokes each at a brightness taken from the noise. You stop reading individual vectors and start seeing the flow — on a rotational field, two counter-rotating vortices and the separatrix between them are legible at a glance where the arrow grid shows a field of unrelated ticks.
+  - **Not textbook per-pixel LIC, deliberately.** The real algorithm convolves noise along the streamline through *every pixel* — ~2M integrations a frame at 1920×1080. This is the standard sparse cousin. The noise is what makes it read as LIC rather than as thin streamlines: neighbouring hairs get unrelated brightness, so they band into smoke instead of combing into a grid.
+  - Hairs **retrace on the body-measure cadence** (every 6th frame — the field only moves when bodies are re-measured or a flow focus is live) and **draw from cache every frame**, so the texture never flickers. A hair is ~14 force evaluations against every body, an order of magnitude dearer than the arrow lattice, so it is not retraced more often than it changes.
+  - Deterministic: the lattice is a pure function of the viewport, so a field renders identically every run and on every machine. Seeds under the noise floor are culled at seeding, not at draw, so the saving is the integration rather than the stroke; the count is capped so a large viewport cannot uncap the cost.
+  - Like `streamlines` and `metaballs`, it **replaces** the matter — the dot swarm is suppressed.
+  - JS-only: the parity matrix records the Swift/Kotlin gap (render modes the declarative host draws: JS 12 · Swift 6 · Kotlin 6) rather than hiding it.
 
 ### Fixed
 
