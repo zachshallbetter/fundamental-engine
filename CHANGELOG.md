@@ -16,6 +16,10 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
   - Deterministic: the lattice is a pure function of the viewport, so a field renders identically every run and on every machine. Seeds under the noise floor are culled at seeding, not at draw, so the saving is the integration rather than the stroke; the count is capped so a large viewport cannot uncap the cost.
   - Like `streamlines` and `metaballs`, it **replaces** the matter — the dot swarm is suppressed.
   - JS-only: the parity matrix records the Swift/Kotlin gap (render modes the declarative host draws: JS 12 · Swift 6 · Kotlin 6) rather than hiding it.
+- **`OVERLAY_MODE_LIST` / `OVERLAY_READING_LIST` — one overlay vocabulary, checked in both directions** (#672 lane R0, Field Surfaces program §6.1 **C-17**). The `OverlayMode` union had **four** hand-maintained copies, and a reading added to the union but forgotten in one of them failed *silently*, differently each time: `recipes/compile.ts` dropped the layer into `unapplied` so a Pattern lost it with `check:recipes` green; the `<field-root>` `overlay` attribute filtered the token out and fell back to `off`; and the site's workbench simply never grew a control for it.
+  - `satisfies` proves list ⊆ union. It **cannot** prove the other direction, which is the half that matters — a union member missing from the list is exactly the silent drop. A type-level `Exclude<…> extends never` assertion now proves union ⊆ list, so either kind of drift fails `tsc`. Both directions were mutation-tested: adding a member to only one side breaks the build.
+  - All three runtime consumers derive from the list instead of re-listing it. `check:docs`'s extractor deliberately keeps reading the **union** — the type is the contract, and the exhaustiveness assertion now guarantees the list agrees with it, so the gate's truth source stays the declaration rather than a second copy of it.
+  - Four runtime tests, including a non-vacuity guard: an invented layer must still reach `unapplied`, or "no reading was dropped" would pass just as well on a plan that never populates it.
 
 ### Fixed
 
