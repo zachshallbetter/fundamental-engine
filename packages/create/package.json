@@ -1,6 +1,6 @@
 {
   "name": "@fundamental-engine/create",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "type": "module",
   "description": "Scaffold a Fundamental starter \u2014 `npm create @fundamental-engine` \u2014 vanilla, React, or web-component, contained and signals-first by default.",
   "keywords": [

@@ -149,7 +149,7 @@ jobs:
   # blocks every merge. A real cross-browser failure still shows on the PR (it just doesn't gate).
   e2e:
     name: "e2e · chromium"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [changes, gate]
     if: ${{ needs.changes.outputs.js == 'true' }}
     steps:
@@ -224,7 +224,7 @@ jobs:
   # A failure here is visible on the PR and worth investigating, but doesn't hold the queue.
   e2e-extra:
     name: "e2e-extra · ${{ matrix.project }}"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [changes, gate]
     if: ${{ needs.changes.outputs.js == 'true' }}
     strategy:

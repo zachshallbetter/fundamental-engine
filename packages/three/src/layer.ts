@@ -18,7 +18,7 @@
  */
 
 import { createField, resolvePalette } from '@fundamental-engine/core';
-import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, EdgeHandle, EdgeView, FieldChannelHandle, FieldQuery, FieldQueryResult, FieldSnapshot, FieldSnapshotOptions, FieldDiff, CausalReplay, ReplayOptions, ProjectionRegistry } from '@fundamental-engine/core';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, PointerOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, EdgeHandle, EdgeView, FieldChannelHandle, FieldQuery, FieldQueryResult, FieldSnapshot, FieldSnapshotOptions, FieldDiff, CausalReplay, ReplayOptions, ProjectionRegistry } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
@@ -260,11 +260,42 @@ export class FieldLayer implements FieldHandle {
   burst(x: number, y: number, hex?: string): void {
     this.field.burst(x, y, hex);
   }
+
+  /** Flare a body — the transient per-body one-shot (#567). A mesh-backed body's handle comes from
+   *  `addBody`, so a Three host flares its own geometry through the same call a DOM host uses; the
+   *  channel is delivered to that body's `onFeedback`, never to CSS (this layer installs no CSS sink). */
+  pulse(target: Parameters<FieldHandle['pulse']>[0], energy?: number): void {
+    this.field.pulse(target, energy);
+  }
   flowTo(x: number, y: number, flowOpts?: FlowOptions): void {
     this.field.flowTo(x, y, flowOpts);
   }
   clearFlow(): void {
     this.field.clearFlow();
+  }
+
+  /** Place/move the pointer — the cursor as a transient body plus its wake (#666). A WebGL host
+   *  projects a screen position through here exactly as a DOM host does. */
+  pointer(x: number, y: number, opts?: PointerOptions): void {
+    this.field.pointer(x, y, opts);
+  }
+  /** Remove the pointer body and its wake (#666). */
+  clearPointer(): void {
+    this.field.clearPointer();
+  }
+  /** Throw a `[data-move]` element (#666). A WebGL layer scans no DOM, so there are no movers here
+   *  and this is a no-op — delegated rather than omitted so the handle stays one surface. */
+  fling(el: HTMLElement, vx: number, vy: number): void {
+    this.field.fling(el, vx, vy);
+  }
+  /** Build the nav grid and sweep it toward a goal — obstacle-aware navigation for agents that
+   *  opt in with `AgentSpec.navigate` (#439). Not `flowTo`: this routes AROUND geometry. */
+  navigate(opts: Parameters<FieldHandle['navigate']>[0]): void {
+    this.field.navigate(opts);
+  }
+  /** Remove the nav grid (#439) — navigating agents revert to pure force-following. */
+  clearNavigation(): void {
+    this.field.clearNavigation();
   }
   seed(atoms: readonly AtomPayload[]): void {
     this.field.seed(atoms);

@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 ---
 
 <DocsLayout
@@ -9,6 +10,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
   <header class="docs-hero">
     <p class="kicker">Reference</p>
     <h1>Support &amp; <span class="accent">stability</span></h1>
+    <StatusChip label="Planning · a 1.0 policy, stated while 0.x ships" tone="planning" />
     <p class="lede">
       The maintenance policy a <strong>solo maintainer can actually keep</strong>. It is deliberately
       conservative: it promises only what one person can sustain, and is explicit where support is
@@ -19,7 +21,8 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
 
   <div class="callout">
     <b>What backs this up.</b> The contract is the <a href="/docs/api/stability">Stable surface</a> —
-    frozen and gated by <code>check:api</code> in CI. This page is the human-readable commitment around
+    guarded against silent removal by <code>check:api</code> in CI (a guard against accidental breakage,
+    not a freeze — the wider surface still moves pre-1.0). This page is the human-readable commitment around
     it; the canonical source is <code>SUPPORT.md</code> in the repository.
   </div>
 
@@ -41,7 +44,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
         and only after the deprecation window below.
       </li>
     </ul>
-    <p>The <code>0.x</code> line was already frozen-and-additive; <code>1.0</code> formalizes that promise.</p>
+    <p>On the <code>0.x</code> line the protected subset only grows; <code>1.0</code> extends that promise to the whole public surface.</p>
   </section>
 
   <section class="docs-sec">

@@ -18,7 +18,7 @@ import type { AgentCapability, AgentFieldView, AgentViewOptions, AtomPayload, Bo
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
-import { scanBodies, measureBodies, bodyFromElement } from './scanner.ts';
+import { scanBodies, measureBodies, measureBodyGeometry, refreshBodyAttrs, bodyFromElement } from './scanner.ts';
 
 type MorphTargetHost = { resolveMorphTarget?: (body: HTMLElement, selector: string, originX: number, originY: number) => readonly { x: number; y: number }[] | undefined };
 import {
@@ -61,6 +61,7 @@ import { registerNaturalForces } from '../forces/natural.ts';
 import { registerExtendedForces } from '../forces/extended.ts';
 import { ScalarGridImpl } from './scalar-grid.ts';
 import { sparkCount, burstImpulse, BURST_RADIUS } from './reactions.ts';
+import { pulseAdd, pulseDecay, PULSE_FLOOR } from './pulse.ts';
 import {
   linkAlpha,
   marchingCell,
@@ -86,7 +87,11 @@ import { forceAt, netField } from './streamlines.ts';
 import { traceFieldLines } from './fieldlines.ts';
 import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
-import type { FieldHost } from './host.ts';
+import { licSeeds, licStep, licAlpha, LIC_STEPS, LIC_STEP_PX, type LicSeed } from './lic.ts';
+import { tabSequence, tabSuccessor, tabCurrentInto } from './tab-order.ts';
+import { makePointer, trackPointer, agePointer, pointerWakeInto, flingVelocity, type PointerOptions, type PointerState } from './pointer.ts';
+import { navGrid, navFlowField, type NavObstacle } from './nav-grid.ts';
+import type { BodyObserver, FieldHost } from './host.ts';
 import { admits as admitsShare } from './agent-read-share.ts';
 import { devWarnNoOp } from '../contracts/guards.ts';
 import { FIELD_VERSION } from '../version.ts';
@@ -101,7 +106,25 @@ import { clonePolicy, applyRedactions, resolveSnapshotInclusion } from './snapsh
 // active flow focus and the particle draw don't allocate a `{x,y}` / `[r,g,b]` each iteration.
 // Safe to share module-wide: each field's frame runs synchronously, and every read consumes the
 // scratch before the next write (no overlapping lifetimes, no cross-instance interleaving).
+/** What counts as a Tab stop inside a body (#943). The standard focusable set, minus anything
+ *  explicitly removed from the sequence with `tabindex="-1"`. */
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), ' +
+  'textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Default steering gain for a navigating agent (#439) — px/frame² toward the goal. Chosen to read
+ *  as purposeful without overwhelming the forces the agent is also feeling. */
+const NAV_AGENT_GAIN = 0.6;
+
 const _flowB = { x: 0, y: 0 };
+/** shared scratch for the pointer wake — the per-particle path allocates nothing (#666). */
+const _pointerW = { x: 0, y: 0 };
+/**
+ * Converts the pointer's px/SECOND velocity into the per-frame velocity the integrator speaks
+ * (#666). 1/60 is the unit conversion; the extra 0.5 is taste — at a straight 1/60 a flick hands
+ * matter the cursor's full speed and the swarm shoots off ahead of the hand instead of trailing it.
+ */
+const POINTER_WAKE_GAIN = 0.5 / 60;
 const _rgb: RGB = [0, 0, 0];
 
 // ── Focus / attention substrate (experimental) constants ────────────────────────────────────────
@@ -129,11 +152,17 @@ const SOFT_RESIZE_PX = 160;
 
 export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}): FieldHandle {
   // Signals-only mode (`render: 'none'`, §13.7 / #297): the full simulation + feedback pipeline
-  // runs, but the engine never acquires a 2d context, never sizes a canvas backing store (it stays
-  // 0×0 — the allocation win), and never draws. The field exists purely as signals: `--d`, `--load`,
-  // `--lit`, capture events, `scrollV()`. `ctx` stays null until `setRender` to a drawing mode
-  // acquires it lazily (and sizes the store then) — so a field created with 'none' allocates no
-  // render surface at all unless asked to draw.
+  // runs, but the engine never acquires a 2d context for THIS canvas, never sizes its backing store
+  // (it stays 0×0 — the allocation win), and never draws matter. The field exists purely as signals:
+  // `--d`, `--load`, `--lit`, capture events, `scrollV()`. `ctx` stays null until `setRender` to a
+  // drawing mode acquires it lazily (and sizes the store then) — so a field created with 'none'
+  // allocates no MATTER surface at all unless asked to draw.
+  //
+  // What the mode does NOT withhold, as of the Field Surfaces amendment to §13.7, is a READING: an
+  // overlay reading draws on a different, host-owned canvas, and a field that declares one gets it
+  // whatever the underlay mode. The guarantee above is about matter; the coupling to the overlay was
+  // incidental. A field that declares no reading — the default — is byte-identical to before: no
+  // overlay canvas is requested, no context is acquired, and nothing is drawn anywhere.
   let ctx: CanvasRenderingContext2D | null = null;
   if ((opts.render ?? 'none') !== 'none') {
     ctx = canvas.getContext('2d');
@@ -143,14 +172,19 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // Field Surfaces: the optional OVERLAY surface, drawn in front of page content. Core only draws to
   // it (the caller owns the element + its fixed/pointer-events placement); its backing store is sized
   // in resize() to match the main canvas dpr. Keeps core DOM-free — the canvas is handed in.
-  // Under `render: 'none'` it is never acquired either (the overlay never draws in that mode).
   // The overlay canvas may be handed in eagerly (`overlayCanvas`) OR resolved lazily the first time an
   // overlay actually becomes active (`overlayCanvasProvider`, #676) — the host defers creating a
   // full-viewport light-DOM canvas until a reading is switched on, so the common `overlay: off` case
   // never adds a mix-blend canvas to the compositing tree at boot. Core stays DOM-free either way: the
   // host owns the element; core only draws to it.
+  //
+  // The overlay does NOT depend on the underlay's render mode (§13.7 amended — Field Surfaces Q-3).
+  // `render: 'none'` is a statement about MATTER: the main canvas gets no context, no backing store
+  // and no draw. A READING is a separate surface with its own host-owned canvas, so a signals-only
+  // field that declares one still draws it. Nothing is provisioned for a field that declares no
+  // reading, which is the default — `overlay: 'off'` still creates no canvas and acquires no context.
   let overlayCanvas: HTMLCanvasElement | null = opts.overlayCanvas ?? null;
-  let overlayCtx: CanvasRenderingContext2D | null = ctx ? (overlayCanvas?.getContext('2d') ?? null) : null;
+  let overlayCtx: CanvasRenderingContext2D | null = overlayCanvas?.getContext('2d') ?? null;
   // The overlay draws exclusively through the RenderBackend contract (#373) — the structural
   // seam a WebGL/WebGPU surface implements later. Callers may inject one; the default wraps the
   // overlay's own 2d context.
@@ -161,16 +195,31 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
    * call it once, acquire its 2d context + default backend, and size the backing store to the live dpr.
    * Idempotent — an already-resolved backend (eager canvas, injected backend, or a prior call) short-
    * circuits. Called the first time an overlay reading becomes active (`setOverlay`) and on the
-   * `setRender('none' → …)` lazy path. No-op while the underlay `ctx` is absent (signals-only boot).
+   * `setRender('none' → …)` lazy path.
+   *
+   * It is deliberately NOT gated on the underlay `ctx`: a reading draws on its own surface, so a
+   * signals-only field (`render: 'none'`) resolves one exactly like any other field (§13.7 amended).
+   * That also retires the older shape of this function, which called the provider BEFORE the `ctx`
+   * check and so left a signals-only host holding a canvas nothing could ever draw to.
+   *
+   * Sizing goes through `effectiveDpr`, the same ceiling `sizeSurfaces` applies, so the lazy path can
+   * never open a surface at a higher DPR than the configured `dprCap` / quality tier allows.
    */
   function ensureOverlaySurface(): void {
     if (overlayBackend) return;
+    // No `ctx` check (C-24, closed by Q-3): the two surfaces gate separately, so a signals-only field
+    // that declares a reading paints it on this surface. The provider is still only asked when a
+    // reading is active, so a field with `overlay: 'off'` never creates a canvas it cannot use.
     if (!overlayCanvas && opts.overlayCanvasProvider) overlayCanvas = opts.overlayCanvasProvider() ?? null;
-    if (!overlayCanvas || !ctx) return;
+    if (!overlayCanvas) return;
     overlayCtx ??= overlayCanvas.getContext('2d');
     if (!overlayCtx) return;
     overlayBackend = opts.overlayBackend ?? canvas2dBackend(overlayCanvas, overlayCtx);
-    overlayBackend.size(W, H, host.viewport().dpr); // size to the live viewport — resize() only fires on change
+    // Size to the live viewport (`resize()` only fires on change) through the SAME ceiling the
+    // underlay uses (C-25). The raw host DPR ignores `dprCap` and the quality tier, so on a DPR-3
+    // phone at tier 1 this lazy path allocated 2.25x the underlay's pixels — on the full-viewport
+    // mix-blend layer, which is the most expensive surface in the tree — until the next resize.
+    overlayBackend.size(W, H, effectiveDpr(host.viewport().dpr));
     invalidateOverlayFrame();
   }
 
@@ -343,6 +392,22 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
   const host: FieldHost = opts.host;
   const teardowns: Array<() => void> = []; // host event unsubscribers, called on destroy
+
+  // ── body-geometry observation (#689) ──────────────────────────────────────────────────────────
+  // `getBoundingClientRect` forces layout, and the engine used to pay for one per body every 6th
+  // frame forever — on a page that is usually not moving at all. A host that can OBSERVE geometry
+  // (`observeBodies`; `browserHost` backs it with ResizeObserver + IntersectionObserver) lets the
+  // engine run that pass when something actually changed instead.
+  //
+  // The poll is SLOWED, never removed. Neither observer fires when an element merely MOVES — a
+  // sibling reflowing above it, a transform animation, a layout shift — so a safety cadence still
+  // catches what observation cannot see, and any observation pulls the cadence straight back to hot.
+  // With no observing host, `geometryDue()` is unconditionally true and this whole mechanism is a
+  // no-op: the historical every-6-frames poll, unchanged.
+  let bodyObserver: BodyObserver | null = null;
+  const observedEls = new Set<Element>();
+  let geometryDirty = true;
+  let lastGeometryFrame = -1;
 
   // Reduced-motion is an ACCESSIBILITY clamp: when the host/user asks for it, motion can only be
   // *removed*, never restored by policy. It's read live (not captured once) so it always reflects the
@@ -782,6 +847,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // on a cadence and DRAW from this cache every frame (so the arrows never flicker or step).
   let slSamples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] | null = null;
   let slQuiescent: { gx: number; gy: number }[] = [];
+  // LIC (#671): the seed lattice depends only on the viewport, the traced hairs on the field. Both
+  // are cached; `licSeedsFor` is the W×H the lattice was built for, so a resize rebuilds it and a
+  // scroll does not.
+  let licSeedCache: LicSeed[] | null = null;
+  let licSeedsFor = '';
+  let licHairs: { pts: number[]; n: number }[] | null = null;
   // Same cadence cache for the OVERLAY arrows (drawOverlayArrows) — the in-front Field-Surfaces
   // reading. Its grid is the same body-induced force field, so it had the same per-frame regrid
   // waste the underlay shed in #406; resample on the cadence, draw from this cache every frame.
@@ -796,6 +867,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const spawnCeiling = Math.round(130 * cfg.density) * 4;
   const pull: WavePull = { x: 0, y: 0, k: 0 }; // the "spine" — waves bend to the engaged body
   let flow: FlowFocus | null = null; // a movable flow focus the field bends toward (field.flowTo)
+  // the pointer (#666): a transient BODY at the cursor plus the wake its motion leaves. The body is
+  // a real programmatic body (so `query()` sees the cursor like anything else); the wake is a
+  // per-particle velocity nudge, applied beside the flow focus below.
+  let pointerState: PointerState | null = null;
+  let pointerBody: BodyHandle | null = null;
+  let pointerRect = { left: 0, top: 0, width: 1, height: 1 };
+  let lastPointerFrame = -1; // wall time of the previous frame, for the pointer's idle decay
+  let lastPointerAt = -1; // wall time of the previous `pointer()` call, for the velocity sample
   let focusP: Particle | null = null; // the hover-focused particle (field.focusAt): held still + lit
   let focusX = 0;
   let focusY = 0;
@@ -828,6 +907,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // counterpart of the `data-on` CustomEvent binding (same trigger vocabulary, parsed identically).
   let classEls: { el: HTMLElement; body: Body | null; bindings: EventBinding[] }[] = [];
   let engaged: { el: HTMLElement; enter: () => void; leave: () => void }[] = []; // [data-hot] listeners, for teardown
+  // Tab-order current (#943): the element focus is on, and the one Tab reaches next. Both are
+  // ELEMENTS rather than indices, because the body list is rebuilt on every rescan and an index
+  // would silently point at a different card afterwards.
+  let tabFocused: HTMLElement | null = null;
+  let tabNext: HTMLElement | null = null;
+  const _tabC = { x: 0, y: 0 };
 
   // shadow-DOM participation (docs/engine-reference/shadow-dom.md): encapsulated components dispatch composed
   // register/unregister/update events; the field registers the HOST and never inspects the
@@ -868,6 +953,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const onUpdateBody = scheduleScan; // attrs/geometry changed → re-scan (coalesced)
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
   const t0 = wallNow();
+  // Simulation phase starts at the first frame, independently of construction wall time (#1207).
+  // Keep t0 for input-idle tracking, which deliberately uses the host's wall clock.
+  let simT0: number | undefined;
+  /** Real seconds elapsed since the previous frame, capped at 1s. The pulse decay reads this
+   *  rather than `env.dt`: `env.dt` folds the motion budget, and a reduced-motion field would
+   *  otherwise hold a flare lit forever (#567). Capped so a tab-switch stall resolves flares to
+   *  rest in one step instead of leaving the decay to a huge exponent. */
+  let frameSeconds = 1 / 60;
 
   const env: Env = {
     dx: 0,
@@ -1040,6 +1133,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (gone.length === 0) return;
     bodies = bodies.filter((b) => !isDetachedBody(b));
     for (const b of gone) if (b.accreted > 0) releaseCaptured(store.particles, b, rng);
+    syncBodyObservation(); // stop observing the removed elements
   }
 
   function scan(): void {
@@ -1149,6 +1243,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
     }
     if (measureBodies(bodies, W, H, originX, originY, (host as FieldHost & MorphTargetHost).resolveMorphTarget)) pruneDetachedBodies();
+    syncBodyObservation();
     bindEngagement();
     // Reconcile movers: carry forward offset + dock state for elements that persist across
     // rescans (shadow-DOM re-register, Astro nav re-mounts, explicit rescan()). An element that
@@ -1566,6 +1661,37 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // users. We bind the bubbling `focusin`/`focusout` instead, so tabbing into (or out of) any
   // focusable descendant engages the body exactly the way hover does — the RC-8 principle that
   // keyboard users get the same field reactions as the mouse.
+  /**
+   * Resolve where Tab goes next from `el` (#943). The sequence is computed over the ENGAGED bodies —
+   * the same set `focusin` fires for — because those are exactly the stops a keyboard user lands on.
+   *
+   * `pointerenter` calls this too, which is deliberate: a mouse user hovering a card sees the same
+   * cue a keyboard user gets on focus, which is the RC-8 parity principle read in the other
+   * direction. It costs one sequence build per engagement, over a handful of elements.
+   */
+  function setTabFocus(el: HTMLElement | null): void {
+    tabFocused = el;
+    tabNext = null;
+    if (!el) return;
+    const els = engaged.map((e) => e.el);
+    const at = els.indexOf(el);
+    if (at < 0) return;
+    const seq = tabSequence(
+      els.map((e) => {
+        // A [data-hot] card is usually a plain container — `tabIndex` -1 — whose <a> takes the
+        // focus. Its place in the sequence is therefore the CHILD's, not its own: reading the
+        // container's -1 would drop every such card out of the order entirely, which is most of
+        // them. Only a body that is focusable in its own right speaks for itself.
+        const own = e.tabIndex ?? -1;
+        if (own >= 0) return { tabIndex: own, focusable: true };
+        const child = e.querySelector?.(FOCUSABLE) as HTMLElement | null;
+        return { tabIndex: child?.tabIndex ?? 0, focusable: child != null };
+      }),
+    );
+    const next = tabSuccessor(seq, at);
+    if (next >= 0) tabNext = els[next] ?? null;
+  }
+
   function bindEngagement(): void {
     // Reconcile across rescans (mirrors the emitter prune above): a persistent field outlives the
     // [data-hot] elements swapped under it (Astro nav, dynamic content), so drop engagements whose
@@ -1590,6 +1716,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const enter = (): void => {
         el.dataset.active = '1';
         hoverAccent = el.dataset.color ?? null;
+        setTabFocus(el); // #943 — where Tab would take them from here
         const group = el.closest('[data-index][data-threads]');
         if (group) {
           const sibs = [...group.querySelectorAll('[data-hot]')].filter((s) => s !== el);
@@ -1600,6 +1727,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         el.dataset.active = '0';
         hoverAccent = null;
         setThreads(null);
+        if (tabFocused === el) setTabFocus(null); // focus left this body; the cue goes with it
       };
       el.addEventListener('pointerenter', enter);
       el.addEventListener('pointerleave', leave);
@@ -1662,16 +1790,31 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let qualityTier = 0;
   const TIER_DPR = [Infinity, 1.5, 1.25, 1]; // effective DPR ceiling per tier, capping cfg.dprCap further
 
-  // backing store stays 0×0 while W/H — the simulation space — keep tracking the viewport.
+  // With no underlay context (a field created with `render: 'none'`) the main backing store stays
+  // 0×0 while W/H — the simulation space — keep tracking the viewport.
+  /**
+   * The device-pixel ratio the field actually renders at: the host's, capped by the configured
+   * `dprCap` and again by the adaptive quality tier's ceiling. Every path that sizes a backing store
+   * goes through here — the underlay in `sizeSurfaces`, and the overlay's lazy first sizing in
+   * `ensureOverlaySurface` — so the two surfaces can never disagree about how many pixels a CSS
+   * pixel is worth (C-25).
+   */
+  function effectiveDpr(dprRaw: number): number {
+    return Math.min(dprRaw || 1, cfg.dprCap, TIER_DPR[qualityTier] ?? Infinity);
+  }
+
   function sizeSurfaces(dprRaw: number): void {
-    if (!ctx) return;
-    const dpr = Math.min(dprRaw || 1, cfg.dprCap, TIER_DPR[qualityTier] ?? Infinity);
-    canvas.width = Math.floor(W * dpr);
-    canvas.height = Math.floor(H * dpr);
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const dpr = effectiveDpr(dprRaw);
+    if (ctx) {
+      canvas.width = Math.floor(W * dpr);
+      canvas.height = Math.floor(H * dpr);
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
     // size the overlay surface's backing store to match (same dpr transform → same CSS coords).
+    // Independent of `ctx`: a signals-only field can carry a reading, and its surface must still
+    // track the viewport (§13.7 amended). With no overlay surface this is a null check.
     overlayBackend?.size(W, H, dpr);
     invalidateOverlayFrame();
   }
@@ -1920,6 +2063,48 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     cfg.feedbackSink(b.el, { lit });
   }
 
+  /**
+   * How long the geometry pass may go unmeasured when nothing has been observed (#689). 30 frames is
+   * half a second at 60fps — long enough to be worth 5x fewer forced layouts, short enough that an
+   * un-observable move (a reflow above the body, a transform) self-corrects before a reader could
+   * attribute it to the field being wrong. The gate only runs on the every-6th-frame cadence, so the
+   * real choice is between measuring every 6 frames and every 30.
+   */
+  const GEOMETRY_SAFETY_FRAMES = 30;
+
+  /**
+   * Should the geometry pass run this tick? With no observing host this is unconditionally `true`,
+   * which is byte-identical to the historical poll — that equivalence is what keeps the conformance
+   * golden and every existing host untouched by this change.
+   */
+  function geometryDue(): boolean {
+    if (!bodyObserver) return true;
+    if (geometryDirty) return true;
+    // A body measured through a host-supplied `rect()` — a programmatic `addBody`, a Three.js mesh,
+    // a shadow-DOM body with a custom box — is neither observable nor cacheable: its provider can
+    // return something new on any frame and no browser observer will ever say so. One such body
+    // holds the whole geometry pass at the hot cadence. That is the correct trade: the alternative
+    // is a mesh lagging its own field by up to half a second.
+    for (const b of bodies) if (b.rect) return true;
+    return frameN - lastGeometryFrame >= GEOMETRY_SAFETY_FRAMES;
+  }
+
+  /** Bring the observed set in line with the live bodies — called after every scan/rescan. */
+  function syncBodyObservation(): void {
+    if (!bodyObserver) return;
+    const live = new Set<Element>();
+    // only DOM-scanned bodies. A body with a custom `rect` provider is backed by a synthetic element
+    // (`addBody`'s stub) or a box the DOM does not own, so handing it to a real ResizeObserver would
+    // throw — and observing it would be meaningless anyway (see `geometryDue`).
+    for (const b of bodies) if (b.el && !b.rect) live.add(b.el);
+    for (const el of live) if (!observedEls.has(el)) bodyObserver.observe(el);
+    for (const el of observedEls) if (!live.has(el)) bodyObserver.unobserve(el);
+    observedEls.clear();
+    for (const el of live) observedEls.add(el);
+    // a body set that just changed has geometry nobody has measured yet.
+    geometryDirty = true;
+  }
+
   function writeFeedback(): void {
     for (const b of bodies) {
       if (!b.feedback) continue;
@@ -1957,6 +2142,21 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // (feedback-sink.ts), which performs the same direct writes the engine always made:
       // `--d`/`--field-density`, `--field-heatmap-density`, `--load`,
       // plus the measured `--entropy`/`--coherence`/`--temperature`.
+      // the tab-order cue (#943): 1 on the body Tab reaches next, 0 on the body that just stopped
+      // being it (so the sink can REMOVE the property), and absent for every body that is neither.
+      const isNext = tabNext !== null && (b.el === tabNext || b.writeTarget === tabNext);
+      const next = isNext ? 1 : b.wasNext ? 0 : undefined;
+      b.wasNext = isNext;
+      // the transient flare (#567). Emitted at full energy on the frame after `pulse()` — the
+      // flare starts hot, it does not ease in like `d` — then decayed on wall time. `pulse === 0`
+      // is the one final exact-rest write; the frame after that the body leaves the pulse path.
+      let pulse: number | undefined;
+      if (b.pulse !== undefined) {
+        pulse = b.pulse;
+        const decayed = pulseDecay(b.pulse, frameSeconds);
+        b.pulse = pulse === 0 ? undefined : decayed < PULSE_FLOOR ? 0 : decayed;
+      }
+
       const channels = {
         density: b.d,
         heatmapDensity,
@@ -1964,6 +2164,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         entropy: m.entropy,
         coherence: m.coherence,
         temperature: m.temperature,
+        next,
+        pulse,
       };
       cfg.feedbackSink(writeEl, channels);
       // per-body feedback (addBody): demux this body's channels to its own callback.
@@ -2096,14 +2298,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     drawBound();
 
     // free particles — cool centre → warm edge, blended toward accent (§20.8).
-    // metaballs (a molten iso-surface skin) and streamlines (the bare force field) REPLACE
-    // the matter per §20.6, so suppress the dot swarm for those two; dots/trails/links/voronoi
-    // keep it (their overlays read against the particles). The four matter-swap modes
-    // (knockout / redshift / blackbody / depth, #667–#670) draw their own particle pass
-    // below — same suppression, different material.
+    // metaballs (a molten iso-surface skin), streamlines (the bare force field) and lic (the same
+    // field as texture, #671) REPLACE the matter per §20.6, so suppress the dot swarm for those;
+    // dots/trails/links/voronoi keep it (their overlays read against the particles). The four
+    // matter-swap modes (knockout / redshift / blackbody / depth, #667–#670) draw their own
+    // particle pass below — same suppression, different material.
     const showMatter =
       cfg.render !== 'metaballs' &&
       cfg.render !== 'streamlines' &&
+      cfg.render !== 'lic' &&
       cfg.render !== 'knockout' &&
       cfg.render !== 'redshift' &&
       cfg.render !== 'blackbody' &&
@@ -2512,6 +2715,65 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
       }
     }
+
+    // ── LIC: the field as texture (#671) ────────────────────────────────────────────────────────
+    // Where `streamlines` draws one arrow per lattice cell, this traces a few hundred short
+    // streamlines and strokes each at a brightness drawn from a noise field. You stop reading
+    // individual vectors and start seeing the flow — iron filings rather than a list of gradients.
+    if (cfg.render === 'lic') {
+      const acc = curAccent;
+      const key = `${W}x${H}`;
+      if (licSeedCache === null || licSeedsFor !== key) {
+        licSeedCache = licSeeds(W, H);
+        licSeedsFor = key;
+        licHairs = null; // the lattice moved; every traced hair is stale
+      }
+      // RETRACE on the BODY cadence, not every frame, and not the streamlines' every-3rd. A hair is
+      // ~14 force evaluations against every body, so a full retrace is an order of magnitude dearer
+      // than the arrow lattice — and it buys nothing more often, because the field it traces only
+      // moves when the bodies are re-measured (every 6th frame) or a flow focus is live.
+      if (licHairs === null || flow || frameN % 6 === 0) {
+        const hairs: { pts: number[]; n: number }[] = [];
+        for (const seed of licSeedCache) {
+          const pts: number[] = [seed.x, seed.y];
+          let x = seed.x;
+          let y = seed.y;
+          for (let i = 1; i < LIC_STEPS; i++) {
+            let { fx, fy } = forceAt(bodies, reg.forces, env, x, y);
+            if (flow) {
+              const b = flowBiasInto(_flowB, x, y, flow, 0.04);
+              fx += b.x;
+              fy += b.y;
+            }
+            const next = licStep(x, y, fx, fy, LIC_STEP_PX);
+            if (!next.moved) break; // a dead zone ends the hair rather than drawing a straight lie
+            x = next.x;
+            y = next.y;
+            pts.push(x, y);
+          }
+          if (pts.length >= 4) hairs.push({ pts, n: seed.n });
+        }
+        licHairs = hairs;
+      }
+      // DRAW from the cache every frame — the canvas is cleared each frame, and the texture must not
+      // flicker on the five frames in six that do not retrace.
+      ctx!.lineCap = 'round';
+      ctx!.lineWidth = 1.15;
+      for (const hair of licHairs) {
+        const steps = hair.pts.length / 2;
+        // stroke segment by segment: the alpha taper along the hair is what makes it dissolve into
+        // the field instead of ending in a hard dash, and one stroke per hair cannot express it.
+        for (let i = 1; i < steps; i++) {
+          const a = licAlpha(hair.n, i, steps) * 0.55;
+          if (a <= 0.004) continue;
+          ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${a.toFixed(3)})`;
+          ctx!.beginPath();
+          ctx!.moveTo(hair.pts[(i - 1) * 2]!, hair.pts[(i - 1) * 2 + 1]!);
+          ctx!.lineTo(hair.pts[i * 2]!, hair.pts[i * 2 + 1]!);
+          ctx!.stroke();
+        }
+      }
+    }
   }
 
   // Field Surfaces — the overlay readings. `setOverlay` accepts one reading or an additive stack;
@@ -2904,7 +3166,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   function frame(now: number): void {
     if (destroyed) return; // a host whose cancelRaf can't reach an already-queued callback
     frameN++;
-    env.t = (now - t0) / 1000;
+    if (simT0 === undefined) simT0 = now;
+    env.t = (now - simT0) / 1000;
     env.frameN = frameN;
     // Frame-rate-independent timestep (#434): dt is the real frame interval normalized to a
     // 60fps baseline (≈1 at 60fps, ≈0.5 at 120fps, ≈2 at 30fps), clamped so a long stall
@@ -2915,6 +3178,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // Still 0 under reduce-motion: the integrator and the `if (env.dt)` gates read it as the
     // "is the field animating" flag, so it must stay falsy when still and >0 when moving.
     const dtRaw = Number.isFinite(lastNow) ? (now - lastNow) / 16.6667 : 1;
+    frameSeconds = Number.isFinite(lastNow) ? Math.min((now - lastNow) / 1000, 1) : 1 / 60;
     lastNow = now;
     // Effective motion budget (0..1) folds reduced-motion + policy (+ perf pressure). At 0 the field is
     // frozen exactly as reduced-motion (`dt = 0` — the "is animating" flag stays falsy); a partial
@@ -2951,7 +3215,20 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       w.offsetY += (target - w.offsetY) * 0.04;
     }
     if (bodies.length && frameN % 6 === 0) {
-      if (measureBodies(bodies, W, H, originX, originY, (host as FieldHost & MorphTargetHost).resolveMorphTarget)) pruneDetachedBodies();
+      // the two halves of a measure run on different clocks now (#689). Attributes are cheap and
+      // keep the fixed cadence — `data-strength` & co. are documented as live-within-a-frame, and
+      // slowing them to the geometry cadence would quietly make that a half-second. Geometry is the
+      // half that forces layout, so it runs when something was observed to change (or on the safety
+      // floor). With no observing host `geometryDue()` is always true and this is the old poll.
+      // Detachment is checked on BOTH halves (isConnected does not force layout), so a removed
+      // element is pruned on the attribute cadence rather than waiting for the geometry pass.
+      let detached = refreshBodyAttrs(bodies);
+      if (geometryDue()) {
+        if (measureBodyGeometry(bodies, W, H, originX, originY, (host as FieldHost & MorphTargetHost).resolveMorphTarget)) detached = true;
+        geometryDirty = false;
+        lastGeometryFrame = frameN;
+      }
+      if (detached) pruneDetachedBodies();
       detectProximityEvents(bodies); // #441 enter/exit/met — on the measure cadence, lazy
       // attention-gated discharge (#365): an engagement-gated sink releases on the falling
       // edge of engagement — the same conserved supernova ritual as saturation.
@@ -3013,6 +3290,43 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         p.vy += b.y;
       }
     }
+    // Tab-order current (#943): the field leans from the focused body toward the one Tab reaches
+    // next, so a keyboard user can SEE where they are about to go. Gated on `env.dt`, so a
+    // reduced-motion field contributes exactly nothing here and the cue falls back to the
+    // `--field-next` channel — a value, which is the static equivalent governance asks for.
+    if (env.dt && tabFocused && tabNext) {
+      const a = bodies.find((bd) => bd.el === tabFocused);
+      const z = bodies.find((bd) => bd.el === tabNext);
+      if (a && z) {
+        for (const p of store.particles) {
+          if (p.cap) continue;
+          const c = tabCurrentInto(_tabC, p.x, p.y, a.cx, a.cy, z.cx, z.cy);
+          p.vx += c.x;
+          p.vy += c.y;
+        }
+      }
+    }
+    // pointer wake (field.pointer, #666): matter near a MOVING cursor inherits its motion. Beside
+    // the flow focus deliberately — they compose, and the shapes match (linear falloff to the
+    // radius) so a host running both gets a predictable sum rather than two fighting influences.
+    // `agePointer` runs whether or not the field is animating: a cursor that stopped being reported
+    // must fade its wake out even on a frozen field, or it latches matter in one direction forever.
+    if (pointerState) {
+      // NB: a dedicated wall clock rather than a shared per-frame one. If #1210 (which adds a
+      // general `frameSeconds` to this loop for its own decay) lands first, this should use that
+      // instead of keeping a second timer — they measure exactly the same quantity.
+      const pSeconds = lastPointerFrame >= 0 ? Math.min((now - lastPointerFrame) / 1000, 1) : 1 / 60;
+      lastPointerFrame = now;
+      agePointer(pointerState, pSeconds);
+      if (env.dt && (pointerState.vx !== 0 || pointerState.vy !== 0)) {
+        for (const p of store.particles) {
+          if (p.cap) continue;
+          const w = pointerWakeInto(_pointerW, p.x, p.y, pointerState, POINTER_WAKE_GAIN);
+          p.vx += w.x;
+          p.vy += w.y;
+        }
+      }
+    }
     if (cfg.waveStyle === 'circular') {
       if (cfg.waveCenter) {
         resolvedWaveCenter = typeof cfg.waveCenter === 'function' ? cfg.waveCenter() : cfg.waveCenter;
@@ -3064,12 +3378,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     updateCaptureEvents();
     updateThresholdEvents(now); // reserved agent-threshold events (§22.5): debounced field:* on crossings
     flushBusEvents(); // #684: deliver the frame's coalesced discrete events — one per (source, type)
-    // Draw only when there is a surface to draw to AND the canvas can be seen. Under the
-    // signals-only mode (`render: 'none'`, §13.7 / #297) the engine never draws — neither the
-    // underlay nor the overlay — and `ctx` may not even exist. Under reduced motion the scene is
-    // static (dt = 0), so a quarter-rate redraw is visually identical at a quarter of the cost.
-    if (ctx && cfg.render !== 'none' && canvasVisible && (motion > 0 || frameN % 4 === 0)) {
-      render();
+    // Draw only when there is a surface to draw to AND the canvas can be seen. Under reduced motion
+    // the scene is static (dt = 0), so a quarter-rate redraw is visually identical at a quarter of
+    // the cost. The two surfaces are gated SEPARATELY (§13.7 amended — Field Surfaces Q-3): the
+    // underlay needs a drawing render mode and a context; the overlay needs only a resolved surface
+    // and an active reading. `render: 'none'` therefore stops MATTER, not readings. A field that
+    // declares no reading never resolves a surface, so `overlayBackend` is null and this costs one
+    // null check — the default path is unchanged.
+    if (canvasVisible && (motion > 0 || frameN % 4 === 0)) {
+      if (ctx && cfg.render !== 'none') render();
       if (overlayBackend) {
         const stack = overlayStack(cfg.overlay);
         if (stack.length) renderOverlay(overlayBackend, stack);
@@ -3145,6 +3462,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   if (host.onScroll) teardowns.push(host.onScroll(scrollHandler));
   if (host.onVisibility) teardowns.push(host.onVisibility(onVisibility));
   if (host.onInput) teardowns.push(host.onInput(markInput));
+  // body-geometry observation (#689). Subscribed once; the callback is a pure dirty flag, so a
+  // storm of observer entries costs one boolean write and never a measure per entry.
+  if (host.observeBodies) {
+    bodyObserver = host.observeBodies(() => void (geometryDirty = true));
+    syncBodyObservation(); // bodies scanned before this point are observed from here
+  }
   // shadow-DOM body events: forces:* + field:* aliases share the same idempotent handlers, so a body
   // registers under either namespace; the controller dispatches both, the engine listens to both.
   if (host.onBodyEvent) {
@@ -3210,7 +3533,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           console.warn(`Fundamental: setRender('${mode}') could not acquire a 2d context; staying in render 'none'`);
           return;
         }
-        // an overlay reading is already active → bring its surface up alongside the underlay (#676).
+        // an overlay reading is already active → its surface is already up (a reading no longer waits
+        // for the underlay, §13.7 amended); this stays for the case where the provider declined
+        // earlier, and is idempotent when it did not (#676).
         if (overlayStack(cfg.overlay).length) ensureOverlaySurface();
         sizeSurfaces(host.viewport().dpr); // the one deferred resize the lazy path needs
       }
@@ -3247,13 +3572,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     setDprCap: (cap) => {
       cfg.dprCap = cap > 0 ? cap : 2;
-      if (ctx) sizeSurfaces(host.viewport().dpr); // re-size the backing store to the new ceiling now
+      // re-size the backing stores to the new ceiling now. `overlayBackend` is checked too: a
+      // signals-only field can carry a reading, and its surface obeys the same ceiling (§13.7 amended).
+      if (ctx || overlayBackend) sizeSurfaces(host.viewport().dpr);
     },
     setQualityTier: (tier) => {
       const next = Math.max(0, Math.min(3, Math.floor(tier || 0)));
       if (next === qualityTier) return;
       qualityTier = next;
-      if (ctx) sizeSurfaces(host.viewport().dpr); // re-apply the tier's effective DPR ceiling now
+      if (ctx || overlayBackend) sizeSurfaces(host.viewport().dpr); // re-apply the tier's DPR ceiling now
     },
     get policy() {
       return clonePolicy(policy); // frozen copy — callers can't mutate the live policy
@@ -3421,6 +3748,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       tearBoundNear(bound, waves, x, y, R, W, H, env.t, (p) => void store.add(newParticle(p)));
       spawnSpark(x, y, 2, hex); // a visible pop at the blast point (§23)
     },
+    pulse: (target, energy = 1) => {
+      // A transient flare on ONE body (#567). All this does is deposit energy; the frame loop
+      // decays it and the feedback sink publishes it as `--field-pulse`. Nothing here touches
+      // matter, which is the whole distinction from `burst` directly above.
+      const body = handleToBody.get(target as BodyHandle) ?? bodies.find((b) => b.el === target || b.writeTarget === target);
+      if (!body) return; // an element that is not a body of this field — the same silent no-op
+      // the rest of the handle gives an unknown target.
+      body.pulse = pulseAdd(body.pulse ?? 0, energy);
+    },
     flowTo: (x: number, y: number, opts?: FlowOptions) => {
       // place/move the flow focus; the frame loop eases the spine + pulls matter toward it, and the
       // streamline render bends to it. Called repeatedly (e.g. on pointermove) for dynamic targeting.
@@ -3428,6 +3764,67 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     clearFlow: () => {
       flow = null;
+    },
+    pointer: (x: number, y: number, opts?: PointerOptions) => {
+      // The cursor is a real body. Building it through `addBody` is not a shortcut — it is what
+      // makes the claim true: the pointer goes through the same classification, measurement and
+      // reporting path as a `[data-body]`, so `query()` sees it, `data-affects` species filtering
+      // applies to it, and there is no second code path to keep in step with the first.
+      // The sample clock is the HOST's, not the simulation's. A field constructed with `now` pins
+      // `wallNow()` to one instant, so without `at` every interval would measure zero, the velocity
+      // estimate would never leave zero, and the wake would be silently dead — on exactly the fields
+      // a caller pinned the clock to make reproducible (#666).
+      const now = opts?.at ?? wallNow();
+      const half = 0.5; // the cursor's own box is a point; its REACH is data-range, not its size
+      pointerRect = { left: x - half, top: y - half, width: half * 2, height: half * 2 };
+      if (!pointerState) {
+        pointerState = makePointer(x, y, opts);
+        lastPointerAt = now;
+      } else {
+        if (opts?.radius && opts.radius > 0) pointerState.radius = opts.radius;
+        if (opts?.strength !== undefined) pointerState.strength = opts.strength;
+        trackPointer(pointerState, x, y, (now - lastPointerAt) / 1000);
+        lastPointerAt = now;
+      }
+      if (!pointerBody) {
+        pointerBody = handle.addBody({
+          tokens: opts?.tokens ?? 'repel',
+          strength: opts?.bodyStrength ?? 1,
+          range: opts?.bodyRange ?? 160,
+          identity: 'pointer',
+          rect: () => pointerRect,
+        });
+      } else if (opts) {
+        // a host may re-dial the cursor mid-gesture (press harder, switch to a gathering cursor).
+        // `tokens` is NOT reactive — classification happens once — so it is deliberately not here.
+        pointerBody.set({ strength: opts.bodyStrength, range: opts.bodyRange });
+      }
+    },
+    clearPointer: () => {
+      pointerBody?.remove();
+      pointerBody = null;
+      pointerState = null;
+      lastPointerAt = -1;
+      lastPointerFrame = -1;
+    },
+    fling: (el: HTMLElement, vx: number, vy: number) => {
+      const mv = movers.find((m) => m.el === el);
+      if (!mv) return; // not a [data-move] mover on this field — the same silent no-op as elsewhere
+      if (mv.docked) return; // a docked element is held by a sink; a throw does not tear it loose
+      // px/second in, px/frame out. The element keeps its anchor spring and friction, so the throw
+      // arcs and settles into the layout slot instead of being animated somewhere and left there.
+      const v = flingVelocity(vx, vy);
+      mv.o.vx = v.x;
+      mv.o.vy = v.y;
+    },
+    navigate: (opts: { goal: { x: number; y: number }; obstacles?: readonly NavObstacle[]; cell?: number }) => {
+      // Rebuild rather than patch: the sweep is the cheap part (one BFS over a few thousand cells)
+      // and a grid that is partly stale routes agents into geometry that has moved, which is worse
+      // than any cost this saves.
+      env.nav = navFlowField(navGrid(W, H, opts.obstacles ?? [], opts.cell), opts.goal.x, opts.goal.y);
+    },
+    clearNavigation: () => {
+      env.nav = null;
     },
     seed: (atoms) => {
       seeded = atoms;
@@ -3533,6 +3930,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (spec.mass !== undefined) p.m = spec.mass;
       p.maxSpeed = spec.maxSpeed;
       p.report = spec.report;
+      // navigation opt-in (#439): `true` takes the default gain, a number tunes it. Left undefined
+      // when absent, so the integrator skips the whole path for a force-only agent.
+      if (spec.navigate) p.navGain = spec.navigate === true ? NAV_AGENT_GAIN : spec.navigate;
       store.add(p);
       return { particle: p, remove: () => store.remove(p) };
     },
@@ -3916,6 +4316,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       raf = 0;
       clearInterval(idleTimer);
       for (const off of teardowns) off(); // release every host event subscription
+      bodyObserver?.disconnect(); // and the geometry observers (#689)
+      bodyObserver = null;
+      observedEls.clear();
+      pointerState = null; // drop the cursor's transient body + wake (#666)
+      pointerBody = null;
       // release the per-element [data-hot] engagement listeners, so repeated create/destroy
       // on the same DOM doesn't accumulate handlers (§18 teardown).
       for (const e of engaged) {

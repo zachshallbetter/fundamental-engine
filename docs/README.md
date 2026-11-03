@@ -20,6 +20,10 @@ back. The visible particle canvas is **one render surface**, not the whole syste
 @fundamental-engine/create    scaffolds a new Fundamental field project.
 ```
 
+**Working in the repo?** The operating knowledge — workflow, gates and CI, releasing, verification,
+verified engine facts, open work — lives in [`.agents/AGENTS.md`](../.agents/AGENTS.md). Dated audits
+and reports live in [`analysis/`](analysis/) (latest: [`engine-audit-2026-10-14.md`](analysis/engine-audit-2026-10-14.md)).
+
 ## Document statuses
 
 Every document carries a status banner at the top. The four statuses:

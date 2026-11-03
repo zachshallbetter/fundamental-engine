@@ -2,12 +2,19 @@
 
 > **How the field earns its place in real products.**
 >
-> These are not demos. Each use case describes a real UI problem, what the field does
-> structurally to solve it, and what it enables that wasn't possible — or wasn't
-> tractable — before.
+> These are product translations, not shipped demos. Each use case describes a real UI
+> problem, what the field does structurally to solve it, and what it enables that wasn't
+> possible — or wasn't tractable — before. The field takes over the presentation half of
+> the work (emphasis, proximity, decay); the app still owns its state and business rules.
 >
-> **Relationship to field-possibilities.md.** This document is the shipped, narrative
-> tier — concrete UI problems and how the field solves them today. The conceptual
+> **Status.** The forces, formations (`ambient`, `wells`, `lanes`, `scatter`, `accretion`),
+> `data-*` attributes, `focus()`, `bindData` and Field Patterns named below ship today. The
+> body *conditions* `coherent`, `dwell` and `inview` cited in some cases and in the summary
+> table are **proposals** from `field-possibilities.md` §6 — the shipped `data-when`
+> conditions are `active`, `fast`, `slow`, `hot`, `cool` and `scrolling`.
+>
+> **Relationship to field-possibilities.md.** This document is the narrative tier —
+> concrete UI problems and how the field addresses them. The conceptual
 > framework beneath it (conditions, formations, pattern families, natural field
 > translations, matter primitives, temporal fields, alternative output surfaces) lives
 > in [`field-possibilities.md`](field-possibilities.md). When a use case references a
@@ -73,7 +80,8 @@ attention is physically redirected to the problem without a `focus()` call or
 scroll-into-view.
 
 **What the field does:** on validation failure, the field's body strength is elevated
-programmatically (`field.setBodyStrength(el, 1.8)`). The error body competes for
+by setting its `data-strength` (e.g. `1.8`) — body parameters are re-read live, with no
+rescan. The error body competes for
 density against other page bodies and wins. On resolution, strength returns to
 baseline. The `coherent` condition (`field-possibilities.md §6`) can detect when all
 required fields are valid and fire a completion event.
@@ -137,7 +145,8 @@ becomes a gravity well. Particles cluster there before any human has clicked any
 → *Recipe: `System Pulse` — see [`field-possibilities.md §10`](field-possibilities.md#10-data-bound-fields) (data-bound fields: live data source → body strength mapper).*
 
 **What the field does:** body strength is updated from a live data source on each
-tick via `field.setBodyStrength(el, normalized_rate)`. The field's density
+tick by writing the normalized rate to its `data-strength` (or binding the series with
+`bindData`). The field's density
 distribution acts as a heat signature across the dashboard. `--field-density` can
 drive a visual overlay on the affected service tile.
 
@@ -213,9 +222,9 @@ so the distinction is structurally honest.
 
 → *See [`field-possibilities.md §4`](field-possibilities.md#4-designed-forces-and-natural-translations) (designed vs. natural translations) and §10 (data-bound fields).*
 
-**What the field does:** `data-strength` is set server-side from product data. The
-promoted item gets `data-truth="designed"` to distinguish editorial weight from user
-signal. CSS responds to `--field-density` with a subtle card glow.
+**What the field does:** `data-strength` is set server-side from product data. Whether an
+item is promoted lives in the bound record (`bindData`), so editorial weight and user signal
+can be weighted and styled differently. CSS responds to `--field-density` with a subtle card glow.
 
 ---
 
@@ -365,7 +374,7 @@ same hierarchy as a physical pressure map. Both come from the same HTML.
 A data story where scrolling through sections changes which body is dominant. No
 scroll-jacking, no IntersectionObserver farm, no manual step management.
 
-→ *Input agent: `ScrollAgent` — see [`field-possibilities.md §12`](field-possibilities.md#12-input-agents).*
+→ *The field reads scroll today (the `scrolling` condition and the scroll-driven accent). A dedicated scroll input agent is a proposal — [`field-possibilities.md §12`](field-possibilities.md#12-input-agents).*
 
 **What the field does:** each chapter's key element is a `data-body` with high
 strength. Engagement amplification re-orients the field continuously as sections
@@ -568,9 +577,8 @@ makes provenance visible as a texture.
 
 → *Recipe: `Provenance Trail` — [`field-possibilities.md §16`](field-possibilities.md#16-ai-and-evidence-possibilities) and §9.*
 
-**What the field does:** passages receive `data-truth` modes reflecting their
-provenance (`physical` for empirically sourced, `poetic` for generated without a
-specific source). CSS on `[data-feedback]` elements uses `--d` to express the
+**What the field does:** each passage's provenance (empirically sourced vs. generated
+without a specific source) is carried in its bound record and sets the body's strength. CSS on `[data-feedback]` elements uses `--d` to express the
 difference as a quality of presence, not a label.
 
 ---

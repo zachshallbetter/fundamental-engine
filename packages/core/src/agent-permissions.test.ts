@@ -269,6 +269,17 @@ const AGENT_WITHHELD = new Set<string>([
   // mutators: matter / bodies / edges / flow / threads
   'threads', 'burst', 'flowTo', 'clearFlow', 'seed', 'addAgent', 'addBody', 'addEdge',
   'addField', 'registerOverlay',
+  // pointer/clearPointer/fling are WRITES (#666): the first two put a real body in the field and
+  // stir matter with it, the third throws a page element. An agent reading the field never gets to
+  // move the user's cursor or their UI. Read-only view ⇒ withheld.
+  'pointer', 'clearPointer', 'fling',
+  // pulse() is a WRITE even though it moves no matter (#567): it drives a channel the page's own
+  // CSS reacts to, so an agent holding it could flash a body's UI. Read-only view ⇒ withheld.
+  'pulse',
+  // navigate/clearNavigation place impassable geometry and a goal that every navigating agent
+  // follows (#439) — an agent holding them could wall the field's other agents in, or walk them
+  // somewhere. Read-only view ⇒ withheld.
+  'navigate', 'clearNavigation',
   // point / particle / grid readers (raw substrate, not the scoped agent reading)
   'readEdges', 'atomAt', 'focusAt', 'clearFocus', 'sampleField', 'particleCount', 'readParticles',
   'readParticleIds', 'readParticleChannels', 'energy', 'sample', 'sampleScalar', 'sampleGradient',

@@ -43,21 +43,27 @@
         "burst",
         "clearFlow",
         "clearFocus",
+        "clearNavigation",
+        "clearPointer",
         "destroy",
         "diff",
         "effectiveMotion",
         "energy",
         "feedReducedMotion",
         "feedScrollV",
+        "fling",
         "flowTo",
         "focus",
         "focusAt",
         "focusState",
         "forAgent",
         "grid",
+        "navigate",
         "on",
         "particleCount",
         "pause",
+        "pointer",
+        "pulse",
         "query",
         "readEdges",
         "readParticleChannels",
@@ -97,7 +103,7 @@
         "tick"
       ],
       "counts": {
-        "js": 52,
+        "js": 58,
         "swift": 53,
         "kotlin": 59
       },
@@ -111,17 +117,23 @@
           "burst",
           "clearFlow",
           "clearFocus",
+          "clearNavigation",
+          "clearPointer",
           "destroy",
           "diff",
           "energy",
+          "fling",
           "flowTo",
           "focus",
           "focusAt",
           "focusState",
           "forAgent",
           "grid",
+          "navigate",
           "on",
           "particleCount",
+          "pointer",
+          "pulse",
           "query",
           "readEdges",
           "readParticleChannels",
@@ -329,6 +341,18 @@
           "kotlin": true
         },
         {
+          "symbol": "clearNavigation",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "clearPointer",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
           "symbol": "destroy",
           "js": true,
           "swift": true,
@@ -363,6 +387,12 @@
           "js": false,
           "swift": false,
           "kotlin": true
+        },
+        {
+          "symbol": "fling",
+          "js": true,
+          "swift": false,
+          "kotlin": false
         },
         {
           "symbol": "flowTo",
@@ -401,6 +431,12 @@
           "kotlin": true
         },
         {
+          "symbol": "navigate",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
           "symbol": "on",
           "js": true,
           "swift": true,
@@ -417,6 +453,18 @@
           "js": false,
           "swift": true,
           "kotlin": true
+        },
+        {
+          "symbol": "pointer",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "pulse",
+          "js": true,
+          "swift": false,
+          "kotlin": false
         },
         {
           "symbol": "query",
@@ -1692,13 +1740,14 @@
         "drain",
         "identity",
         "load",
+        "pair-with",
         "remove",
         "set"
       ],
       "counts": {
         "js": 4,
         "swift": 5,
-        "kotlin": 6
+        "kotlin": 7
       },
       "planes": {
         "js": [
@@ -1719,6 +1768,7 @@
           "drain",
           "identity",
           "load",
+          "pair-with",
           "remove",
           "set"
         ]
@@ -1752,6 +1802,12 @@
           "symbol": "load",
           "js": false,
           "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "pair-with",
+          "js": false,
+          "swift": false,
           "kotlin": true
         },
         {
@@ -2168,6 +2224,7 @@
         "dots",
         "flow",
         "knockout",
+        "lic",
         "links",
         "metaballs",
         "none",
@@ -2177,7 +2234,7 @@
         "voronoi"
       ],
       "counts": {
-        "js": 12,
+        "js": 13,
         "swift": 7,
         "kotlin": 7
       },
@@ -2188,6 +2245,7 @@
           "dots",
           "flow",
           "knockout",
+          "lic",
           "links",
           "metaballs",
           "none",
@@ -2242,6 +2300,12 @@
         },
         {
           "symbol": "knockout",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "lic",
           "js": true,
           "swift": false,
           "kotlin": false
@@ -2839,14 +2903,16 @@
         "identity",
         "potential",
         "range",
+        "scale",
         "spin",
         "strength",
-        "tokens"
+        "tokens",
+        "twist"
       ],
       "counts": {
         "js": 12,
         "swift": 10,
-        "kotlin": 9
+        "kotlin": 11
       },
       "planes": {
         "js": [
@@ -2882,9 +2948,11 @@
           "data",
           "identity",
           "range",
+          "scale",
           "spin",
           "strength",
-          "tokens"
+          "tokens",
+          "twist"
         ]
       },
       "support": [
@@ -2943,6 +3011,12 @@
           "kotlin": true
         },
         {
+          "symbol": "scale",
+          "js": false,
+          "swift": false,
+          "kotlin": true
+        },
+        {
           "symbol": "spin",
           "js": true,
           "swift": true,
@@ -2958,6 +3032,12 @@
           "symbol": "tokens",
           "js": true,
           "swift": true,
+          "kotlin": true
+        },
+        {
+          "symbol": "twist",
+          "js": false,
+          "swift": false,
           "kotlin": true
         }
       ]
@@ -2977,10 +3057,12 @@
         "heatmapDensity",
         "lit",
         "load",
+        "next",
+        "pulse",
         "temperature"
       ],
       "counts": {
-        "js": 7,
+        "js": 9,
         "swift": 7,
         "kotlin": 7
       },
@@ -2992,6 +3074,8 @@
           "heatmapDensity",
           "lit",
           "load",
+          "next",
+          "pulse",
           "temperature"
         ],
         "swift": [
@@ -3051,6 +3135,18 @@
           "kotlin": true
         },
         {
+          "symbol": "next",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "pulse",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
           "symbol": "temperature",
           "js": true,
           "swift": true,
@@ -3072,6 +3168,7 @@
         "dots",
         "flow",
         "knockout",
+        "lic",
         "links",
         "metaballs",
         "redshift",
@@ -3080,7 +3177,7 @@
         "voronoi"
       ],
       "counts": {
-        "js": 11,
+        "js": 12,
         "swift": 6,
         "kotlin": 6
       },
@@ -3091,6 +3188,7 @@
           "dots",
           "flow",
           "knockout",
+          "lic",
           "links",
           "metaballs",
           "redshift",
@@ -3142,6 +3240,12 @@
         },
         {
           "symbol": "knockout",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "lic",
           "js": true,
           "swift": false,
           "kotlin": false

@@ -17,7 +17,8 @@
  * ```
  */
 
-import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type EdgeHandle, type EdgeView, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
+import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions,
+  type PointerOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type EdgeHandle, type EdgeView, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
 import { createField } from './create-field.ts';
 import { makeFieldCanvas, makeContainedCanvas, assertBrowser } from './mount.ts';
 
@@ -31,6 +32,9 @@ export interface FieldFieldInit extends FieldOptions {
    *  bodies (scanned within `bounds`), and its canvas all live in the element's local coordinate
    *  space. The managed canvas is absolutely positioned inside it. The card-sized / component path. */
   bounds?: HTMLElement;
+  /** keep a contained field running while its `bounds` box is off-screen (default `false` — it
+   *  pauses entirely, #672 lane S2). See `createField`'s `runOffscreen`. Ignored without `bounds`. */
+  runOffscreen?: boolean;
 }
 
 export class FieldField implements FieldHandle {
@@ -42,12 +46,12 @@ export class FieldField implements FieldHandle {
 
   constructor(init: FieldFieldInit = {}) {
     assertBrowser(); // browser-only: fail loudly during SSR instead of a cryptic crash
-    const { canvas, target, bounds, ...opts } = init;
+    const { canvas, target, bounds, runOffscreen, ...opts } = init;
     this.managed = !canvas;
     // The managed canvas differs by mode (absolutely-positioned inside `bounds`, else full-viewport);
     // host resolution (container vs browser) is delegated to the one `createField` entry.
     this.canvas = canvas ?? (bounds ? makeContainedCanvas(bounds) : makeFieldCanvas(target));
-    this.field = createField(this.canvas, bounds ? { ...opts, bounds } : opts);
+    this.field = createField(this.canvas, bounds ? { ...opts, bounds, runOffscreen } : opts);
   }
 
   /** (re)scan the document for `[data-body]` bodies after a layout change. */
@@ -126,6 +130,11 @@ export class FieldField implements FieldHandle {
   burst(x: number, y: number, hex?: string): void {
     this.field.burst(x, y, hex);
   }
+  /** Flare a body — the transient per-body one-shot, published as `--field-pulse` (#567). Takes a
+   *  `[data-body]` element or an `addBody` handle; unlike `burst` above it moves no matter. */
+  pulse(target: HTMLElement | BodyHandle, energy?: number): void {
+    this.field.pulse(target, energy);
+  }
   /** place/move a dynamic flow focus the field bends toward — pulls matter, curves the streamlines. */
   flowTo(x: number, y: number, opts?: FlowOptions): void {
     this.field.flowTo(x, y, opts);
@@ -133,6 +142,27 @@ export class FieldField implements FieldHandle {
   /** remove the flow focus. */
   clearFlow(): void {
     this.field.clearFlow();
+  }
+  /** place/move the pointer — the cursor as a transient body, plus the wake its motion leaves (#666). */
+  pointer(x: number, y: number, opts?: PointerOptions): void {
+    this.field.pointer(x, y, opts);
+  }
+  /** remove the pointer body and its wake (#666). */
+  clearPointer(): void {
+    this.field.clearPointer();
+  }
+  /** throw a `[data-move]` element with a release velocity in px/second (#666). */
+  fling(el: HTMLElement, vx: number, vy: number): void {
+    this.field.fling(el, vx, vy);
+  }
+  /** Build the nav grid and sweep it toward a goal — obstacle-aware navigation for agents that
+   *  opt in with `AgentSpec.navigate` (#439). Not `flowTo`: this routes AROUND geometry. */
+  navigate(opts: Parameters<FieldHandle['navigate']>[0]): void {
+    this.field.navigate(opts);
+  }
+  /** Remove the nav grid (#439) — navigating agents revert to pure force-following. */
+  clearNavigation(): void {
+    this.field.clearNavigation();
   }
   seed(atoms: readonly AtomPayload[]): void {
     this.field.seed(atoms);

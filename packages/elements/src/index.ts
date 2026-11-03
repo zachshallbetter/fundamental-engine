@@ -1,4 +1,4 @@
-import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RestingMotion, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
+import { PALETTE, FIELD_VERSION, OVERLAY_READING_LIST, RENDER_MODE_LIST, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RenderModeName, type RestingMotion, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
 import { createBrowserField, createOverlaySurface, normalizeOverlayBlend, normalizeOverlayZ, type FieldPlatform, type OverlaySurface } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -33,7 +33,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {string} accent - Accent color (hex) the field draws particles and overlay in.
  * @attr {number} density - Particle-density multiplier (default `1`; `0.5` halves the count).
  * @attr {boolean} waves - Draw the background Currents (the resting wave layers + bound shimmer). OPT-IN (#979): absent = off (the bare field); present (and not `"false"`) = on.
- * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `flow` | `knockout` | `redshift` | `blackbody` | `depth` | `none`. The DEFAULT is `none` (#538) — the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn. Set `render="dots"` for the particle surface.
+ * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `flow` | `knockout` | `redshift` | `blackbody` | `depth` | `none`. The DEFAULT is `none` (#538) — the signals-only engine (#297): the simulation and feedback signals run, but no underlay context is acquired and no matter is drawn. Set `render="dots"` for the particle surface. It does not suppress the `overlay` readings, which draw on their own front surface (§13.7 as amended by Field Surfaces); with no `overlay` set — the default — nothing is drawn at all.
  * @attr {string} overlay - Overlay readings (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines` | `grid` | `temperature` | `energy` | `path` | `data` — or a space-separated stack (readings are additive, drawn in order).
  * @attr {string} palette - Named color palette for the field.
  * @attr {string} theme - Ambient theme preset (#529): `warm` (default) | `cool` | `mono` — the heat ramp + wave baseline.
@@ -213,34 +213,14 @@ export class FieldField extends HTMLElementBase {
   }
 
   /** render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,
-   *  never draw (#297). Set `render="dots"` (or another drawing mode) to get a visible surface. */
-  get renderMode():
-    | 'dots'
-    | 'trails'
-    | 'links'
-    | 'metaballs'
-    | 'voronoi'
-    | 'streamlines'
-    | 'flow'
-    | 'knockout'
-    | 'redshift'
-    | 'blackbody'
-    | 'depth'
-    | 'none' {
+   *  never draw MATTER (#297). Set `render="dots"` (or another drawing mode) to get a visible underlay;
+   *  an `overlay` reading draws on its own front surface regardless of this mode. */
+  get renderMode(): RenderModeName {
+    // One list for the declared type AND the runtime test (#1218). These used to be two independent
+    // lists on adjacent lines — a mode present in the type and absent from the chain type-checked,
+    // built, and shipped an element that claimed to return a mode it silently downgraded to `none`.
     const v = this.getAttribute('render');
-    return v === 'dots' ||
-      v === 'trails' ||
-      v === 'links' ||
-      v === 'metaballs' ||
-      v === 'voronoi' ||
-      v === 'streamlines' ||
-      v === 'flow' ||
-      v === 'knockout' ||
-      v === 'redshift' ||
-      v === 'blackbody' ||
-      v === 'depth'
-      ? v
-      : 'none';
+    return (RENDER_MODE_LIST as readonly string[]).includes(v ?? '') ? (v as RenderModeName) : 'none';
   }
 
   /** substrate background: `transparent` (present and not `"false"`) clears to transparent so the
@@ -252,16 +232,10 @@ export class FieldField extends HTMLElementBase {
 
   /** Field Surfaces: the overlay reading(s) — one mode or a space-separated additive stack. Default `off`. */
   get overlay(): OverlayInput {
-    const KNOWN: readonly OverlayMode[] = [
-      'streamlines',
-      'force-vectors',
-      'field-lines',
-      'grid',
-      'temperature',
-      'energy',
-      'path',
-      'data',
-    ];
+    // Derived, never re-listed (#672 lane R0, C-17). A hand-kept copy here meant a new reading was
+    // filtered out of the attribute and the element fell back to `off` — silently, since an unknown
+    // token has never been an error here.
+    const KNOWN: readonly OverlayMode[] = OVERLAY_READING_LIST;
     const list = (this.getAttribute('overlay') ?? '')
       .split(/\s+/)
       .filter((t): t is OverlayMode => (KNOWN as readonly string[]).includes(t));

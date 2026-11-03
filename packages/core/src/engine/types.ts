@@ -10,6 +10,8 @@
  * the integrator, and the conformance harness all build on these shapes.
  */
 import type { FlowOptions } from './flow.ts';
+import type { PointerOptions } from './pointer.ts';
+import type { NavGrid, NavObstacle } from './nav-grid.ts';
 import type { FieldHost } from './host.ts';
 import type { ClassifiedTokens } from '../config/forces.config.ts';
 import type { FieldEventType, FieldEventMap } from './events.ts';
@@ -130,6 +132,9 @@ export interface Particle {
   // ── agent lane (FieldHandle.addAgent) ────────────────────────────────────
   /** top speed in field px/frame — the integrator clamps |v| to this each step. Agents only. */
   maxSpeed?: number;
+  /** Steering gain toward the {@link NavGrid} goal (#439), set from `AgentSpec.navigate`. Present
+   *  only on agents that opted in; absent leaves the agent purely force-driven, exactly as before. */
+  navGain?: number;
   /** an agent's per-step report: called with this particle after it integrates, so an external
    *  transform (a mesh) can follow it. Its presence marks the particle an AGENT — the integrator
    *  skips ambient wander and edge-bounces instead of toroidally wrapping it, and `readParticles`
@@ -405,6 +410,14 @@ export interface Body {
   /** the eased measured metrics (workover §"Metrics"): entropy / coherence / temperature
    *  ∈ [0,1], exported as `--entropy` / `--coherence` / `--temperature`. Lazily allocated. */
   metrics?: { entropy: number; coherence: number; temperature: number };
+  /** was this body the Tab successor on the previous frame (#943)? Runtime state, and the reason
+   *  the channel can be REMOVED rather than left at 0: without it the engine cannot tell "stopped
+   *  being next" from "was never next", and would have to write to every body every frame. */
+  wasNext?: boolean;
+  /** live transient flare ∈ [0,1] from {@link FieldHandle.pulse} (#567). Runtime state, and
+   *  `undefined` is meaningful: a body with no live flare carries no key at all, so the whole
+   *  pulse path costs an un-pulsed field one `!== undefined` check per body per frame. */
+  pulse?: number;
   /** target points for `morph` (§20.3 [D]) — a sampled mark / logo / chart / shape the
    *  matter assembles into. NEVER words or letterforms (§11); words glow/grow via `--d`. */
   targets?: readonly { x: number; y: number }[];
@@ -517,6 +530,10 @@ export interface Env {
    * into a corner, even though only `linear` is populated today. Read-only contract: setting
    * `accum` never alters how matter moves. */
   accum?: FieldImpulseAccumulator;
+  /** The live {@link NavGrid} (#439), when the host has set one. Read by the integrator's AGENT
+   *  branch only — matter is unaffected, because navigation is a property of something with an
+   *  intention, not of the field. Absent ⇒ no agent navigates and the whole path is skipped. */
+  nav?: NavGrid | null;
   /**
    * OPT-IN declared-potential accessor (#443). A host channel registered with
    * {@link FieldHandle.addField} — terrain height, a cost surface — admitted as a scalar POTENTIAL
@@ -727,6 +744,99 @@ export type OverlayMode =
   | 'path'
   | 'data';
 
+/**
+ * The overlay vocabulary as DATA, in declaration order (#672 lane R0, Field Surfaces program §6.1
+ * **C-17**). The union above is the contract; this is the same vocabulary a runtime can iterate,
+ * and it exists so the copies stop multiplying — before this there were four hand-maintained
+ * duplicates (`recipes/compile.ts`, the `<field-root>` attribute filter, the site's workbench, and
+ * the `check:docs` extractor's regex), and a new reading had to be added to every one of them or it
+ * failed SILENTLY: dropped from a Pattern's plan, filtered out of the attribute, missing its button.
+ *
+ * `satisfies` below proves list ⊆ union. `_overlayListIsExhaustive` proves union ⊆ list, which
+ * `satisfies` cannot — that is the "both directions" C-17 asks for, and without it a union member
+ * missing from the list is exactly the silent drop this is meant to end.
+ */
+export const OVERLAY_MODE_LIST = [
+  'off',
+  'streamlines',
+  'force-vectors',
+  'field-lines',
+  'grid',
+  'temperature',
+  'energy',
+  'path',
+  'data',
+] as const satisfies readonly OverlayMode[];
+
+/** Compile-time proof that no `OverlayMode` is missing from {@link OVERLAY_MODE_LIST}: if one is,
+ *  `Exclude` is not `never`, the type resolves to `never`, and assigning `true` fails `tsc`. */
+type OverlayListIsExhaustive =
+  Exclude<OverlayMode, (typeof OVERLAY_MODE_LIST)[number]> extends never ? true : never;
+const _overlayListIsExhaustive: OverlayListIsExhaustive = true;
+void _overlayListIsExhaustive;
+
+/**
+ * Every reading that actually DRAWS — the vocabulary minus `off`. This is the list a consumer wants
+ * nine times out of ten: `off` is the absence of a reading, not one of them, and every hand-written
+ * copy this replaces had already dropped it by hand.
+ */
+export const OVERLAY_READING_LIST: readonly Exclude<OverlayMode, 'off'>[] = OVERLAY_MODE_LIST.filter(
+  (m): m is Exclude<OverlayMode, 'off'> => m !== 'off',
+);
+
+/**
+ * The underlay render vocabulary — every mode `FieldOptions.render` and `FieldHandle.setRender`
+ * accept (#1218). ONE declaration, where there used to be five hand-maintained copies: both unions
+ * here, the `<field-root>` getter's return type AND its runtime `v === '…'` chain, and
+ * `recipes/compile.ts`'s matter-layer set. A mode missing from any one of them failed silently and
+ * differently — rejected at construction, filtered out of the attribute and quietly downgraded to
+ * `none`, or dropped from a Pattern's plan with `check:recipes` green.
+ *
+ * The worst of those was the `<field-root>` pair: a declared return type and the runtime chain that
+ * produces the value, two independent lists on adjacent lines, free to disagree while type-checking.
+ */
+export type RenderModeName =
+  | 'dots'
+  | 'trails'
+  | 'links'
+  | 'metaballs'
+  | 'voronoi'
+  | 'streamlines'
+  | 'flow'
+  | 'knockout'
+  | 'redshift'
+  | 'blackbody'
+  | 'depth'
+  | 'lic'
+  | 'none';
+
+/**
+ * The same vocabulary as DATA, in declaration order, for everything that has to iterate or test
+ * membership at runtime. `satisfies` proves list ⊆ union; {@link RenderListIsExhaustive} proves
+ * union ⊆ list, which `satisfies` cannot — and that is the direction the silent drop lives in.
+ */
+export const RENDER_MODE_LIST = [
+  'dots',
+  'trails',
+  'links',
+  'metaballs',
+  'voronoi',
+  'streamlines',
+  'flow',
+  'knockout',
+  'redshift',
+  'blackbody',
+  'depth',
+  'lic',
+  'none',
+] as const satisfies readonly RenderModeName[];
+
+/** Compile-time proof that no `RenderModeName` is missing from {@link RENDER_MODE_LIST}. */
+type RenderListIsExhaustive =
+  Exclude<RenderModeName, (typeof RENDER_MODE_LIST)[number]> extends never ? true : never;
+const _renderListIsExhaustive: RenderListIsExhaustive = true;
+void _renderListIsExhaustive;
+
 /** One reading, or an additive stack of readings, for `setOverlay` / `FieldOptions.overlay`. */
 export type OverlayInput = OverlayMode | readonly OverlayMode[];
 
@@ -818,9 +928,11 @@ export interface FieldOptions {
    *  than to black. Purely additive — the default is unchanged. */
   background?: 'opaque' | 'transparent';
   /** render mode (§20.6): 'none' (the DEFAULT since #538 — the signals-only engine,
-   *  §13.7 / #297: the full simulation + feedback pipeline runs, but no canvas context
-   *  is acquired, no backing store is sized, and nothing is ever drawn — the field
-   *  exists purely as signals: `--d`, `--load`, `--lit`, capture events, `scrollV()`).
+   *  §13.7 / #297: the full simulation + feedback pipeline runs, but no context is acquired
+   *  for this canvas, no backing store is sized, and no MATTER is ever drawn — the field
+   *  exists purely as signals: `--d`, `--load`, `--lit`, capture events, `scrollV()`. It does
+   *  not suppress an overlay READING, which draws on its own host-owned surface — see
+   *  `overlay`; a field declaring no reading draws nothing at all, as before).
    *  Opt into a drawing surface explicitly: 'dots' (the particle surface), 'trails'
    *  (light-painting), 'links' (constellation), 'metaballs' (a liquid iso-surface, not
    *  dots), 'streamlines' (draw the force field itself — diagnostic, REPLACES the dots),
@@ -832,20 +944,11 @@ export interface FieldOptions {
    *  (dots tinted by spectral shift — Doppler from radial velocity + gravitational red
    *  near body wells, #668), 'blackbody' (dots tinted by energy on a thermal ramp, ember
    *  → white → blue-white, #669), 'depth' (the z lane made visible: far-to-near painter's
-   *  sorting, perspective parallax, defocus with distance — pairs with `depth > 0`, #670). */
-  render?:
-    | 'dots'
-    | 'trails'
-    | 'links'
-    | 'metaballs'
-    | 'voronoi'
-    | 'streamlines'
-    | 'flow'
-    | 'knockout'
-    | 'redshift'
-    | 'blackbody'
-    | 'depth'
-    | 'none';
+   *  sorting, perspective parallax, defocus with distance — pairs with `depth > 0`, #670), 'lic'
+   *  (the force field as TEXTURE rather than as arrows — line-integral convolution, #671: short
+   *  streamlines traced from a noise-seeded lattice, so the flow reads like iron filings instead of
+   *  a vector list. REPLACES the dots, as `streamlines` does). */
+  render?: RenderModeName;
   /**
    * DECLARED render reference point (Wallpaper Rule, #975): the center of the cool→warm heat
    * vignette the `dots`/`depth` swarm is tinted against — a body far from this point reads warm,
@@ -939,10 +1042,12 @@ export interface FieldOptions {
   dprCap?: number;
   /**
    * Field Surfaces (overlay placement): a caller-provided canvas for the OVERLAY surface, drawn in
-   * front of page content. Core sizes its backing store (matching the main canvas dpr) and draws the
-   * `overlay` mode onto it each frame; the caller owns the element and its CSS placement (fixed,
-   * full-viewport, `pointer-events:none`, above content / below nav). Keeps core DOM-free — the host
-   * provides the canvas, core only draws. Default unset → no overlay surface.
+   * front of page content. Core sizes its backing store (matching the main canvas dpr, under the same
+   * `dprCap` / quality-tier ceilings) and draws the `overlay` mode onto it each frame; the caller owns
+   * the element and its CSS placement (fixed, full-viewport, `pointer-events:none`, above content /
+   * below nav). Keeps core DOM-free — the host provides the canvas, core only draws. Default unset →
+   * no overlay surface. Works under `render: 'none'`: the reading is a separate surface, so a
+   * signals-only field can carry one (§13.7 as amended by Field Surfaces).
    */
   overlayCanvas?: HTMLCanvasElement;
   /**
@@ -1037,6 +1142,17 @@ export interface FeedbackChannels {
   coherence?: number;
   /** measured local agitation ∈ [0,1] (heat + kinetic) → `--temperature`. */
   temperature?: number;
+  /** `1` on the body Tab would reach NEXT from the focused one → `--field-next` (#943). Present only
+   *  on that one body, and only while something in the field has focus — so an author's CSS can show
+   *  a keyboard user where they are about to land. A VALUE, not a movement: it is the static
+   *  equivalent the reduced-motion contract requires, and it works under `render: 'none'`, which is
+   *  the default and where a drawn current would be invisible. */
+  next?: number;
+  /** transient flare ∈ [0,1] from {@link FieldHandle.pulse} → `--field-pulse` (#567). Distinct from
+   *  `density`: density is a MEASUREMENT of gathered matter, pulse is an OCCURRENCE the host injected
+   *  and the field decays. Present only while a flare is live (plus one final exact `0`), so a body
+   *  that is never pulsed never carries the key. */
+  pulse?: number;
 }
 
 /** Receives a body's feedback channels in place of direct DOM writes (Phase D3). */
@@ -1055,6 +1171,15 @@ export interface AgentSpec {
   maxSpeed?: number;
   /** species tag — lets tagged bodies (`data-affects`) and `hunt` act on this agent selectively. */
   species?: number;
+  /**
+   * Follow the field's {@link NavGrid} toward its goal (#439) — `true` for the default gain, or a
+   * number to tune it. The agent still feels every force; navigation is steering ADDED to them, so
+   * a navigating agent is pushed out of a crowd and still finds its way round the fence.
+   *
+   * Requires `FieldHandle.navigate()` to have built a grid; without one this does nothing rather
+   * than failing, so an agent can opt in before the host has placed any geometry.
+   */
+  navigate?: boolean | number;
   /** called every step with the agent's live particle after it integrates — drive a mesh from here. */
   report: (p: Particle) => void;
 }
@@ -1708,37 +1833,45 @@ export interface FieldHandle {
   forAgent(opts: AgentViewOptions): AgentFieldView;
   /**
    * Switch the underlay render mode (§20.6) live — the surface behind content. `'none'` is the
-   * signals-only mode (§13.7 / #297): drawing stops from the next frame while the simulation and
-   * its signals stay live. Switching TO `'none'` at runtime keeps an already-acquired context and
+   * signals-only mode (§13.7 / #297): matter stops being drawn from the next frame while the
+   * simulation, its signals and any declared overlay reading stay live. Switching TO `'none'` at runtime keeps an already-acquired context and
    * backing store (the no-allocation guarantee belongs to fields CREATED with `render: 'none'`);
    * switching FROM `'none'` acquires the context lazily and sizes the backing store at that moment.
    */
-  setRender(
-    mode:
-      | 'dots'
-      | 'trails'
-      | 'links'
-      | 'metaballs'
-      | 'voronoi'
-      | 'streamlines'
-      | 'flow'
-      | 'knockout'
-      | 'redshift'
-      | 'blackbody'
-      | 'depth'
-      | 'none',
-  ): void;
+  setRender(mode: RenderModeName): void;
   /**
    * Render field READINGS on the OVERLAY surface — in front of page content (Field Surfaces). Pairs
    * with `setRender` (the underlay); set both for an immersive look. No-op unless the field was created
-   * with an `overlayCanvas`. Accepts one reading or an additive stack (drawn in order); `'off'` (or an
-   * empty stack) clears the overlay surface.
+   * with an `overlayCanvas` / `overlayCanvasProvider` (or an injected `overlayBackend`). Accepts one
+   * reading or an additive stack (drawn in order); `'off'` (or an empty stack) clears the overlay
+   * surface. Independent of the underlay mode: a reading draws even while `render` is `'none'`
+   * (§13.7 as amended by Field Surfaces) — the signals-only guarantee is about matter, not readings.
    */
   setOverlay(mode: OverlayInput): void;
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void;
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
   burst(x: number, y: number, hex?: string): void;
+  /**
+   * Flare a body — a transient, exponentially decaying one-shot on ONE body, surfaced on its own
+   * `pulse` feedback channel (`--field-pulse`), separate from the measured `density` (#567).
+   *
+   * This is the "something just happened *here*" primitive, and it is deliberately not `burst`:
+   * `burst(x, y)` is a render-surface blast that shoves and heats matter at screen coordinates,
+   * while `pulse` touches no matter at all. Nor is it `--d`, which is a *measurement* of gathered
+   * matter — a host that drives `--d` from an event is overwriting the channel the engine owns.
+   *
+   * The engine steps the decay in its own loop, so a consumer flares a body from an ordinary event
+   * handler and writes no animation driver of its own. `energy` is additive and saturates at 1, so
+   * two events in quick succession read as one brighter flare; a full-energy pulse falls under 5%
+   * in ~0.65s. Decay runs on wall time, so a reduced-motion field's flares still resolve to rest.
+   *
+   * `target` is a body element (`[data-body]`) or a {@link BodyHandle} from `addBody`. The body
+   * must opt into feedback (`data-feedback`, or any programmatic body) — that is the channel this
+   * rides; a pulse on a body with feedback off is a silent no-op, as every other channel is.
+   * Unknown targets are ignored. Shipped-but-unfrozen.
+   */
+  pulse(target: HTMLElement | BodyHandle, energy?: number): void;
   /**
    * Place or move a dynamic flow focus at `(x, y)` — a movable target the field bends toward: it
    * pulls free matter in, curves the streamlines, and eases the wave spine to it. Call repeatedly to
@@ -1747,6 +1880,58 @@ export interface FieldHandle {
   flowTo(x: number, y: number, opts?: FlowOptions): void;
   /** Remove the flow focus — the field relaxes back to its bodies-only shape. */
   clearFlow(): void;
+  /**
+   * Place or move the **pointer** — the cursor as a transient participant in the field (#666). The
+   * host feeds screen coordinates (a `pointermove` handler is the whole integration) and the engine
+   * does two things with them:
+   *
+   * 1. keeps a real **body** at the cursor, carrying whatever force token you pick (`'repel'` by
+   *    default, so a finger pushes matter aside; `'attract'` gathers, `'swirl'` stirs). It is a
+   *    first-class body — `query()` reports it like any other.
+   * 2. tracks the cursor's **velocity** and lets nearby matter inherit it — a wake. This is what
+   *    `flowTo` cannot do: a flow focus is a *place* the field bends toward, so it behaves the same
+   *    whether you slid it there or teleported it. A pointer that is not moving leaves no wake at
+   *    all, and a flick pulls a streak of matter behind it.
+   *
+   * Call it as often as the host has positions; the engine smooths the velocity itself. A pointer
+   * that stops being reported keeps its position but fades its wake out within ~0.25s, so a cursor
+   * that left the window never drags matter forever. `clearPointer()` removes it outright — wire
+   * that to `pointerleave`. Shipped-but-unfrozen.
+   */
+  pointer(x: number, y: number, opts?: PointerOptions): void;
+  /** Remove the pointer body and its wake (#666) — the field forgets the cursor entirely. */
+  clearPointer(): void;
+  /**
+   * **Throw** a `[data-move]` element (#666): hand it the velocity it was travelling at when the
+   * user let go, in **px/second**, and the field carries it on. The element keeps its existing
+   * anchor spring and friction, so a fling arcs, decelerates, and settles back into its layout slot
+   * — it is a release into the field's own dynamics, not an animation played over the top of them.
+   *
+   * The unit is px/second because that is what a drag handler measures (Δpx / Δt). Velocity is
+   * clamped, so a release velocity computed from one bad sample cannot launch the element.
+   *
+   * No-op for an element that is not a `[data-move]` mover on this field. Shipped-but-unfrozen.
+   */
+  fling(el: HTMLElement, vx: number, vy: number): void;
+  /**
+   * Build the field's {@link NavGrid} and sweep it toward a goal (#439) — obstacle-aware navigation
+   * for agents that opt in with `AgentSpec.navigate`.
+   *
+   * This is NOT `flowTo`. A flow focus is a directed current: it pulls matter toward a point and
+   * reads the same whether you slid it there or teleported it, and an agent following one walks into
+   * the near side of a wall and stays. `navigate` runs a breadth-first sweep from the goal over an
+   * occupancy grid, so every reachable cell knows the distance to the goal AROUND obstacles — the
+   * first move out of a dead end is *away* from the destination, which no local rule can produce.
+   *
+   * One sweep serves every navigating agent. `obstacles` are impassable, not repulsive: an agent
+   * cannot enter one even if a force shoves it. Re-call to move the goal or change the geometry;
+   * `clearNavigation()` removes the grid and agents fall back to pure force-following.
+   *
+   * Shipped-but-unfrozen.
+   */
+  navigate(opts: { goal: { x: number; y: number }; obstacles?: readonly NavObstacle[]; cell?: number }): void;
+  /** Remove the nav grid (#439) — navigating agents revert to pure force-following. */
+  clearNavigation(): void;
   /**
    * Bind a data record to each base particle, round-robin (so every dot carries a piece of meaning).
    * Each record's `weight` (0..1) scales that particle's mass + size — richer records read as heavier,

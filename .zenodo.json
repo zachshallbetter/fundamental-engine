@@ -1,8 +1,8 @@
 {
-  "title": "Fundamental: Platform-Native Relational Field Runtime",
-  "version": "0.11.0",
+  "title": "Fundamental",
+  "version": "0.11.1",
   "upload_type": "software",
-  "description": "Fundamental (v0.11.0) is a platform-native relational field runtime where visual and interactive elements dynamically bend a physical field, and the field in turn continuously governs their motion and boundaries. Designed for multi-target, deterministic simulation across TypeScript/DOM, Rust, Swift (FieldLabKit), and Kotlin/Android, it features cross-language golden conformance vectors, continuous interaction physics, and empirical abstraction evaluation.",
+  "description": "Fundamental version 0.11.1: a platform-native relational field runtime.",
   "creators": [
     {
       "name": "Shallbetter, Zachary",
@@ -11,38 +11,19 @@
   ],
   "keywords": [
     "relational field runtime",
-    "computational interaction",
-    "physics simulation",
-    "multi-platform determinism",
-    "continuous interaction",
+    "physics",
+    "particles",
+    "animation",
     "typescript",
-    "rust",
-    "swift",
-    "android"
+    "dom",
+    "simulation"
   ],
-  "license": "mit",
+  "license": "mit-license",
   "access_right": "open",
-  "language": "eng",
-  "notes": "Accompanying research software for continuous interaction fields and empirical computation theories.",
   "related_identifiers": [
     {
-      "identifier": "https://github.com/zachshallbetter/fundamental-engine/tree/v0.11.0",
+      "identifier": "https://github.com/zachshallbetter/fundamental-engine/tree/v0.11.1",
       "relation": "isSupplementTo",
-      "resource_type": "software"
-    },
-    {
-      "identifier": "https://github.com/zachshallbetter/fundamental-engine/releases/tag/v0.11.0",
-      "relation": "isIdenticalTo",
-      "resource_type": "software"
-    },
-    {
-      "identifier": "10.5281/zenodo.23290487",
-      "relation": "references",
-      "resource_type": "publication-preprint"
-    },
-    {
-      "identifier": "10.5281/zenodo.23290630",
-      "relation": "references",
       "resource_type": "software"
     }
   ]

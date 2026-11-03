@@ -6,7 +6,8 @@
 import type { FieldHandle } from '@fundamental-engine/core';
 
 export interface XRayOptions {
-  /** Key that toggles the overlay. Default '?' */
+  /** Key that toggles the overlay. Default '?'. Ignored while focus is in an editable field (input,
+   *  textarea, select, contenteditable) or with Ctrl/Meta/Alt held — there it's typing, not a command. */
   hotkey?: string;
   /** Corner to anchor the panel. Default 'bottom-right' */
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
@@ -27,6 +28,16 @@ function energyProbe(field: FieldHandle): EnergyProbe | null {
   return typeof fn === 'function' ? () => fn.call(field) : null;
 }
 
+/** An element that takes typed text — the hotkey there is input, not a command. Structural (no DOM
+ *  globals), so it holds in a test DOM, an iframe, or a shadow root's retargeted event. */
+function isEditable(t: unknown): boolean {
+  const el = t as { tagName?: unknown; isContentEditable?: unknown } | null;
+  if (!el || typeof el !== 'object') return false;
+  if (el.isContentEditable === true) return true;
+  const tag = typeof el.tagName === 'string' ? el.tagName.toUpperCase() : '';
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+}
+
 export function mountXRay(field: FieldHandle, container: ParentNode & EventTarget, opts: XRayOptions = {}): () => void {
   const hotkey = opts.hotkey ?? '?';
   const pos = opts.position ?? 'bottom-right';
@@ -36,7 +47,10 @@ export function mountXRay(field: FieldHandle, container: ParentNode & EventTarge
   // in which case the container IS the document.
   const doc: Document =
     (container as Node).ownerDocument ?? (container as unknown as Document);
-  const mountParent: HTMLElement = doc.body ?? (doc.documentElement as unknown as HTMLElement);
+  // Resolved at open() time, not here: an SPA router (Astro view transitions, Turbo, …) can replace
+  // <body> while the field keeps running, and a parent captured at mount would leave the panel
+  // appended to the old, detached body — the hotkey would appear to do nothing.
+  const mountParent = (): HTMLElement => doc.body ?? (doc.documentElement as unknown as HTMLElement);
 
   const sample = forceProbe(field);
   const energy = energyProbe(field);
@@ -115,7 +129,7 @@ export function mountXRay(field: FieldHandle, container: ParentNode & EventTarge
     panel = doc.createElement('div');
     panel.setAttribute('data-field-xray', '');
     panel.style.cssText = positionStyle() + 'background:rgba(10,15,28,.88);border:1px solid rgba(160,196,255,.18);border-radius:10px;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(0,0,0,.5);';
-    mountParent.appendChild(panel);
+    mountParent().appendChild(panel);
     tick();
   }
 
@@ -126,9 +140,13 @@ export function mountXRay(field: FieldHandle, container: ParentNode & EventTarge
   }
 
   function onKey(e: Event) {
-    const key = (e as KeyboardEvent).key;
-    if (key === hotkey) { panel ? close() : open(); }
-    if (key === 'Escape') close();
+    const k = e as KeyboardEvent;
+    if (k.key === 'Escape') { close(); return; }
+    if (k.key !== hotkey || k.ctrlKey || k.metaKey || k.altKey) return;
+    // Typing the hotkey into a field is text, not a command: '?' in a search box, a form, or a
+    // contenteditable editor must not toggle the panel.
+    if (isEditable(k.target) || isEditable(doc.activeElement)) return;
+    panel ? close() : open();
   }
 
   function onMove(e: Event) {

@@ -7,7 +7,7 @@ import Button from "../components/ui/Button.astro";
 import ForceCarousel from "../components/home/ForceCarousel.astro";
 import InvisibleFieldsStrip from "../components/home/InvisibleFieldsStrip.astro";
 import TryItField from "../components/home/TryItField.astro";
-import { MANUAL_FORCES } from "@fundamental-engine/core";
+import { MANUAL_FORCES, FIELD_PATTERNS, MANUAL_PRESETS } from "@fundamental-engine/core";
 import { currentVersion } from "../lib/changelog";
 import "../styles/manual.css";
 import "../styles/force-glyphs.css";
@@ -91,8 +91,8 @@ const sourceLd = {
   <SiteNav current="home" />
   <main id="main" class="manual-shell">
     <nav class="field-guide" data-field-guide hidden aria-label="Homepage field walkthrough">
-      <span data-guide-progress>Walkthrough · 1 of 6</span>
-      <b data-guide-title>Inbox: authored importance</b>
+      <span data-guide-progress aria-live="polite">Walkthrough · 1 of 13</span>
+      <b data-guide-title>Start here: the field and the DOM</b>
       <div><button type="button" data-guide-prev disabled>Back</button><button type="button" data-guide-next>Next lesson →</button><button type="button" data-guide-close aria-label="Close walkthrough">×</button></div>
     </nav>
     <ManualHero kicker="Fundamental · a relational field runtime for interfaces">
@@ -135,7 +135,7 @@ const sourceLd = {
       <div slot="meta" class="meta">
         <span><b>Category</b> &nbsp;add a data-* attribute, get --field-* back</span>
         <span><b>For</b> &nbsp;design engineers · AI-product builders · component-library authors</span>
-        <span><b>Parity</b> &nbsp;js · swift · kotlin — six forces, identical output, checked in CI</span>
+        <span><b>Parity</b> &nbsp;js · swift · kotlin — six forces match within a stated tolerance, checked in CI</span>
         <span><b>Maturity</b> &nbsp;0.x preview — shipping in production apps, no third-party adopters yet</span>
       </div>
       <Fragment slot="flow">
@@ -151,6 +151,9 @@ const sourceLd = {
         </div>
       </Fragment>
     </ManualHero>
+
+    {/* Hands-on: touch the engine — rewrite a body's data-* and watch the field answer live. */}
+    <TryItField />
 
     <section class="lp lp-apply" id="proof" data-attention-demo>
       <div class="wrap">
@@ -174,115 +177,6 @@ const sourceLd = {
           ))}
         </div>
         <Button href="/evidence/inbox" variant="primary">Open this example →</Button>
-      </div>
-    </section>
-
-    {/* Shipped work. The inline demos prove the mechanism; these prove it survives a real product.
-        Each entry names the door it went through, because the renderer-agnostic claim is only
-        interesting if the same core is reachable four different ways. */}
-    <section class="lp lp-shipped" id="shipped">
-      <div class="wrap">
-        <span class="concept-no">Shipped</span>
-        <h2>Built on this, running now.</h2>
-        <p class="lp-lede">Each card is a real link and field participant. Open one to see how a host applies the shared model in a shipped project.</p>
-        <div class="lp-shipped-grid">
-          <a class="lp-ship" href="https://habitat.fundamentalengine.com"
-            data-body="attract swirl" data-feedback data-strength="0.9" data-range="180" data-spin="1.1"
-            data-color="#2dd4bf" style="--cat:#2dd4bf">
-            <b>Habitat</b>
-            <span>A living garden. Plants, critters and weather respond to each other — nothing is scripted.</span>
-            <code>@fundamental-engine/three</code>
-          </a>
-          <a class="lp-ship" href="https://ascent.guide"
-            data-body="attract swirl" data-feedback data-strength="0.8" data-range="175" data-spin="1.1"
-            data-color="#f0628e" style="--cat:#f0628e">
-            <b>Ascent</b>
-            <span>Adaptive CAPM® prep on iPhone, on the App Store. The field drives readiness and pacing.</span>
-            <code>&lt;field-root&gt; · elements</code>
-          </a>
-          <a class="lp-ship" href="https://zachshallbetter.com"
-            data-body="attract swirl" data-feedback data-strength="0.75" data-range="170" data-spin="1.1"
-            data-color="#ffce6b" style="--cat:#ffce6b">
-            <b>zachshallbetter.com</b>
-            <span>A personal site where the writing itself is the field — typographic, no particle swarm.</span>
-            <code>@fundamental-engine/vanilla</code>
-          </a>
-          <a class="lp-ship" href="/docs/api/parity"
-            data-body="attract swirl" data-feedback data-strength="0.7" data-range="165" data-spin="1.1"
-            data-color="#4da3ff" style="--cat:#4da3ff">
-            <b>Native parity</b>
-            <span>Six forces reproduce identical output across JavaScript, Swift and Kotlin — checked on every commit.</span>
-            <code>js · swift · kotlin</code>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    {/* Hands-on: touch the engine — rewrite a body's data-* and watch the field answer live. */}
-    <TryItField />
-
-    <section class="lp lp-ai" id="evidence">
-      <div class="wrap lp-ai-grid">
-        <div class="lp-col">
-          <span class="concept-no">The wedge</span>
-          <h2>Make model output you can read at a glance.</h2>
-          <p class="lp-lede">
-            A host can declare claims, sources, confidence, and support relationships as data. The field measures the declared arrangement; the host decides what confidence means and what actions are allowed. Inspect the source links below, then compare the visual projection with the serializable query.
-          </p>
-          <div class="lp-cta-row">
-            <Button href="/ai-evidence" variant="primary">See AI Evidence →</Button>
-            <Button href="/docs/studies/evidence-field">How it works →</Button>
-          </div>
-          <p class="atom-invite" data-atom-invite role="status" hidden>One particle has paused. Click its pulsing ring to inspect the data it carries.</p>
-        </div>
-
-        {/* Live claims field — each chip is a REAL body the page field measures. Confidence sets
-            weight (data-strength + the --conf style), and --d (live field density, written back by
-            the engine onto data-feedback) drives the glow: a well-supported claim accretes field and
-            reads heavy; the contradiction uses `repel`, opening a visible gap. Honors the Wallpaper
-            Rule — no fake decoration; the chips are bodies and the emphasis is measured. */}
-        <div class="wedge-field" aria-label="Evidence example: claims and sources are host-supplied data">
-          <div class="wf-plane">
-            <span id="claim-confirmed" class="claim claim-hi" data-body="attract swirl" data-feedback data-strength="1.3" data-range="150" data-spin="1.1" style="--x:16%; --y:20%; --conf:0.94"><b>Confirmed</b><i>0.94</i></span>
-            <span id="claim-corroborated" class="claim claim-hi" data-body="attract swirl" data-feedback data-strength="1.1" data-range="140" data-spin="1.1" style="--x:36%; --y:42%; --conf:0.87"><b>Corroborated</b><i>0.87</i></span>
-            <span id="claim-single" class="claim claim-mid" data-body="attract swirl" data-feedback data-strength="0.6" data-range="120" data-spin="1.1" style="--x:58%; --y:26%; --conf:0.41"><b>One source</b><i>0.41</i></span>
-            <span id="claim-conflict" class="claim claim-lo" data-body="repel" data-feedback data-strength="0.95" data-range="165" style="--x:74%; --y:70%; --conf:0.18"><b>Contradicted</b><i>0.18</i></span>
-          </div>
-          <nav class="wf-sources" aria-label="Declared evidence relationships">
-            <a href="#claim-confirmed" data-field-relation="supports" data-field-target="#claim-confirmed">Source A → Confirmed</a>
-            <a href="#claim-corroborated" data-field-relation="supports" data-field-target="#claim-corroborated">Source B → Corroborated</a>
-            <a href="#claim-conflict" data-field-relation="contradicts" data-field-target="#claim-conflict">Source C → Contradicted</a>
-          </nav>
-          <p class="wf-legend">Host-supplied: confidence, source identity, and declared support. Engine-measured: arrangement and density. The geometry does not validate a claim.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- §How it works — the five verbs (Declare -> Influence -> Read -> Reveal -> Govern). -->
-    <section class="lp lp-how" id="how">
-      <div class="wrap">
-        <span class="concept-no">How it works</span>
-        <h2>Declare, influence, read, reveal, govern.</h2>
-        <p class="lp-lede">
-          You have already changed authored attributes, watched measured feedback, and followed declared source links. These five verbs name that same loop; the host keeps ownership of its data and policy.
-        </p>
-        {/* The five verbs are five bodies, each carrying the force that embodies it — so the row
-            demonstrates the loop it describes: declare pulls matter in (attract), influence pushes a
-            current (stream), read gathers weight (gravity), reveal spins it out (swirl), govern damps
-            it (viscosity). attract/gravity carry swirl+spin so they don't freeze matter into a clump;
-            the ambient field keeps them all circulating. */}
-        <ol class="lp-verbs">
-          <li data-body="attract swirl" data-feedback data-strength="0.7" data-range="150" data-spin="1.1" data-color="#4da3ff" style="--cat:#4da3ff"><b>Declare</b><span>Host objects become bodies — a <code>data-body</code> attribute, <code>addBody()</code>, or a declared edge.</span></li>
-          <li data-body="stream" data-feedback data-strength="0.8" data-range="160" data-color="#a78bfa" style="--cat:#a78bfa"><b>Influence</b><span>Forces act through declared channels, accumulated centrally — deterministic and replayable.</span></li>
-          <li data-body="gravity swirl" data-feedback data-strength="0.8" data-range="150" data-spin="1" data-color="#2dd4bf" style="--cat:#2dd4bf"><b>Read</b><span><code>query()</code> and <code>snapshot()</code> expose the field as plain, serializable state.</span></li>
-          <li data-body="swirl" data-feedback data-strength="0.75" data-range="150" data-spin="1.2" data-color="#ffce6b" style="--cat:#ffce6b"><b>Reveal</b><span>Projections express that state through CSS variables, DOM attributes, JSON, native views, or overlays.</span></li>
-          <li data-body="viscosity" data-feedback data-strength="0.9" data-range="160" data-color="#f0628e" style="--cat:#f0628e"><b>Govern</b><span>Policies, budgets, redactions, lane lints, and reduced-motion rules constrain what runs and what an agent reads.</span></li>
-        </ol>
-        <p class="lp-note">
-          Want the exact API? <a href="/docs/api">Read the docs</a>. Want the live engine?
-          <a href="/engine-tour">Open the manual</a>. Want the substrate proof?
-          <a href="/demo">One field, two readings →</a>
-        </p>
       </div>
     </section>
 
@@ -313,19 +207,239 @@ const sourceLd = {
           <h3>Stop building the systems that exist because the DOM is blind.</h3>
           <p>The DOM stores structure and meaning, while application code often computes rankings, relations, and freshness separately. Fundamental offers a shared runtime for declared inputs and measured signals; the application still owns its data, rules, and consequential decisions.</p>
           <ul>
-            <li><b>Priority can be measured continuously.</b> Authored strength and live density (<code>--d</code>, also <code>--field-density</code>) are separate inputs and readings. A host can use the reading in its own ordering or presentation code. <a href="/engine-tour#concept-material">See it work →</a></li>
+            <li><b>Priority you don’t re-sort.</b> You still author importance (a <code>data-strength</code>); how it plays out is a live field reading (<code>--d</code>, with <code>--field-density</code> as the field-namespaced alias), not a list you re-sort and re-render on every change. <a href="/engine-tour#concept-material">See it work →</a></li>
             <li><b>“Everything is P1,” solved by a law.</b> Attention is one conserved budget — emphasize one thing and the rest necessarily yield. The normalization pass teams enforce with scoring schemes and meetings becomes something the runtime cannot violate. <a href="/engine-tour#concept-conserved">See it work →</a></li>
             <li><b>Declared relationships can shape influence.</b> The host supplies edges; a selected pattern determines how they affect the field. The app still owns the relationship data. <a href="/engine-tour#concept-threads">See it work →</a></li>
             <li><b>Freshness needs an authored time signal.</b> A decay force can continuously interpret age or recency supplied by the host; it does not replace persistence or scheduled work. <a href="/evidence/memory">See it work →</a></li>
             <li><b>One measured field, several projections.</b> CSS feedback, DOM state, and query output can read the same simulation; each host decides when to project or update its own view. <a href="/engine-tour#concept-layout">See it work →</a></li>
           </ul>
           <p class="lp-elim-close">
-            Fundamental supplies a common place to combine declared forces and relationships. It can reduce duplicated measurement and presentation logic, while application data, policy, persistence, and decisions remain with the host.
+            Fundamental doesn’t hand you a better abstraction over these jobs. It makes the
+            question each one answered — what matters, what’s related, what’s stale —
+            answerable by the field — so the re-sort, the timer and the hand-kept graph go away.
+            Your data and your rules stay yours.
           </p>
         </div>
 
       </div>
     </section>
+
+    <!-- §How it works — the five verbs (Declare -> Influence -> Read -> Reveal -> Govern). -->
+    <section class="lp lp-how" id="how">
+      <div class="wrap">
+        <span class="concept-no">How it works</span>
+        <h2>Declare, influence, read, reveal, govern.</h2>
+        <p class="lp-lede">
+          Five verbs are the whole loop. You declare host objects into the field; forces influence them
+          through declared channels; you read the state back; projections reveal it; policy governs what
+          may run and what an agent may read.
+        </p>
+        {/* The five verbs are five bodies, each carrying the force that embodies it — so the row
+            demonstrates the loop it describes: declare pulls matter in (attract), influence pushes a
+            current (stream), read gathers weight (gravity), reveal spins it out (swirl), govern damps
+            it (viscosity). attract/gravity carry swirl+spin so they don't freeze matter into a clump;
+            the ambient field keeps them all circulating. */}
+        <ol class="lp-verbs">
+          <li data-body="attract swirl" data-feedback data-strength="0.7" data-range="150" data-spin="1.1" data-color="#4da3ff" style="--cat:#4da3ff"><b>Declare</b><span>Host objects become bodies — a <code>data-body</code> attribute, <code>addBody()</code>, or a declared edge.</span></li>
+          <li data-body="stream" data-feedback data-strength="0.8" data-range="160" data-color="#a78bfa" style="--cat:#a78bfa"><b>Influence</b><span>Forces act through declared channels, accumulated centrally — deterministic and replayable.</span></li>
+          <li data-body="gravity swirl" data-feedback data-strength="0.8" data-range="150" data-spin="1" data-color="#2dd4bf" style="--cat:#2dd4bf"><b>Read</b><span><code>query()</code> and <code>snapshot()</code> expose the field as plain, serializable state.</span></li>
+          <li data-body="swirl" data-feedback data-strength="0.75" data-range="150" data-spin="1.2" data-color="#ffce6b" style="--cat:#ffce6b"><b>Reveal</b><span>Projections express that state through CSS variables, DOM attributes, JSON, native views, or overlays.</span></li>
+          <li data-body="viscosity" data-feedback data-strength="0.9" data-range="160" data-color="#f0628e" style="--cat:#f0628e"><b>Govern</b><span>Policies, budgets, redactions, lane lints, and reduced-motion rules constrain what runs and what an agent reads.</span></li>
+        </ol>
+        <p class="lp-note">
+          Want the exact API? <a href="/docs/api">Read the docs</a>. Want the live engine?
+          <a href="/engine-tour">Open the manual</a>. Want the substrate proof?
+          <a href="/demo">One field, two readings →</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- §Trust — built to be inspected (promoted out of the why-different calibration band). -->
+    <section class="lp lp-trust" id="trust">
+      <div class="wrap">
+        <span class="concept-no">Trust</span>
+        <h2>Built to be inspected.</h2>
+        <div class="trust-layout">
+        <ul class="lp-calib">
+          <li><b>Zero runtime dependencies.</b> The core engine ships with none.</li>
+          <li><b>Signals-first by default.</b> A field renders nothing unless you ask for it — the invisible field is the baseline.</li>
+          <li><b>Accessible by construction.</b> Semantic HTML stays the source of meaning; reduced motion removes motion, not meaning — enforced and linted.</li>
+          <li><b>Measured, not guessed.</b> Frame and fill-rate budgets are measured on real hardware; see the <a href="/docs/performance">performance methodology</a>.</li>
+          <li><b>Stable 0.x surface, cross-plane conformance.</b> Code-verified docs, a public surface guarded against silent removal by <code>check:api</code>, and shared-physics conformance across web, Apple, and Android.</li>
+        </ul>
+        <div class="trust-cue">
+          <div><p class="trust-cue-label">Try the field</p><h3>Follow the particles to the data console.</h3><p>When enabled, this DOM button declares a morph target sampled from the inline SVG path. The particles form a short arrow above the fixed console control.</p>
+            <button type="button" class="trust-morph-toggle" data-trust-morph aria-pressed="false">Form an arrow with particles</button>
+            <p class="trust-reduced-note">With reduced motion, particle travel stays off; the explanation and console remain available.</p>
+          </div>
+          <svg class="trust-arrow" data-trust-arrow aria-hidden="true" viewBox="0 0 76 116"><path id="trust-arrow-path" d="M30 6L40 88M10 58L40 94 68 58" /></svg>
+        </div>
+        <div class="trust-readings">
+          <figure class="lp-inspect">
+            <figcaption><span class="lp-inspect-tag">Data console</span> — frame timing, runtime budgets, platform diagnostics</figcaption>
+            <p>The fixed console button opens performance and platform diagnostics. It answers how this page is running.</p>
+            <button type="button" class="trust-console-link" data-open-console>Open the data console</button>
+          </figure>
+          <figure class="lp-inspect">
+            <figcaption><span class="lp-inspect-tag">field.query()</span> — serializable state from this page's field</figcaption>
+            <p>This query reports field state, including bodies, forces, and simulation metrics. It answers what the field currently contains.</p>
+            <pre class="lp-inspect-json" data-inspect-json>reading the field…</pre>
+          </figure>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lp lp-engine-gate" id="engine">
+      <div class="wrap lp-engine-grid">
+        <div class="lp-engine-col">
+          <span class="concept-no">The full engine, live</span>
+          <h2>{MANUAL_FORCES.length} forces. {FIELD_PATTERNS.length} patterns. {MANUAL_PRESETS.length} presets. One 0.x API.</h2>
+          <p class="lp-lede">
+            Everything above is built from one contract: <code>data-*</code> in, <code>--field-*</code> out.
+            The complete force-by-force manual — every force, preset, and system behaviour, each demo running
+            live on the real engine — now has its own page, so the homepage can stay about the substrate.
+          </p>
+          <div class="lp-cta-row">
+            <Button href="/engine-tour" variant="primary">Open the executable manual →</Button>
+            <Button href="/lab">Open the Lab →</Button>
+          </div>
+          <p class="lp-note">
+            Or jump straight to a surface: <a href="/docs/api">the API</a> ·
+            <a href="/patterns">patterns</a> · <a href="/docs/api/declarative#conditions">the force catalog</a>.
+          </p>
+        </div>
+        <ForceCarousel />
+      </div>
+    </section>
+
+    {/* Shipped work. The inline demos prove the mechanism; these prove it survives a real product.
+        Each entry names the door it went through, because the renderer-agnostic claim is only
+        interesting if the same core is reachable four different ways. */}
+    <section class="lp lp-shipped" id="shipped">
+      <div class="wrap">
+        <span class="concept-no">Shipped</span>
+        <h2>Built on this, running now.</h2>
+        <p class="lp-lede">
+          Four ways in: the web packages, the native Swift and Kotlin ports, and Three.js — one physics, held to a shared conformance test.
+        </p>
+        <div class="lp-shipped-grid">
+          <a class="lp-ship" href="https://habitat.fundamentalengine.com"
+            data-body="attract swirl" data-feedback data-strength="0.9" data-range="180" data-spin="1.1"
+            data-color="#2dd4bf" style="--cat:#2dd4bf">
+            <b>Habitat</b>
+            <span>A living garden. Plants, critters and weather respond to each other — nothing is scripted.</span>
+            <code>@fundamental-engine/three</code>
+          </a>
+          <a class="lp-ship" href="https://ascent.guide"
+            data-body="attract swirl" data-feedback data-strength="0.8" data-range="175" data-spin="1.1"
+            data-color="#f0628e" style="--cat:#f0628e">
+            <b>Ascent</b>
+            <span>Adaptive CAPM® prep on iPhone, on the App Store. The field drives readiness and pacing.</span>
+            <code>Swift · FundamentalCore</code>
+          </a>
+          <a class="lp-ship" href="https://zachshallbetter.com"
+            data-body="attract swirl" data-feedback data-strength="0.75" data-range="170" data-spin="1.1"
+            data-color="#ffce6b" style="--cat:#ffce6b">
+            <b>zachshallbetter.com</b>
+            <span>A personal site where the writing itself is the field — typographic, no particle swarm.</span>
+            <code>@fundamental-engine/vanilla</code>
+          </a>
+          <a class="lp-ship" href="/docs/api/parity"
+            data-body="attract swirl" data-feedback data-strength="0.7" data-range="165" data-spin="1.1"
+            data-color="#4da3ff" style="--cat:#4da3ff">
+            <b>Native parity</b>
+            <span>Six forces match across JavaScript, Swift and Kotlin within a stated tolerance — checked in CI on every change to a plane.</span>
+            <code>js · swift · kotlin</code>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="lp lp-hosts" id="hosts">
+      <div class="wrap">
+        <span class="concept-no">Hosts</span>
+        <h2>One engine, many hosts.</h2>
+        <p class="lp-lede">
+          The core computes field behavior from host-supplied state and imports zero DOM. Adapters connect it to web, native, custom-renderer, and headless surfaces; supported capabilities differ by host:
+        </p>
+        {/* One engine, many hosts — so the four bind as one: each host is a `cohesion` body, and the
+            field's matter coheres across them (binding, not a single well). */}
+        <ul class="model">
+          <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#4da3ff" style="--cat:#4da3ff">
+            <b>Web</b> — <code>@fundamental-engine/dom</code> binds the engine to the page: every
+            <code>[data-body]</code> element a body, feedback returned as <code>--field-*</code>
+            variables. The primary surface — and what this page runs on.
+          </li>
+          <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#86e57f" style="--cat:#86e57f">
+            <b>Native</b> — a Swift port runs the same field on Apple platforms (Metal / SwiftUI), and a
+            Kotlin port runs it on Android (Jetpack Compose, plus a non-Compose <code>View</code>/<code>Canvas</code>
+            host). See <a href="/docs/implementations">Implementations</a> for host capabilities and conformance details.
+          </li>
+          <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#ffce6b" style="--cat:#ffce6b">
+            <b>Your renderer</b> — <code>@fundamental-engine/three</code> drives a
+            <code>THREE.Points</code> swarm in your own WebGL scene; the read primitives
+            (<code>sample</code>, <code>readParticles</code>, <code>addField</code>) bind the engine to
+            anything that draws.
+          </li>
+          <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#c084fc" style="--cat:#c084fc">
+            <b>Headless</b> — no DOM, no canvas: records become bodies and relationships become edges,
+            and a tool reads the field through <code>query()</code> and <code>snapshot()</code>. The
+            smallest conformant host — for servers, tests, and agents.
+          </li>
+        </ul>
+        <p class="lp-note">
+          How the hosts relate — and what’s at parity across them — in
+          <a href="/docs/implementations">Implementations</a>.
+        </p>
+      </div>
+    </section>
+
+    <section class="lp lp-ai" id="evidence">
+      <div class="wrap lp-ai-grid">
+        <div class="lp-col">
+          <span class="concept-no">The wedge</span>
+          <h2>Make model output you can read at a glance.</h2>
+          <p class="lp-lede">
+            A host can declare claims, sources, confidence, and support relationships as data. The
+            field measures their declared arrangement; the host decides what confidence means and
+            which actions are allowed. Inspect the source links, then compare the visual projection
+            with the serializable query. The same deterministic math drives the Evidence and Search studies.
+          </p>
+          <div class="lp-cta-row">
+            <Button href="/ai-evidence" variant="primary">See AI Evidence →</Button>
+            <Button href="/docs/studies/evidence-field">How it works →</Button>
+          </div>
+          <p class="atom-invite" data-atom-invite role="status" hidden>One particle has paused. Click its pulsing ring to inspect the data it carries.</p>
+        </div>
+
+        {/* Illustrative host-supplied claims and confidence values. The field measures the declared
+            bodies and edges; it does not infer whether a claim is true. */}
+        <div class="wedge-field" aria-label="Evidence example: claims and sources are host-supplied data">
+          <div class="wf-plane">
+            <span id="claim-confirmed" class="claim claim-hi" data-body="attract swirl" data-feedback data-strength="1.3" data-range="150" data-spin="1.1"
+              style="--x:16%; --y:20%; --conf:0.94"><b>Confirmed</b><i>0.94</i></span>
+            <span id="claim-corroborated" class="claim claim-hi" data-body="attract swirl" data-feedback data-strength="1.1" data-range="140" data-spin="1.1"
+              style="--x:36%; --y:42%; --conf:0.87"><b>Corroborated</b><i>0.87</i></span>
+            <span id="claim-single" class="claim claim-mid" data-body="attract swirl" data-feedback data-strength="0.6" data-range="120" data-spin="1.1"
+              style="--x:58%; --y:26%; --conf:0.41"><b>One source</b><i>0.41</i></span>
+            <span id="claim-conflict" class="claim claim-lo" data-body="repel" data-feedback data-strength="0.95" data-range="165"
+              style="--x:74%; --y:70%; --conf:0.18"><b>Contradicted</b><i>0.18</i></span>
+          </div>
+          <nav class="wf-sources" aria-label="Declared evidence relationships">
+            <a href="#claim-confirmed" data-field-relation="supports" data-field-target="#claim-confirmed">Source A → Confirmed</a>
+            <a href="#claim-corroborated" data-field-relation="supports" data-field-target="#claim-corroborated">Source B → Corroborated</a>
+            <a href="#claim-conflict" data-field-relation="contradicts" data-field-target="#claim-conflict">Source C → Contradicted</a>
+          </nav>
+          <p class="wf-legend">Host-supplied: confidence, source identity, and declared support. Engine-measured: arrangement and density. The geometry does not validate a claim.</p>
+        </div>
+      </div>
+    </section>
+
+    {/* Invisible fields — the counterpart showcase: twelve real-data pages that run the field with
+        NO particle swarm (measurement comes back as type/ink). Restores the cut showcase; each item
+        is a light attractor, so the page's visible field gathers on whichever example you engage. */}
+    <InvisibleFieldsStrip />
 
     <section class="lp lp-install" id="install">
       <div class="wrap">
@@ -371,112 +485,6 @@ const sourceLd = {
         </p>
       </div>
     </section>
-
-    <section class="lp lp-hosts" id="hosts">
-      <div class="wrap">
-        <span class="concept-no">Hosts</span>
-        <h2>One engine, many hosts.</h2>
-        <p class="lp-lede">
-          The core computes field behavior from host supplied state and imports zero DOM. Adapters connect it to web, native, custom-renderer, and headless surfaces; supported capabilities differ by host:
-        </p>
-        {/* One engine, many hosts — so the four bind as one: each host is a `cohesion` body, and the
-            field's matter coheres across them (binding, not a single well). */}
-        <ul class="model">
-          <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#4da3ff" style="--cat:#4da3ff">
-            <b>Web</b>{' '}<code>@fundamental-engine/dom</code> binds the engine to the page: every
-            <code>[data-body]</code> element a body, feedback returned as <code>--field-*</code>
-            variables. The primary surface — and what this page runs on.
-          </li>
-          <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#86e57f" style="--cat:#86e57f">
-            <b>Native</b>{' '}a Swift port runs the same field on Apple platforms (Metal / SwiftUI), and a
-            Kotlin port runs it on Android (Jetpack Compose, plus a non-Compose <code>View</code>/<code>Canvas</code>
-            host) — both free of the browser’s compositing ceiling. The <a href="/docs/implementations">Field Lab</a>
-            is the showcase: a native app to explore every force live.
-          </li>
-          <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#ffce6b" style="--cat:#ffce6b">
-            <b>Your renderer</b>{' '}<code>@fundamental-engine/three</code> drives a
-            <code>THREE.Points</code> swarm in your own WebGL scene; the read primitives
-            (<code>sample</code>, <code>readParticles</code>, <code>addField</code>) bind the engine to
-            anything that draws.
-          </li>
-          <li data-body="cohesion" data-feedback data-strength="0.5" data-range="150" data-color="#c084fc" style="--cat:#c084fc">
-            <b>Headless</b>{' '}no DOM, no canvas: records become bodies and relationships become edges,
-            and a tool reads the field through <code>query()</code> and <code>snapshot()</code>. The
-            smallest conformant host — for servers, tests, and agents.
-          </li>
-        </ul>
-        <p class="lp-note">
-          How the hosts relate — and what’s at parity across them — in
-          <a href="/docs/implementations">Implementations</a>.
-        </p>
-      </div>
-    </section>
-
-    <!-- §Trust — built to be inspected (promoted out of the why-different calibration band). -->
-    <section class="lp lp-trust" id="trust">
-      <div class="wrap">
-        <span class="concept-no">Trust</span>
-        <h2>Built to be inspected.</h2>
-        <div class="trust-layout">
-        <ul class="lp-calib">
-          <li><b>Zero runtime dependencies.</b> The core engine ships with none.</li>
-          <li><b>Signals-first by default.</b> A field renders nothing unless you ask for it — the invisible field is the baseline.</li>
-          <li><b>Accessible by construction.</b> Semantic HTML stays the source of meaning; reduced motion removes motion, not meaning — enforced and linted.</li>
-          <li><b>Measured, not guessed.</b> Frame and fill-rate budgets are measured on real hardware; see the <a href="/docs/performance">performance methodology</a>.</li>
-          <li><b>Stable 0.x surface, cross-plane conformance.</b> Code-verified docs, a frozen public API, and shared-physics conformance across web, Apple, and Android.</li>
-        </ul>
-        {/* Built to be inspected — so show it: a live field.query() of THIS page's field, the same
-            serializable payload an agent reads. Updates on a calm cadence. */}
-        <div class="trust-cue">
-          <div><p class="trust-cue-label">Try the field</p><h3>Follow the particles to the data console.</h3><p>When enabled, this DOM button declares a morph target sampled from the inline SVG path. The particles form a short arrow above the fixed console control.</p>
-            <button type="button" class="trust-morph-toggle" data-trust-morph aria-pressed="false">Form an arrow with particles</button>
-            <p class="trust-reduced-note">With reduced motion, particle travel stays off; the explanation and console remain available.</p>
-          </div>
-          <svg class="trust-arrow" data-trust-arrow aria-hidden="true" viewBox="0 0 76 116"><path id="trust-arrow-path" d="M30 6L40 88M10 58L40 94 68 58" /></svg>
-        </div>
-        <div class="trust-readings">
-          <figure class="lp-inspect">
-            <figcaption><span class="lp-inspect-tag">Data console</span> — frame timing, runtime budgets, platform diagnostics</figcaption>
-            <p>The fixed console button opens performance and platform diagnostics. It answers how this page is running.</p>
-            <button type="button" class="trust-console-link" data-open-console>Open the data console</button>
-          </figure>
-          <figure class="lp-inspect">
-            <figcaption><span class="lp-inspect-tag">field.query()</span> — serializable state from this page's field</figcaption>
-            <p>This query reports field state, including bodies, forces, and simulation metrics. It answers what the field currently contains.</p>
-            <pre class="lp-inspect-json" data-inspect-json>reading the field…</pre>
-          </figure>
-        </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="lp lp-engine-gate" id="engine">
-      <div class="wrap lp-engine-grid">
-        <div class="lp-engine-col">
-          <span class="concept-no">The full engine, live</span>
-          <h2>{MANUAL_FORCES.length} forces. 64 patterns. 9 presets. One 0.x API.</h2>
-          <p class="lp-lede">
-            Everything above is built from one contract: <code>data-*</code> in, <code>--field-*</code> out.
-            The complete force-by-force manual — every force, preset, and system behaviour, each demo running
-            live on the real engine — now has its own page, so the homepage can stay about the substrate.
-          </p>
-          <div class="lp-cta-row">
-            <Button href="/engine-tour" variant="primary">Open the executable manual →</Button>
-            <Button href="/lab">Open the Lab →</Button>
-          </div>
-          <p class="lp-note">
-            Or jump straight to a surface: <a href="/docs/api">the API</a> ·
-            <a href="/patterns">patterns</a> · <a href="/docs/api/catalog">the force catalog</a>.
-          </p>
-        </div>
-        <ForceCarousel />
-      </div>
-    </section>
-
-    {/* Invisible fields — the counterpart showcase: twelve real-data pages that run the field with
-        NO particle swarm (measurement comes back as type/ink). Restores the cut showcase; each item
-        is a light attractor, so the page's visible field gathers on whichever example you engage. */}
-    <InvisibleFieldsStrip />
 
     <!-- §Explore — the deep links out (proofs + reference). -->
     <section class="lp lp-explore" id="explore">

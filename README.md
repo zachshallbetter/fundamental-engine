@@ -301,7 +301,7 @@ fill-rate-bound, not particle-bound; `<field-root>` applies it automatically.
 
 Ten of the forces also carry a four-field classification — gravity, electromagnetic, strong, weak
 (`FORCE_FIELD` / `classifyForce()`); the other 27, including the canonical nine, are unclassified. See
-[`/docs/natural-fields`](https://fundamentalengine.com/docs/natural-fields).
+[`/docs/concepts#natural-fields`](https://fundamentalengine.com/docs/concepts#natural-fields).
 
 **9 presets** compose primitives into cosmology with no new engine code: `blackhole`, `whitehole`,
 `wormhole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
@@ -376,7 +376,7 @@ bindData(listEl, tasks, (t) => ({                   // records → bodies; data 
 }), { pattern: 'priority-well' });
 ```
 
-Browse and run all 64 patterns at the [pattern gallery](https://fundamentalengine.com/docs/patterns), pick apart a
+Browse and run all 64 patterns at the [pattern gallery](https://fundamentalengine.com/patterns), pick apart a
 compiled plan in the [inspector](https://fundamentalengine.com/docs/inspector), and see the three
 surfaces wired together in the [starter app](apps/starter). The
 [concept studies](https://fundamentalengine.com/docs/studies/reading-field) (Reading, Review, Search,
@@ -581,7 +581,7 @@ surface is frozen, with new surface added additively; the support and versioning
   over the engine.
 - **Lab** at [fundamentalengine.com/lab](https://fundamentalengine.com/lab): fire particles into a
   force, watch the track, share the result through a URL.
-- **Pattern gallery** at [fundamentalengine.com/docs/patterns](https://fundamentalengine.com/docs/patterns)
+- **Pattern gallery** at [fundamentalengine.com/patterns](https://fundamentalengine.com/patterns)
   and the **inspector** at [fundamentalengine.com/docs/inspector](https://fundamentalengine.com/docs/inspector).
 - [`docs/README.md`](docs/README.md): the full documentation map.
 - [`docs/canonical/api-stability.md`](docs/canonical/api-stability.md) ·
@@ -659,7 +659,7 @@ build-time tool and ships no runtime JavaScript by default.
 
 If you use this work, please cite it via its concept DOI (it always resolves to the latest release):
 
-> Shallbetter, Z. (2026). *Fundamental* (Version 0.11.0) [Computer software].
+> Shallbetter, Z. (2026). *Fundamental* (Version 0.11.1) [Computer software].
 > Zenodo. https://doi.org/10.5281/zenodo.20989937
 
 <details>
@@ -671,7 +671,7 @@ If you use this work, please cite it via its concept DOI (it always resolves to 
   title     = {Fundamental},
   year      = {2026},
   publisher = {Zenodo},
-  version   = {0.11.0},
+  version   = {0.11.1},
   doi       = {10.5281/zenodo.20989937},
   url       = {https://doi.org/10.5281/zenodo.20989937}
 }

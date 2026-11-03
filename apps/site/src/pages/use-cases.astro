@@ -45,10 +45,11 @@ const ctaCode = `<field-root render="dots"></field-root>
       </h1>
       <StatusChip label="Planning · product translation" tone="planning" />
       <p class="uc-standfirst">
-        These are not demos. Each is a real UI problem — the kind you've already
-        hand-coded with scroll spies, IntersectionObservers, animation timers, and
-        custom state machines. The field collapses that work to a data attribute
-        and a CSS variable.
+        Product translations, not shipped demos. Each is a real UI problem — the kind
+        you've already hand-coded with scroll spies, IntersectionObservers, animation
+        timers, and custom state machines — sketched in the field's real vocabulary. The
+        field takes over the presentation half of that work (emphasis, proximity, decay)
+        through a data attribute and a CSS variable; your app still owns its state and rules.
       </p>
       <nav class="uc-toc" aria-label="Page sections">
         <a href="#universal">I. Universal UI</a>
@@ -101,7 +102,7 @@ const ctaCode = `<field-root render="dots"></field-root>
           <h3>Error Gravity</h3>
           <p class="uc-problem">Validation highlights a field, adds an error message — but doesn't move attention spatially in a long form.</p>
           <div class="uc-vs">→</div>
-          <p class="uc-solution">On failure, <code>field.setBodyStrength(el, 1.8)</code>. The error body competes for density and wins. The <code>coherent</code> condition fires when all required fields resolve.</p>
+          <p class="uc-solution">On failure, raise the field's <code>data-strength</code> (for example to <code>1.8</code>) — body parameters are re-read live, no rescan. The error body competes for density and wins. When your validation passes, set it back; the field relaxes on its own.</p>
           <div class="uc-demo uc-demo-form" aria-hidden="true">
             <span class="uc-form-field">Name</span>
             <span class="uc-form-field uc-form-error" data-body="attract charge" data-strength="1.8" data-feedback style="--d:0">Email ⚠</span>
@@ -113,7 +114,7 @@ const ctaCode = `<field-root render="dots"></field-root>
           <h3>Reading Weight</h3>
           <p class="uc-problem">Scroll animations highlight content as it enters, then stop. No memory of where the reader lingers.</p>
           <div class="uc-vs">→</div>
-          <p class="uc-solution">Pull quotes are <code>data-body="attract"</code>. The <code>dwell</code> condition accumulates mass at passages the reader revisits. The field stays live — it responds to where the reader <em>is</em>.</p>
+          <p class="uc-solution">Pull quotes are <code>data-body="attract"</code>. Call <code>field.focus(id)</code> on the passage in view; its salience accumulates while the reader returns to it and decays when they move on. The field stays live — it responds to where the reader <em>is</em>.</p>
         </article>
 
         <article class="uc-card" data-body="attract" data-strength="0.5" data-range="200" data-feedback>
@@ -240,7 +241,7 @@ const ctaCode = `<field-root render="dots"></field-root>
       <div class="uc-cards uc-cards-3">
         <article class="uc-card">
           <h3>Product Gravity</h3>
-          <p>Rating × review_count → body strength. Promoted items carry <code>data-truth="designed"</code>, organically popular ones <code>"physical"</code>. The distinction is structurally honest and spatially visible.</p>
+          <p>Rating × review_count → body strength. Whether an item is promoted or organically popular lives in the record you bind (<code>bindData</code>), so the two can be weighted and styled differently — the distinction stays honest and visible.</p>
         </article>
         <article class="uc-card">
           <h3>Cart Magnetism</h3>
@@ -290,7 +291,7 @@ const ctaCode = `<field-root render="dots"></field-root>
       <div class="uc-cards uc-cards-3">
         <article class="uc-card">
           <h3>Scrollytelling</h3>
-          <p>Data stories where scrolling changes which body is dominant. No scroll-jacking, no IntersectionObserver farm. The <code>ScrollAgent</code> feeds input; the field re-orients continuously.</p>
+          <p>Data stories where scrolling changes which body is dominant. No scroll-jacking, no IntersectionObserver farm. The field already reads scroll (the <code>scrolling</code> condition, the scroll-driven accent); bodies are re-measured as they move, so it re-orients continuously.</p>
         </article>
         <article class="uc-card">
           <h3>Interactive Fiction</h3>
@@ -313,7 +314,7 @@ const ctaCode = `<field-root render="dots"></field-root>
       <div class="uc-cards uc-cards-3">
         <article class="uc-card">
           <h3>Kanban Physics</h3>
-          <p>Blocked or overdue cards accumulate urgency mass. The board's field density distribution shows bottlenecks without a filter or sort. The <code>pressure</code> formation biases the whole field.</p>
+          <p>Blocked or overdue cards accumulate urgency mass. The board's field density distribution shows bottlenecks without a filter or sort. <code>setFormation('wells')</code> biases the whole field toward the bodies.</p>
         </article>
         <article class="uc-card">
           <h3>Document Co-presence</h3>
@@ -385,7 +386,7 @@ const ctaCode = `<field-root render="dots"></field-root>
         </article>
         <article class="uc-card">
           <h3>Interrupted Path Recovery</h3>
-          <p>The user left mid-flow. When they return, the uncompleted step is already the dominant body — attention is pulled there before they consciously re-orient. No session storage logic needed.</p>
+          <p>The user left mid-flow. When they return, the uncompleted step is already the dominant body — attention is pulled there before they consciously re-orient. Remembering which step was unfinished is still your app's state — restore it, and the field does the emphasis.</p>
         </article>
         <article class="uc-card">
           <h3>Staleness Gradient</h3>
@@ -420,7 +421,7 @@ const ctaCode = `<field-root render="dots"></field-root>
 
         <article class="uc-card uc-card-ai">
           <h3>Provenance Trail</h3>
-          <p>A generated document where each passage carries the origin of its content. Cited passages have one quality of presence; inferred passages have another. Expressed through <code>data-truth</code> modes and CSS <code>--d</code> — not labels.</p>
+          <p>A generated document where each passage carries the origin of its content. Cited passages have one quality of presence; inferred passages have another. Expressed through the bound record (cited vs. inferred sets the body's strength) and CSS <code>--d</code> — not labels.</p>
         </article>
 
         <article class="uc-card uc-card-ai">

@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { DOCS_NAV, DOCS_FLAT } from "../src/lib/docs-nav";
 
 // The docs SHELL as its own best demo (DocsLayout + DocsRuntime). Pins the invariants:
 // docs pages run as invisible fields (headings become bodies at init, never in markup),
@@ -97,30 +98,34 @@ test.describe("docs shell", () => {
     const titles = await page.$$eval(".docs-group-title", (els) =>
       els.map((e) => e.textContent?.trim()),
     );
-    expect(titles).toEqual([
-      "Start",
+    // Derived from the nav tree the sidebar renders, not hardcoded. A hardcoded list here broke
+    // three separate PRs that legitimately changed the IA; what this test actually guards is that
+    // the sidebar renders EVERY non-empty group, in tree order, with Examples (all-external) last —
+    // and that survives a future regroup. The spine itself is asserted below.
+    expect(titles).toEqual(
+      DOCS_NAV.filter((g) => g.items.some((i) => i.ready)).map((g) => g.title),
+    );
+    // docs-refactor Phase 6 (#1001): the five-section spine leads the tree, in reading order.
+    expect(titles.slice(0, 5)).toEqual([
+      "Learn",
+      "Understand",
       "Build",
-      // the task-shaped depth layer (docs-refactor Phase 5, #1000) sits between "how to use each
-      // surface" and "what every symbol is"
-      "Cookbook",
       "Reference",
-      "Substrate",
-      "Assurance",
-      "Research / Frontier",
-      "Field studies",
-      "Examples",
+      "Platforms",
     ]);
+    expect(titles[titles.length - 1]).toBe("Examples");
     // the Examples group deep-links OUT of the docs shell…
     const exampleHrefs = await page.$$eval(".docs-group:last-child a", (as) =>
       as.map((a) => a.getAttribute("href")!),
     );
     expect(exampleHrefs.length).toBeGreaterThanOrEqual(4);
     expect(exampleHrefs.every((h) => !h.startsWith("/docs"))).toBe(true);
-    // …and is excluded from prev/next (the last in-shell page has no "next" into it)
-    const lastDoc = await page.$$eval(
-      ".docs-group:nth-last-child(2) a",
-      (as) => as[as.length - 1]!.getAttribute("href")!,
-    );
+    // …and is excluded from prev/next: the LAST IN-SHELL page has no "next" into it. Derived from
+    // DOCS_FLAT — the prev/next order itself — rather than from a DOM group position. Phase 6
+    // (#1001) put an all-external group (Research / Frontier) second-to-last, so "the second-to-last
+    // group's last link" is now a GitHub URL rather than a docs page; DOCS_FLAT is what the pager
+    // actually walks, so this asserts the real invariant and cannot rot on the next regroup.
+    const lastDoc = DOCS_FLAT[DOCS_FLAT.length - 1]!.href;
     await page.goto(lastDoc);
     await expect(page.locator(".docs-prevnext .pn.next")).toHaveCount(0);
   });

@@ -78,6 +78,93 @@ html[data-field='on'] .hero-antimass:hover {
   padding: clamp(3.5rem, 9vh, 6.5rem) 0;
   scroll-margin-top: 84px;
 }
+.manual-hero#top {
+  scroll-margin-top: 84px;
+}
+
+.field-guide {
+  position: fixed;
+  z-index: 100;
+  right: 1rem;
+  bottom: 1rem;
+  left: 50%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.35rem 1.25rem;
+  width: min(52rem, calc(100vw - 2rem));
+  padding: 0.9rem 1rem;
+  transform: translateX(-50%);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  background: rgba(7, 10, 16, 0.98);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+}
+.field-guide[hidden] {
+  display: none;
+}
+.field-guide > span {
+  color: var(--state-signal);
+  font: 600 0.65rem / 1.4 var(--mono);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+}
+.field-guide > b {
+  grid-column: 1;
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+.field-guide > div {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.field-guide button {
+  min-height: 2.25rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: #0c111a;
+  color: var(--text-2);
+  font: 600 0.68rem / 1.2 var(--mono);
+  cursor: pointer;
+}
+.field-guide button:hover:not(:disabled) {
+  border-color: var(--state-signal);
+  color: var(--text);
+}
+.field-guide button:focus-visible {
+  outline: 2px solid var(--state-signal);
+  outline-offset: 2px;
+}
+.field-guide button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+.field-guide [data-guide-close] {
+  width: 2.25rem;
+  padding-inline: 0;
+  font-size: 1rem;
+}
+@media (max-width: 560px) {
+  .field-guide {
+    right: 0.65rem;
+    bottom: 5.25rem;
+    left: 0.65rem;
+    grid-template-columns: minmax(0, 1fr);
+    width: auto;
+    transform: none;
+    gap: 0.35rem;
+  }
+  .field-guide > div {
+    grid-column: 1;
+    grid-row: auto;
+    flex-wrap: wrap;
+    margin-top: 0.35rem;
+  }
+}
 
 /* ── The wedge (lp-ai): text left, a live claims field right ─────────────────────── */
 .lp-ai-grid {
@@ -605,6 +692,178 @@ html[data-field='on'] .hero-antimass:hover {
 }
 .lp-calib li a:hover {
   text-decoration: underline;
+}
+
+/* Trust is both a set of implementation facts and a live inspection lesson. Keep
+   the facts, cue, and two readouts in distinct surfaces so the particle layer cannot
+   reduce text contrast or make the section feel like one unstructured text block. */
+.lp-trust .trust-layout {
+  display: grid;
+  gap: clamp(1rem, 2.4vw, 1.8rem);
+  margin-top: 1.7rem;
+}
+.lp-trust .lp-calib {
+  max-width: none;
+  margin: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+.lp-trust .lp-calib li {
+  min-width: 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: rgba(10, 13, 20, 0.94);
+}
+.trust-cue {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  min-width: 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  background:
+    linear-gradient(115deg, rgba(77, 163, 255, 0.075), transparent 54%),
+    rgba(8, 11, 17, 0.97);
+}
+.trust-cue > div {
+  min-width: 0;
+  max-width: 72ch;
+}
+.trust-cue-label {
+  margin: 0;
+  color: var(--state-signal);
+  font: 600 var(--label-size) / 1.4 var(--mono);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+}
+.trust-cue h3 {
+  margin: 0.55rem 0 0;
+  color: var(--text);
+  font-size: clamp(1.25rem, 2.4vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+.trust-cue h3 + p {
+  margin: 0.8rem 0 0;
+  max-width: 72ch;
+  color: var(--text-2);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.trust-morph-toggle,
+.trust-console-link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.1rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: #0b0f17;
+  color: var(--state-signal);
+  font: 600 0.8rem / 1.3 var(--mono);
+  letter-spacing: 0.015em;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+.trust-morph-toggle:hover,
+.trust-console-link:hover {
+  border-color: var(--state-signal);
+  background: #101824;
+  color: var(--text);
+}
+.trust-morph-toggle:focus-visible,
+.trust-console-link:focus-visible {
+  outline: 2px solid var(--state-signal);
+  outline-offset: 3px;
+}
+.trust-morph-toggle[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: rgba(77, 163, 255, 0.12);
+  color: var(--text);
+}
+.trust-reduced-note {
+  margin: 0.75rem 0 0;
+  color: var(--text-3);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+/* HomeRuntime writes viewport coordinates into this invisible SVG path. The full
+   viewport viewBox keeps the sampled morph points aligned with the fixed console. */
+.trust-arrow {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  overflow: visible;
+  visibility: hidden;
+  pointer-events: none;
+}
+.trust-readings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+.trust-readings .lp-inspect {
+  min-width: 0;
+  margin: 0;
+  padding: clamp(1rem, 2.3vw, 1.5rem);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: rgba(7, 10, 15, 0.97);
+}
+.trust-readings figcaption {
+  color: var(--text-3);
+  font: 600 0.67rem / 1.5 var(--mono);
+  letter-spacing: 0.075em;
+}
+.lp-inspect-tag {
+  color: var(--state-signal);
+}
+.trust-readings .lp-inspect > p {
+  margin: 0.75rem 0 0;
+  color: var(--text-2);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.trust-readings .lp-inspect-json {
+  max-width: 100%;
+  margin: 0.85rem 0 0;
+  padding: 0.9rem 1rem;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: #05070b;
+  color: var(--text-2);
+  font: 0.78rem / 1.55 var(--mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .lp-trust .lp-calib {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .trust-readings {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 520px) {
+  .lp-trust .lp-calib {
+    grid-template-columns: 1fr;
+  }
+  .trust-cue {
+    padding: 1.15rem;
+  }
 }
 
 /* §4 AI wedge + the engine gate */
