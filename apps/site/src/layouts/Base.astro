@@ -20,7 +20,7 @@ interface Props {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 const {
-  title = 'Fundamental — a physics engine for interfaces',
+  title = 'Fundamental — a relational field runtime for interfaces',
   description = "Fundamental is a relational field runtime: UI and data become bodies in an inspectable field — importance pulls, relations bind, state decays.",
   ogImage = '/og.jpg',
   ogImageAlt,
@@ -48,6 +48,28 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Accessibility preferences, restored before first paint (no flash of the
+         wrong theme). Reads the saved high-contrast / colorblind-safe choices and
+         applies them as data-attributes on <html>; the tokens in ds-tokens.css do
+         the rest. Also honours the OS "reduced data" signal by starting with the
+         particle field off (the same calm posture as reduced-motion). The footer
+         control writes these prefs; <html> persists across ClientRouter swaps, so
+         this only needs to run on the hard load. -->
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        try {
+          const c = localStorage.getItem('fe:contrast');
+          if (c === 'high' || c === 'standard') root.dataset.contrast = c;
+          if (localStorage.getItem('fe:cvd') === 'on') root.dataset.cvd = 'on';
+        } catch {}
+        try {
+          if (window.matchMedia && matchMedia('(prefers-reduced-data: reduce)').matches) {
+            root.dataset.field = 'off';
+          }
+        } catch {}
+      })();
+    </script>
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="author" content="Zach Shallbetter" />

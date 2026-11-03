@@ -8,7 +8,7 @@ const writings = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/writings' }),
   schema: z.object({
     title: z.string(),
-    description: z.string().optional(),
+    description: z.string(),
     /** publication / sort date. */
     date: z.coerce.date(),
     /** the kind of writing — drives grouping + the badge. */

@@ -14,11 +14,25 @@ const dest = [
   <div class="sf-inner">
     <div class="sf-brand">
       <span class="sf-name">Fundamental</span>
-      <span class="sf-note">A physics engine for interfaces · v{version} · Created by <a href="https://zachshallbetter.com" target="_blank" rel="noopener noreferrer" class="sf-author">Zach Shallbetter</a></span>
+      <span class="sf-note">A relational field runtime for interfaces · v{version} · Created by <a href="https://zachshallbetter.com" target="_blank" rel="noopener noreferrer" class="sf-author">Zach Shallbetter</a></span>
     </div>
     <nav class="sf-links" aria-label="Footer">
       {dest.map((d) => <a href={d.href}>{d.label}</a>)}
     </nav>
+    {/* Display / accessibility preferences — persisted per reader, restored before
+        paint by the boot script in Base.astro. High contrast also follows the OS
+        (prefers-contrast) until overridden here. */}
+    <div class="sf-a11y">
+      <span class="sf-a11y-label" id="sf-a11y-label">Display</span>
+      <div class="sf-a11y-btns" role="group" aria-labelledby="sf-a11y-label">
+        <button type="button" class="sf-a11y-btn" data-a11y="contrast" aria-pressed="false">
+          High contrast
+        </button>
+        <button type="button" class="sf-a11y-btn" data-a11y="cvd" aria-pressed="false">
+          Colorblind-safe
+        </button>
+      </div>
+    </div>
   </div>
 </footer>
 
@@ -71,6 +85,53 @@ const dest = [
   document.addEventListener('astro:before-swap', stopFootField);
   if (document.readyState !== 'loading') startFootField();
   else document.addEventListener('DOMContentLoaded', startFootField);
+</script>
+
+<script>
+  // Display / accessibility preference toggles. Self-contained: they set
+  // data-contrast / data-cvd on <html> and persist to localStorage; Base.astro's
+  // head script restores them before paint. Contrast is tri-state (auto → high →
+  // standard) so a reader can opt IN to high contrast or opt OUT of the OS
+  // prefers-contrast default. CVD is a plain on/off (no OS media query exists).
+  (() => {
+    const root = document.documentElement;
+    const osHighContrast = () =>
+      typeof matchMedia !== 'undefined' && matchMedia('(prefers-contrast: more)').matches;
+    const contrastOn = () => {
+      const forced = root.dataset.contrast;
+      return forced === 'high' || (!forced && osHighContrast());
+    };
+    const cvdOn = () => root.dataset.cvd === 'on';
+
+    function sync() {
+      document.querySelectorAll<HTMLButtonElement>('.sf-a11y-btn').forEach((btn) => {
+        const on = btn.dataset.a11y === 'contrast' ? contrastOn() : cvdOn();
+        btn.setAttribute('aria-pressed', String(on));
+      });
+    }
+    document.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement | null)?.closest<HTMLButtonElement>('.sf-a11y-btn');
+      if (!btn) return;
+      if (btn.dataset.a11y === 'contrast') {
+        const next = contrastOn() ? 'standard' : 'high';
+        root.dataset.contrast = next;
+        try {
+          localStorage.setItem('fe:contrast', next);
+        } catch {}
+      } else {
+        const next = !cvdOn();
+        if (next) root.dataset.cvd = 'on';
+        else delete root.dataset.cvd;
+        try {
+          if (next) localStorage.setItem('fe:cvd', 'on');
+          else localStorage.removeItem('fe:cvd');
+        } catch {}
+      }
+      sync();
+    });
+    document.addEventListener('astro:page-load', sync);
+    sync();
+  })();
 </script>
 
 <style>
@@ -149,5 +210,53 @@ const dest = [
   }
   .sf-links a:hover {
     color: var(--accent, #4da3ff);
+  }
+  /* Display / accessibility preference toggles */
+  .sf-a11y {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .sf-a11y-label {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3, rgba(200, 212, 230, 0.72));
+  }
+  .sf-a11y-btns {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .sf-a11y-btn {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-2, rgba(228, 235, 247, 0.78));
+    background: transparent;
+    border: 1px solid var(--line-2, rgba(255, 255, 255, 0.16));
+    border-radius: var(--r-pill, 999px);
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+  .sf-a11y-btn:hover {
+    color: var(--text, #f3f6fc);
+    border-color: var(--line-3, rgba(255, 255, 255, 0.24));
+  }
+  .sf-a11y-btn[aria-pressed='true'] {
+    color: var(--bg-page, #04050a);
+    background: var(--accent, #4da3ff);
+    border-color: var(--accent, #4da3ff);
+  }
+  .sf-a11y-btn:focus-visible {
+    outline: 2px solid var(--accent, #4da3ff);
+    outline-offset: 2px;
   }
 </style>

@@ -530,6 +530,19 @@ npm i @fundamental-engine/elements  # the web component
 npm i @fundamental-engine/core      # own the canvas / renderer-agnostic core
 ```
 
+### Install with Homebrew
+
+The scaffolder is also available as a Homebrew formula, so you can install the
+`create-fundamental-engine` CLI without npm:
+
+```bash
+brew tap zachshallbetter/tap
+brew install zachshallbetter/tap/fundamental
+```
+
+This installs the same CLI that `npm create @fundamental-engine` runs. The
+formula source lives in [`HomebrewFormula/`](HomebrewFormula/).
+
 The `@fundamental-engine/kit` / `fundamental-engine` umbrella packages were **retired in 0.7.0**. The
 dependency direction is strict and uniform:
 

@@ -18,11 +18,15 @@ interface Props {
   description?: string;
   category?: string;
   date?: Date;
+  updated?: Date;
+  dateModified?: Date;
   author?: string;
   series?: string;
+  ogImage?: string;
   slug: string;
 }
-const { title, description, category, date, author, series, slug } = Astro.props;
+const { title, description, category, date, updated, dateModified, author, series, ogImage, slug } =
+  Astro.props;
 
 const CATS = WRITING_CATS;
 const sortEntries = (a: CollectionEntry<'writings'>, b: CollectionEntry<'writings'>) => {
@@ -57,13 +61,20 @@ const numbered = (e: CollectionEntry<'writings'>) =>
 // document, so the script renders at the top of the layout body.)
 const articleLd = {
   '@context': 'https://schema.org',
-  '@type': 'Article',
+  '@type': 'BlogPosting',
   headline: title,
   ...(description ? { description } : {}),
   ...(date ? { datePublished: date.toISOString() } : {}),
+  ...(date ? { dateModified: (updated ?? dateModified ?? date).toISOString() } : {}),
+  image: new URL(ogImage ?? '/og.jpg', Astro.site).href,
   author: {
     '@type': 'Person',
     name: author || 'Zach Shallbetter',
+    url: 'https://zachshallbetter.com',
+  },
+  publisher: {
+    '@type': 'Person',
+    name: 'Zach Shallbetter',
     url: 'https://zachshallbetter.com',
   },
   mainEntityOfPage: `https://fundamentalengine.com/writings/${slug}`,
