@@ -1,6 +1,15 @@
+import { readFileSync } from "node:fs";
 import type { CDPSession, Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 import { INVISIBLE_FIELDS } from "../src/lib/invisible-fields";
+
+const backlog = JSON.parse(
+  readFileSync(new URL("../src/data/examples/backlog.json", import.meta.url), "utf8"),
+) as { items: { state: string }[] };
+// Lane counts come from the committed snapshot, the same split the page makes (open → In flight,
+// everything else → Shipped), so the weekly snapshot refresh does not break these pins.
+const OPEN = backlog.items.filter((it) => it.state === "open").length;
+const SHIPPED = backlog.items.length - OPEN;
 
 // The emulated-touch QA pass over the twelve invisible-fields pages (issue #299's
 // emulation-coverable portion). Runs ONLY in the `mobile` project — a Pixel-class
@@ -106,8 +115,8 @@ test.describe("mobile · backlog touch triage", () => {
   test("long-press lifts an in-flight card and a touch drag drops it in Shipped; reset restores", async ({
     page,
   }) => {
-    await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText("3");
-    await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText("54");
+    await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText(String(OPEN));
+    await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText(String(SHIPPED));
 
     // the lanes stack on mobile — scroll the seam into view: the source card near the
     // top, the shipped lane's head in the lower half (clear of the ±60px edge band)
@@ -115,7 +124,9 @@ test.describe("mobile · backlog touch triage", () => {
       const shipped = document.querySelector<HTMLElement>('[data-wl-lane="shipped"]')!;
       window.scrollTo(0, Math.max(0, shipped.getBoundingClientRect().top + window.scrollY - 660));
     });
-    const card = page.locator('[data-wl-list="open"] .wl-item').first();
+    // the LAST in-flight card sits right above the seam, so it stays on screen however many cards
+    // the snapshot holds (the first one scrolls off once the lane is longer than the viewport)
+    const card = page.locator('[data-wl-list="open"] .wl-item').last();
     const src = (await card.boundingBox())!;
     const shipped = (await page.locator('[data-wl-lane="shipped"]').boundingBox())!;
     const viewport = page.viewportSize()!;
@@ -142,8 +153,8 @@ test.describe("mobile · backlog touch triage", () => {
     await page.waitForTimeout(200);
     await touch(cdp, "touchEnd", []);
 
-    await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText("2");
-    await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText("55");
+    await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText(String(OPEN - 1));
+    await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText(String(SHIPPED + 1));
     await expect(page.locator("[data-wl-local]").first()).toBeVisible();
 
     // reset board (a tap — the click path) → the server arrangement returns
@@ -151,8 +162,8 @@ test.describe("mobile · backlog touch triage", () => {
     await reset.scrollIntoViewIfNeeded();
     await expect(reset).toBeEnabled();
     await reset.tap();
-    await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText("3");
-    await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText("54");
+    await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText(String(OPEN));
+    await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText(String(SHIPPED));
   });
 });
 

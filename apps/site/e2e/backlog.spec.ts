@@ -1,4 +1,13 @@
+import { readFileSync } from "node:fs";
 import { test, expect } from "./fixtures";
+
+const backlog = JSON.parse(
+  readFileSync(new URL("../src/data/examples/backlog.json", import.meta.url), "utf8"),
+) as { items: { state: string }[] };
+// Lane counts come from the committed snapshot, the same split the page makes (open → In flight,
+// everything else → Shipped), so the weekly snapshot refresh does not break these pins.
+const OPEN = backlog.items.filter((it) => it.state === "open").length;
+const SHIPPED = backlog.items.length - OPEN;
 
 // /evidence/backlog — the two-lane board over the repo's own work stream, with the
 // hand-rolled pointer drag as a LOCAL triage sandbox (localStorage only).
@@ -9,11 +18,11 @@ test.describe("/evidence/backlog", () => {
     await page.goto("/evidence/backlog");
   });
 
-  test("the lanes count 3 in flight and 54 shipped", async ({ page }) => {
-    await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText("3");
-    await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText("54");
-    await expect(page.locator('[data-wl-list="open"] .wl-item')).toHaveCount(3);
-    await expect(page.locator('[data-wl-list="shipped"] .wl-item')).toHaveCount(54);
+  test("the lanes count the snapshot's in-flight and shipped items", async ({ page }) => {
+    await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText(String(OPEN));
+    await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText(String(SHIPPED));
+    await expect(page.locator('[data-wl-list="open"] .wl-item')).toHaveCount(OPEN);
+    await expect(page.locator('[data-wl-list="shipped"] .wl-item')).toHaveCount(SHIPPED);
   });
 
   test("dragging an in-flight card into Shipped re-counts the lanes locally, and reset restores the snapshot", async ({
@@ -72,10 +81,10 @@ test.describe("/evidence/backlog", () => {
     await dragOnce();
     // one gesture retry for event-delivery flake — the assertions below stay strict
     const openCount = page.locator('[data-wl-lane="open"] [data-wl-count]');
-    if ((await openCount.textContent())?.trim() !== "2") await dragOnce();
+    if ((await openCount.textContent())?.trim() !== String(OPEN - 1)) await dragOnce();
 
-    await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText("2");
-    await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText("55");
+    await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText(String(OPEN - 1));
+    await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText(String(SHIPPED + 1));
     // honesty: the divergence from the snapshot is marked "(local)"
     await expect(page.locator("[data-wl-local]").first()).toBeVisible();
     await expect(page.locator("[data-wl-cycle-note]")).toContainText("locally triaged");
@@ -84,8 +93,8 @@ test.describe("/evidence/backlog", () => {
     const reset = page.locator("[data-wl-reset]");
     await expect(reset).toBeEnabled();
     await reset.click();
-    await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText("3");
-    await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText("54");
+    await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText(String(OPEN));
+    await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText(String(SHIPPED));
     await expect(page.locator("[data-wl-local]").first()).toBeHidden();
   });
 });
