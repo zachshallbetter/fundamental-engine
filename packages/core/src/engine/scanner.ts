@@ -495,8 +495,6 @@ export function refreshBodyAttrs(bodies: readonly Body[]): boolean {
     }
     b.on = b.el.dataset.active === '1';
     refreshBodyParams(b); // reactive force params (live, no rescan)
-    const targetRef = morphTargetRef(b);
-    b.targets = targetRef && resolveTarget ? resolveTarget(b.el, targetRef, originX, originY) : undefined;
   }
   return detached;
 }
