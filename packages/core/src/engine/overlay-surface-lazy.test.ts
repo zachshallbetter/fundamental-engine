@@ -53,48 +53,11 @@ function recordingBackend(sizes: Array<[number, number, number]>): RenderBackend
 }
 
 // ── C-24: no canvas for a surface that can never be painted ─────────────────────────────────────
-
-test('C-24: a signals-only field never asks the provider for a canvas it could not draw to', () => {
-  // The frame gate is `ctx && cfg.render !== 'none' && …`. A `render: 'none'` field has no context,
-  // so a reading turned on there can never be painted — and on `<field-root>` the provider builds a
-  // full-viewport `mix-blend-mode` layer, which would join the compositing tree to show nothing.
-  let built = 0;
-  const field = createField(fakeCanvas(), {
-    host: fakeHost(),
-    render: 'none',
-    overlay: 'streamlines', // a reading IS requested, at boot
-    overlayCanvasProvider: () => { built++; return fakeCanvas(); },
-  });
-  try {
-    assert.equal(built, 0, 'no canvas is built for a field that cannot draw');
-    field.setOverlay(['grid', 'force-vectors']); // and still not on a later request
-    assert.equal(built, 0, 'still none — the field is still signals-only');
-  } finally {
-    field.destroy();
-  }
-});
-
-test('C-24: leaving render "none" brings the surface up — the deferral is not a loss', () => {
-  // This is what makes the fix a deferral rather than a behaviour removal: `setRender` acquires the
-  // context and calls straight back into the surface path, so the reading the caller asked for at
-  // boot appears the moment the field can actually draw it.
-  let built = 0;
-  const field = createField(fakeCanvas(), {
-    host: fakeHost(),
-    render: 'none',
-    overlay: 'streamlines',
-    overlayCanvasProvider: () => { built++; return fakeCanvas(); },
-  });
-  try {
-    assert.equal(built, 0);
-    field.setRender('dots');
-    assert.equal(built, 1, 'the surface is built exactly once, on the frame the field gains a context');
-    field.setOverlay('grid');
-    assert.equal(built, 1, 'and reused after that — still idempotent (#676)');
-  } finally {
-    field.destroy();
-  }
-});
+//
+// Closed by the Q-3 decision (§13.7 amended) rather than by a guard: the overlay and underlay gate
+// separately, so a signals-only field that declares a reading now PAINTS the canvas it is given, and
+// a field that declares no reading never asks for one. Both halves are pinned in
+// `overlay-surface-gate.test.ts`; the boundary below still holds.
 
 test('C-24 boundary: a DRAWING field with no context throws — the no-ctx path is only `render: "none"`', () => {
   // Worth pinning because it bounds the fix. `createField` refuses a drawing mode it cannot honour
