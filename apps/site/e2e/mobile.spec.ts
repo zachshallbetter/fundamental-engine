@@ -124,7 +124,9 @@ test.describe("mobile · backlog touch triage", () => {
       const shipped = document.querySelector<HTMLElement>('[data-wl-lane="shipped"]')!;
       window.scrollTo(0, Math.max(0, shipped.getBoundingClientRect().top + window.scrollY - 660));
     });
-    const card = page.locator('[data-wl-list="open"] .wl-item').first();
+    // the LAST in-flight card sits right above the seam, so it stays on screen however many cards
+    // the snapshot holds (the first one scrolls off once the lane is longer than the viewport)
+    const card = page.locator('[data-wl-list="open"] .wl-item').last();
     const src = (await card.boundingBox())!;
     const shipped = (await page.locator('[data-wl-lane="shipped"]').boundingBox())!;
     const viewport = page.viewportSize()!;
