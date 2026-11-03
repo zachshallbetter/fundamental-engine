@@ -276,6 +276,10 @@ const AGENT_WITHHELD = new Set<string>([
   // pulse() is a WRITE even though it moves no matter (#567): it drives a channel the page's own
   // CSS reacts to, so an agent holding it could flash a body's UI. Read-only view ⇒ withheld.
   'pulse',
+  // navigate/clearNavigation place impassable geometry and a goal that every navigating agent
+  // follows (#439) — an agent holding them could wall the field's other agents in, or walk them
+  // somewhere. Read-only view ⇒ withheld.
+  'navigate', 'clearNavigation',
   // point / particle / grid readers (raw substrate, not the scoped agent reading)
   'readEdges', 'atomAt', 'focusAt', 'clearFocus', 'sampleField', 'particleCount', 'readParticles',
   'readParticleIds', 'readParticleChannels', 'energy', 'sample', 'sampleScalar', 'sampleGradient',

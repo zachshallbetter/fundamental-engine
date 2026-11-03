@@ -30,6 +30,9 @@ export * from './engine/flow.ts';
 // Pointer dynamics + throw (the cursor as a transient body, its wake, and the release velocity a
 // flung [data-move] element carries). Pure math, so a host can reuse it for its own input handling.
 export * from './engine/pointer.ts';
+// NavGrid (#439): obstacle-aware navigation and goal flow-fields — a subsystem beside the physics
+// field, not another force. Exported so a game/sim host can build and read one directly.
+export * from './engine/nav-grid.ts';
 export * from './engine/fieldlines.ts';
 export * from './engine/fieldline-seeds.ts';
 export * from './engine/reactions.ts';

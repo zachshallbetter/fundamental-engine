@@ -90,6 +90,7 @@ import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from '.
 import { licSeeds, licStep, licAlpha, LIC_STEPS, LIC_STEP_PX, type LicSeed } from './lic.ts';
 import { tabSequence, tabSuccessor, tabCurrentInto } from './tab-order.ts';
 import { makePointer, trackPointer, agePointer, pointerWakeInto, flingVelocity, type PointerOptions, type PointerState } from './pointer.ts';
+import { navGrid, navFlowField, type NavObstacle } from './nav-grid.ts';
 import type { BodyObserver, FieldHost } from './host.ts';
 import { admits as admitsShare } from './agent-read-share.ts';
 import { devWarnNoOp } from '../contracts/guards.ts';
@@ -110,6 +111,10 @@ import { clonePolicy, applyRedactions, resolveSnapshotInclusion } from './snapsh
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), ' +
   'textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Default steering gain for a navigating agent (#439) — px/frame² toward the goal. Chosen to read
+ *  as purposeful without overwhelming the forces the agent is also feeling. */
+const NAV_AGENT_GAIN = 0.6;
 
 const _flowB = { x: 0, y: 0 };
 /** shared scratch for the pointer wake — the per-particle path allocates nothing (#666). */
@@ -3786,6 +3791,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       mv.o.vx = v.x;
       mv.o.vy = v.y;
     },
+    navigate: (opts: { goal: { x: number; y: number }; obstacles?: readonly NavObstacle[]; cell?: number }) => {
+      // Rebuild rather than patch: the sweep is the cheap part (one BFS over a few thousand cells)
+      // and a grid that is partly stale routes agents into geometry that has moved, which is worse
+      // than any cost this saves.
+      env.nav = navFlowField(navGrid(W, H, opts.obstacles ?? [], opts.cell), opts.goal.x, opts.goal.y);
+    },
+    clearNavigation: () => {
+      env.nav = null;
+    },
     seed: (atoms) => {
       seeded = atoms;
       build(); // respawn fresh, then re-bind + re-scale (no compounding)
@@ -3890,6 +3904,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (spec.mass !== undefined) p.m = spec.mass;
       p.maxSpeed = spec.maxSpeed;
       p.report = spec.report;
+      // navigation opt-in (#439): `true` takes the default gain, a number tunes it. Left undefined
+      // when absent, so the integrator skips the whole path for a force-only agent.
+      if (spec.navigate) p.navGain = spec.navigate === true ? NAV_AGENT_GAIN : spec.navigate;
       store.add(p);
       return { particle: p, remove: () => store.remove(p) };
     },
