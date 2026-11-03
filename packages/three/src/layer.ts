@@ -18,7 +18,7 @@
  */
 
 import { createField, resolvePalette } from '@fundamental-engine/core';
-import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, EdgeHandle, EdgeView, FieldChannelHandle, FieldQuery, FieldQueryResult, FieldSnapshot, FieldSnapshotOptions, FieldDiff, CausalReplay, ReplayOptions, ProjectionRegistry } from '@fundamental-engine/core';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, PointerOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, EdgeHandle, EdgeView, FieldChannelHandle, FieldQuery, FieldQueryResult, FieldSnapshot, FieldSnapshotOptions, FieldDiff, CausalReplay, ReplayOptions, ProjectionRegistry } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
@@ -265,6 +265,21 @@ export class FieldLayer implements FieldHandle {
   }
   clearFlow(): void {
     this.field.clearFlow();
+  }
+
+  /** Place/move the pointer — the cursor as a transient body plus its wake (#666). A WebGL host
+   *  projects a screen position through here exactly as a DOM host does. */
+  pointer(x: number, y: number, opts?: PointerOptions): void {
+    this.field.pointer(x, y, opts);
+  }
+  /** Remove the pointer body and its wake (#666). */
+  clearPointer(): void {
+    this.field.clearPointer();
+  }
+  /** Throw a `[data-move]` element (#666). A WebGL layer scans no DOM, so there are no movers here
+   *  and this is a no-op — delegated rather than omitted so the handle stays one surface. */
+  fling(el: HTMLElement, vx: number, vy: number): void {
+    this.field.fling(el, vx, vy);
   }
   seed(atoms: readonly AtomPayload[]): void {
     this.field.seed(atoms);
