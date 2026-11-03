@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#080a0f" />
+    <meta name="description" content="An interactive introduction to Fundamental: declare what matters, let a field respond, and read what it measures." />
+    <title>Fundamental — the field, in use</title>
+  </head>
+  <body>
+    <canvas class="particle-inspector" aria-hidden="true"></canvas>
+    <div id="app">
+      <header class="topbar">
+        <a class="wordmark" href="#top" aria-label="Fundamental home"><span class="mark">◉</span> FUNDAMENTAL</a>
+        <nav aria-label="Page sections">
+          <a href="#start">Start</a><a href="#interact">Interact</a><a href="#data">Data</a><a href="#paths">Use cases</a>
+        </nav>
+        <a class="top-cta" href="#start">Explore the field <span>↘</span></a>
+      </header>
+
+      <main id="top">
+        <section class="hero section-wrap" aria-labelledby="hero-title">
+          <div class="hero-copy">
+            <p class="eyebrow"><span class="live-dot"></span> A FIELD YOU CAN EXPLORE</p>
+            <h1 id="hero-title">See what happens<br />when interfaces<br /><em>have relationships.</em></h1>
+            <p class="hero-deck">Change one thing. Watch the page respond. Fundamental measures how declared interface elements influence one another and returns signals your application can use.</p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#start">Try the field <span>↓</span></a>
+              <a class="button button-quiet" href="#data">Read the field <span>↘</span></a>
+            </div>
+            <button class="button field-focus-button" id="hero-focus-button" type="button" aria-pressed="false">Focus the field here <span>◎</span></button>
+            <p class="interaction-feedback" id="hero-focus-feedback" aria-live="polite">Move the field’s focus to see particles gather and flow.</p>
+            <div class="hero-note"><span class="note-line"></span><p>The DOM keeps meaning. The field adds a live relationship between its parts.</p></div>
+          </div>
+          <div class="hero-art" aria-label="Live particle field responding to the elements on this page">
+              <div class="orbital-label label-a">FIELD BODIES <b id="declared-count">—</b></div>
+            <div class="orbital-label label-b">LIVE FIELD <b class="pulse-value">ON</b></div>
+            <div class="hero-object hero-object-large" data-body="swirl" data-strength="1.25" data-spin="1.25" data-range="380" data-color="#ffb83f" data-shaped data-feedback>
+              <span class="object-index">A / URGENT</span><strong>Production outage</strong><span class="object-foot">AUTH TOKENS EXPIRING EARLY</span>
+            </div>
+            <div class="hero-object hero-object-small" data-body="swirl" data-strength="0.85" data-spin="1.35" data-range="300" data-color="#318cff" data-shaped data-feedback>
+              <span class="tiny-glyph">B</span><span>Migration deadlocks<br /><small>under load?</small></span>
+            </div>
+            <div class="art-caption">PARTICLES RENDER FIELD ACTIVITY<br /><span>THE DOM REMAINS THE SOURCE OF MEANING</span></div>
+          </div>
+          <div class="hero-proof"><span>01</span> Declare meaning <i>→</i><span>02</span> Measure influence <i>→</i><span>03</span> Read the response</div>
+        </section>
+
+        <section id="start" class="section-wrap section-block intro-block">
+          <div class="section-kicker"><span>01</span><span>START WITH A FAMILIAR THING</span></div>
+          <div class="section-heading-row"><h2>A list that responds<br />without reordering.</h2><p class="section-intro">Change one question’s urgency and watch the field respond around the actual rows. Their order, votes, and meaning stay with the inbox; the engine returns a separate reading of local field activity.</p></div>
+          <div class="inbox-demo demo-surface">
+            <div class="demo-topline"><span>TEAM INBOX <span class="dim">/ UNANSWERED QUESTIONS</span></span><span class="legend-live"><i></i> LIVE FIELD</span></div>
+            <div class="inbox-head"><span aria-hidden="true"></span><span>QUESTION</span><span>AGE</span><span>VOTES</span><span>NEARBY PARTICLES</span></div>
+            <div class="inbox-rows">
+            <article id="inbox-outage" class="inbox-row" data-body="attract" data-strength="1.3" data-range="360" data-shaped data-feedback tabindex="0" aria-label="Production outage, urgency 1.3">
+              <span class="status-dot"></span><span class="question"><b>Production outage — auth tokens expiring early</b><small>Payments · API</small></span><span>2h</span><span>48</span><span class="field-response"><output class="particle-sample">—</output></span>
+            </article>
+            <article id="inbox-migration" class="inbox-row" data-body="attract" data-strength="0.85" data-range="340" data-shaped data-feedback tabindex="0" aria-label="Migration deadlock, urgency 0.85">
+              <span class="status-dot"></span><span class="question"><b>Why does my migration deadlock under load?</b><small>Database · Operations</small></span><span>9h</span><span>21</span><span class="field-response"><output class="particle-sample">—</output></span>
+            </article>
+            <article id="inbox-resize" class="inbox-row" data-body="attract" data-strength="0.46" data-range="320" data-shaped data-feedback tabindex="0" aria-label="Resize observer question, urgency 0.46">
+              <span class="status-dot"></span><span class="question"><b>Best way to debounce a resize observer?</b><small>Frontend · Browser</small></span><span>1d</span><span>7</span><span class="field-response"><output class="particle-sample">—</output></span>
+            </article>
+            <article id="inbox-boolean" class="inbox-row" data-body="attract" data-strength="0.2" data-range="300" data-shaped data-feedback tabindex="0" aria-label="Boolean props question, urgency 0.2">
+              <span class="status-dot"></span><span class="question"><b>Preferred naming for boolean props?</b><small>Components · Design systems</small></span><span>4d</span><span>2</span><span class="field-response"><output class="particle-sample">—</output></span>
+            </article>
+            </div>
+            <div class="inbox-explainer"><b>What changes—and what stays yours</b><p>Urgency is host-authored input. It changes a row’s influence on the shared field, so existing particles respond around the row’s full bounds. Each reading is the engine’s weighted count of particles near that row, queried from live field state; it does not rank questions or decide which matters.</p><span id="inbox-feedback" aria-live="polite">Select a row, then change its urgency. Compare the live particle samples; connect nearby questions to let their responses interact.</span></div>
+            <div class="inbox-controls"><label class="urgency-control" for="strength-range"><span>Selected row · urgency <output id="inbox-strength-value">1.30</output></span><input id="strength-range" type="range" min="0.1" max="1.8" step="0.05" value="1.3" /><small>LOWER INFLUENCE <i>HIGHER INFLUENCE</i></small></label><label class="connect-control"><input id="connect-toggle" type="checkbox" /><span><b>Connect nearby questions</b><small>Let field activity spill between bodies</small></span></label><button class="reset-button" id="reset-field" type="button">↻ &nbsp; Reset field</button></div>
+          </div>
+          <p class="section-caption">This illustrative inbox keeps its age, votes, and order as host data. The engine supplies particle motion and a weighted nearby-particle count for each row.</p>
+        </section>
+
+        <section id="interact" class="section-wrap section-block interact-block">
+          <div class="section-kicker"><span>02</span><span>CHANGE ONE THING</span></div>
+          <div class="section-heading-row"><h2>Give one element<br />more influence.</h2><p class="section-intro">The slider edits an actual <code>data-strength</code> attribute on the chosen DOM body. The field rereads it and the same particle pool responds.</p></div>
+          <div class="interaction-layout">
+            <div class="controls-panel panel-surface">
+              <div class="panel-overline">LIVE CONTROL <span>DOM → FIELD</span></div>
+              <label for="body-select">Choose a body</label>
+              <select id="body-select" aria-label="Choose an interface body">
+                <option value="hero">Meaning stays in the page</option>
+                <option value="inbox-0" selected>Production outage</option>
+                <option value="inbox-1">Migration deadlock</option>
+                <option value="inbox-2">Resize observer</option>
+                <option value="inbox-3">Boolean props</option>
+              </select>
+              <label class="range-label" for="detail-strength-range"><span>Authored strength</span><output id="detail-strength-value">1.30</output></label>
+              <input id="detail-strength-range" type="range" min="0.1" max="1.8" step="0.05" value="1.3" />
+              <div class="range-scale"><span>QUIET</span><span>MORE INFLUENCE</span></div>
+              <div class="attribute-readout"><span class="readout-dot"></span><code>&lt;article data-body="swirl"</code><code>data-strength="<b id="attribute-value">1.30</b>" data-shaped&gt;</code><span class="readout-end">AUTHORED BY THE HOST</span></div>
+              <p class="control-help">Move the slider. Watch nearby particles bend around the body’s measured bounds.</p>
+            </div>
+            <div class="response-panel panel-surface">
+              <div class="panel-overline">THE PAGE RESPONDS <span class="engine-pill"><i></i> REAL ENGINE</span></div>
+              <div class="response-rows">
+                <article class="response-row response-active" data-response="inbox-0" tabindex="0" role="button" aria-label="Select Production outage"><span class="response-order">01</span><div><strong>Production outage</strong><small>HOST INPUT · STRENGTH</small></div><span class="response-strength">1.30</span><div class="spark-track"><i></i></div></article>
+                <article class="response-row" data-response="inbox-1" tabindex="0" role="button" aria-label="Select Migration deadlock"><span class="response-order">02</span><div><strong>Migration deadlock</strong><small>HOST INPUT · STRENGTH</small></div><span class="response-strength">0.85</span><div class="spark-track"><i></i></div></article>
+                <article class="response-row" data-response="inbox-2" tabindex="0" role="button" aria-label="Select Resize observer"><span class="response-order">03</span><div><strong>Resize observer</strong><small>HOST INPUT · STRENGTH</small></div><span class="response-strength">0.46</span><div class="spark-track"><i></i></div></article>
+                <article class="response-row" data-response="inbox-3" tabindex="0" role="button" aria-label="Select Boolean props"><span class="response-order">04</span><div><strong>Boolean props</strong><small>HOST INPUT · STRENGTH</small></div><span class="response-strength">0.20</span><div class="spark-track"><i></i></div></article>
+              </div>
+              <div class="response-foot"><span>One shared field</span><span>·</span><span id="live-bodies">0 measured bodies</span><span>·</span><span id="live-particles">0 particles</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="data" class="section-wrap section-block data-block">
+          <div class="section-kicker"><span>03</span><span>NOW READ WHAT IT MEASURED</span></div>
+          <div class="section-heading-row"><h2>A field you can<br />inspect as data.</h2><p class="section-intro">The canvas is one reading. The query is another. Click in the field to follow a live particle by its stable ID; nothing is added to the simulation.</p></div>
+          <div class="data-layout">
+            <div class="particle-panel panel-surface">
+              <div class="panel-overline">LIVE PARTICLE POOL <span id="particle-count-label">READING…</span></div>
+              <div class="particle-stage" id="particle-stage" data-body="swirl" data-strength="0.9" data-spin="1.15" data-range="260" data-shaped data-feedback tabindex="0" role="group" aria-label="Live particle field. Click in the field or press Enter to follow the nearest particle.">
+                <div class="stage-grid"></div><canvas class="stage-particle-view" aria-hidden="true"></canvas><div class="stage-scanline"></div>
+                <div class="stage-label stage-label-top">PARTICLE POSITION / VIEWPORT SPACE</div>
+                <div class="stage-label stage-label-bottom"><span>0, 0</span><span>FIELD BUFFER</span></div>
+                <div class="stage-instruction" id="stage-instruction">Click in the field to follow the nearest particle</div>
+                <div class="particle-ring" aria-hidden="true"></div>
+              </div>
+              <div class="selected-readout"><span class="selected-indicator"><i></i> FOLLOWING</span><code id="selected-particle">No particle selected</code><span id="selected-position">—</span></div>
+            </div>
+            <div class="query-panel panel-surface">
+              <div class="panel-overline">LIVE FIELD QUERY <span id="query-mode-label">JSON READING</span></div>
+              <p>What does the field currently contain?</p>
+              <pre><code id="query-output">{
+  "status": "connecting",
+  "bodies": 0,
+  "particles": 0
+}</code></pre>
+              <div class="query-explainer"><span class="query-bracket">{ }</span><p><b>field.query()</b> reports engine state: body count, forces, and simulation metrics. It does not decide what the application data means.</p></div>
+              <div class="reading-actions"><button class="text-button" id="copy-query" type="button">Copy query JSON <span>↗</span></button><button class="text-button" id="snapshot-toggle" type="button" aria-pressed="false">Capture a snapshot <span>＋</span></button></div>
+              <div class="render-controls" role="group" aria-label="Choose field rendering"><span>FIELD VIEW</span><button type="button" data-render="trails" aria-pressed="true">Trails</button><button type="button" data-render="dots" aria-pressed="false">Particles</button><button type="button" data-render="none" aria-pressed="false">Signals only</button></div>
+              <p class="reading-feedback" id="data-feedback" aria-live="polite">The field is drawing particles with short fading trails.</p>
+            </div>
+          </div>
+          <p class="section-caption">The selection ring follows the chosen particle ID as the engine updates its position. Particle data comes from the engine’s read buffer; the ring is a page overlay.</p>
+        </section>
+
+        <section id="evidence" class="section-wrap section-block evidence-block">
+          <div class="section-kicker"><span>04</span><span>APPLY THE SAME IDEA TO INFORMATION</span></div>
+          <div class="section-heading-row"><h2>Claims have<br />relationships, too.</h2><p class="section-intro">For evidence and AI workflows, a host can model claims and sources as bodies, then declare links. Confidence and provenance remain host data; the field can help make their relationships visible.</p></div>
+          <div class="evidence-layout">
+            <div class="evidence-graph panel-surface" aria-label="Example evidence graph">
+              <div class="graph-lines" aria-hidden="true"><svg viewBox="0 0 720 330" preserveAspectRatio="none"><path data-edge="claim-source-a" d="M174 157 C245 157 250 79 326 79"/><path data-edge="claim-source-b" d="M174 157 C245 157 250 232 326 232"/><path data-edge="source-a-result" d="M410 79 C470 79 493 137 553 137"/><path data-edge="source-b-result" d="M410 232 C470 232 493 137 553 137"/></svg></div>
+              <button class="evidence-node claim-node" type="button" data-evidence="claim" data-body="swirl" data-strength="1.1" data-spin="1.2" data-range="240" data-shaped data-feedback><small>CLAIM · HOST DATA</small><strong>“The release reduced retries.”</strong><span>Confidence 0.82 <i>host-supplied</i></span></button>
+              <button class="evidence-node source-node source-one" type="button" data-evidence="source-a" data-body="swirl" data-strength="0.78" data-spin="1.2" data-range="200" data-shaped data-feedback><small>SOURCE A</small><strong>Release metrics</strong><span>Supports claim</span></button>
+              <button class="evidence-node source-node source-two" type="button" data-evidence="source-b" data-body="swirl" data-strength="0.56" data-spin="1.18" data-range="200" data-shaped data-feedback><small>SOURCE B</small><strong>Support ticket</strong><span>Partial support</span></button>
+              <button class="evidence-node result-node" type="button" data-evidence="links" data-body="swirl" data-strength="0.62" data-spin="1.16" data-range="220" data-shaped data-feedback><small>HOST DECLARED LINKS</small><strong>App supplied relationships</strong><span>Not inferred or verified by the engine</span></button>
+              <div class="graph-legend"><span><i class="legend-claim"></i> CLAIM</span><span><i class="legend-source"></i> SOURCE</span><span><i class="legend-edge"></i> DECLARED LINK</span></div>
+            </div>
+            <div class="evidence-copy">
+              <div class="micro-label">A USE CASE, NOT A MAGIC ANSWER</div>
+              <h3>Make the structure<br />easy to question.</h3>
+              <p>A field does not verify a source or invent confidence. The application supplies those facts and declares which records relate. This diagram is host-authored; an application can expose those declared links alongside field readings for a person or agent to inspect.</p>
+              <div class="data-flow"><span>CLAIM + SOURCES</span><i>→</i><span>DECLARED EDGES</span><i>→</i><span>QUERYABLE STATE</span></div>
+              <p class="evidence-feedback" id="evidence-feedback" aria-live="polite">Click a claim, source, or declared link to inspect what the host supplied.</p>
+              <a class="inline-link" href="#paths">Explore where the model fits <span>↘</span></a>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-wrap section-block loop-block">
+          <div class="section-kicker"><span>05</span><span>ONE LOOP. FIVE VERBS.</span></div>
+          <div class="section-heading-row"><h2>Keep meaning<br />with the host.</h2><p class="section-intro">Fundamental computes relationships and signals. Your application still owns its records, rules, rendering, and decisions.</p></div>
+          <div class="verb-list">
+            <article class="verb-row" data-body="swirl" data-strength="0.7" data-spin="1.14" data-range="240" data-shaped data-feedback><span class="verb-number">01</span><h3>Declare</h3><p>Choose which DOM elements or records participate.</p><code>data-body</code></article>
+            <article class="verb-row" data-body="swirl" data-strength="0.85" data-spin="1.15" data-range="240" data-shaped data-feedback><span class="verb-number">02</span><h3>Influence</h3><p>Let declared forces act through the field.</p><code>force tokens</code></article>
+            <article class="verb-row" data-body="swirl" data-strength="0.75" data-spin="1.16" data-range="240" data-shaped data-feedback><span class="verb-number">03</span><h3>Read</h3><p>Query a structured state or capture a snapshot.</p><code>query() · snapshot()</code></article>
+            <article class="verb-row" data-body="swirl" data-strength="0.66" data-spin="1.17" data-range="240" data-shaped data-feedback><span class="verb-number">04</span><h3>Reveal</h3><p>Project signals into CSS, DOM, JSON, or your renderer.</p><code>--field-* · JSON</code></article>
+            <article class="verb-row" data-body="swirl" data-strength="0.6" data-spin="1.18" data-range="240" data-shaped data-feedback><span class="verb-number">05</span><h3>Govern</h3><p>Keep policy, access, and final decisions with the host.</p><code>policy · budgets</code></article>
+          </div>
+          <p class="verb-feedback" id="verb-feedback" aria-live="polite">Select a verb to see where the host’s job ends and the field’s job begins.</p>
+          <div class="boundary-note"><span class="boundary-icon">↔</span><p><b>Engine:</b> measurements and field state.<br /><b>Host:</b> data meaning, confidence, permissions, and user outcomes.</p></div>
+        </section>
+
+        <section id="paths" class="section-wrap section-block paths-block">
+          <div class="section-kicker"><span>06</span><span>FOLLOW YOUR CURIOSITY</span></div>
+          <div class="section-heading-row"><h2>One field.<br />Different work.</h2><p class="section-intro">Start with the question you have. The examples are ways to use a shared model, not separate engines or extra required packages.</p></div>
+          <div class="path-grid">
+            <a class="path-card path-web" href="#interact" data-body="swirl" data-strength="0.76" data-spin="1.16" data-range="245" data-shaped data-feedback><span class="path-index">A / INTERFACE</span><div class="path-visual visual-web"><span class="wire wire-one"></span><span class="wire wire-two"></span><span class="wire wire-three"></span><i>UI</i></div><h3>Web interfaces</h3><p>Give page elements live relationships and use their field signals in the UI.</p><span class="path-action">SEE THE DOM PATH <b>↗</b></span></a>
+            <a class="path-card path-3d" href="#trust" data-body="swirl" data-strength="0.72" data-spin="1.16" data-range="245" data-shaped data-feedback><span class="path-index">B / RENDERER</span><div class="path-visual visual-3d"><span class="cube cube-a"></span><span class="cube cube-b"></span><span class="cube cube-c"></span></div><h3>3D & custom views</h3><p>Connect the same field to a renderer or scene graph that your project already uses.</p><span class="path-action">SEE THE RENDERER PATH <b>↗</b></span></a>
+            <a class="path-card path-data" href="#data" data-body="swirl" data-strength="0.78" data-spin="1.16" data-range="245" data-shaped data-feedback><span class="path-index">C / RECORDS</span><div class="path-visual visual-data"><span>item</span><span>edge</span><span>state</span></div><h3>Data & evidence</h3><p>Model records and declared links, then inspect field state without surrendering your schema.</p><span class="path-action">SEE THE DATA PATH <b>↗</b></span></a>
+            <a class="path-card path-ai" href="#evidence" data-body="swirl" data-strength="0.68" data-spin="1.15" data-range="245" data-shaped data-feedback><span class="path-index">D / AGENTS</span><div class="path-visual visual-ai"><span>claim</span><b>↔</b><span>source</span></div><h3>AI & agents</h3><p>Make inputs, relationships, and limits readable before a model or agent acts.</p><span class="path-action">SEE THE AGENT PATH <b>↗</b></span></a>
+          </div>
+          <div class="host-strip"><span class="host-strip-label">THE FIELD TRAVELS WITH YOUR HOST</span><span>WEB</span><i>·</i><span>THREE.JS</span><i>·</i><span>SWIFT</span><i>·</i><span>KOTLIN</span><i>·</i><span>RUST</span><i>·</i><span>HEADLESS</span></div>
+          <p class="path-feedback" id="path-feedback" aria-live="polite">Choose a path to see what the same field contributes in that setting.</p>
+          <p class="section-caption">Integration support and feature parity vary by host. Existing renderer, framework, and native SDK dependencies are supplied by the project that uses them.</p>
+        </section>
+
+        <section id="trust" class="section-wrap section-block trust-block">
+          <div class="section-kicker"><span>07</span><span>TRUST WHAT YOU CAN INSPECT</span></div>
+          <div class="trust-layout">
+            <div><h2>Readable by<br />design.</h2><p class="section-intro">The core engine has no third-party runtime dependencies; diagnostics and query state tell different parts of the story.</p><a class="button button-primary" href="#data">Inspect field data <span>↗</span></a></div>
+            <div class="trust-facts">
+              <button class="trust-fact" type="button" data-trust="data"><span>01</span><span><b>Data stays yours</b><p>Your host supplies the records, semantics, and rules.</p></span></button>
+              <button class="trust-fact" type="button" data-trust="signals"><span>02</span><span><b>Signals stay inspectable</b><p>Field feedback can be read from DOM styles or structured queries.</p></span></button>
+              <button class="trust-fact" type="button" data-trust="renderers"><span>03</span><span><b>Renderers stay optional</b><p>Use the visual layer, read signals only, or connect your own renderer.</p></span></button>
+              <button class="trust-fact" type="button" data-trust="policy"><span>04</span><span><b>Policies stay explicit</b><p>The host decides which operations and agent readings are allowed.</p></span></button>
+              <p class="trust-feedback" id="trust-feedback" aria-live="polite">Select a principle to see what you can inspect or control.</p>
+            </div>
+          </div>
+        </section>
+
+        <footer class="footer section-wrap"><a class="wordmark" href="#top"><span class="mark">◉</span> FUNDAMENTAL</a><span>A field for interfaces, and a way to inspect what it does.</span><a href="#top">BACK TO TOP ↑</a></footer>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

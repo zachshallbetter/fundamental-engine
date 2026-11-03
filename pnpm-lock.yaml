@@ -21,6 +21,16 @@ importers:
         specifier: ^0.3.12
         version: 0.3.21
 
+  apps/field-explorer:
+    dependencies:
+      '@fundamental-engine/vanilla':
+        specifier: workspace:*
+        version: link:../../packages/vanilla
+    devDependencies:
+      vite:
+        specifier: ^6.4.3
+        version: 6.4.3(@types/node@24.13.1)
+
   apps/observatory: {}
 
   apps/site:

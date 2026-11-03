@@ -96,7 +96,7 @@ const sourceLd = {
       <div><button type="button" data-guide-prev disabled>Back</button><button type="button" data-guide-next>Next lesson →</button><button type="button" data-guide-close aria-label="Close walkthrough">×</button></div>
     </nav>
     <ManualHero kicker="Fundamental · a relational field runtime for interfaces">
-      <h1 slot="title">Elements have <span
+      <h1 slot="title">Elements can have <span
           class="hero-mass"
           data-hot
           data-feedback
@@ -115,40 +115,13 @@ const sourceLd = {
           style="--cat:#ff9d5c;">.</span></h1>
       <p slot="standfirst" class="standfirst"
         data-body="attract swirl pigment" data-shaped data-strength="0.5" data-range="260" data-spin="1.1" data-color="#ffce6b" style="--cat:#ffce6b">
-        Physics began the question: what if a page could place a field around its elements and let
-        declared participants influence one another? Fundamental measures that interaction and
-        returns signals the host can use. The DOM and application keep meaning; particles render
-        field activity, while text, CSS, and queries offer other readings. Add a <code>data-body</code>
-        attribute and the runtime returns live <code>--field-*</code> signals.
-      </p>
-      <p slot="thesis" class="thesis"
-        data-body="attract swirl pigment" data-strength="0.45" data-range="280" data-spin="1.1" data-color="#f0628e" style="--cat:#f0628e">
-        <strong>You can label everything urgent. You cannot make everything heavy.</strong>
-        Priority becomes a force, not a flag — emphasize one thing, and the rest yield.
+        What if interface elements could influence one another through a shared field? Fundamental
+        applies a physics-inspired model to the page. Your DOM and data keep their meaning; the field
+        measures interactions and returns readings the interface can use.
       </p>
       <Fragment slot="cta">
-        <Button href="#proof" variant="primary" data-guide-start>Take the field walkthrough →</Button>
-        <Button href="https://habitat.fundamental-engine.com" variant="primary">Enter the garden →</Button>
-        <Button href="#proof">See it work →</Button>
-        <Button href="#install">Install →</Button>
-      </Fragment>
-      <div slot="meta" class="meta">
-        <span><b>Category</b> &nbsp;add a data-* attribute, get --field-* back</span>
-        <span><b>For</b> &nbsp;design engineers · AI-product builders · component-library authors</span>
-        <span><b>Parity</b> &nbsp;js · swift · kotlin — six forces match within a stated tolerance, checked in CI</span>
-        <span><b>Maturity</b> &nbsp;0.x preview — shipping in production apps, no third-party adopters yet</span>
-      </div>
-      <Fragment slot="flow">
-        {/* The substrate, made visible — a live reading of THIS page's field (density/bodies/particles
-            from field.query()) plus the read/reveal/govern facts. No particle swarm required. */}
-        <div class="field-readout" aria-label="Live reading of this page's field">
-          <span class="fr"><b>density</b> <i data-fr="density">·</i></span>
-          <span class="fr"><b>bodies</b> <i data-fr="bodies">·</i></span>
-          <span class="fr"><b>particles</b> <i data-fr="particles">·</i></span>
-          <span class="fr fr-static"><b>query</b> <i>readable</i></span>
-          <span class="fr fr-static"><b>projection</b> <i>css · json</i></span>
-          <span class="fr fr-static"><b>policy</b> <i>limited</i></span>
-        </div>
+        <Button href="#proof" variant="primary" class="hero-field-control" data-guide-start data-color="#4da3ff" data-strength="1.8" data-range="280" data-absorb="88" data-max="468">Take the field walkthrough →</Button>
+        <Button href="/evidence" class="hero-field-control" data-color="#4da3ff" data-strength="1.8" data-range="280" data-absorb="88" data-max="468">Explore real examples →</Button>
       </Fragment>
     </ManualHero>
 
@@ -160,6 +133,7 @@ const sourceLd = {
         <span class="concept-no">A real interface</span>
         <h2>A real interface you’d actually build.</h2>
         <p class="lp-lede">These questions are ordinary DOM elements. Their authored urgency sets relative influence; the field measures local activity and writes a signal back to the page. Focus or point at a question to see the hierarchy respond.</p>
+        <p class="lp-proof-thesis"><strong>One shared attention budget.</strong> In this example, raising one question’s urgency changes how influence is distributed across the rows; the inbox order remains unchanged.</p>
         <div class="lp-inbox" aria-label="Inbox example: urgency is authored and emphasis responds to the field">
           <div class="lp-inbox-head"><span>Inbox · attention is conserved</span><span>urgency → mass</span></div>
           {ASKS.map((a) => (
@@ -522,9 +496,8 @@ const sourceLd = {
 </script>
 
 <script>
-  // The hero "field reading" strip — reads THIS page's field live via field.query() and streams
-  // density/bodies/particles into the chips. Updated ~4×/sec (calm, not flickering). Static chips
-  // (query/projection/policy) state the substrate facts. Rebinds on SPA nav; torn down on swap.
+  // The field-reading strip in the Try it section reads THIS page's field via field.query() and
+  // streams density/bodies/particles into the readout. Updated calmly; torn down on SPA swap.
   type FieldEl = Element & { query?: (q?: unknown) => { metrics: Record<string, number> } };
   function initFieldReadout() {
     const el = document.querySelector(".field-readout") as HTMLElement | null;
@@ -624,22 +597,6 @@ const sourceLd = {
   .lp-ship b { display: block; margin-bottom: 0.3rem; font-size: 1.02rem; }
   .lp-ship span { display: block; opacity: 0.72; font-size: 0.9rem; line-height: 1.5; }
   .lp-ship code { display: inline-block; margin-top: 0.7rem; font-size: 0.76rem; letter-spacing: 0.01em; opacity: 0.6; }
-
-  /* P4 — the "field reading" motif: a live, calm read-out of this page's own field. */
-  /* The readout type mode (#914 D5). These rules asked for var(--font-mono) — a token this
-     site does not define (it is --mono) — so the page's "monospace readout" mode has been
-     falling through to the generic ui-monospace fallback rather than Martian Mono. Naming the
-     real token is what makes the third type mode actually distinct on this page. */
-  .field-readout {
-    display: flex; flex-wrap: wrap; gap: 0.35rem 1.6rem; margin-top: 2.4rem;
-    font-family: var(--mono); font-size: var(--label-size); letter-spacing: 0.01em;
-    font-variant-numeric: tabular-nums;
-  }
-  .field-readout .fr { display: inline-flex; gap: 0.45rem; align-items: baseline; padding: 0.3rem 0; }
-  .field-readout .fr b { color: var(--text-3, #8a8a99); font-weight: 400; letter-spacing: var(--label-track); }
-  /* a live reading of the field — readout is exactly the signal accent's job (#914 D2) */
-  .field-readout .fr i { font-style: normal; color: var(--state-signal); font-variant-numeric: tabular-nums; }
-  .field-readout .fr-static i { color: var(--text-2, #b0b0bd); }
 
   /* Trust · live field.query() readout — reads as an inspectable console panel. */
   .lp-inspect { margin: 2rem 0 0; }

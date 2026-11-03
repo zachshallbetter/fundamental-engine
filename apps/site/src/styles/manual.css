@@ -836,6 +836,13 @@ a.btn.primary:hover {
     inset 0 0 calc(var(--d) * 14px) color-mix(in srgb, var(--accent) calc(var(--d) * 20%), transparent);
   transform: scale(calc(1 + var(--load) * 0.025));
 }
+/* Hero actions make the sink cycle easy to read: particles gather into the control, the captured
+   load brightens and enlarges it, then the engine releases that same matter when engagement ends. */
+.hero-field-control {
+  position: relative;
+  z-index: 1;
+  transform: scale(calc(1 + var(--load) * 0.07));
+}
 /* The secondary control is FROSTED GLASS over the live field: it blurs the particles + warped grid
    behind it, and the glass itself tints with the accent as the field charges it (--load). So the
    control reads as a pane held in the field, lit from within as matter gathers — not a flat outline. */

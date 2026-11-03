@@ -22,7 +22,7 @@ const FORCES = [
       <span class="concept-no">Try it</span>
       <h2>Change a <code>data-*</code> and watch the field answer.</h2>
         <p class="lp-lede">
-        Edit the attributes on the actual DOM body. The host authors force and strength; the field computes a reading; CSS projects feedback onto that same element.
+        This changes the real DOM element: <code>data-body</code> selects a force, while strength and range tune it. Since the element opts into <code>data-feedback</code>, the engine writes its measured density back for CSS to use.
       </p>
       <div class="tryit-controls">
         <label class="tryit-ctl">
@@ -44,7 +44,7 @@ const FORCES = [
           <input type="range" min="80" max="320" step="10" value="180" data-try-range />
         </label>
       </div>
-      <pre class="tryit-code" data-try-code aria-live="polite">data-body="attract"</pre>
+      <pre class="tryit-code" data-try-code aria-live="polite">data-body="attract" · data-feedback</pre>
       <ol class="tryit-loop" aria-label="How this interaction works">
         <li><b>Authored</b><code data-try-authored>attract · strength 0.9</code></li>
         <li><b>Measured</b><code>local field density <output data-try-measured>0.00</output></code></li>
@@ -62,6 +62,12 @@ const FORCES = [
         data-spin="1.1"
         data-color="#4da3ff"
         style="--cat:#4da3ff">attract</span>
+    </div>
+    <div class="field-readout" aria-label="Live query reading for the whole page">
+      <p>Whole page <code>field.query()</code></p>
+      <span class="fr"><b>mean density</b> <i data-fr="density">·</i></span>
+      <span class="fr"><b>bodies</b> <i data-fr="bodies">·</i></span>
+      <span class="fr"><b>particles</b> <i data-fr="particles">·</i></span>
     </div>
   </div>
 </section>
@@ -119,7 +125,7 @@ const FORCES = [
       out('range', range);
       if (codeEl) {
         codeEl.textContent =
-          `data-body="${force}"\ndata-strength="${strength}"\ndata-range="${range}"\ndata-spin="${spin}"`;
+          `data-body="${force}"\ndata-strength="${strength}"\ndata-range="${range}"\ndata-spin="${spin}"\ndata-feedback`;
       }
       scheduleRescan();
     };
@@ -226,6 +232,25 @@ const FORCES = [
     border-radius: 14px;
     background: rgba(255, 255, 255, 0.012);
   }
+  .field-readout {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 1.3rem;
+    margin-top: -1.4rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    border-radius: 12px;
+    background: rgba(6, 9, 16, 0.52);
+    font-family: var(--mono);
+    font-size: var(--label-size, 0.68rem);
+    font-variant-numeric: tabular-nums;
+  }
+  .field-readout p { flex-basis: 100%; margin: 0 0 0.25rem; color: var(--text-3); }
+  .field-readout .fr { display: inline-flex; gap: 0.45rem; align-items: baseline; }
+  .field-readout .fr b { color: var(--text-3); font-weight: 400; }
+  .field-readout .fr i { color: var(--state-signal); font-style: normal; }
   .tryit-body {
     display: inline-flex;
     align-items: center;
