@@ -296,6 +296,9 @@ export const ENGINE_OWNED_FEEDBACK_VARS: ReadonlySet<string> = new Set([
   '--entropy',
   '--coherence',
   '--temperature',
+  // the transient flare (#567). The whole point of giving it its own name is that ONE writer owns
+  // it; an app that binds a state key here recreates exactly the `--d` collision it was split from.
+  '--field-pulse',
 ]);
 
 /**

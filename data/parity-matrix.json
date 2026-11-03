@@ -61,6 +61,7 @@
         "particleCount",
         "pause",
         "pointer",
+        "pulse",
         "query",
         "readEdges",
         "readParticleChannels",
@@ -100,7 +101,7 @@
         "tick"
       ],
       "counts": {
-        "js": 55,
+        "js": 56,
         "swift": 53,
         "kotlin": 59
       },
@@ -128,6 +129,7 @@
           "on",
           "particleCount",
           "pointer",
+          "pulse",
           "query",
           "readEdges",
           "readParticleChannels",
@@ -438,6 +440,12 @@
         },
         {
           "symbol": "pointer",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "pulse",
           "js": true,
           "swift": false,
           "kotlin": false
@@ -3034,10 +3042,11 @@
         "lit",
         "load",
         "next",
+        "pulse",
         "temperature"
       ],
       "counts": {
-        "js": 8,
+        "js": 9,
         "swift": 7,
         "kotlin": 7
       },
@@ -3050,6 +3059,7 @@
           "lit",
           "load",
           "next",
+          "pulse",
           "temperature"
         ],
         "swift": [
@@ -3110,6 +3120,12 @@
         },
         {
           "symbol": "next",
+          "js": true,
+          "swift": false,
+          "kotlin": false
+        },
+        {
+          "symbol": "pulse",
           "js": true,
           "swift": false,
           "kotlin": false

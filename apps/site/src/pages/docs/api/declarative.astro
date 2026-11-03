@@ -156,6 +156,7 @@ const CHANNEL_VARS: Record<string, string[]> = {
   coherence: ['--coherence'],
   temperature: ['--temperature'],
   next: ['--field-next'],
+  pulse: ['--field-pulse'],
 };
 const writebackBy = new Map(WRITEBACK.map((w) => [w.name, w]));
 // Every channel must map to at least one var the sink actually writes (WRITEBACK is itself gated by
