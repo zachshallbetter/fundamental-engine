@@ -1,4 +1,4 @@
-import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RestingMotion, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
+import { PALETTE, FIELD_VERSION, RENDER_MODE_LIST, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type RenderModeName, type RestingMotion, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
 import { createBrowserField, createOverlaySurface, normalizeOverlayBlend, normalizeOverlayZ, type FieldPlatform, type OverlaySurface } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -214,33 +214,12 @@ export class FieldField extends HTMLElementBase {
 
   /** render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,
    *  never draw (#297). Set `render="dots"` (or another drawing mode) to get a visible surface. */
-  get renderMode():
-    | 'dots'
-    | 'trails'
-    | 'links'
-    | 'metaballs'
-    | 'voronoi'
-    | 'streamlines'
-    | 'flow'
-    | 'knockout'
-    | 'redshift'
-    | 'blackbody'
-    | 'depth'
-    | 'none' {
+  get renderMode(): RenderModeName {
+    // One list for the declared type AND the runtime test (#1218). These used to be two independent
+    // lists on adjacent lines — a mode present in the type and absent from the chain type-checked,
+    // built, and shipped an element that claimed to return a mode it silently downgraded to `none`.
     const v = this.getAttribute('render');
-    return v === 'dots' ||
-      v === 'trails' ||
-      v === 'links' ||
-      v === 'metaballs' ||
-      v === 'voronoi' ||
-      v === 'streamlines' ||
-      v === 'flow' ||
-      v === 'knockout' ||
-      v === 'redshift' ||
-      v === 'blackbody' ||
-      v === 'depth'
-      ? v
-      : 'none';
+    return (RENDER_MODE_LIST as readonly string[]).includes(v ?? '') ? (v as RenderModeName) : 'none';
   }
 
   /** substrate background: `transparent` (present and not `"false"`) clears to transparent so the
