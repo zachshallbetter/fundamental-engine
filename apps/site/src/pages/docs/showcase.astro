@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 
 // These demos are LIVE — the real <field-root> on this page (from Base.astro)
@@ -63,6 +64,7 @@ const burstReact = `import { FieldField } from '@fundamental-engine/react';
   <header class="docs-hero">
     <p class="kicker">Resources</p>
     <h1>Live <span class="accent">showcase</span></h1>
+    <StatusChip label="Shipped · every demo runs on this page" tone="stable" />
     <p class="lede">
       Every demo here is real. The field behind this page reacts to the elements below and writes
       density back into them — move your cursor near one and watch it answer. Each comes with its
@@ -111,7 +113,7 @@ const burstReact = `import { FieldField } from '@fundamental-engine/react';
   <section class="docs-sec">
     <h2>Click to burst</h2>
     <p>
-      Drive the field from your own events. The <a href="/docs/api/handle">FieldHandle</a>'s
+      Drive the field from your own events. The <a href="/docs/api/imperative#handle">FieldHandle</a>'s
       <code>burst</code> takes viewport coordinates — click anywhere in the stage to shove and heat
       the matter there.
     </p>

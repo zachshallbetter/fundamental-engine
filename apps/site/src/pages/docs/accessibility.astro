@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 
 // Worked example: if you drive your OWN motion from --field-density, gate it the way the engine
@@ -19,8 +20,13 @@ const reducedMotion = `/* the field writes --field-density on a body; you can re
 // Worked example: bind a decorative visual to its semantic source so AT skips it.
 const ariaBinding = `<!-- the canvas/overlay is decorative; the <h2> carries the meaning -->
 <h2 id="sales">Q3 sales</h2>
-<canvas data-field-visual data-field-source="#sales" aria-hidden="true"></canvas>
-<!-- VisualBindingRegistry keeps the visual aria-hidden unless it carries independent
+<canvas
+  data-field-visual-for="sales"
+  data-field-visual-role="representation"
+  aria-hidden="true"
+></canvas>
+<!-- scan(root) registers every [data-field-visual-for] / [data-field-visual-role].
+     VisualBindingRegistry keeps the visual aria-hidden unless it carries independent
      meaning; lint() flags an orphan source or an un-hidden decorative layer. -->`;
 ---
 
@@ -31,6 +37,7 @@ const ariaBinding = `<!-- the canvas/overlay is decorative; the <h2> carries the
   <header class="docs-hero">
     <p class="kicker">Accessibility</p>
     <h1>Decorative by <span class="accent">contract</span></h1>
+    <StatusChip label="Shipped · guarantees, scoped honestly" tone="stable" />
     <p class="lede">
       The field is ambiance, never content. It's built so assistive tech skips it, motion
       preferences are honoured, and keyboard users get the same reactions as the mouse.

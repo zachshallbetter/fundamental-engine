@@ -2,7 +2,7 @@
 > This document defines the Natural Field Translation System — how Fundamental translates the four
 > fundamental fields into interface behavior. The classification here is data
 > (`FORCE_KIND` / `FORCE_FIELD` / `NATURAL_FIELDS` in `packages/core/src/config/manual.ts`), so the
-> force manual, the Lab badges, and `/docs/natural-fields` all read it and cannot drift. It changes
+> force manual, the Lab badges, and `/docs/concepts#natural-fields` all read it and cannot drift. It changes
 > no particle/engine behavior — only how each token is explained and organized. See
 > [platform-architecture.md](platform-architecture.md) and
 > [../engine-reference/forces-system.md](../engine-reference/forces-system.md). For *why* a token is

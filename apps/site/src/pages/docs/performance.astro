@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 import SeeAlso from '../../components/SeeAlso.astro';
 
@@ -64,6 +65,7 @@ field.setVisible(false);   // simulation + feedback signals stay live`;
   <header class="docs-hero">
     <p class="kicker">Performance</p>
     <h1>Cheap by <span class="accent">design</span></h1>
+    <StatusChip label="Shipped · measured, with the open gaps named" tone="stable" />
     <p class="lede">
       Fundamental separates DOM participation from engine computation. The platform runs a six-phase
       scheduler over ~130 particles at default density, and the core stays off the main thread's way.
@@ -139,7 +141,7 @@ field.setVisible(false);   // simulation + feedback signals stay live`;
   <section class="docs-sec" id="tuning-note">
     <h2>Tuning</h2>
     <p>
-      Lower <a href="/docs/api/options">density</a> for very large or low-power surfaces;
+      Lower <a href="/docs/api/imperative#options">density</a> for very large or low-power surfaces;
       <code>density: 0.5</code> halves the particle count. Within <b>one field</b>, the cost does not
       grow with the number of bodies on the page beyond the per-body loop term — one field is one
       shared canvas. <b>Many separate field instances</b> on a page (the homepage runs 42) are a
@@ -269,9 +271,9 @@ field.setVisible(false);   // simulation + feedback signals stay live`;
 
   <SeeAlso
     links={[
-      { href: '/docs/api/handle', label: 'FieldHandle' },
+      { href: '/docs/api/imperative#handle', label: 'FieldHandle' },
       { href: '/docs/diagnostics', label: 'Diagnostic overlays' },
-      { href: '/docs/api/options', label: 'createField options (density, waves)' },
+      { href: '/docs/api/imperative#options', label: 'createField options (density, waves)' },
     ]}
   />
 </DocsLayout>

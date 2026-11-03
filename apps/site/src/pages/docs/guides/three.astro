@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import StatusChip from '../../../components/StatusChip.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
 const bridge = `import * as THREE from 'three';
@@ -79,6 +80,7 @@ renderer.dispose();`;
   <header class="docs-hero">
     <p class="kicker">Guides</p>
     <h1>The <span class="accent">Three.js</span> door</h1>
+    <StatusChip label="Shipped · unfrozen: no three export is protected" tone="shipped" />
     <p class="lede">
       <code>@fundamental-engine/three</code> runs the same reciprocal field engine that drives
       <code>&lt;field-root&gt;</code> — headless, with no DOM canvas — and renders its conserved
@@ -91,7 +93,7 @@ renderer.dispose();`;
     <b>One engine, a different surface.</b> The core computes the field against plain data and stays
     renderer-agnostic. The DOM binds it through the <a href="/docs/platform">platform layer</a>;
     this package binds it to a Three.js scene through a <code>FieldProjection</code> (the 2D ⇄ 3D
-    map) and a <code>FieldHost</code>. Every <a href="/docs/api/handle">FieldHandle</a> method —
+    map) and a <code>FieldHost</code>. Every <a href="/docs/api/imperative#handle">FieldHandle</a> method —
     <code>burst</code>, <code>flowTo</code>, <code>setFormation</code>, <code>seed</code> — drives
     the 3D layer exactly as it drives the page field.
   </div>
@@ -242,7 +244,7 @@ renderer.dispose();`;
     <h2>Next</h2>
     <ul class="model">
       <li>The <a href="/three">live Three.js field</a> — the bridge running a volumetric swarm.</li>
-      <li>The <a href="/docs/api/handle">FieldHandle reference</a> — every method the layer exposes, including <code>addAgent</code> and <code>sampleScalar</code>.</li>
+      <li>The <a href="/docs/api/imperative#handle">FieldHandle reference</a> — every method the layer exposes, including <code>addAgent</code> and <code>sampleScalar</code>.</li>
       <li>The <a href="/docs/concepts">concepts</a> — bodies, the shared field context, and the Field Agent Consumption Model the agents extend.</li>
     </ul>
   </section>

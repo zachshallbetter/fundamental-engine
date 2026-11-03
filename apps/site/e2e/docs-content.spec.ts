@@ -45,8 +45,10 @@ test.describe("docs content systems", () => {
     await expect(row.locator('a[href="/llms-full.txt"]')).toBeVisible();
   });
 
-  test("API provenance stamps on /docs/api/handle match the freeze data", async ({ page }) => {
-    await page.goto("/docs/api/handle");
+  // docs-refactor Phase 6 (#1001): /docs/api/imperative#handle merged into the consolidated imperative
+  // reference (and redirects there). The provenance-stamp invariant moved with it.
+  test("API provenance stamps on /docs/api/imperative match the freeze data", async ({ page }) => {
+    await page.goto("/docs/api/imperative");
     // createField (the entry point in the lede) is frozen in @fundamental-engine/core
     const frozen = page.locator('.docs-hero .api-stamp[data-status="frozen"]');
     await expect(frozen).toHaveText("frozen · @fundamental-engine/core");
@@ -82,8 +84,12 @@ test.describe("docs content systems", () => {
 
   test("/docs/concepts carries a SeeItLive box into the example family", async ({ page }) => {
     await page.goto("/docs/concepts");
-    const box = page.locator(".see-it-live a");
-    await expect(box).toHaveAttribute("href", "/evidence");
-    await expect(box).toContainText("Evidence");
+    // docs-refactor Phase 6 (#1001) folded the four-field chapter into this page, and it brought its
+    // own SeeItLive (the market example) alongside the original. Target the box by DESTINATION
+    // rather than assuming the page carries exactly one — the invariant being guarded is that
+    // /docs/concepts sends a reader into the example family, not how many doors it offers.
+    const evidence = page.locator('.see-it-live a[href="/evidence"]');
+    await expect(evidence).toHaveCount(1);
+    await expect(evidence).toContainText("Evidence");
   });
 });

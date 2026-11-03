@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 ---
 
 <DocsLayout
@@ -9,6 +10,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
   <header class="docs-hero">
     <p class="kicker">Reference</p>
     <h1>Support &amp; <span class="accent">stability</span></h1>
+    <StatusChip label="Planning · a 1.0 policy, stated while 0.x ships" tone="planning" />
     <p class="lede">
       The maintenance policy a <strong>solo maintainer can actually keep</strong>. It is deliberately
       conservative: it promises only what one person can sustain, and is explicit where support is

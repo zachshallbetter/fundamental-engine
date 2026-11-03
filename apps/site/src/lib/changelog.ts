@@ -125,12 +125,12 @@ export const HIGHLIGHTS: Highlight[] = [
   {
     title: "Height-aware fields — `relief`",
     blurb: "The 37th force: a host-declared scalar channel (addField) becomes a potential the swarm descends — terrain as a cause, on JS, Swift and Kotlin.",
-    href: "/docs/api/forces",
+    href: "/docs/api/declarative#forces",
   },
   {
     title: "The reproducibility envelope is queryable",
     blurb: "FieldHandle.guarantees states what a run promises — which paths are deterministic and what isn't — and agent read scopes (read:snapshots, read:diagnostics, a fractional agentRead budget) are enforced, not just declared.",
-    href: "/docs/api/handle",
+    href: "/docs/api/imperative#handle",
   },
   {
     title: "Native ports, kept in step",
@@ -140,6 +140,6 @@ export const HIGHLIGHTS: Highlight[] = [
   {
     title: "Focus / attention substrate",
     blurb: "Operator attention as an input, agent attention as an output: field.focus(target, { source }) deposits decaying, source-tagged focus; field.focusState() is the ranked digest an agent reads; metrics.salience rides query()/snapshot().",
-    href: "/docs/api/handle",
+    href: "/docs/api/imperative#handle",
   },
 ];

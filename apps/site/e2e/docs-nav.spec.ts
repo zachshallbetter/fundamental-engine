@@ -16,7 +16,7 @@ test.describe("docs sidebar · Priority Well", () => {
   test("the current route is pinned as the well — --field-attention drives to 1", async ({
     page,
   }) => {
-    await page.goto("/docs/api/handle");
+    await page.goto("/docs/api/imperative");
     const current = page.locator('#docsSide a[aria-current="page"]');
     await expect(current).toHaveCount(1);
     await expect
@@ -25,7 +25,7 @@ test.describe("docs sidebar · Priority Well", () => {
   });
 
   test("each group carries its wayfinding glyph + color", async ({ page }) => {
-    await page.goto("/docs/api/handle");
+    await page.goto("/docs/api/imperative");
     const groups = page.locator(".docs-group");
     const count = await groups.count();
     // Derived from the nav tree the sidebar renders (the sidebar shows groups with ≥1 ready item),

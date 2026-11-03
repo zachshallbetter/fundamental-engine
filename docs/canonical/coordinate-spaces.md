@@ -48,7 +48,7 @@ positions directly). What field space *is* in host units follows straight from t
 
 The per-method contract, the "the methods don't translate for you" caveat, and worked window/contained
 examples live on the API page:
-[/docs/api/handle#coordinate-space](https://fundamental-engine.com/docs/api/handle#coordinate-space).
+[/docs/api/imperative#coordinate-space](https://fundamental-engine.com/docs/api/imperative#coordinate-space).
 
 ## The conversions (each one-way)
 
@@ -115,7 +115,7 @@ are a property of the *field*, not of the *pixels*.
 | Document | Role |
 |---|---|
 | [`platform-architecture.md`](platform-architecture.md) | The `FieldHost` boundary — where host space becomes field space |
-| [/docs/api/handle#coordinate-space](https://fundamental-engine.com/docs/api/handle#coordinate-space) | The consumer-facing contract for `flowTo`/`burst`/`sample` — window vs contained, scroll behavior, worked examples |
+| [/docs/api/imperative#coordinate-space](https://fundamental-engine.com/docs/api/imperative#coordinate-space) | The consumer-facing contract for `flowTo`/`burst`/`sample` — window vs contained, scroll behavior, worked examples |
 | [`substrate-api.md`](substrate-api.md) | Field-space readings + projections that convert to projection space |
 | [`definition-document.md`](definition-document.md) | The operating model these spaces serve |
 | [`causality-and-truth.md`](causality-and-truth.md) | The dimension/metric/channel/projection lock these spaces depend on |

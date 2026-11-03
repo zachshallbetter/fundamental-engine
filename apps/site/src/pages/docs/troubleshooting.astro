@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 
 const rescan = `// plain DOM / web component
@@ -44,6 +45,7 @@ field.destroy();             // stops the loop, releases listeners, frees GPU + 
   <header class="docs-hero">
     <p class="kicker">Resources</p>
     <h1><span class="accent">Troubleshooting</span></h1>
+    <StatusChip label="Shipped · the quiet failures and their fixes" tone="stable" />
     <p class="lede">
       The handful of things that trip people up — each with the why and the fix. Most reduce to
       one of two facts: the field reads bodies on a schedule, and it refuses to fake motion.
@@ -160,7 +162,7 @@ field.destroy();             // stops the loop, releases listeners, frees GPU + 
     <p>
       The field is one shared canvas, so cost does not grow with the number of bodies beyond the
       per-body loop term. If a very large or low-power surface needs headroom, lower
-      <a href="/docs/api/options">density</a> — <code>density: 0.5</code> halves the particle
+      <a href="/docs/api/imperative#options">density</a> — <code>density: 0.5</code> halves the particle
       count. See <a href="/docs/performance">Performance</a> for the full picture.
     </p>
     <div class="callout">

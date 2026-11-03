@@ -100,8 +100,8 @@ window of RC releases that force no breaking change. The `rc` period is allowed 
 ## What this means if you're building on it
 
 Concretely: you can adopt the frozen surface now and trust it not to rename out from under you — that
-guarantee predates the `rc`, it doesn't wait for it. The [handle API](/docs/api/handle) and the
-[options](/docs/api/options) are part of the contract; the internal integrator and render code are
+guarantee predates the `rc`, it doesn't wait for it. The [handle API](/docs/api/imperative#handle) and the
+[options](/docs/api/imperative#options) are part of the contract; the internal integrator and render code are
 not. Pin `~0.MINOR`. Read [getting started](/docs/getting-started) for the install, and
 [the manifesto](/writings/the-interface-is-a-field-not-a-screen) for why any of this is worth adopting
 in the first place.
