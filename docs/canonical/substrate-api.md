@@ -38,6 +38,12 @@ Two construction-time capabilities round it out:
 Ask the live field a structured question and get back plain, serializable data. Read-only and
 render-agnostic.
 
+The result identifies the frame and time it observed; a later call may read a later frame, so
+`query()` does not create a cross-frame consistency lock. Its `relationships` are programmatic
+`addEdge()` edges. Relationships maintained by DOM or pattern registries are host-side registry
+state and are not included in this query result. Registered projections are returned as metadata,
+not executed by the read.
+
 **`query()` contract — what it is *not*:**
 
 ```txt

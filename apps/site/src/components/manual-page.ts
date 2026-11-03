@@ -11,12 +11,14 @@ import { initStageFieldOverlay } from "./home/StageFieldOverlay.ts";
 import { initForcePicker } from "./home/ForcePicker.ts";
 import { initGallery } from "./home/GalleryRuntime.ts";
 import { initAtomField } from "./home/AtomField.ts";
+import { initFieldApiPlayground } from "./home/FieldApiPlayground.ts";
 
 let teardownRuntime: (() => void) | undefined;
 let teardownOverlay: (() => void) | undefined;
 let teardownForces: (() => void) | undefined;
 let teardownGallery: (() => void) | undefined;
 let teardownAtoms: (() => void) | undefined;
+let teardownApiPlayground: (() => void) | undefined;
 
 function teardown() {
   teardownRuntime?.();
@@ -24,11 +26,13 @@ function teardown() {
   teardownForces?.();
   teardownGallery?.();
   teardownAtoms?.();
+  teardownApiPlayground?.();
   teardownRuntime = undefined;
   teardownOverlay = undefined;
   teardownForces = undefined;
   teardownGallery = undefined;
   teardownAtoms = undefined;
+  teardownApiPlayground = undefined;
 }
 
 function init() {
@@ -39,6 +43,7 @@ function init() {
   teardownForces = initForcePicker(); // NaturalFieldsSection — pick a field, play it on <field-root>
   teardownGallery = initGallery(); // "What it can do" gallery (home only; no-ops elsewhere)
   teardownAtoms = initAtomField(); // seed the field with the 132 project atoms + hover-to-inspect
+  teardownApiPlayground = initFieldApiPlayground();
 }
 
 if (document.readyState !== "loading") init();

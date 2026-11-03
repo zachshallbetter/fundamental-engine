@@ -240,6 +240,19 @@ const consumers = `<!-- capture: a chip that collapses into a sink when the fiel
       ))}
     </tbody>
   </table>
+  <p class="note">
+    Add <code>data-shaped</code> when the element’s full box represents the field participant. Forces
+    then act from the nearest point on its bounds instead of collapsing toward one center point; omit
+    it only when a point source is intentional. This is especially useful for cards, panels, and
+    controls.
+  </p>
+  <p class="note">
+    On DOM bodies, <code>data-strength</code> defaults to <code>0.5</code> and <code>data-range</code>
+    to <code>280</code>. Finite changes to <code>data-strength</code>, <code>data-range</code>,
+    <code>data-spin</code>, and <code>data-angle</code> are re-read on the measurement cadence without
+    rescanning. Missing or non-finite values leave the current parsed parameter in place; removing
+    an attribute does not restore its default. Other attributes have their own parsing rules.
+  </p>
 
   <h2>Element consumers — react to the field</h2>
   <p>
@@ -288,11 +301,10 @@ const consumers = `<!-- capture: a chip that collapses into a sink when the fiel
     ]}
   />
   <p class="note">
-    <strong>Correctness note:</strong> drive reactions off <code>--d</code>, not
-    <code>--field-density</code>. When a pattern's metric pipeline runs, it also writes
-    <code>--field-density</code> as a pattern output — so on pattern elements,
-    <code>--field-density</code> holds the pattern metric, not the engine's raw particle density.
-    <code>--d</code> is always the engine value.
+    <strong>Density aliases:</strong> the engine writes the same raw particle-density value to
+    <code>--d</code> and <code>--field-density</code>. The pattern metric pipeline excludes this
+    engine-owned channel, so it does not replace the density reading. Use either name; the other
+    <code>--field-*</code> variables are documented separately by metric and provenance.
   </p>
 
   <h2 id="conditions">Conditional forces — <code>data-when</code></h2>

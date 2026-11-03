@@ -82,6 +82,38 @@ html[data-field='on'] .hero-antimass:hover {
   scroll-margin-top: 84px;
 }
 
+.hero-example {
+  max-width: 52rem;
+  margin: 1.5rem 0 0;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  background: rgba(7, 10, 16, 0.94);
+}
+.hero-example figcaption {
+  margin-bottom: 0.65rem;
+  color: var(--state-signal);
+  font: 600 var(--label-size) / 1.4 var(--mono);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+}
+.hero-example pre {
+  max-width: 100%;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.hero-example p {
+  margin: 0.65rem 0 0;
+  color: var(--text-3);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.hero-example code {
+  color: var(--text-2);
+}
+
 .field-guide {
   position: fixed;
   z-index: 100;
@@ -114,6 +146,15 @@ html[data-field='on'] .hero-antimass:hover {
   font-size: 0.95rem;
   line-height: 1.35;
 }
+.field-guide [data-guide-detail],
+.field-guide [data-guide-link] {
+  grid-column: 1;
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.field-guide [data-guide-detail] { color: var(--text-3); }
+.field-guide [data-guide-link] { color: var(--state-signal); }
 .field-guide > div {
   grid-column: 2;
   grid-row: 1 / span 2;
@@ -375,12 +416,12 @@ html[data-field='on'] .hero-antimass:hover {
      Glass and glow are fill-rate cost on a page whose own argument is that fill-rate — not
      particle count — is the real budget, and RC-7's perf gate now measures exactly that;
      #914 also names glassmorphism as the grammar to stop speaking. The border stays the
-     live silent-contract CONSUMER: it leans to the card's force hue with local field
-     density, so the card still READS the field — it just no longer paints one. */
-  background: var(--bg-card);
+     live silent-contract CONSUMER: the field gently tints its surface and edge, while a small
+     tag halo carries the denser glow instead of painting a large shadow across the card. */
+  background-color: color-mix(in srgb, var(--cat, var(--accent)) calc(var(--d, 0) * 4%), var(--bg-card));
   border: 1px solid var(--line);
   border-radius: var(--r-md);
-  border-color: color-mix(in srgb, var(--cat, var(--accent)) calc(16% + var(--field-density) * 60%), var(--line));
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) calc(16% + var(--d, 0) * 60%), var(--line));
   transition: border-color 0.35s var(--ease);
 }
 /* a top hairline in the tag colour, brightening as matter pools against the card.
@@ -392,7 +433,7 @@ html[data-field='on'] .hero-antimass:hover {
   inset: 0 0 auto;
   height: 2px;
   background: var(--cat, var(--accent));
-  opacity: calc(0.12 + var(--field-density) * 0.88);
+  opacity: calc(0.16 + var(--d, 0) * 0.84);
   transition: opacity 0.4s var(--ease);
 }
 /* #914 D4 — the hover lift and its shadow go with the glass; the card answers engagement
@@ -422,6 +463,8 @@ html[data-field='on'] .hero-antimass:hover {
   padding: 0.22rem 0.55rem;
   border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 45%, var(--line));
   border-radius: var(--r-sm);
+  text-shadow: 0 0 calc(var(--d, 0) * 12px) color-mix(in srgb, var(--cat, var(--accent)) calc(var(--d, 0) * 75%), transparent);
+  box-shadow: 0 0 calc(var(--d, 0) * 16px) color-mix(in srgb, var(--cat, var(--accent)) calc(var(--d, 0) * 42%), transparent);
 }
 .lp-pkg-desc {
   font-size: 0.92rem;
@@ -518,7 +561,9 @@ html[data-field='on'] .hero-antimass:hover {
   align-items: center;
   gap: 0.8rem;
   padding: 0.7rem 0.9rem;
+  background-color: color-mix(in srgb, var(--ask-color, var(--accent)) calc(var(--d, 0) * 7%), transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+  transition: background-color 0.35s ease;
 }
 .lp-ask:focus-visible { outline: 2px solid var(--state-signal); outline-offset: 3px; }
 .lp-ask:last-child {
@@ -527,7 +572,8 @@ html[data-field='on'] .hero-antimass:hover {
 .lp-ask .lp-bar {
   height: 0.5rem;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent), transparent);
+  background: linear-gradient(90deg, var(--ask-color, var(--accent)), transparent);
+  box-shadow: 0 0 calc(var(--d, 0) * 14px) color-mix(in srgb, var(--ask-color, var(--accent)) calc(var(--d, 0) * 70%), transparent);
   /* floored so an honest zero reading still leaves a legible trace of the bar */
   opacity: calc(0.12 + var(--u, 0.4) * 0.88);
 }
@@ -583,7 +629,8 @@ html[data-field='on'] .hero-antimass:hover {
   border-radius: 8px;
 }
 .lp-flow .lp-step code {
-  color: var(--text);
+  color: color-mix(in srgb, var(--text) calc(65% + var(--d, 0) * 35%), var(--cat));
+  text-shadow: 0 0 calc(var(--d, 0) * 12px) color-mix(in srgb, var(--cat) calc(var(--d, 0) * 65%), transparent);
 }
 .lp-flow .lp-step span {
   max-width: 100%;

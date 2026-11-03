@@ -38,79 +38,126 @@ export function initHomeRuntime(): () => void {
   // Guided entry is optional: links and controls in every lesson keep working independently.
   const guide = document.querySelector<HTMLElement>("[data-field-guide]");
   const lessons = [
-    ["top", "Start here: the field and the DOM"],
-    ["try", "Try it: edit the DOM input"],
-    ["proof", "Inbox: authored importance"],
-    ["why", "Tradeoffs: measured signals"],
-    ["how", "The loop: five verbs"],
-    ["trust", "Trust: inspect both readings"],
-    ["engine", "Engine: one contract, many forces"],
-    ["shipped", "Shipped: working applications"],
-    ["hosts", "Hosts: one model across runtimes"],
-    ["evidence", "Evidence: inspect declared sources"],
-    ["invisible-fields", "Examples: fields over real data"],
-    ["install", "Install: choose your host package"],
-    ["explore", "Explore: continue into the docs"],
+    ["top", "Start here: the field and the DOM", "The DOM keeps meaning and source data; the field measures declared interaction.", "#try", "Try the live input"],
+    ["try", "Try it: edit the DOM input", "Change authored data-* values and compare them with engine-written feedback.", "#proof", "See the inbox reading"],
+    ["proof", "Inbox: authored importance", "Urgency is host-authored. Optional attention mode changes relative emphasis; this is a chosen interface behavior.", "#why", "Compare the tradeoffs"],
+    ["why", "Tradeoffs: measured signals", "A field can share measurement and presentation work. Your application still owns data, sorting policy, persistence, and decisions.", "#how", "Follow the five verbs"],
+    ["how", "The loop: five verbs", "Declare participants, influence through forces, read state, reveal projections, and govern runtime access.", "#trust", "Inspect the readings"],
+    ["trust", "Trust: inspect both readings", "The console measures this page’s runtime; query() reads serializable field state at a frame.", "#engine", "See the engine scope"],
+    ["engine", "Engine: one contract, many forces", "The catalog is broader than the cross-platform golden. Open the force manual or parity table for exact coverage.", "#field-api", "Explore the API"],
+    ["field-api", "API: change and inspect one live field", "Move the existing particle pool, change a shaped DOM body, supply host data, and inspect bounded readings.", "#shipped", "See integrations"],
+    ["shipped", "Shipped: working applications", "These projects show distinct integrations; they do not establish general performance or user-outcome claims.", "#hosts", "Compare the hosts"],
+    ["hosts", "Hosts: one model across runtimes", "Core behavior, adapters, rendering, and accessibility vary by host. Review support before choosing a surface.", "#evidence", "Inspect evidence data"],
+    ["evidence", "Evidence: inspect declared sources", "Confidence and source links are sample host data. The field does not verify truth or calibrate confidence.", "#invisible-fields", "See non-particle examples"],
+    ["invisible-fields", "Examples: fields over real data", "These examples use visible UI readings over records; particle rendering is optional.", "#install", "Choose a package"],
+    ["install", "Install: choose your host package", "Use the package and guide for your host. Core integrations require explicit host wiring.", "#explore", "Continue exploring"],
+    ["explore", "Explore: continue into the docs", "Choose the API reference, parity matrix, manual, or research based on what you want to inspect next.", "/docs/api", "Open the API reference"],
   ] as const;
   let lesson = 0;
+  let guidePaused = false;
   let guideNavigating = false;
   let guideTargetId: string | null = null;
   let guideNavigationTimer = 0;
-  const showLesson = (index: number) => {
-    lesson = Math.max(0, Math.min(lessons.length - 1, index));
-    const section = document.getElementById(lessons[lesson]![0]);
+  const updateGuideReadout = () => {
     const progress = guide?.querySelector("[data-guide-progress]");
     const title = guide?.querySelector("[data-guide-title]");
+    const detail = guide?.querySelector("[data-guide-detail]");
+    const link = guide?.querySelector<HTMLAnchorElement>("[data-guide-link]");
     const prev = guide?.querySelector<HTMLButtonElement>("[data-guide-prev]");
     const next = guide?.querySelector<HTMLButtonElement>("[data-guide-next]");
     if (progress) progress.textContent = `Walkthrough · ${lesson + 1} of ${lessons.length}`;
     if (title) title.textContent = lessons[lesson]![1];
+    if (detail) detail.textContent = lessons[lesson]![2];
+    if (link) { link.href = lessons[lesson]![3]; link.textContent = lessons[lesson]![4]; }
     if (prev) prev.disabled = lesson === 0;
     if (next) next.textContent = lesson === lessons.length - 1 ? "Finish walkthrough" : "Next lesson →";
+  };
+  const setGuidePaused = (paused: boolean) => {
+    guidePaused = paused;
+    const button = guide?.querySelector<HTMLButtonElement>("[data-guide-pause]");
+    if (button) {
+      button.setAttribute("aria-pressed", String(paused));
+      button.textContent = paused ? "Resume tracking" : "Pause tracking";
+    }
+  };
+  const showLesson = (index: number) => {
+    lesson = Math.max(0, Math.min(lessons.length - 1, index));
+    const section = document.getElementById(lessons[lesson]![0]);
+    updateGuideReadout();
     guideNavigating = true;
     guideTargetId = lessons[lesson]![0];
     window.clearTimeout(guideNavigationTimer);
-    guideNavigationTimer = window.setTimeout(() => { guideNavigating = false; guideTargetId = null; }, 4000);
+    guideNavigationTimer = window.setTimeout(() => {
+      guideNavigating = false;
+      guideTargetId = null;
+      syncGuideProgress();
+    }, 4000);
     section?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    const heading = section?.querySelector<HTMLElement>("h1, h2, h3");
+    if (heading) {
+      heading.setAttribute("tabindex", "-1");
+      heading.focus({ preventScroll: true });
+    }
   };
   document.querySelectorAll<HTMLElement>("[data-guide-start]").forEach((start) => start.addEventListener("click", (event) => {
     event.preventDefault();
     if (guide) guide.hidden = false;
+    setGuidePaused(false);
     showLesson(0);
-    guide?.querySelector<HTMLElement>("[data-guide-next]")?.focus({ preventScroll: true });
   }, { signal: sig }));
   guide?.querySelector("[data-guide-prev]")?.addEventListener("click", () => showLesson(lesson - 1), { signal: sig });
+  guide?.querySelector("[data-guide-pause]")?.addEventListener("click", () => {
+    setGuidePaused(!guidePaused);
+    if (!guidePaused) syncGuideProgress();
+  }, { signal: sig });
   guide?.querySelector("[data-guide-next]")?.addEventListener("click", () => {
-    if (lesson === lessons.length - 1) { if (guide) guide.hidden = true; return; }
+    if (lesson === lessons.length - 1) {
+      if (guide) guide.hidden = true;
+      document.querySelector<HTMLElement>("[data-guide-start]")?.focus({ preventScroll: true });
+      return;
+    }
     showLesson(lesson + 1);
   }, { signal: sig });
-  guide?.querySelector("[data-guide-close]")?.addEventListener("click", () => { if (guide) guide.hidden = true; }, { signal: sig });
+  guide?.querySelector("[data-guide-close]")?.addEventListener("click", () => {
+    if (guide) guide.hidden = true;
+    document.querySelector<HTMLElement>("[data-guide-start]")?.focus({ preventScroll: true });
+  }, { signal: sig });
+  let guideProgressFrame = 0;
+  function syncGuideProgress() {
+    if (!guide || guide.hidden || guidePaused || guideNavigating) return;
+    const anchor = window.innerHeight * 0.4;
+    let current = 0;
+    for (let i = 0; i < lessons.length; i++) {
+      const section = document.getElementById(lessons[i]![0]);
+      if (section && section.getBoundingClientRect().top <= anchor) current = i;
+    }
+    if (current !== lesson) {
+      lesson = current;
+      updateGuideReadout();
+    }
+  }
+  const scheduleGuideProgress = () => {
+    if (guideProgressFrame) return;
+    guideProgressFrame = window.requestAnimationFrame(() => {
+      guideProgressFrame = 0;
+      syncGuideProgress();
+    });
+  };
+  window.addEventListener("scroll", scheduleGuideProgress, { passive: true, signal: sig });
+  window.addEventListener("resize", scheduleGuideProgress, { passive: true, signal: sig });
   if (guide) {
     const guideObserver = new IntersectionObserver((entries) => {
-      if (guide.hidden) return;
+      if (guide.hidden || guidePaused) return;
       if (guideNavigating) {
         const reachedTarget = entries.some((entry) => entry.target.id === guideTargetId && entry.isIntersecting);
         if (!reachedTarget) return;
         guideNavigating = false;
         guideTargetId = null;
         window.clearTimeout(guideNavigationTimer);
+        syncGuideProgress();
         return;
       }
-      const current = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-      const idx = lessons.findIndex(([id]) => current?.target === document.getElementById(id));
-      if (idx >= 0 && idx !== lesson) {
-        lesson = idx;
-        const progress = guide.querySelector("[data-guide-progress]");
-        const title = guide.querySelector("[data-guide-title]");
-        const prev = guide.querySelector<HTMLButtonElement>("[data-guide-prev]");
-        const next = guide.querySelector<HTMLButtonElement>("[data-guide-next]");
-        if (progress) progress.textContent = `Walkthrough · ${lesson + 1} of ${lessons.length}`;
-        if (title) title.textContent = lessons[lesson]![1];
-        if (prev) prev.disabled = lesson === 0;
-        if (next) next.textContent = lesson === lessons.length - 1 ? "Finish walkthrough" : "Next lesson →";
-      }
+      syncGuideProgress();
     }, { rootMargin: "-15% 0px -55% 0px" });
     lessons.forEach(([id]) => { const section = document.getElementById(id); if (section) guideObserver.observe(section); });
     obs.push(guideObserver);

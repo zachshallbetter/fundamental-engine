@@ -585,15 +585,25 @@ body.remove();`;
 
     <h3>2 · <code>query()</code> — a structured question about a region</h3>
     <p>
-      Plain, serializable data about bodies, metrics, relationships and per-force influences, scoped to a point,
-      a rect, or the whole field. <code>at</code> is <code>DOMRect</code>-shaped, so
-      <code>el.getBoundingClientRect()</code> drops straight in.
+      A synchronous read of plain, serializable data at the current field frame, scoped to a point,
+      a rect, or the whole field. The result carries its frame and time; a later query may observe a
+      later frame, so query is not a multi-frame consistency lock. Relationships in this result are
+      programmatic <code>addEdge()</code> edges only; DOM and pattern registry relationships are not
+      included. <code>at</code> is <code>DOMRect</code>-shaped, so <code>el.getBoundingClientRect()</code>
+      drops straight in. Select included dimensions explicitly when the reader needs less data.
     </p>
     <CodeTabs variants={[{ label: 'query', lang: 'ts', code: readingQuery }]} />
+    <p class="note">
+      A body with an element-backed parameter keeps its parsed value if the attribute is removed. A
+      changed finite <code>data-strength</code>, <code>data-range</code>, <code>data-spin</code>, or
+      <code>data-angle</code> is re-read on the DOM measurement cadence; a missing or non-finite value
+      does not overwrite the current parameter. This does not apply to every <code>data-*</code> attribute.
+    </p>
 
     <h3>3 · <code>snapshot()</code> → <code>diff()</code> → <code>replay()</code> — change over time</h3>
     <p>
-      A snapshot captures what the field is <em>doing</em> at a frame. <code>diff</code> reports what changed
+      A snapshot captures what the field is <em>doing</em> at a frame and carries the field format version.
+      Validate that version when persisting captures across engine upgrades. <code>diff</code> reports what changed
       between two captures, by lane; <code>replay</code> turns that diff into an ordered, narrated chain of
       causes. Both are <strong>pure</strong> — they read the two capture objects and never touch live state, so
       you can replay captures from another session, or from another machine.
@@ -704,9 +714,11 @@ body.remove();`;
   <section class="docs-sec">
     <h2 id="identity">Identity — naming a body so a reading can refer to it</h2>
     <p>
-      Snapshots, <code>diff</code>, <code>replay</code>, the relationship graph and <code>focus()</code> all
-      address bodies <em>by id</em>, not by handle — otherwise a capture could not survive being serialized and
-      read back somewhere else. Identity is therefore first-class rather than derived from the DOM.
+      Snapshots, <code>diff</code>, <code>replay</code>, the relationship graph and <code>focus()</code> address
+      bodies by identity, not object reference. Supply an id for a programmatic body; a DOM body uses its
+      element id when present, otherwise a generated monotonic <code>body-N</code> id. Keep identity stable
+      for the body’s lifetime: when an id changes, the field treats it as removal plus addition, so diffs
+      and relationships no longer refer to the same body.
     </p>
     <dl class="api-table">
       <div class="api-row" id="identity-spec">

@@ -13,7 +13,7 @@ const cards = [
   { href: '/docs/api/presets', t: `Presets (${MANUAL_PRESETS.length})`, d: 'Whole compositions as one attribute. No new engine code.' },
   { href: '/docs/api/catalog', t: 'Conditions, formations & modes', d: 'The orthogonal axes — when, field-wide, and how it draws.' },
   { href: '/docs/api/types', t: 'Types', d: 'Core types (Body, Particle, Force, Env) and platform types.' },
-  { href: '/docs/api/stability', t: 'API stability', d: 'The frozen 0.x public surface, the experimental surface, and the compatibility rules — enforced by pnpm check:api.' },
+  { href: '/docs/api/stability', t: 'API stability', d: 'The removal-protected surface, experimental APIs, and compatibility rules — enforced by pnpm check:api.' },
   { href: '/docs/platform', t: '@fundamental-engine/dom', d: 'DOM participation: the FrameScheduler + six registries (measurement, state, feedback, relationships, visual bindings, overlays) + lintPlatform().' },
   { href: '/docs/api/parity', t: 'Platform parity matrix', d: 'Which FieldHandle methods ship on Three.js, Swift, and Kotlin — generated from the ports, with the current gaps named. Not full parity: the JS surface has grown since the ports last caught up.' },
   { href: '/docs/api/metrics', t: 'Metrics & diagnostics', d: 'The observability surface: inspectBudget, energyReport, lintPlatform, and the live --field-* feedback channels.' },
@@ -54,5 +54,19 @@ const cards = [
       {RENDER_MODES.length} render modes · {PALETTE_NAMES.length} palettes — one shared field
       runtime, host-native participation, a DOM adapter for the web, and a core with zero runtime dependencies.
     </div>
+  </section>
+  <section class="docs-sec" aria-labelledby="field-terms">
+    <h2 id="field-terms">Field terms</h2>
+    <dl class="api-table">
+      <div class="api-row"><dt class="k"><code>Field</code></dt><dd class="d">A shared runtime model in which declared participants can influence one another and receive measurable readings.</dd></div>
+      <div class="api-row"><dt class="k"><code>Body</code></dt><dd class="d">A registered participant, commonly an element marked with <code>data-body</code>, with measured geometry and configured behavior.</dd></div>
+      <div class="api-row"><dt class="k"><code>Force</code></dt><dd class="d">A named algorithm that computes influence in the field. Some borrow physical models; others are designed for interface behavior.</dd></div>
+      <div class="api-row"><dt class="k"><code>Channel</code></dt><dd class="d">A named input or measured output carried through the runtime. Host-supplied values remain distinct from engine-computed metrics.</dd></div>
+      <div class="api-row"><dt class="k"><code>Relationship</code></dt><dd class="d">An explicitly declared association between participants. Association alone does not imply that a force couples them.</dd></div>
+      <div class="api-row"><dt class="k"><code>Projection</code></dt><dd class="d">A host-selected expression of field readings, such as CSS feedback, a DOM attribute, native view state, or JSON.</dd></div>
+      <div class="api-row"><dt class="k"><code>Policy</code></dt><dd class="d">Host-configured limits and permissions that constrain runtime behavior and what a reader or agent may access.</dd></div>
+      <div class="api-row"><dt class="k"><code>Strength and mass</code></dt><dd class="d"><code>data-strength</code> configures a body's force magnitude; gravity uses it as source mass. Inertial mass is a separate, opt-in experimental model.</dd></div>
+    </dl>
+    <p class="aside">Physics is the origin and one source of models. Fundamental is not a general-purpose physics simulator; its laws and units are defined for interface behavior.</p>
   </section>
 </DocsLayout>

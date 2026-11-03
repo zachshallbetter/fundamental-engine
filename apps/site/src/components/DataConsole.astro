@@ -110,6 +110,21 @@
       <canvas id="dc-spark" class="dc-spark" role="img" aria-label="Frame delta over time"></canvas>
     </section>
 
+    <details class="dc-metric-key">
+      <summary>Metric definitions and units</summary>
+      <dl>
+        <div><dt>fps</dt><dd>Rounded 1,000 ÷ rolling median frame interval; frames per second.</dd></div>
+        <div><dt>budget</dt><dd>Rolling median interval ÷ detected frame budget, shown as a percent. The budget is the median of the first 30 clean frame intervals.</dd></div>
+        <div><dt>median / p95 / p99 δ</dt><dd>Percentiles of recent requestAnimationFrame intervals, in milliseconds.</dd></div>
+        <div><dt>dropped</dt><dd>Cumulative intervals longer than 1.5× the detected budget since the console opened.</dd></div>
+        <div><dt>long frames / TBT</dt><dd>Observed long-animation-frame or long-task entries ≥50 ms; TBT sums max(0, duration − 50 ms). These remain zero where the browser API is unavailable.</dd></div>
+        <div><dt>Hz detected</dt><dd>Approximate refresh rate derived from the detected frame budget; hertz.</dd></div>
+        <div><dt>density, energy, counts</dt><dd>Engine values or item counts, not physical units. Energy values use engine-defined units.</dd></div>
+        <div><dt>heap</dt><dd>Browser-reported JavaScript heap sizes in MiB where the non-standard memory API is exposed; otherwise unavailable.</dd></div>
+      </dl>
+      <p>These are host performance diagnostics. They are separate from <code>field.query()</code> and <code>snapshot()</code>, which report engine state.</p>
+    </details>
+
     <!-- ── Data grid ─────────────────────────────────────────────────── -->
     <div class="dc-grid">
 
@@ -407,6 +422,19 @@
   scrollbar-width: none;
 }
 .dc-loop-row::-webkit-scrollbar { display: none; }
+.dc-metric-key {
+  margin: 0;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-400);
+  font: 10px/1.5 var(--mono);
+}
+.dc-metric-key summary { color: var(--accent); cursor: pointer; }
+.dc-metric-key dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 18px; margin: 8px 0; }
+.dc-metric-key dl div { display: grid; grid-template-columns: 105px 1fr; gap: 8px; }
+.dc-metric-key dt { color: var(--ink-200); }
+.dc-metric-key dd, .dc-metric-key p { margin: 0; }
+@media (max-width: 560px) { .dc-metric-key dl { grid-template-columns: 1fr; } }
 .dc-met {
   display: flex;
   flex-direction: column;

@@ -1,10 +1,7 @@
 ---
-// A live force carousel for the "full engine, live" section: one <field-cell> (the sanctioned
-// in-frame demo surface) auto-cycling through the seven forces cell-force.ts renders — attract,
-// repel, swirl, gravity, stream, buoyancy, tether. Real engine, interactive (cursor-repel is
-// built into the cell). Colors + labels come from the engine's own MANUAL_FORCES palette; captions
-// mirror the design-system live grid. Auto-advance is reduced-motion-aware (off under
-// prefers-reduced-motion) and pauses on hover/focus; dots + arrows drive it manually either way.
+// A live force carousel in the page's shared field: its shaped DOM body changes force while the
+// existing page particles respond. It does not create an isolated <field-cell> particle pool.
+// Colors + labels come from MANUAL_FORCES; auto-advance pauses for reduced motion and interaction.
 import { MANUAL_FORCES } from '@fundamental-engine/core';
 
 const CELL_CAPTIONS: Record<string, string> = {
@@ -26,15 +23,25 @@ const first = FORCES[0];
 <figure
   class="force-carousel"
   aria-roledescription="carousel"
-  aria-label="Seven forces, rendered live"
+  aria-label="Seven forces acting on the page's shared particles"
   data-force-carousel
   data-forces={JSON.stringify(FORCES)}
   style={`--fc:${first.color}`}
 >
   <div class="fcx-frame">
-    <field-cell force={first.token} color={first.color} max-particles="220" data-fcx-cell></field-cell>
+    <div
+      class="fcx-field-body"
+      data-shaped
+      data-body={first.token}
+      data-strength="1"
+      data-range="900"
+      data-feedback
+      data-color={first.color}
+      data-fcx-cell
+      aria-hidden="true"
+    ></div>
     <span class="fcx-token" data-fcx-token aria-hidden="true">{first.token}</span>
-    <span class="fcx-of" aria-hidden="true">7 live · 36 in the catalog</span>
+    <span class="fcx-of" aria-hidden="true">shared page swarm · 7 live here</span>
   </div>
   <figcaption class="fcx-cap" aria-live="polite">
     <b data-fcx-label>{first.label}</b>
@@ -81,7 +88,7 @@ const first = FORCES[0];
       }
       if (!forces.length) return;
 
-      const cell = root.querySelector('[data-fcx-cell]');
+      const cell = root.querySelector<HTMLElement>('[data-fcx-cell]');
       const tokenEl = root.querySelector('[data-fcx-token]');
       const labelEl = root.querySelector('[data-fcx-label]');
       const capEl = root.querySelector('[data-fcx-caption]');
@@ -93,8 +100,8 @@ const first = FORCES[0];
       const show = (n: number) => {
         i = (n + forces.length) % forces.length;
         const f = forces[i];
-        cell?.setAttribute('force', f.token);
-        cell?.setAttribute('color', f.color);
+        cell?.setAttribute('data-body', f.token);
+        cell?.setAttribute('data-color', f.color);
         root.style.setProperty('--fc', f.color);
         if (tokenEl) tokenEl.textContent = f.token;
         if (labelEl) labelEl.textContent = f.label;
@@ -103,6 +110,7 @@ const first = FORCES[0];
           d.classList.toggle('is-on', k === i);
           d.setAttribute('aria-current', k === i ? 'true' : 'false');
         });
+        document.querySelector<HTMLElement>('field-root')?.rescan?.();
       };
       const stop = () => {
         if (timer) window.clearInterval(timer);
@@ -145,18 +153,21 @@ const first = FORCES[0];
   }
   .fcx-frame {
     position: relative;
-    border: 1px solid var(--line, rgba(255, 255, 255, 0.09));
+    isolation: isolate;
+    border: 1px solid color-mix(in srgb, var(--fc) 30%, var(--line, rgba(255, 255, 255, 0.09)));
     border-radius: 14px;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.015);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--fc) 5%, transparent), transparent 62%);
+    transition: border-color 0.4s ease;
   }
-  .fcx-frame field-cell {
-    display: block;
-    width: 100%;
-    height: 320px;
+  .fcx-field-body {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
   }
   .fcx-token {
     position: absolute;
+    z-index: 1;
     top: 0.85rem;
     left: 1rem;
     font-family: var(--mono);
@@ -164,10 +175,12 @@ const first = FORCES[0];
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--fc);
+    text-shadow: 0 0 24px color-mix(in srgb, var(--fc) 60%, transparent);
     transition: color 0.4s;
   }
   .fcx-of {
     position: absolute;
+    z-index: 1;
     bottom: 0.85rem;
     right: 1rem;
     font-family: var(--mono);
@@ -175,6 +188,13 @@ const first = FORCES[0];
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-4, #6b7280);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fcx-frame,
+    .fcx-token,
+    .fcx-cap b {
+      transition: none;
+    }
   }
   .fcx-cap {
     display: flex;

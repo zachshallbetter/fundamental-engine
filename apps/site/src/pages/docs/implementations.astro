@@ -19,15 +19,16 @@ const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'fi
     <p class="lede">
       Fundamental’s core (<code>@fundamental-engine/core</code>) computes the field against plain data
       and imports <strong>zero DOM</strong> — it’s renderer-agnostic. A thin host binds it to a surface.
-      Three are real today: the <strong>Web</strong>, <strong>Native</strong> (Swift on Apple
-      platforms, Kotlin on Android), and <strong>your own renderer</strong>.
+      The web adapter, native Swift and Kotlin ports, Rust headless core, and custom renderers are
+      distinct implementations. Their APIs, scheduling, rendering, and accessibility support differ.
     </p>
   </header>
 
   <div class="callout">
-    <b>The core is the contract; surfaces are bindings.</b> The same physics, force catalog, and
-    conserved particle count run on every surface — only the host and the draw change. A bug fixed in
-    the engine is fixed on all planes (the project ships engine fixes across them deliberately).
+    <b>Shared concepts do not mean identical implementations.</b> The ports implement related force
+    behavior, but host scheduling, measurement, rendering, accessibility, and API coverage vary.
+    The shared golden covers six canonical forces; see the generated <a href="/docs/api/parity">parity matrix</a>
+    for the exact set and tolerance.
   </div>
 
   <section class="docs-sec">
@@ -40,20 +41,18 @@ const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'fi
       <code>&lt;field-root&gt;</code> web component</a>, <a href="/docs/guides/react">React</a>,
       <a href="/docs/guides/typescript">vanilla / TypeScript</a> — all wrap it. This is the surface the whole site runs on.
     </p>
-    <p><b>Get it:</b> <code>npm i @fundamental-engine/vanilla</code> (the recommended door). Status: <b>stable, 0.x frozen.</b></p>
+    <p><b>Get it:</b> <code>npm i @fundamental-engine/vanilla</code> (the recommended door). The listed API surface is protected against silent removal; additions and experimental surfaces may evolve in 0.x. See <a href="/docs/api/stability">API stability</a>.</p>
   </section>
 
   <section class="docs-sec">
     <h2>Native — Swift &amp; Kotlin, and the Field Lab</h2>
     <p>
-      A <strong>Swift port</strong> runs the same field on Apple platforms (macOS / iOS / visionOS) with
-      native rendering (Metal / SwiftUI), free of the browser’s full-viewport compositing ceiling — so a
-      dense field reads smoother than the web Lab. Its showcase is the <strong>Field Lab</strong>: a
-      native app where every engine pillar is a live, interactive scene.
+      A <strong>Swift port</strong> runs on Apple platforms (macOS / iOS / visionOS) with native
+      rendering paths. Visual output and input/accessibility behavior belong to the host and are not
+      covered by the shared force golden. Its showcase is the <strong>Field Lab</strong>.
     </p>
     <p>
-      A <strong>Kotlin port</strong> mirrors the JS (and Swift) packages 1:1 on Android — the full
-      37-force core plus the integrator, held to the same <strong>cross-plane conformance gate</strong>
+      A <strong>Kotlin port</strong> implements the field on Android and is held to the same <strong>cross-plane conformance gate</strong>
       (one shared golden, JS / Swift / Kotlin), and the <code>FieldHandle</code> public API (relationship
       edges included). It ships a <code>:fundamental-platform</code> module (the six-phase
       discover→read→compute→state→write→render scheduler + the six registries), a
@@ -79,7 +78,7 @@ const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'fi
       <a href="/docs/api/imperative">imperative API reference</a>.
     </div>
     <p>
-      <b>Get it:</b> the notarized <code>.dmg</code> download is coming; until then, build it from source —
+      <b>Get it:</b> build it from source —
       <code>swift run FieldLab</code> in <code>swift/</code> (a packaging script,
       <code>swift/Scripts/release-fieldlab.sh</code>, produces the app bundle). Status: <b>preview.</b>
     </p>
@@ -96,7 +95,7 @@ const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'fi
       the field to anything that draws, on your own loop. <a href="https://github.com/zachshallbetter/habitat">Habitat</a>
       (a simulation garden) is this surface in production.
     </p>
-    <p><b>Get it:</b> <code>npm i @fundamental-engine/three three</code>. Status: <b>stable, 0.x frozen.</b></p>
+    <p><b>Get it:</b> <code>npm i @fundamental-engine/three three</code>. This adapter renders particles as a Three.js layer; your scene remains responsible for semantic and accessibility behavior.</p>
   </section>
 
   <section class="docs-sec">
@@ -104,12 +103,14 @@ const handleDim = parityData.dimensions.find((d: { id: string }) => d.id === 'fi
     <table>
       <thead><tr><th>Surface</th><th>Host / binding</th><th>Get it</th><th>Status</th></tr></thead>
       <tbody>
-        <tr><td><b>Web</b></td><td><code>@fundamental-engine/dom</code> → <code>--field-*</code></td><td><code>npm i @fundamental-engine/vanilla</code></td><td>stable</td></tr>
-        <tr><td><b>Native — Apple</b></td><td>Swift port (Metal / SwiftUI) → the Field Lab</td><td>build from source (<code>.dmg</code> soon)</td><td>preview · behind on newest primitives</td></tr>
-        <tr><td><b>Native — Android</b></td><td>Kotlin port (Compose + <code>View</code>/<code>Canvas</code>) → the Field Lab</td><td>build from source (<code><a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/android/README.md">android/</a></code>)</td><td>preview · running on-device</td></tr>
-        <tr><td><b>Headless — Rust</b></td><td><code>fundamental-core</code> crate (f64, seeded; a body is a data record) — 36 of the 37 forces, <code>solve()</code>, snapshot + causal replay, a reading layer</td><td>build from source (<code><a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/rust/README.md">rust/</a></code>); not yet on crates.io</td><td>experimental</td></tr>
-        <tr><td><b>Your renderer</b></td><td><code>@fundamental-engine/three</code> / the read primitives</td><td><code>npm i @fundamental-engine/three</code></td><td>stable</td></tr>
+        <tr><td><b>Browser engines</b></td><td>Evergreen Chromium, Firefox, and WebKit are supported; legacy Internet Explorer is not.</td><td>Use the web packages</td><td>DOM APIs and graphics limits vary by browser/device</td></tr>
+        <tr><td><b>Web</b></td><td><code>@fundamental-engine/dom</code> measures DOM geometry and can write CSS feedback; scheduling and visual output are web-specific.</td><td><code>npm i @fundamental-engine/vanilla</code></td><td>Primary integration; guarantees vary by symbol</td></tr>
+        <tr><td><b>Native — Apple</b></td><td>Swift port; native host supplies measurement, input, rendering, and accessibility behavior.</td><td>Build from source in <code>swift/</code></td><td>Preview</td></tr>
+        <tr><td><b>Native — Android</b></td><td>Kotlin port; Compose and View/Canvas hosts supply platform UI behavior.</td><td>Build from source (<a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/android/README.md">android/</a>)</td><td>Preview</td></tr>
+        <tr><td><b>Headless — Rust</b></td><td><code>fundamental-core</code> is experimental, implements 36 of 37 forces, and has no DOM or published crate.</td><td>Build from source (<a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/rust/README.md">rust/</a>)</td><td>Experimental; no <code>relief</code> channel</td></tr>
+        <tr><td><b>Your renderer</b></td><td><code>@fundamental-engine/three</code> renders particles as <code>THREE.Points</code>; it does not provide DOM semantics or accessibility for your scene.</td><td><code>npm i @fundamental-engine/three three</code></td><td>WebGL adapter</td></tr>
       </tbody>
     </table>
   </section>
+  <p class="aside">The shared conformance result covers six forces and their defined probes within the published tolerance; it does not certify visual parity, performance, accessibility, or every API method.</p>
 </DocsLayout>

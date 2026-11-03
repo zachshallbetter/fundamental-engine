@@ -3,12 +3,17 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 import SeeAlso from '../../components/SeeAlso.astro';
 
-const bench = `scale     load              ms/frame    fps      throughput
-light     800p ×  3b          0.25      ~3900     ~9.5M int/s
-typical   2000p ×  6b         0.58      ~1730     ~21M  int/s
-heavy     5000p × 10b         1.84       ~540     ~27M  int/s
-stress    10000p × 16b        6.11       ~164     ~26M  int/s
-# pnpm --filter @fundamental-engine/core bench  (Node 22, one core)`;
+const bench = `Measured core frame cost · render: none · 1440 × 900 · 8 bodies
+Workload: 30 settle frames, then 240 timed iterations per density
+
+density  particles  Node 22 · i7-5930K median  M1 Pro · Node 25 median
+1         130         0.623 ms                  0.109 ms
+2         260         0.142 ms                  0.145 ms
+3         390         0.224 ms                  0.160 ms
+4         520         0.311 ms                  0.272 ms
+
+These are historical measured medians, not device-independent guarantees.
+Source: docs/planning/fundamental-perf-fact-sheet.md (2026-09-12).`;
 
 const budgetEx = `import { inspectBudget, withinBudget, DEFAULT_BUDGET } from '@fundamental-engine/core';
 
@@ -104,26 +109,20 @@ field.setVisible(false);   // simulation + feedback signals stay live`;
 
   <section class="docs-sec">
     <h2>Benchmark</h2>
-    <p>The integrator hot path, measured across scales well beyond a real page:</p>
+    <p>This core benchmark measures a full simulation frame with eight programmatic bodies, no render surface, fixed 1440 × 900 bounds, 30 settling frames, then 240 timed iterations per density. It does not measure DOM work, canvas fill-rate, memory use, or end-to-end page frame rate.</p>
     <CodeTabs variants={[{ label: 'Benchmark', lang: 'text', code: bench }]} />
     <p>
-      A real page runs ~130 particles against a handful of bodies — the "light" row and below — so
-      the simulation is a rounding error; the render and layout discipline above are what keep it
-      smooth.
+      The table reports recorded medians on two machines, using different Node versions. Timing noise and runtime version affect the results; use it as a reproduction reference, not as a promise about a target device. The core frame loop scales with particle count and active bodies, while canvas fill-rate also depends on render mode, viewport, DPR, and GPU. Memory use depends on the particle pool and enabled capture/read features; this benchmark does not report a universal memory curve.
     </p>
     <p>
-      That holds on a real page, not just the hot path: the live homepage — <b>42 separate field
-      instances</b>, IntersectionObserver-gated — sustains <b>120 fps with zero long tasks and no
-      visible jank on desktop</b>, a result an independent integrator corroborated (conservatively).
-      The one measurement still open is a throttled mid-tier-phone profile of that page — the honest
-      remaining gap.
+      The measured real-page artifact records the homepage at 468 particles on the test runner; over its 20-second sample it measured a 16.70 ms median frame, 16.80 ms p95, 33.30 ms p99, 21 frames above 25 ms, and 3 long tasks (≥50 ms). This is one machine/browser run, not evidence of 120 fps or a universal smoothness outcome. The test machine, browser, viewport, DPR, and measurement method are in the <a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/planning/fundamental-perf-fact-sheet.md">performance fact sheet</a>.
     </p>
     <p>
       The bench above measures the engine's <em>algorithmic</em> cost in Node. The half that actually
       gates the frame — <b>fill rate</b>, canvas compositing on the real GPU — is measured by the live
       <a href="/perf-bench">fill-rate benchmark</a>: it sweeps render-mode × density × DPR in a real
-      browser and reports median/p95 fps. Run it on your own hardware (headless software-rasterizes and
-      misleads).
+      browser and reports median/p95 frame rate. The measured fact sheet records the GPU and browser;
+      run the sweep on the hardware and viewport you intend to support.
     </p>
   </section>
 

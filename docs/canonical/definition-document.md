@@ -18,10 +18,14 @@
 
 ## 1. Definition
 
+**A field is a shared runtime model where declared interface elements and data can influence one another and receive measurable readings.**
+
 ### Origin: putting a field around the DOM
 
 Fundamental began with a physics question: **what happens when a field surrounds the DOM and interface
-elements participate in it?** The DOM was the first host because it made the question concrete: the
+elements participate in it?** Physics is an inspiration and a source of selected models, not a claim
+that the runtime is a general-purpose or physically faithful simulator. Many forces are designed
+specifically for interface behavior. The DOM was the first host because it made the question concrete: the
 field could be shaped by actual interface elements, then return measurements that affect those same
 elements. This is the origin of the reciprocal principle, not a requirement that every field draw
 particles or imitate natural physics. The force catalog distinguishes modeled physical laws from
@@ -86,7 +90,8 @@ JavaScript = behavior
 Fundamental = relational behavior
 ```
 
-`Fundamental` maps semantic state to physical behavior and physical behavior to visual styling.
+`Fundamental` uses physics-inspired models and designed behavior to map authored interface state to
+measurable readings and host-selected presentation.
 
 ```txt
 Data becomes force.

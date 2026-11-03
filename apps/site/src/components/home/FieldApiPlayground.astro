@@ -1,0 +1,211 @@
+---
+---
+
+<section class="lp lp-api-playground" id="field-api" data-api-playground>
+  <div class="wrap">
+    <span class="concept-no">API · one shared field</span>
+    <h2>Change the field. Read what changed.</h2>
+    <p class="lp-lede">
+      These controls call the public field API against this page’s existing particle pool. They add no
+      particles. The visible host cards below are the only programmatic bodies in this lesson; they
+      demonstrate how a non-DOM host can describe its objects and a relationship.
+    </p>
+
+    <div class="api-play-grid">
+      <section class="api-play-card api-play-card--motion" aria-labelledby="api-motion-title">
+        <span class="api-play-kicker">01 · motion</span>
+        <h3 id="api-motion-title">Give the field a direction.</h3>
+        <p>Move the pointer over this lesson to retarget <code>flowTo()</code>; keyboard users can focus and activate the same controls. Select <code>viscosity</code> below to see momentum bleed away.</p>
+        <div class="api-play-controls">
+          <button type="button" data-api-flow aria-pressed="false">Follow pointer</button>
+          <button type="button" data-api-burst>Send a burst</button>
+          <button type="button" data-api-wave>Center the wave here</button>
+          <label>Formation
+            <select data-api-formation>
+              <option value="ambient">ambient</option><option value="wells">wells</option>
+              <option value="lanes">lanes</option><option value="scatter">scatter</option>
+              <option value="accretion">accretion</option>
+            </select>
+          </label>
+          <label>Particle separation <output data-api-separation-value>0</output>
+            <input data-api-separation type="range" min="0" max="1" step="0.1" value="0" />
+          </label>
+          <label>Wave layout <select data-api-wave-style><option value="linear">linear</option><option value="circular">circular</option></select></label>
+        </div>
+        <p class="api-play-status" data-api-motion-status aria-live="polite">The field is at rest until you choose an action.</p>
+      </section>
+
+      <section class="api-play-card api-play-card--appearance" aria-labelledby="api-appearance-title">
+        <span class="api-play-kicker">02 · appearance</span>
+        <h3 id="api-appearance-title">Choose a reading.</h3>
+        <p><code>setRender()</code> changes the underlay; <code>setOverlay()</code> stacks readings above page content. <code>setDprCap()</code> is adjustable here; the page’s automatic quality governor owns quality tiers.</p>
+        <div class="api-play-controls">
+          <label>Underlay
+            <select data-api-render>
+              <option value="dots">dots</option><option value="trails">trails</option><option value="links">links</option>
+              <option value="metaballs">metaballs</option><option value="voronoi">voronoi</option>
+              <option value="streamlines">streamlines</option><option value="flow">flow</option>
+              <option value="knockout">knockout</option><option value="redshift">redshift</option>
+              <option value="blackbody">blackbody</option><option value="depth">depth</option><option value="none">none · signals only</option>
+            </select>
+          </label>
+          <label>Field accent <input type="color" value="#4da3ff" data-api-accent /></label>
+          <label>Color template
+            <select data-api-palette><option value="ours">ours</option><option value="warm">warm</option><option value="cool">cool</option><option value="mono">mono</option></select>
+          </label>
+          <div class="api-play-checks" role="group" aria-label="Overlay readings">
+            {['streamlines', 'force-vectors', 'field-lines', 'grid', 'temperature', 'energy', 'path', 'data'].map((name) => (
+              <label><input type="checkbox" value={name} data-api-overlay />{name}</label>
+            ))}
+          </div>
+          <label class="api-play-check"><input type="checkbox" data-api-heatmap /> Density heatmap</label>
+          <label class="api-play-check"><input type="checkbox" data-api-transparent /> Transparent field background</label>
+          <label class="api-play-check"><input type="checkbox" data-api-attention /> Conserved attention (opt-in)</label>
+          <label class="api-play-check"><input type="checkbox" data-api-causality /> Cross-boundary causality</label>
+          <label>Device-pixel-ratio cap <select data-api-dpr><option value="2">2×</option><option value="1.5">1.5×</option><option value="1">1×</option></select></label>
+          <label class="api-play-check"><input type="checkbox" data-api-visible /> Pause drawing (simulation continues)</label>
+        </div>
+      </section>
+
+      <section class="api-play-card api-play-card--body" aria-labelledby="api-body-title">
+        <span class="api-play-kicker">03 · authored body</span>
+        <h3 id="api-body-title">The whole object is the mass.</h3>
+        <p>This shaped DOM body spans its measured bounds. Change its height, force, or strength; viscosity bleeds momentum without adding particles.</p>
+        <div class="api-play-controls">
+          <label>Force
+            <select data-api-body-force><option>swirl</option><option>attract swirl</option><option>repel</option><option>stream</option><option>viscosity</option><option>relief</option></select>
+          </label>
+          <label>Strength <output data-api-strength-value>0.8</output>
+            <input data-api-strength type="range" min="0.1" max="2" step="0.1" value="0.8" />
+          </label>
+          <label>Body height <output data-api-body-height-value>88 px</output>
+            <input data-api-body-height type="range" min="88" max="176" step="8" value="88" />
+          </label>
+          <label>Body color <input type="color" value="#2dd4bf" data-api-body-color /></label>
+          <label>Condition gate
+            <select data-api-when><option value="">always</option><option value="active">active</option><option value="fast">fast</option><option value="slow">slow</option><option value="hot">hot</option><option value="cool">cool</option><option value="scrolling">scrolling</option></select>
+          </label>
+          <button type="button" data-api-active aria-pressed="false">Activate body condition</button>
+          <label>Potential source
+            <select data-api-potential><option value="height">height</option><option value="tutorial-terrain">tutorial-terrain</option></select>
+          </label>
+        </div>
+        <div class="api-shape-target" data-api-shape-body data-shaped data-body="swirl pigment" data-feedback data-strength="0.8" data-range="360" data-spin="1.1" data-color="#2dd4bf" data-potential="height" tabindex="0" aria-label="Shaped field participant. Focus to activate its active condition.">
+          <b>Shaped participant</b><span>DOM bounds → body geometry</span><code data-api-body-state>swirl · strength 0.8 · #2dd4bf</code>
+        </div>
+        <p class="api-play-status" data-api-scroll-state aria-live="polite">Focus this body to satisfy an active gate. The scrolling gate reads the field’s live scroll velocity.</p>
+      </section>
+
+      <section class="api-play-card api-play-card--inspect" aria-labelledby="api-inspect-title">
+        <span class="api-play-kicker">04 · read</span>
+        <h3 id="api-inspect-title">Ask the live field.</h3>
+        <p>Inspect state, particles, vectors, energy, scoped reads, and versioned captures. Snapshot tools are experimental.</p>
+        <div class="api-play-controls api-play-buttons">
+          <button type="button" data-api-query>query()</button><button type="button" data-api-particles>read particles</button>
+          <button type="button" data-api-sample>sample here</button><button type="button" data-api-energy>energy()</button>
+          <button type="button" data-api-agent>forAgent() · metrics only</button>
+          <button type="button" data-api-snapshot>Capture snapshot A</button><button type="button" data-api-compare disabled>Capture B · compare + replay</button>
+        </div>
+        <pre class="api-play-output" data-api-output aria-live="polite">Choose a read operation to see a JSON view of the live page field.</pre>
+        <p class="api-play-footnote">Particle records are opened in the Data lesson, where one existing particle is held and marked for inspection. <a href="#evidence">Go to Data →</a></p>
+      </section>
+
+      <section class="api-play-card api-play-card--host" aria-labelledby="api-host-title">
+        <span class="api-play-kicker">05 · host data</span>
+        <h3 id="api-host-title">Supply structure from outside the DOM.</h3>
+        <p>A scalar channel can feed a declared <code>relief</code> body. A scalar grid can also hold host-deposited values for sampling.</p>
+        <div class="api-play-controls api-play-buttons">
+          <button type="button" data-api-terrain aria-pressed="false">Activate host terrain</button>
+          <button type="button" data-api-deposit>Deposit at pointer</button>
+          <button type="button" data-api-grid-read>Read grid here</button>
+        </div>
+        <p class="api-play-status" data-api-host-status aria-live="polite">No host channel is registered. The force is inert until one is supplied.</p>
+      </section>
+
+      <section class="api-play-card api-play-card--relation" aria-labelledby="api-relation-title">
+        <span class="api-play-kicker">06 · non-DOM host</span>
+        <h3 id="api-relation-title">Objects and edges can be explicit.</h3>
+        <p>These cards supply geometry to <code>addBody()</code>; the engine creates two bodies and an inspectable programmatic edge, not particles.</p>
+        <div class="api-host-objects">
+          <div data-api-object="source"><b>Study plan</b><span>host object · source</span></div>
+          <div data-api-object="target"><b>Practice session</b><span>host object · target</span></div>
+        </div>
+        <div class="api-play-controls api-play-buttons">
+          <button type="button" data-api-edge aria-pressed="false">Add relationship</button>
+          <button type="button" data-api-thread aria-pressed="false">Draw DOM thread</button>
+          <button type="button" data-api-edges>Read relationships</button>
+        </div>
+        <p class="api-play-status" data-api-edge-status aria-live="polite">No programmatic bodies have been registered.</p>
+      </section>
+    </div>
+    <div class="api-play-reference">
+      <section class="api-reference-card" aria-labelledby="api-provenance-title">
+        <span class="api-play-kicker">Authored · measured · projected</span>
+        <h3 id="api-provenance-title">Keep each value in its lane.</h3>
+        <dl>
+          <div><dt>Host authors</dt><dd><code>data-body</code>, <code>data-strength</code>, records, and scalar samplers.</dd></div>
+          <div><dt>Engine measures</dt><dd>Body feedback, query metrics, particle state, and sampled vectors or scalars.</dd></div>
+          <div><dt>Host projects</dt><dd>CSS, text, charts, and native views decide how those readings appear.</dd></div>
+          <div><dt>Runtime reports</dt><dd><code>energy()</code> returns relative simulation values, not joules or a physical conservation claim.</dd></div>
+        </dl>
+      </section>
+      <section class="api-reference-card" aria-labelledby="api-host-matrix-title">
+        <span class="api-play-kicker">One model · different hosts</span>
+        <h3 id="api-host-matrix-title">Choose the surface that owns the view.</h3>
+        <dl>
+          <div><dt>Web</dt><dd>DOM bodies and CSS feedback via the web adapters.</dd></div>
+          <div><dt>Native</dt><dd>Swift and Kotlin ports project into their native UI surfaces.</dd></div>
+          <div><dt>Custom renderer</dt><dd>Three.js reads particles and samples to draw its own view.</dd></div>
+          <div><dt>Headless</dt><dd>Records and edges can be read without DOM or canvas rendering.</dd></div>
+        </dl>
+        <a href="/docs/implementations">Compare supported capabilities and conformance →</a>
+      </section>
+    </div>
+    <p class="api-play-footnote">Each demo uses the page’s one field. Changes to global render, color, formation, and performance settings restore when this section leaves view. <a href="/engine-tour#ch-gallery">Open the full executable manual →</a></p>
+  </div>
+</section>
+
+<style>
+  .api-play-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; margin-top:2rem; }
+  .api-play-card { min-width:0; padding:clamp(1rem,2vw,1.5rem); border:1px solid rgba(150,170,205,.2); border-radius:14px; background:rgba(9,13,22,.94); box-shadow:inset 0 1px rgba(255,255,255,.025); }
+  .api-play-card--body { border-color:color-mix(in srgb,var(--api-body-color,#2dd4bf) 34%,rgba(150,170,205,.2)); }
+  .api-play-kicker { display:block; margin-bottom:.7rem; color:#73cce0; font:600 .72rem/1.4 var(--mono); letter-spacing:.14em; text-transform:uppercase; }
+  .api-play-card h3 { margin:0 0 .6rem; color:#f4f6fb; font-size:clamp(1.05rem,1.6vw,1.35rem); line-height:1.25; }
+  .api-play-card p { margin:.6rem 0 1rem; color:#a8b0c0; font-size:.91rem; line-height:1.55; }
+  .api-play-card code,.api-play-footnote code { color:#d7def0; font-family:var(--mono); font-size:.9em; }
+  .api-play-controls { display:flex; flex-wrap:wrap; align-items:center; gap:.65rem; }
+  .api-play-controls > label { display:grid; gap:.35rem; color:#aab3c4; font:500 .75rem/1.35 var(--mono); letter-spacing:.035em; }
+  .api-play-controls button,.api-play-controls select { min-height:2.35rem; border:1px solid rgba(161,179,210,.26); border-radius:999px; padding:.5rem .85rem; background:#111722; color:#e8edf7; font:500 .78rem/1.25 var(--mono); }
+  .api-play-controls button { cursor:pointer; }
+  .api-play-controls button:hover,.api-play-controls button[aria-pressed="true"] { border-color:#52d8ff; color:#82e2ff; box-shadow:0 0 20px rgba(57,179,255,.12); }
+  .api-play-controls button:disabled { opacity:.45; cursor:not-allowed; }
+  .api-play-controls select { max-width:100%; }
+  .api-play-controls input[type="range"] { width:min(16rem,70vw); accent-color:#52d8ff; }
+  .api-play-controls input[type="color"] { width:2.35rem; height:2.35rem; border:0; padding:0; background:none; cursor:pointer; }
+  .api-play-checks { display:flex; flex-wrap:wrap; gap:.35rem .8rem; width:100%; padding:.65rem .75rem; border:1px solid rgba(161,179,210,.14); border-radius:10px; background:rgba(255,255,255,.018); }
+  .api-play-checks label,.api-play-controls .api-play-check { display:flex; align-items:center; gap:.4rem; color:#b7c0d0; font:500 .69rem/1.4 var(--mono); }
+  .api-play-checks input,.api-play-check input { accent-color:#52d8ff; }
+  .api-play-status { min-height:1.5em; margin:.9rem 0 0!important; color:#72cde2!important; font: .72rem/1.5 var(--mono)!important; }
+  .api-shape-target { display:grid; gap:.35rem; min-height:var(--api-body-height,5.5rem); align-content:center; margin-top:1rem; padding:1rem; border:1px solid color-mix(in srgb,var(--api-body-color,#2dd4bf) 42%,transparent); border-radius:12px; background:color-mix(in srgb,var(--api-body-color,#2dd4bf) calc(var(--d,0)*9%),rgba(255,255,255,.025)); transition:min-height .25s,border-color .25s,background .25s; }
+  .api-shape-target b { color:var(--api-body-color,#2dd4bf); text-shadow:0 0 22px color-mix(in srgb,var(--api-body-color,#2dd4bf) 55%,transparent); }
+  .api-shape-target span,.api-shape-target code { color:#aab3c4; font-size:.74rem; }
+  .api-play-buttons { margin-top:.25rem; }
+  .api-play-output { max-height:22rem; overflow:auto; margin:1rem 0 0; padding:1rem; border:1px solid rgba(161,179,210,.17); border-radius:11px; background:rgba(3,6,11,.78); color:#c4cfdf; font: .68rem/1.55 var(--mono); white-space:pre-wrap; overflow-wrap:anywhere; }
+  .api-host-objects { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.7rem; margin:1rem 0; }
+  .api-host-objects > div { display:grid; gap:.3rem; min-width:0; padding:.85rem; border:1px solid rgba(130,160,205,.22); border-radius:10px; background:rgba(19,27,40,.9); }
+  .api-host-objects b { color:#eff4fc; }
+  .api-host-objects span { color:#91a0b6; font: .68rem/1.4 var(--mono); }
+  .api-play-footnote { margin:1.25rem 0 0; color:#8792a4; font-size:.82rem; line-height:1.55; }
+  .api-play-footnote a { color:#73cce0; }
+  .api-play-reference { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; margin:1rem 0 0; }
+  .api-reference-card { min-width:0; padding:clamp(1rem,2vw,1.5rem); border:1px solid rgba(150,170,205,.2); border-radius:14px; background:rgba(9,13,22,.94); }
+  .api-reference-card h3 { margin:0 0 .75rem; color:#f4f6fb; font-size:1rem; }
+  .api-reference-card dl { display:grid; gap:.5rem; margin:0; }
+  .api-reference-card dl div { display:grid; grid-template-columns:minmax(7rem,.45fr) 1fr; gap:.8rem; padding:.55rem 0; border-top:1px solid rgba(150,170,205,.12); }
+  .api-reference-card dt { color:#78cfe5; font:600 .7rem/1.5 var(--mono); }
+  .api-reference-card dd { margin:0; color:#a8b0c0; font-size:.8rem; line-height:1.5; }
+  .api-reference-card > a { display:inline-block; margin-top:.9rem; color:#73cce0; font-size:.82rem; }
+  .api-shape-target:focus-visible { outline:2px solid #52d8ff; outline-offset:3px; }
+  @media(max-width:760px) { .api-play-grid,.api-play-reference { grid-template-columns:1fr; } .api-play-card,.api-reference-card { padding:1rem; } .api-reference-card dl div { grid-template-columns:1fr; gap:.2rem; } }
+  @media(prefers-reduced-motion:reduce) { .api-shape-target { transition:none; } }
+</style>
