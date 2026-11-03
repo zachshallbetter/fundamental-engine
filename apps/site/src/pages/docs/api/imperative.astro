@@ -214,15 +214,16 @@ if (unknownMembers.length) {
 // ── editorial grouping of the options ────────────────────────────────────────────────────────────
 // Options that belong to a WEB SURFACE package rather than to the core `FieldOptions` type — they
 // have no parity row because they are not an engine capability at all. `bounds` is a
-// `@fundamental-engine/vanilla` / `FieldField` convenience over `containerHost()`.
-const SURFACE_ONLY_OPTIONS = new Set(['bounds']);
+// `@fundamental-engine/vanilla` / `FieldField` convenience over `containerHost()`; `runOffscreen`
+// is the same for its `pauseOffscreen` option.
+const SURFACE_ONLY_OPTIONS = new Set(['bounds', 'runOffscreen']);
 
 const OPTION_GROUPS: { title: string; blurb: string; names: string[] }[] = [
   {
     title: 'Where the field lives',
     blurb:
       '`createField` throws without a host. `@fundamental-engine/vanilla`, the React component and `<field-root>` all supply one for you — reach for a host directly when you are writing your own surface.',
-    names: ['host', 'bounds'],
+    names: ['host', 'bounds', 'runOffscreen'],
   },
   {
     title: 'Matter and motion',
