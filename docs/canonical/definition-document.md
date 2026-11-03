@@ -18,6 +18,16 @@
 
 ## 1. Definition
 
+### Origin: putting a field around the DOM
+
+Fundamental began with a physics question: **what happens when a field surrounds the DOM and interface
+elements participate in it?** The DOM was the first host because it made the question concrete: the
+field could be shaped by actual interface elements, then return measurements that affect those same
+elements. This is the origin of the reciprocal principle, not a requirement that every field draw
+particles or imitate natural physics. The force catalog distinguishes modeled physical laws from
+designed interface behavior and semantic translations; see [truth modes](causality-and-truth.md) and
+the [field behavior table](fundamental-field-behavior-table.md).
+
 `Fundamental` is an inspectable field language for interfaces — and that inspection is now concrete: the running field is directly queryable, snapshot-able, diff-able, and replay-able as plain data (the [substrate API](substrate-api.md)), not only observed through CSS variables and render surfaces.
 
 It turns DOM elements, custom components, data records, relationships, events, users, and layout regions into participants inside a shared field context. Those participants can emit fields, apply forces, guide matter, receive density, write state back to the DOM, trigger events, form relationships, and expose their behavior through visualization, metrics, and tests. The shared context spans bodies, agents, relationships, measurements, metrics, feedback, and every render surface — particles are one agent type within it, not the whole substrate.
@@ -34,6 +44,12 @@ The field bends them back.
 `Fundamental` is not a particle background.
 
 It is a relational behavior layer for the web.
+
+Its scope is additive to the host application. Fundamental can centralize cross-element relationships
+and field behavior that would otherwise be re-derived as view-specific glue; the application remains
+the authority for its records, domain rules, and permissions, while semantic HTML remains the canonical
+document for web content. Fundamental does not replace component frameworks or local state where those
+are the right model.
 
 **A field can render nothing, contain no particles, and still be complete:** if it has bodies,
 relationships, metrics, queryable state, and projections or feedback, it is a field. The runtime

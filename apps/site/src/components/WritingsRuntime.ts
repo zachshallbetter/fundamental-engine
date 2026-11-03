@@ -8,6 +8,12 @@ import { recordVisit, normRoute, applyNavField, reduceMotion } from "../lib/nav-
 function initWritingsShell(shell: HTMLElement): () => void {
   const side = shell.querySelector<HTMLElement>("#writingsSide");
   if (!side) return () => {}; // not a writings page (docs uses #docsSide + its own runtime)
+  const toggle = shell.querySelector<HTMLButtonElement>('.docs-side-toggle[aria-controls="writingsSide"]');
+  const onToggle = (): void => {
+    const open = side.classList.toggle("open");
+    toggle?.setAttribute("aria-expanded", String(open));
+  };
+  toggle?.addEventListener("click", onToggle);
   recordVisit(normRoute(location.pathname));
 
   const main = shell.querySelector<HTMLElement>("main.docs-content");
@@ -26,6 +32,9 @@ function initWritingsShell(shell: HTMLElement): () => void {
 
   return () => {
     for (const h of handles) h?.destroy();
+    toggle?.removeEventListener("click", onToggle);
+    side.classList.remove("open");
+    toggle?.setAttribute("aria-expanded", "false");
     if (main) delete main.dataset.fieldDocs;
   };
 }

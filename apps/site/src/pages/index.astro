@@ -84,13 +84,13 @@ const sourceLd = {
 ---
 
 <Base
-  title="Fundamental — a physics engine for interfaces"
-  description="Elements attract, repel and settle like real matter, so a layout shows its relationships instead of listing them. Nothing is animated — you add a data-body attribute and style the live --field-* variables the runtime hands back. Runs on the web, in WebGL, and natively on Apple and Android."
+  title="Fundamental — a relational field runtime for interfaces"
+  description="Fundamental places a shared, inspectable field around interface elements and data. Participants shape the field; its measurements feed back to the host as signals and optional visuals. Inspired by physics, it keeps semantic HTML and application data authoritative."
   jsonLd={[softwareLd, sourceLd]}
 >
   <SiteNav current="home" />
   <main id="main" class="manual-shell">
-    <ManualHero kicker="Fundamental · a physics engine for interfaces">
+    <ManualHero kicker="Fundamental · a relational field runtime for interfaces">
       <h1 slot="title">Elements have <span
           class="hero-mass"
           data-hot
@@ -110,10 +110,11 @@ const sourceLd = {
           style="--cat:#ff9d5c;">.</span></h1>
       <p slot="standfirst" class="standfirst"
         data-body="attract swirl pigment" data-shaped data-strength="0.5" data-range="260" data-spin="1.1" data-color="#ffce6b" style="--cat:#ffce6b">
-        Elements attract, repel and settle like real matter, so a layout <em>shows</em> its
-        relationships instead of listing them. Nothing on this page is animated — every motion
-        you can see is the field resolving. You add a <code>data-body</code> attribute; the
-        runtime measures and hands back live <code>--field-*</code> variables you style with.
+        Fundamental places a shared field around interface elements and data. Participants shape
+        the field; its measurements feed back to the host as signals the application can use.
+        Physics inspires the model, while each behavior declares whether it is physical, designed,
+        or semantic. The DOM and application remain authoritative; visuals are optional. Add a
+        <code>data-body</code> attribute and the runtime returns live <code>--field-*</code> signals.
       </p>
       <p slot="thesis" class="thesis"
         data-body="attract swirl pigment" data-strength="0.45" data-range="280" data-spin="1.1" data-color="#f0628e" style="--cat:#f0628e">
