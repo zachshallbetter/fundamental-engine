@@ -7,6 +7,11 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
 
 ## [Unreleased]
 
+## [0.12.0] — 2026-11-03
+
+A navigation milestone: agents get a real wayfinding subsystem, the cursor
+becomes a participant, and a transient per-body flare lands on its own channel.
+
 ### Added
 
 - **DOM morph bodies can target an inline SVG path.** Set `data-target="#path-id"` on a body using `morph`; the DOM host samples the path in viewport coordinates and supplies the target points to the existing field behavior.
@@ -60,8 +65,6 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
   - **Nothing moves for a field that declares no reading**, which is every field that has not asked for one. `overlay` defaults to `'off'`; no canvas is requested from `overlayCanvasProvider` (the #676 pins in `option-seams.test.ts` are untouched), no context is acquired, nothing is drawn. The new cost on the default path is one null check per frame. The site's own `<field-root>` is `render="dots" overlay="off"` and is byte-identical.
   - **One documented non-identical case:** a caller who *injects* an `overlayBackend` into a `render: 'none'` field now receives `size(W, H, dpr)` calls it previously did not (the sizing path used to return early with no underlay context). No shipped host injects one.
   - **Swift moves in the same commit.** `FieldEngine`'s draw gate and `FieldField`'s managed-surface attach take the same shape, and `setOverlay` attaches a surface when a reading goes active — the Swift counterpart of core's lazy `ensureOverlaySurface`. New (additive) Swift surface: `OverlayInput.activeModes` / `.isActive`, now the one definition of "a reading is active" that both the host and the engine read. **Kotlin has no gate to relax**: its app hosts (`FieldView`) draw no readings at all today — only the JVM lab does, through its own enum — so this is honestly a two-plane change, and `overlay-modes` parity (9/9/9, vocabulary-only on Kotlin) is unaffected either way. The cross-plane conformance golden is untouched: no force, integrator or metric behaviour changed.
-### Changed
-
 - **Docs: the package READMEs' recipe-gallery link pointed at a URL that has never existed** (docs-refactor Phase 6, #1001). `packages/core`, `packages/elements`, `packages/vanilla` and `packages/react` all sent readers to `/docs/gallery` for the 64 patterns; the gallery is at `/patterns` and `/docs/gallery` 404s. Four READMEs plus `docs/canonical/authoring-and-recipes.md` now point at the real page. Also in `packages/core/src/config/manual.ts`, a comment referenced `/docs/api/forces`, which Phase 6 merged into `/docs/api/declarative`. **Documentation only — no code, no exported surface, and no behaviour changed on any plane.**
 
 ### Fixed
