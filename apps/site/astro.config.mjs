@@ -13,7 +13,7 @@ const RETIRED_SITEMAP_PATHS = Object.keys(redirectMap());
 // Static output (default) → apps/site/dist, served by Vercel.
 // The live `<field-root>` element (@fundamental-engine/elements) runs the engine.
 export default defineConfig({
-  site: 'https://fundamental-engine.com',
+  site: 'https://fundamentalengine.com',
   integrations: [
     // sitemap-index.xml + per-chunk sitemaps; referenced from public/robots.txt.
     // The redirect stubs below carry noindex — keep them out of the sitemap too.

@@ -95,3 +95,10 @@ venv/
 DerivedData/
 .gradle/
 .expo/
+
+# Claude / agent conversation thread backups (local only)
+.agents/thread/
+.agents/threads/
+
+# Imported Claude memory snapshots (local only)
+.agents/memory/claude-import/

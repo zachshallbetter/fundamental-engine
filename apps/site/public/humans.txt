@@ -20,5 +20,5 @@
 
   Standards .........: HTML5, semantic markup, JSON-LD, RSS, sitemap, llms.txt
   Built with ........: Astro, TypeScript, and the engine itself (the site is a live example)
-  Attribution .......: Please credit Zach Shallbetter and link https://fundamental-engine.com
+  Attribution .......: Please credit Zach Shallbetter and link https://fundamentalengine.com
   Last updated ......: 2026-07-06

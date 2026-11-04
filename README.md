@@ -6,7 +6,7 @@ Bodies bend the field; the field bends them back. The DOM is the first host, not
 system — the same field model can run headlessly, in native views, across design systems, inside AI
 tools, over data records, or through custom render surfaces.
 
-[![Live demo: fundamental-engine.com](https://img.shields.io/badge/demo-fundamental--engine.com-4da3ff)](https://fundamental-engine.com)
+[![Live demo: fundamentalengine.com](https://img.shields.io/badge/demo-fundamental--engine.com-4da3ff)](https://fundamentalengine.com)
 [![npm](https://img.shields.io/npm/v/@fundamental-engine/core?label=npm&color=2dd4bf)](https://www.npmjs.com/package/@fundamental-engine/core)
 [![npm provenance](https://img.shields.io/badge/npm-provenance-2dd4bf?logo=npm)](https://www.npmjs.com/package/@fundamental-engine/core#provenance)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -32,8 +32,8 @@ component, a plain function, a headless service, or a native host. The core ship
 dependencies; framework and platform integrations are adapters, not requirements.
 
 > **See it live.** The whole system runs over the engine at
-> **[fundamental-engine.com](https://fundamental-engine.com)**, with a physics
-> [Lab](https://fundamental-engine.com/lab) where you fire particles into a force and watch the math hold.
+> **[fundamentalengine.com](https://fundamentalengine.com)**, with a physics
+> [Lab](https://fundamentalengine.com/lab) where you fire particles into a force and watch the math hold.
 
 ## The idea
 
@@ -193,7 +193,7 @@ interaction.
 
 The DOM is the first host, not the only one. The engine is ported natively to Apple and Android
 (**preview status** — see [`support-matrix.md`](docs/canonical/support-matrix.md) for exactly what's
-not yet covered, and the [live parity matrix](https://fundamental-engine.com/docs/api/parity) for the
+not yet covered, and the [live parity matrix](https://fundamentalengine.com/docs/api/parity) for the
 current `FieldHandle` method-coverage numbers), each mirroring the same model — forces, Field Patterns,
 the body contract, the handle surface, and conformance — and held to the JS core by a shared
 golden-conformance gate. Physics conformance and API-surface parity are separate guarantees: the force
@@ -201,10 +201,10 @@ golden-conformance gate. Physics conformance and API-surface parity are separate
 trail the newest JS-side additions.
 
 - **Swift (Apple platforms)** — a native Swift port in [`swift/`](swift/README.md), running on a
-  Metal/SwiftUI host. See the [Swift guide](https://fundamental-engine.com/docs/guides/swift).
+  Metal/SwiftUI host. See the [Swift guide](https://fundamentalengine.com/docs/guides/swift).
 - **Kotlin (Android)** — a native Kotlin port in [`android/`](android/README.md) (core + platform + a
   Jetpack Compose host + the lab). See the
-  [Kotlin guide](https://fundamental-engine.com/docs/guides/kotlin).
+  [Kotlin guide](https://fundamentalengine.com/docs/guides/kotlin).
 
 - **Rust (headless, experimental)** — a fourth plane in [`rust/`](rust/README.md): an f64, seeded,
   zero-dependency `fundamental-core` crate for servers, data pipelines and CMS runtimes, where a body is
@@ -301,7 +301,7 @@ fill-rate-bound, not particle-bound; `<field-root>` applies it automatically.
 
 Ten of the forces also carry a four-field classification — gravity, electromagnetic, strong, weak
 (`FORCE_FIELD` / `classifyForce()`); the other 27, including the canonical nine, are unclassified. See
-[`/docs/concepts#natural-fields`](https://fundamental-engine.com/docs/concepts#natural-fields).
+[`/docs/concepts#natural-fields`](https://fundamentalengine.com/docs/concepts#natural-fields).
 
 **9 presets** compose primitives into cosmology with no new engine code: `blackhole`, `whitehole`,
 `wormhole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
@@ -318,7 +318,7 @@ Ten of the forces also carry a four-field classification — gravity, electromag
   `prediction` are `draw*()` functions you call on your own canvas (`drawContours`, `drawTopology`, …) —
   they are not `render` values.
 
-Live on [`/docs/diagnostics`](https://fundamental-engine.com/docs/diagnostics).
+Live on [`/docs/diagnostics`](https://fundamentalengine.com/docs/diagnostics).
 
 **Controlled flow.** `field.flowTo(x, y)` places a movable flow focus the field bends toward — it pulls
 matter in and curves the streamlines; retarget it each frame to follow the pointer, an element, a path,
@@ -376,10 +376,10 @@ bindData(listEl, tasks, (t) => ({                   // records → bodies; data 
 }), { pattern: 'priority-well' });
 ```
 
-Browse and run all 64 patterns at the [pattern gallery](https://fundamental-engine.com/patterns), pick apart a
-compiled plan in the [inspector](https://fundamental-engine.com/docs/inspector), and see the three
+Browse and run all 64 patterns at the [pattern gallery](https://fundamentalengine.com/patterns), pick apart a
+compiled plan in the [inspector](https://fundamentalengine.com/docs/inspector), and see the three
 surfaces wired together in the [starter app](apps/starter). The
-[concept studies](https://fundamental-engine.com/docs/studies/reading-field) (Reading, Review, Search,
+[concept studies](https://fundamentalengine.com/docs/studies/reading-field) (Reading, Review, Search,
 System Weather, Evidence) reinterpret familiar pages as data-driven fields, and stay legible with the
 field off.
 
@@ -463,7 +463,7 @@ surface, whose output is a serializable reading rather than a visual write.
 
 ## Inspect and verify
 
-**The field is readable, not a black box.** The [inspector](https://fundamental-engine.com/docs/inspector)
+**The field is readable, not a black box.** The [inspector](https://fundamentalengine.com/docs/inspector)
 reads the live platform each frame — the six-phase spine, registry counts, the typed relationship graph,
 active formations, metrics, projections, and lint warnings — without mutating it.
 
@@ -530,6 +530,19 @@ npm i @fundamental-engine/elements  # the web component
 npm i @fundamental-engine/core      # own the canvas / renderer-agnostic core
 ```
 
+### Install with Homebrew
+
+The scaffolder is also available as a Homebrew formula, so you can install the
+`create-fundamental-engine` CLI without npm:
+
+```bash
+brew tap zachshallbetter/tap
+brew install zachshallbetter/tap/fundamental
+```
+
+This installs the same CLI that `npm create @fundamental-engine` runs. The
+formula source lives in [`HomebrewFormula/`](HomebrewFormula/).
+
 The `@fundamental-engine/kit` / `fundamental-engine` umbrella packages were **retired in 0.7.0**. The
 dependency direction is strict and uniform:
 
@@ -564,12 +577,12 @@ surface is frozen, with new surface added additively; the support and versioning
 
 ## Documentation
 
-- **Field Manual** at [fundamental-engine.com](https://fundamental-engine.com): every concept running live
+- **Field Manual** at [fundamentalengine.com](https://fundamentalengine.com): every concept running live
   over the engine.
-- **Lab** at [fundamental-engine.com/lab](https://fundamental-engine.com/lab): fire particles into a
+- **Lab** at [fundamentalengine.com/lab](https://fundamentalengine.com/lab): fire particles into a
   force, watch the track, share the result through a URL.
-- **Pattern gallery** at [fundamental-engine.com/patterns](https://fundamental-engine.com/patterns)
-  and the **inspector** at [fundamental-engine.com/docs/inspector](https://fundamental-engine.com/docs/inspector).
+- **Pattern gallery** at [fundamentalengine.com/patterns](https://fundamentalengine.com/patterns)
+  and the **inspector** at [fundamentalengine.com/docs/inspector](https://fundamentalengine.com/docs/inspector).
 - [`docs/README.md`](docs/README.md): the full documentation map.
 - [`docs/canonical/api-stability.md`](docs/canonical/api-stability.md) ·
   [`docs/planning/1.0-surface.md`](docs/planning/1.0-surface.md): the frozen + additive surface and its tiering.

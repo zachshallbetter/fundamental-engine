@@ -18,8 +18,14 @@
   --ink-800: #e4ebf7;
   --ink-700: rgba(228, 235, 247, 0.78);
   --ink-600: rgba(228, 235, 247, 0.62);
-  --ink-500: rgba(200, 212, 230, 0.46);
-  --ink-400: rgba(196, 207, 226, 0.3);
+  /* --ink-500 / --ink-400 are text tiers (muted body + breadcrumb/meta). Their
+     alphas were 0.46 / 0.3, which on --bg-page (#04050a) measured ~3.4:1 and
+     ~1.9:1 — both below WCAG AA (4.5:1 for normal/small text). Raised to clear
+     AA at the small sizes they're used at (breadcrumbs are 0.66rem) while keeping
+     a visible gap between the two tiers. --ink-300 stays faint: decorative /
+     disabled / hairline use only, never meaningful text. */
+  --ink-500: rgba(200, 212, 230, 0.72);
+  --ink-400: rgba(196, 207, 226, 0.58);
   --ink-300: rgba(196, 207, 226, 0.18);
 
   /* lines */
@@ -94,6 +100,69 @@
   --shadow-lg: 0 34px 80px -36px rgba(0, 0, 0, 0.9);
 
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================================
+   ACCESSIBILITY MODES — token-only remaps, opt-in or OS-driven.
+   The site reads everything through these tokens, so flipping a
+   mode re-themes the whole UI with no per-component work. The modes
+   are set on <html> by the inline boot script in Base.astro, which
+   restores the saved preference and also honours OS settings.
+   ============================================================ */
+
+/* High contrast. Manual via [data-contrast="high"], or automatic from the
+   OS (prefers-contrast: more) unless the reader explicitly chose standard.
+   Text goes to full/near-full white and hairlines strengthen, so every tier
+   clears AA (and most AAA) against the near-black surfaces. */
+:root[data-contrast='high'] {
+  --ink-900: #ffffff;
+  --ink-800: #ffffff;
+  --ink-700: rgba(255, 255, 255, 0.96);
+  --ink-600: rgba(255, 255, 255, 0.9);
+  --ink-500: rgba(255, 255, 255, 0.85);
+  --ink-400: rgba(255, 255, 255, 0.8);
+  --ink-300: rgba(255, 255, 255, 0.55);
+  --line: rgba(255, 255, 255, 0.3);
+  --line-2: rgba(255, 255, 255, 0.45);
+  --line-3: rgba(255, 255, 255, 0.62);
+  --accent: #9cc9ff;
+  --state-signal: #a6dcef;
+  --state-attention: #ffb48c;
+}
+@media (prefers-contrast: more) {
+  :root:not([data-contrast='standard']) {
+    --ink-900: #ffffff;
+    --ink-800: #ffffff;
+    --ink-700: rgba(255, 255, 255, 0.96);
+    --ink-600: rgba(255, 255, 255, 0.9);
+    --ink-500: rgba(255, 255, 255, 0.85);
+    --ink-400: rgba(255, 255, 255, 0.8);
+    --ink-300: rgba(255, 255, 255, 0.55);
+    --line: rgba(255, 255, 255, 0.3);
+    --line-2: rgba(255, 255, 255, 0.45);
+    --line-3: rgba(255, 255, 255, 0.62);
+    --accent: #9cc9ff;
+    --state-signal: #a6dcef;
+    --state-attention: #ffb48c;
+  }
+}
+
+/* Colorblind-safe. There is no OS media query for colour-vision deficiency, so
+   this is manual only ([data-cvd="on"]). It swaps the hue-coded chrome (accent,
+   the two state hues, and the ok/warn/err status colours — the places where hue
+   alone carries meaning) for the Okabe-Ito palette, which is distinguishable
+   under protan/deutan/tritan vision. The particle field is decorative
+   (aria-hidden) and its per-force hues never carry meaning on their own, so they
+   are intentionally left to the engine. */
+:root[data-cvd='on'] {
+  --accent: #56b4e9; /* sky blue */
+  --accent-soft: rgba(86, 180, 233, 0.16);
+  --state-signal: #56b4e9; /* sky blue */
+  --state-attention: #e69f00; /* orange */
+  --coherence: #f0e442; /* yellow */
+  --ok: #009e73; /* bluish green */
+  --warn: #e69f00; /* orange */
+  --err: #d55e00; /* vermillion */
 }
 
 /* Global a11y utility: visually hidden but exposed to assistive tech and the

@@ -7,6 +7,7 @@ import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import Breadcrumbs, { type Crumb } from '../components/Breadcrumbs.astro';
 import { WRITING_CATS, writingCat, writingCatColor } from '../lib/writings-meta.ts';
+import { ogImageForPath } from '../lib/og-cards';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import '../styles/ds-tokens.css';
 import '../styles/docs.css';
@@ -18,11 +19,15 @@ interface Props {
   description?: string;
   category?: string;
   date?: Date;
+  updated?: Date;
+  dateModified?: Date;
   author?: string;
   series?: string;
+  ogImage?: string;
   slug: string;
 }
-const { title, description, category, date, author, series, slug } = Astro.props;
+const { title, description, category, date, updated, dateModified, author, series, ogImage, slug } =
+  Astro.props;
 
 const CATS = WRITING_CATS;
 const sortEntries = (a: CollectionEntry<'writings'>, b: CollectionEntry<'writings'>) => {
@@ -57,16 +62,23 @@ const numbered = (e: CollectionEntry<'writings'>) =>
 // document, so the script renders at the top of the layout body.)
 const articleLd = {
   '@context': 'https://schema.org',
-  '@type': 'Article',
+  '@type': 'BlogPosting',
   headline: title,
   ...(description ? { description } : {}),
   ...(date ? { datePublished: date.toISOString() } : {}),
+  ...(date ? { dateModified: (updated ?? dateModified ?? date).toISOString() } : {}),
+  image: new URL(ogImage ?? ogImageForPath(path) ?? '/og.jpg', Astro.site).href,
   author: {
     '@type': 'Person',
     name: author || 'Zach Shallbetter',
     url: 'https://zachshallbetter.com',
   },
-  mainEntityOfPage: `https://fundamental-engine.com/writings/${slug}`,
+  publisher: {
+    '@type': 'Person',
+    name: 'Zach Shallbetter',
+    url: 'https://zachshallbetter.com',
+  },
+  mainEntityOfPage: `https://fundamentalengine.com/writings/${slug}`,
 };
 ---
 

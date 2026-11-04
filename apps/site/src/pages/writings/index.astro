@@ -26,11 +26,36 @@ const byCat = (k: string) => all.filter((e) => e.data.category === k);
 const fmt = (d: Date) => new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: 'numeric' }).format(d);
 const num = (e: CollectionEntry<'writings'>) =>
   e.data.category === 'research' && e.data.order != null && e.data.order < 90 ? `${e.data.order}. ` : '';
+
+// Blog structured data for the writings index. The author/publisher is the Person
+// behind the site; blogPost lists every published entry with an absolute URL.
+const author = {
+  '@type': 'Person',
+  name: 'Zach Shallbetter',
+  url: 'https://zachshallbetter.com',
+};
+const blogLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: 'Fundamental — Writings',
+  url: 'https://fundamentalengine.com/writings',
+  description:
+    'Fundamental writings — features, releases, and research on a platform-native relational field runtime.',
+  author,
+  publisher: author,
+  blogPost: all.map((e) => ({
+    '@type': 'BlogPosting',
+    headline: e.data.title,
+    url: `https://fundamentalengine.com/writings/${e.id}`,
+    datePublished: e.data.date.toISOString(),
+  })),
+};
 ---
 
 <Base
   title="Writings · Fundamental"
   description="Fundamental writings — features, releases, and research on a platform-native relational field runtime."
+  jsonLd={blogLd}
 >
   <SiteNav current="writings" />
   <main id="main" class="writings-index">

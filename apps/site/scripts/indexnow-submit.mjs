@@ -13,7 +13,7 @@
 // One shared endpoint (api.indexnow.org) fans the submission out to all participating
 // engines, so a single call covers Bing + the rest.
 
-const HOST = 'fundamental-engine.com';
+const HOST = 'fundamentalengine.com';
 const KEY = 'e11f6a0750ae4fc0b26a5072e0453a55';
 const KEY_LOCATION = `https://${HOST}/${KEY}.txt`;
 const ENDPOINT = 'https://api.indexnow.org/indexnow';

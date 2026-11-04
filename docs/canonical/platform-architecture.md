@@ -316,11 +316,11 @@ All of the above is `<field-root>`'s wiring. **Raw `createField` runs no governo
 feeds it frame durations and nothing calls `setQualityTier`, so a consumer on the low-level door
 gets the full-cost path — cap `dprCap` up front, or construct a `QualityGovernor` (exported from
 `@fundamental-engine/dom`) and forward its tiers yourself. See the performance guide's
-[createField is the unguarded path](https://fundamental-engine.com/docs/performance#createfield-unguarded).
+[createField is the unguarded path](https://fundamentalengine.com/docs/performance#createfield-unguarded).
 
 ## Reading Field
 
-[/docs/reading-field](https://fundamental-engine.com/docs/reading-field) is the flagship demonstration: an
+[/docs/reading-field](https://fundamentalengine.com/docs/reading-field) is the flagship demonstration: an
 ordinary content page (sections, headings, citations, a table of contents) wired to
 `createFieldPlatform`, exercising every registry through the scheduler. Sections are measured bodies;
 viewport-centre proximity becomes attention; attention accumulates into memory; the table of contents

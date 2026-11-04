@@ -1,4 +1,4 @@
-# Fundamental — fundamental-engine.com
+# Fundamental — fundamentalengine.com
 # Humans:     /humans.txt
 # AI agents:  /llms.txt  (index)  ·  /llms-full.txt  (full corpus)
 # Created and maintained by Zach Shallbetter — https://zachshallbetter.com
@@ -40,4 +40,4 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://fundamental-engine.com/sitemap-index.xml
+Sitemap: https://fundamentalengine.com/sitemap-index.xml
