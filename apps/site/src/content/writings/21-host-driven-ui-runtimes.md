@@ -1,6 +1,6 @@
 ---
 title: "Host-Driven UI Runtimes: Portability Through Environmental Injection"
-description: "A systems-paper generalization of Fundamental's FieldHost seam: isolating all environment contact behind an explicit host interface so a UI behavior core runs across browser, headless, worker, and native targets."
+description: "A systems paper: isolate all environment contact behind one explicit host interface so a UI-behavior core runs across browser, headless, worker, and native."
 summary: "Generalizes Fundamental's FieldHost boundary into a portable host-driven runtime pattern, arguing that isolating environment contact behind one explicit host interface is what makes a UI behavior core testable and portable across browser, headless, worker, native, and alternative render targets."
 date: 2026-06-27
 category: research

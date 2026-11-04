@@ -1,6 +1,6 @@
 ---
 title: "Contradiction-Aware Interfaces"
-description: "A portable interface principle: treat contradiction — opposing evidence, conflicting data, inconsistent recommendations — as first-class, inspectable state rather than silently flattening it into one answer."
+description: "A portable principle: treat contradiction — opposing evidence, conflicting data, inconsistent advice — as inspectable state, never flattened into one answer."
 summary: "Generalizes the Fundamental evidence-field work into a portable, falsifiable model for interfaces that surface contradiction as first-class, queryable state instead of flattening conflict into a single answer, with a four-study evaluation plan."
 date: 2026-06-27
 category: research

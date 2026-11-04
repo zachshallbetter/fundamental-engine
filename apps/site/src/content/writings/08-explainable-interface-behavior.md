@@ -1,6 +1,6 @@
 ---
 title: "Explainable Interface Behavior Through Field Diagnostics"
-description: "A diagnostic framework for explainable interaction behavior."
+description: "A diagnostic framework that makes interface behavior explainable: the field reveals why it moved, read-only and without ever altering what it reports."
 summary: "A diagnostic framework for explainable interaction behavior."
 date: 2026-06-07
 category: research

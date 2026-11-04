@@ -1,6 +1,6 @@
 ---
 title: "Accessibility Conformance for Expressive Interfaces"
-description: "A portable, falsifiable conformance model for expressive interfaces: schemas, lint, previews, source-of-meaning traces, and channel-equivalence checks that make accessibility claims testable beyond Fundamental."
+description: "A falsifiable conformance model for expressive interfaces: schemas, lint, previews, and channel-equivalence checks that make accessibility claims testable."
 summary: "Generalizes Fundamental's reduced-motion work into a renderer-agnostic conformance contract — semantic source, redundant carrier, reduced-mode equivalent, preview, lint, and a non-inferiority study protocol — for making accessibility claims about expressive interfaces falsifiable."
 date: 2026-06-27
 category: research

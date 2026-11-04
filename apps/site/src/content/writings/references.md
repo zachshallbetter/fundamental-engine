@@ -1,6 +1,6 @@
 ---
 title: "References"
-description: "Running bibliography for the Fundamental research paper family."
+description: "The running bibliography for the Fundamental research paper family — the shared sources, prior art, and citations behind the field-interface papers."
 summary: "The shared bibliography for the paper family."
 date: 2026-06-07
 category: research

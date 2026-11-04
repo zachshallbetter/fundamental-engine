@@ -1,6 +1,6 @@
 ---
 title: "Data Binding Beyond Views: From Reactive Rendering to Relational Participation"
-description: "An expansion paper generalizing Fundamental's data-binding claim into a portable interface principle: bindings should preserve relationships, uncertainty, priority, lifecycle, and provenance, not just sync views."
+description: "An expansion paper: data bindings should preserve relationships, uncertainty, priority, lifecycle, and provenance — not merely keep views in sync with state."
 summary: "Argues that data binding should preserve the relationships, uncertainty, priority, lifecycle, and provenance of records as first-class, inspectable interface state rather than only synchronizing views with records."
 date: 2026-06-27
 category: research

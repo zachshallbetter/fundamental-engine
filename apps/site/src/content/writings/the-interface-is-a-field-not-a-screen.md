@@ -1,6 +1,6 @@
 ---
 title: "The Interface is a Field, Not a Screen"
-description: "An interface is less a screen of components than a field of relationships — priority, polarity, binding, decay — and Fundamental makes that field runnable, inspectable, and measurable."
+description: "An interface is less a screen of components than a field of relationships — priority, polarity, binding, decay — and Fundamental makes that field runnable."
 summary: "The manifesto: why an interface is a shared field of meaning, not a pile of components, and what it costs to make that field real."
 date: 2026-06-26
 category: feature

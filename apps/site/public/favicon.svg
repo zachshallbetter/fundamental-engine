@@ -1,13 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 441 441" width="441" height="441">
-  <g transform="translate(0 12)">
-    <g fill="none" stroke="#4da3ff" stroke-width="22" stroke-linecap="round">
-      <circle cx="230" cy="211" r="89"/>
-      <path d="M393 327c30-50 36-130-20-180-44-40-110-40-160-10"/>
-      <circle cx="370" cy="355" r="34"/>
-      <circle cx="45" cy="286" r="34"/>
-      <path d="M62 318c44 70 128 105 209 88"/>
-    </g>
-    <circle cx="139" cy="315" r="16" fill="#4da3ff"/>
-    <circle cx="92" cy="66" r="22" fill="#4da3ff"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Field rings: a body at center with the field radiating out as two opposing
+       arcs. Built to stay legible at 16px. Accent #4da3ff; lighter arc #7cc7de. -->
+  <circle cx="50" cy="50" r="12" fill="#4da3ff"/>
+  <path d="M50 14 A36 36 0 0 1 86 50" fill="none" stroke="#4da3ff" stroke-width="9" stroke-linecap="round"/>
+  <path d="M50 86 A36 36 0 0 1 14 50" fill="none" stroke="#7cc7de" stroke-width="9" stroke-linecap="round" opacity="0.9"/>
 </svg>

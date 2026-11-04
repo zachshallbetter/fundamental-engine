@@ -1,6 +1,6 @@
 ---
 title: "A Taxonomy of Interface Participants"
-description: "A portable taxonomy generalizing Fundamental's interface-participant model: anything that emits, receives, stores, transforms, or explains interface state participates — rendering is just one role."
+description: "A portable taxonomy: anything that emits, receives, stores, transforms, or explains interface state is a participant — rendering is just one role among many."
 summary: "Generalizes the Fundamental paper family into a falsifiable taxonomy of interface participants — defining participant, signal, binding, and equivalence — and a conformance/evaluation plan for treating relational meaning as a first-class substrate rather than an ornament."
 date: 2026-06-27
 category: research

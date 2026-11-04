@@ -1,6 +1,6 @@
 ---
 title: "The Empty Canvas That Costs Every Frame"
-description: "A full-viewport mix-blend-mode canvas re-blends the entire screen every frame the layer below it animates — even when the canvas is empty and transparent. Here's the trap, and the one-line fix."
+description: "A full-viewport mix-blend-mode canvas re-blends the whole screen every animated frame — even when empty and transparent. Here's the trap, and the one-line fix."
 summary: "Why a transparent canvas tanked our framerate, and why the bottleneck was the compositor, not the particles."
 date: 2026-06-26
 category: feature

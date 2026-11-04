@@ -1,6 +1,6 @@
 ---
 title: "Field-Based Wayfinding for Long-Form Documents"
-description: "A portable interface principle: long-form documents should externalize reader position, history, and section relationships as a measured wayfinding field, with a falsifiable model and conformance plan."
+description: "A portable principle: long-form documents should externalize reader position, history, and section relationships as a measured, falsifiable wayfinding field."
 summary: "Generalizes the Reading Field claim into a portable, falsifiable wayfinding model for long-form documents and sketches an evaluation plan that does not assume Fundamental is the only implementation."
 date: 2026-06-27
 category: research

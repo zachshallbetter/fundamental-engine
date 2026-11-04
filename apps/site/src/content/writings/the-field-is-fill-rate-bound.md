@@ -1,6 +1,6 @@
 ---
 title: "The Field Was Never Particle-Bound — It Was Fill-Rate-Bound"
-description: "A 120→30fps homepage regression that particle count couldn't explain — and the canvas-compositing bottleneck that did. Profile by isolation; suspect the compositor before the force math."
+description: "A 120→30fps homepage regression that particle count couldn't explain — and the canvas-compositing bottleneck that did. Suspect the compositor before the math."
 summary: "Why a slow field is almost never the particles, and the DPR2 / mix-blend trap that actually costs the frame."
 date: 2026-06-26
 category: feature

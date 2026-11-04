@@ -1,6 +1,6 @@
 ---
 title: "render: 'none' — The Invisible Field Is the Baseline"
-description: "Fundamental ships invisible by default. The field runs the full simulation and writes its signals to the DOM while drawing nothing — you opt into pixels, you don't fall back from them."
+description: "Fundamental ships invisible: the field runs the full simulation and writes signals to the DOM while drawing nothing. You opt into pixels, you don't fall back."
 summary: "Why the engine default is render: 'none', and why a signals-first field is a different thing than a particle background you turn down."
 date: 2026-06-26
 category: feature

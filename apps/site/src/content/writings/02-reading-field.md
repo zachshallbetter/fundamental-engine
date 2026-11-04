@@ -1,6 +1,6 @@
 ---
 title: "Reading Field: Attention, Memory, and Relationship Awareness in Long-Form Web Documents"
-description: "A field model for reading attention and document memory that preserves semantic HTML."
+description: "A field model for reading — attention, dwell, and document memory rendered as measurable state while the underlying semantic HTML is preserved intact."
 summary: "A field model for reading attention and document memory that preserves semantic HTML."
 date: 2026-06-07
 category: research

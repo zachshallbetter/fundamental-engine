@@ -1,6 +1,6 @@
 ---
 title: "Patterns as Behavioral Design Tokens"
-description: "A design-systems argument that interface behavior — motion, attention, evidence, priority, relationships — can be carried by named, validated, inspectable patterns the way visual design tokens carry style."
+description: "A design-systems argument: interface behavior — motion, attention, evidence, priority — can be carried by named, validated patterns the way tokens carry style."
 summary: "Generalizes the Fundamental pattern model into a portable interface principle — behavioral design tokens: named, versioned, validated, inspectable behavior contracts with diagnostics and reduced-mode equivalents — framed as a falsifiable research model plus a four-study evaluation plan rather than a measured result."
 date: 2026-06-27
 category: research

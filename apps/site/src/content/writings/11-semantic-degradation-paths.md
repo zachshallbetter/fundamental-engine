@@ -1,6 +1,6 @@
 ---
 title: "Semantic Degradation Paths for Accessible Interactive Systems"
-description: "An interface principle: every expressive channel (motion, color, particles, glow) must carry meaning that survives when the channel is removed, generalized from the Fundamental field model."
+description: "An interface principle: every expressive channel — motion, color, particles, glow — must carry meaning that survives when that channel is removed."
 summary: "Generalizes Fundamental's reduced-motion equivalence into a portable channel-equivalence principle — that the meaning carried by any expressive channel must remain available through an accessible alternate representation when that channel is removed — and sketches a conformance and evaluation plan."
 date: 2026-06-27
 category: research

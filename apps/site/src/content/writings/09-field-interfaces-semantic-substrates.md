@@ -1,6 +1,6 @@
 ---
 title: "Field Interfaces as Semantic Substrates: A General Model for Relational UI State"
-description: "A generalizing theory paper that lifts the Fundamental field model into a portable, falsifiable principle for treating relational UI meaning as a first-class semantic substrate."
+description: "A theory paper lifting the Fundamental field model into a portable, falsifiable principle: treat relational UI meaning as a first-class semantic substrate."
 summary: "Paper 09 generalizes the eight-paper Fundamental family into one portable, falsifiable model of field interfaces as semantic substrates, with a four-term core model, design implications, and a multi-study evaluation plan."
 date: 2026-06-27
 category: research

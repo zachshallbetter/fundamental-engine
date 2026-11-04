@@ -1,6 +1,6 @@
 ---
 title: "Data as Field Participants: Binding Records, Relationships, and Metrics into Interface Fields"
-description: "A data-binding model for relational interface fields."
+description: "A data-binding model where records, relationships, and metrics become participants in a relational interface field — not just values synced into views."
 summary: "A data-binding model for relational interface fields."
 date: 2026-06-07
 category: research

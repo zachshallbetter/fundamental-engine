@@ -1,6 +1,6 @@
 ---
 title: "The Swift Port — One Field, Native and 3D"
-description: "Fundamental runs natively on Apple platforms as a Swift package — a port of the JS engine, not a reinterpretation. The package layout, API, and physics mirror npm one-to-one, a golden test holds the two planes in lockstep, and in Swift the field is 3D-native."
+description: "Fundamental runs natively on Apple as a Swift package — a true port of the JS engine: layout, API, and physics mirror npm, held in lockstep, and 3D-native."
 summary: "How the field engine ports to Swift: package-for-package parity with npm, a cross-plane conformance gate, and a 3D-native core where depth is a real axis — plus an honest read on what's still preview."
 date: 2026-06-26
 category: feature

@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { getCollection } from 'astro:content';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
-import { STATIC_OG_CARDS, type OgCardProps } from '../../lib/og-cards';
+import { allOgCards, type OgCardProps } from '../../lib/og-cards';
 
 export const prerender = true;
 
@@ -24,10 +24,12 @@ const fontData = readFileSync(
 );
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const staticCards = STATIC_OG_CARDS.map((c) => ({
+  // Every curated / docs / pattern card (deduped by route in allOgCards)…
+  const pageCards = allOgCards().map((c) => ({
     params: { route: c.route },
     props: { eyebrow: c.eyebrow, title: c.title } satisfies OgCardProps,
   }));
+  // …plus one per writing, from the content collection.
   const writings = await getCollection('writings', (e) => !e.data.draft);
   const writingCards = writings.map((e) => ({
     params: { route: `writings/${e.id}` },
@@ -36,7 +38,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
       title: e.data.title,
     } satisfies OgCardProps,
   }));
-  return [...staticCards, ...writingCards];
+  return [...pageCards, ...writingCards];
 };
 
 /** Build the satori element tree for one card. Only styles satori reliably

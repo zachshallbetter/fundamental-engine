@@ -1,6 +1,6 @@
 ---
 title: "Interaction Truth Modes: A Taxonomy for Honest Interface Behavior"
-description: "A portable taxonomy for labeling interface behaviors by epistemic mode — simulated, measured, inferred, expressive, diagnostic, decorative, or metaphorical — generalized from the Fundamental field runtime."
+description: "A portable taxonomy that labels interface behavior by epistemic mode — simulated, measured, inferred, expressive, diagnostic, decorative, or metaphorical."
 summary: "Expansion Paper 17 generalizes Fundamental's truth-mode idea into a portable principle that interface behaviors need epistemic labels, defining a falsifiable participant/signal/binding/equivalence model and a four-study evaluation plan."
 date: 2026-06-27
 category: research

@@ -39,6 +39,9 @@ const canonical =
 // the static fallback. Keeps every page's social card specific without per-page wiring.
 const resolvedOgImage = ogImage ?? ogImageForPath(Astro.url.pathname) ?? '/og.jpg';
 const ogImageUrl = new URL(resolvedOgImage, Astro.site ?? 'https://fundamentalengine.com').href;
+// og:image:type — generated cards are PNG, the static fallback is JPEG. Some scrapers
+// use the declared type to decide whether to fetch the image at all.
+const ogImageType = resolvedOgImage.endsWith('.png') ? 'image/png' : 'image/jpeg';
 const pageJsonLd = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || Astro.url.pathname.endsWith('/eli5/');
 ---
@@ -81,9 +84,21 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
     <meta name="robots" content={robots} />
     {canonical && <link rel="canonical" href={canonical} />}
     <link rel="alternate" type="application/rss+xml" title="Fundamental — Writings" href="/rss.xml" />
+    <!-- Icons: SVG for modern browsers, .ico for legacy crawlers, a 32px PNG fallback,
+         the opaque Apple touch icon, the PWA manifest, and the Safari pinned-tab mask. -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/favicon.svg" color="#4da3ff" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#04050a" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="msapplication-TileColor" content="#04050a" />
+    <meta name="application-name" content="Fundamental" />
+    <meta name="apple-mobile-web-app-title" content="Fundamental" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content={ogType} />
@@ -91,6 +106,7 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
     <meta property="og:site_name" content="Fundamental" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:type" content={ogImageType} />
     <meta property="og:image:alt" content={ogImageAlt ?? title} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />

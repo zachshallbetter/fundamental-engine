@@ -1,6 +1,6 @@
 ---
 title: "From Layout to Topology: Interfaces as Graphs of Meaning"
-description: "A theory paper generalizing Fundamental's relational-field model into a portable principle: layout arranges boxes, topology exposes meaning relationships, and complex interfaces need both."
+description: "A theory paper: layout arranges boxes, topology exposes the meaning relationships between them, and complex interfaces need both made first-class."
 summary: "Paper 28 abstracts the Fundamental paper family's core insight into a renderer-agnostic interface principle that meaning relationships should be first-class, inspectable interface state rather than visual side effects, and proposes a four-term model (participant, signal, binding, equivalence) with an evaluation plan."
 date: 2026-06-27
 category: research

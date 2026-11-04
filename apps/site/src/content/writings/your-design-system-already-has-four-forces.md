@@ -1,6 +1,6 @@
 ---
 title: "Your Design System Already Has Four Forces"
-description: "Every interface already runs on four dynamics — importance, polarity, belonging, and change — and Fundamental just makes them explicit and programmable instead of leaving them implied."
+description: "Every interface already runs on four dynamics — importance, polarity, belonging, and change. Fundamental just makes them explicit and programmable, not implied."
 summary: "The four Natural Fields aren't new ideas you adopt; they're the relationships your interface already has but never names."
 date: 2026-06-26
 category: feature

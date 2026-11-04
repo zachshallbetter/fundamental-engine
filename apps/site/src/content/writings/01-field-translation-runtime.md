@@ -1,6 +1,6 @@
 ---
 title: "Fundamental: A Field Translation Runtime for Relational DOM Interfaces"
-description: "The paradigm: UI as a shared, inspectable field of meaning."
+description: "The founding paper: UI as a shared, inspectable field of meaning, where importance pulls, relations bind, and state decays across the DOM."
 summary: "The paradigm: UI as a shared, inspectable field of meaning."
 date: 2026-06-07
 category: research

@@ -1,6 +1,6 @@
 ---
 title: "The Bats Had Momentum: What Fundamental's Field Is Missing"
-description: "In 1992, Reynolds' boids gave Batman Returns its swarming bats and its army of penguins. Fundamental descends from the same model — but it's missing the thing that made those creatures feel like matter: momentum. Here's the idea to add it, and what we'd expect."
+description: "Reynolds' 1992 boids gave Batman Returns its bats. Fundamental shares the model but misses what made them feel like matter — momentum. A proposal to add it."
 summary: "Fundamental flocks like a boid but doesn't move like one — bodies push matter without recoiling, so momentum leaks. A proposal for first-class mass and Newtonian reaction, and the results we'd expect from it."
 date: 2026-06-29
 category: note

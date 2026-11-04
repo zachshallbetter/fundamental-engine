@@ -39,9 +39,37 @@ const primaryRender = tax.primaryRender ?? r.render[0] ?? 'dots';
 // authored "what it does" verb); metrics from the support-lane description (metricTitle).
 const tokenDef = (t: string): string => passportFor(t as never)?.designUse ?? '';
 const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/, '');
+
+// Structured data: a TechArticle for the pattern + a Home › Patterns › <name> breadcrumb.
+const SITE = 'https://fundamentalengine.com';
+const patternUrl = `${SITE}/patterns/${r.id}`;
+const patternDesc = `${r.name}: ${r.intent}. A live, validated Fundamental Pattern — runs in your browser, with runtime tokens, metrics, diagnostics, and an accessibility equivalent.`;
+const patternJsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: `${r.name} — a Fundamental Pattern`,
+    description: patternDesc,
+    inLanguage: 'en-US',
+    url: patternUrl,
+    mainEntityOfPage: patternUrl,
+    isPartOf: { '@type': 'WebSite', name: 'Fundamental', url: `${SITE}/` },
+    author: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
+    publisher: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { name: 'Home', item: `${SITE}/` },
+      { name: 'Patterns', item: `${SITE}/patterns` },
+      { name: r.name, item: patternUrl },
+    ].map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: c.item })),
+  },
+];
 ---
 
-<Base title={`${r.name} Pattern — Fundamental`} description={`${r.name}: ${r.intent}. A live, validated Fundamental Pattern — runs in your browser, with runtime tokens, metrics, diagnostics, and an accessibility equivalent.`}>
+<Base title={`${r.name} Pattern — Fundamental`} description={patternDesc} jsonLd={patternJsonLd}>
   <SiteNav />
   <main id="main" class="rp-shell" style={`--rc: ${color}`}>
     <p class="rp-back"><a href="/patterns">← all patterns</a></p>

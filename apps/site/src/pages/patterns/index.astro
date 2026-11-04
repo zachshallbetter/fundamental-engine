@@ -79,12 +79,42 @@ const detailData = Object.fromEntries(
     }];
   }),
 );
+
+// Structured data: a CollectionPage whose mainEntity is an ItemList of every pattern
+// (each a SoftwareApplication linking to its page), plus a Home › Patterns breadcrumb.
+const SITE = 'https://fundamentalengine.com';
+const patternsDesc = `Find the field pattern for your problem. ${total} portable patterns, organised by what you're building — priority, navigation, relationships, evidence, conflict, memory, flow, presence, governance.`;
+const patternsJsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Fundamental Patterns',
+    description: patternsDesc,
+    url: `${SITE}/patterns`,
+    isPartOf: { '@type': 'WebSite', name: 'Fundamental', url: `${SITE}/` },
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: FIELD_PATTERNS.length,
+      itemListElement: FIELD_PATTERNS.map((r, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `${SITE}/patterns/${r.id}`,
+        name: r.name,
+      })),
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { name: 'Home', item: `${SITE}/` },
+      { name: 'Patterns', item: `${SITE}/patterns` },
+    ].map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: c.item })),
+  },
+];
 ---
 
-<Base
-  title="Fundamental — Patterns"
-  description={`Find the field pattern for your problem. ${total} portable patterns, organised by what you're building — priority, navigation, relationships, evidence, conflict, memory, flow, presence, governance.`}
->
+<Base title="Fundamental — Patterns" description={patternsDesc} jsonLd={patternsJsonLd}>
   <SiteNav current="patterns" sticky={false} />
 
   <main id="main" class="ex-shell">

@@ -1,6 +1,6 @@
 ---
 title: "Fundamental, explained to a developer"
-description: "Not an animation library, not a particle background — a relational field runtime for interfaces. The conceptual shift, the lane model, field vs force, the Natural Fields, designed-vs-natural, dimensions and coupling, agents, signals-first feedback, and the practical developer rules."
+description: "Not an animation library or particle background — a relational field runtime for interfaces: the mental model, the lane system, field vs force, and the dev rules."
 summary: "The developer-tier companion to 'explained simply' — the mental model (concepts/tokens/metrics/diagnostics/patterns/projections), field() vs apply(), designed-vs-natural, association ≠ coupling, signals-first CSS feedback, and the minimal working mindset."
 date: 2026-06-29
 category: note

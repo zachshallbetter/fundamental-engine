@@ -1,6 +1,6 @@
 ---
 title: "Evidence Fields: Visualizing Support, Contradiction, Confidence, and Provenance in AI Interfaces"
-description: "A field-based interaction model for evidence, confidence, contradiction, and provenance."
+description: "A field-based interaction model that makes support, confidence, contradiction, and provenance first-class, inspectable state in source-backed AI interfaces."
 summary: "A field-based interaction model for evidence, confidence, contradiction, and provenance."
 date: 2026-06-07
 category: research

@@ -10,11 +10,15 @@ import '../styles/docs.css';
 interface Props {
   title: string;
   description?: string;
+  /** extra page-specific JSON-LD, merged with the breadcrumb + article graph below. */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
-const { title, description } = Astro.props;
+const { title, description, jsonLd } = Astro.props;
 
 // current page (normalise trailing slash) → sidebar active + prev/next
 const path = Astro.url.pathname.replace(/\/$/, '') || '/docs';
+const SITE = 'https://fundamentalengine.com';
+const pageUrl = new URL(path, SITE).href;
 const groups = DOCS_NAV.map((g) => ({ ...g, items: g.items.filter((i) => i.ready) })).filter(
   (g) => g.items.length > 0,
 );
@@ -37,9 +41,41 @@ if (path === '/docs') {
     }
   }
 }
+
+// Structured data: a BreadcrumbList over the navigable (URL-bearing) crumbs — the
+// group label has no page of its own, so it's dropped to keep every ListItem a real
+// URL — plus a TechArticle describing the page. Merged with any page-specific jsonLd.
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { label: 'Home', href: '/' },
+    { label: 'Docs', href: '/docs' },
+    ...(path === '/docs' ? [] : [{ label: title, href: path }]),
+  ].map((c, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: c.label,
+    item: new URL(c.href, SITE).href,
+  })),
+};
+const articleLd = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: title,
+  ...(description ? { description } : {}),
+  inLanguage: 'en-US',
+  url: pageUrl,
+  mainEntityOfPage: pageUrl,
+  isPartOf: { '@type': 'WebSite', name: 'Fundamental', url: `${SITE}/` },
+  author: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
+  publisher: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
+};
+const extraLd = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+const docsJsonLd = [breadcrumbLd, articleLd, ...extraLd];
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} jsonLd={docsJsonLd}>
   <SiteNav current="docs" />
   <div class="docs-shell">
     <aside class="docs-sidebar" aria-label="Docs navigation" data-pagefind-ignore>

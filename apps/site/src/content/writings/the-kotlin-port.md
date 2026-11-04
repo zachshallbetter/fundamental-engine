@@ -1,6 +1,6 @@
 ---
 title: "The Kotlin Port — Conformance First"
-description: "Fundamental is coming to Android as a native Kotlin library — and it landed gate-first: a deliberately small core built against one golden fixture shared by JS, Swift, and Kotlin, so every force is held to cross-plane parity from day one."
+description: "Fundamental comes to Android as a native Kotlin library — built gate-first against one golden fixture shared by JS, Swift, and Kotlin, parity-held from day one."
 summary: "How the Android port is being built: a single shared golden across three planes, 'flat is exact' 3D-native math, a Jetpack Compose host with Modifier.fieldBody(), and an honest foundation-stage status."
 date: 2026-06-26
 category: feature

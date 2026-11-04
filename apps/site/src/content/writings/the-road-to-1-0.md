@@ -1,6 +1,6 @@
 ---
 title: "The Road to 1.0 — What the RC1 Gates Actually Prove"
-description: "Fundamental isn't a release candidate yet — it's at 0.8.1, working the gate program that produces one. Here's what's already frozen, what CI proves, and the gates still standing between here and a 1.0.0-rc.1 tag."
+description: "Fundamental isn't a release candidate yet — it's at 0.8.1, working the gate program that makes one. What's frozen, what CI proves, and the gates left before 1.0."
 summary: "The honest path to 1.0: what's locked in 0.x today, the 10-of-11 green gates, and the four that must pass before 1.0.0-rc.1 can be cut — perf budgets, an AT pass, support, and full contract coverage."
 date: 2026-06-26
 category: release

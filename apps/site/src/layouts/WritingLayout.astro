@@ -80,10 +80,24 @@ const articleLd = {
   },
   mainEntityOfPage: `https://fundamentalengine.com/writings/${slug}`,
 };
+
+// BreadcrumbList over the navigable trail: Home › Writings › this article. The
+// category crumb is a label with no page of its own, so it's left out (every
+// ListItem must point at a real URL).
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { name: 'Home', item: 'https://fundamentalengine.com/' },
+    { name: 'Writings', item: 'https://fundamentalengine.com/writings' },
+    { name: title, item: `https://fundamentalengine.com/writings/${slug}` },
+  ].map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: c.item })),
+};
 ---
 
 <Base title={`${title} · Fundamental`} description={description} ogType="article">
   <script type="application/ld+json" is:inline set:html={JSON.stringify(articleLd)} />
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbLd)} />
   <SiteNav current="writings" />
   <div class="docs-shell">
     <aside class="docs-sidebar" aria-label="Writings navigation">

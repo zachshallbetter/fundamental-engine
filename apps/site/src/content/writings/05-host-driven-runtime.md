@@ -1,6 +1,6 @@
 ---
 title: "A Host-Driven Field Runtime for Portable Interface Behavior"
-description: "A runtime architecture that targets DOM, Canvas, SVG, WebGL, native, or headless."
+description: "A runtime that isolates environment contact behind one host seam, so the same field behavior runs on DOM, Canvas, SVG, WebGL, native, or headless targets."
 summary: "A runtime architecture that targets DOM, Canvas, SVG, WebGL, native, or headless."
 date: 2026-06-07
 category: research

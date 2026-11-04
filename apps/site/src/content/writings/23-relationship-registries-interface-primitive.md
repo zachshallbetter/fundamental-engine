@@ -1,6 +1,6 @@
 ---
 title: "Relationship Registries as an Interface Primitive"
-description: "A systems-HCI bridge paper arguing interface relationships should be explicit, typed, inspectable runtime objects rather than incidental layout, prose, hidden state, or ARIA hints alone."
+description: "A systems-HCI paper: interface relationships should be explicit, typed, inspectable runtime objects, not incidental layout, prose, or ARIA hints alone."
 summary: "Paper 23 generalizes Fundamental's relationship-registry idea into a portable interface principle — relationships as first-class typed, queryable runtime state — with a four-term model (participant, signal, binding, equivalence), four falsification conditions, and a four-study evaluation plan."
 date: 2026-06-27
 category: research

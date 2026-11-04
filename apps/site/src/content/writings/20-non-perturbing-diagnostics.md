@@ -1,6 +1,6 @@
 ---
 title: "Non-Perturbing Diagnostics for Interactive Systems"
-description: "A portable interface principle: diagnostic layers must reveal behavior without becoming part of it — read-only, separable, and auditable — generalized from the Fundamental paper family."
+description: "A portable principle: a diagnostic layer must reveal behavior without becoming part of it — read-only, separable, auditable, never perturbing what it measures."
 summary: "Paper 20 isolates one reusable claim from the first Fundamental family — that a diagnostic interface must be read-only, separable, and auditable — and states it as a falsifiable, portable systems principle with a conformance and study plan."
 date: 2026-06-27
 category: research

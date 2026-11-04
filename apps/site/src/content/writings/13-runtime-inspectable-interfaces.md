@@ -1,6 +1,6 @@
 ---
 title: "Runtime-Inspectable Interfaces: Diagnostics as a First-Class UX Primitive"
-description: "A portable interface principle arguing that systems should expose runtime-inspectable, reveal-never-mutate explanations of their own behavior, generalized from Fundamental's diagnostics."
+description: "A portable principle: systems should expose runtime-inspectable, reveal-never-mutate accounts of their own behavior — diagnostics as a first-class UX primitive."
 summary: "Paper 13 lifts the diagnostics-and-inspectability claim out of the original Fundamental family and reframes it as a falsifiable, implementation-agnostic interface principle with an evaluation and conformance plan."
 date: 2026-06-27
 category: research

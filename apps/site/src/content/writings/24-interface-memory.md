@@ -1,6 +1,6 @@
 ---
 title: "Interface Memory: Worn Paths, Dwell, and Returning Context"
-description: "A portable HCI principle drawn from the Fundamental field runtime: interfaces should remember meaningful attention — dwell, revisitation, reading trails — as a legible, inspectable memory surface."
+description: "A portable HCI principle: interfaces should remember meaningful attention — dwell, revisitation, reading trails — as a legible, inspectable memory surface."
 summary: "An expansion position paper arguing that interfaces should treat accumulated meaningful attention (dwell, revisitation, reading trails, review context) as a first-class, inspectable memory substrate rather than an ornament, with a falsifiable model and a four-study evaluation plan."
 date: 2026-06-27
 category: research

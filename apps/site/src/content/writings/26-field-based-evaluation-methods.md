@@ -1,6 +1,6 @@
 ---
 title: "Field-Based Evaluation Methods for Interactive Systems"
-description: "A portable methods framework for evaluating field-based interfaces — orientation, trust calibration, accessibility equivalence, time-to-diagnose, and semantic preservation, not just task completion."
+description: "A portable methods framework for evaluating field-based interfaces — orientation, trust calibration, accessibility equivalence, and semantic preservation."
 summary: "Paper 26 generalizes the Fundamental family's measurement approach into a portable, falsifiable framework for evaluating field-based interfaces beyond task completion and preference."
 date: 2026-06-27
 category: research

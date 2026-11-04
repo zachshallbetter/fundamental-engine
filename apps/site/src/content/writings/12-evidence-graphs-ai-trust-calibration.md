@@ -1,6 +1,6 @@
 ---
 title: "Evidence Graphs as User Interfaces for AI Trust Calibration"
-description: "A portable interface principle: source-backed AI interfaces should expose evidence as a claim-level graph of support, contradiction, uncertainty, and provenance rather than inline citations and confidence badges."
+description: "A portable principle: source-backed AI interfaces should expose evidence as a claim-level graph of support, contradiction, and provenance, not inline citations."
 summary: "Paper 12 of the Fundamental expansion family generalizes the Evidence Fields claim into a codebase-independent principle — evidence belongs in a claim-level graph of support, contradiction, uncertainty, and provenance — and offers a falsifiable model plus a four-study evaluation plan."
 date: 2026-06-27
 category: research

@@ -1,6 +1,6 @@
 ---
 title: "Conserved Attention in Interface Systems"
-description: "An HCI argument that interface attention is a finite, transferable budget — emphasis gained somewhere must be paid for elsewhere — generalized from the Fundamental engine's shipped conserved-attention model."
+description: "An HCI argument that interface attention is a finite, transferable budget — emphasis gained somewhere is paid for elsewhere — which systems should expose."
 summary: "Paper 10 of the Fundamental expansion family generalizes the engine's budgeted-attention behavior into a portable, falsifiable interface principle: attention is a conserved resource that systems should expose rather than multiply."
 date: 2026-06-27
 category: research
