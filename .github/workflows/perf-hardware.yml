@@ -49,6 +49,10 @@ env:
 jobs:
   measure:
     name: budgets on titan-gpu
+    # Only where the self-hosted runner exists: a manual run, or a repository variable
+    # TITAN_GPU_RUNNER=true set by whoever registers the runner. Elsewhere the job is skipped
+    # instead of queueing for a runner that is not there.
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.TITAN_GPU_RUNNER == 'true' }}
     runs-on: [self-hosted, linux, titan-gpu]
     timeout-minutes: 40
     steps:
@@ -130,4 +134,4 @@ jobs:
     steps:
       - run: |
           jq -C <<< '${{ toJson(needs) }}'
-          jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
+          jq --exit-status 'all(.result == "success" or .result == "skipped")' <<< '${{ toJson(needs) }}'
