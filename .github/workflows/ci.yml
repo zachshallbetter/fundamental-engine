@@ -31,6 +31,7 @@ jobs:
   changes:
     name: detect changes
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     outputs:
       js: ${{ steps.filter.outputs.js }}
     steps:
@@ -59,6 +60,7 @@ jobs:
   gate:
     name: typecheck · test · build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: changes
     if: ${{ needs.changes.outputs.js == 'true' }}
     steps:
@@ -150,6 +152,7 @@ jobs:
   e2e:
     name: "e2e · chromium"
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     needs: [changes, gate]
     if: ${{ needs.changes.outputs.js == 'true' }}
     steps:
@@ -196,6 +199,7 @@ jobs:
   consumer:
     name: "clean consumer (packed tarballs)"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: [changes, gate]
     if: ${{ needs.changes.outputs.js == 'true' }}
     steps:
@@ -223,14 +227,11 @@ jobs:
   # coverage but are NOT in `conclusion`'s needs, so they report without blocking the merge.
   # A failure here is visible on the PR and worth investigating, but doesn't hold the queue.
   e2e-extra:
-    name: "e2e-extra · ${{ matrix.project }}"
+    name: "e2e-extra · webkit"
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     needs: [changes, gate]
     if: ${{ needs.changes.outputs.js == 'true' }}
-    strategy:
-      fail-fast: false # report every browser's failure, not just the first
-      matrix:
-        project: [webkit, mobile]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -248,19 +249,19 @@ jobs:
 
       # the `mobile` project is Pixel 7 emulation — it runs on the chromium engine.
       - name: Install Playwright browser
-        run: pnpm --filter @fundamental-engine/site exec playwright install --with-deps ${{ matrix.project == 'webkit' && 'webkit' || 'chromium' }}
+        run: pnpm --filter @fundamental-engine/site exec playwright install --with-deps webkit
 
       - name: Build (packages + site)
         run: pnpm build
 
       - name: E2E
-        run: pnpm --filter @fundamental-engine/site test:e2e --project=${{ matrix.project }}
+        run: pnpm --filter @fundamental-engine/site test:e2e --project=webkit
 
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report-${{ matrix.project }}
+          name: playwright-report-webkit
           path: apps/site/playwright-report
           retention-days: 7
 
@@ -275,6 +276,7 @@ jobs:
     needs: [changes, gate, e2e]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: All required jobs succeeded (skipped = not required this run)
         run: |

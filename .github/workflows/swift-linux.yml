@@ -13,10 +13,15 @@ on:
   pull_request:
     paths: ['swift/**', '.github/workflows/swift-linux.yml', 'packages/core/package.json']
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   core:
     name: build + test (Linux)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container: swift:6.0-jammy
     steps:
       - uses: actions/checkout@v4

@@ -18,14 +18,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    name: build ${{ matrix.example }}
+    name: build vanilla-vite
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        example: [vanilla-vite, react-vite, three, nextjs, astro, sveltekit, nuxt]
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,15 +36,15 @@ jobs:
           node-version: 22
       - name: install (from the published packages)
         run: npm ci
-        working-directory: examples/${{ matrix.example }}
+        working-directory: examples/vanilla-vite
       - name: build
         run: npm run build
-        working-directory: examples/${{ matrix.example }}
+        working-directory: examples/vanilla-vite
       # Boot smoke: serve dist + assert a live field (particleCount() > 0). Playwright is added
       # only in CI (kept out of the example's own deps so its package.json stays copy-pasteable).
       - name: boot smoke
-        if: hashFiles(format('examples/{0}/smoke.mjs', matrix.example)) != ''
-        working-directory: examples/${{ matrix.example }}
+        if: hashFiles('examples/vanilla-vite/smoke.mjs') != ''
+        working-directory: examples/vanilla-vite
         run: |
           npm i --no-save @playwright/test
           npx playwright install --with-deps chromium

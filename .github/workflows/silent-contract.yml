@@ -29,6 +29,7 @@ jobs:
   silent-contract-gap:
     name: silent-contract-gap diff (advisory)
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
         with:

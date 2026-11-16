@@ -19,10 +19,15 @@ on:
   pull_request:
     paths: ['swift/**', '.github/workflows/swift-macos.yml', 'packages/core/package.json']
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   apple:
     name: build + test (macOS — Apple targets)
     runs-on: macos-14
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       # The tests use swift-testing (`import Testing`), which ships with Swift 6 / Xcode 16 — matching

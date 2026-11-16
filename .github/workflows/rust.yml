@@ -23,6 +23,7 @@ jobs:
   test:
     name: cargo build + test (rust workspace)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: rust
@@ -46,6 +47,7 @@ jobs:
     needs: [test]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - run: |
           jq -C <<< '${{ toJson(needs) }}'
