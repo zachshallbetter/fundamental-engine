@@ -25,6 +25,7 @@ jobs:
   changelog:
     name: CHANGELOG entry for package changes
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
         with:
@@ -49,6 +50,7 @@ jobs:
   doc-links:
     name: internal doc links resolve
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
         with:
@@ -67,6 +69,7 @@ jobs:
     needs: [changelog, doc-links]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: All jobs succeeded
         run: |

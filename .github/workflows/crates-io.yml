@@ -56,6 +56,7 @@ jobs:
   gate:
     name: rust gate + tag↔version lockstep + dry run
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: rust
@@ -108,6 +109,7 @@ jobs:
     needs: gate
     if: ${{ inputs.dry_run == false }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: crates-io
     defaults:
       run:
@@ -139,6 +141,7 @@ jobs:
     needs: [gate, publish]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Gate succeeded; publish succeeded or was skipped only because dry_run=true
         env:

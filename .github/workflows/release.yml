@@ -61,6 +61,7 @@ jobs:
   gate:
     name: full gate + tag↔version match
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
         with:
@@ -125,6 +126,7 @@ jobs:
     name: publish (provenance)
     needs: gate
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
         with:
@@ -191,6 +193,7 @@ jobs:
     name: post-publish verification
     needs: publish
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Dry run — verification skipped
         if: ${{ inputs.dry_run }}
@@ -245,6 +248,7 @@ jobs:
     needs: publish
     if: ${{ !inputs.dry_run }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write # create the GitHub Release object (the top-level grant is read-only)
     steps:
@@ -276,6 +280,7 @@ jobs:
     needs: [gate, publish, post_publish, github_release]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: All jobs succeeded
         run: |
