@@ -22,8 +22,9 @@ conduct that could reasonably be considered inappropriate.
 
 ## Enforcement
 
-Instances of abusive or unacceptable behavior may be reported to the maintainer at
-**hi@zachshallbetter.com**. All complaints will be reviewed and investigated promptly
+If you experience or witness abusive or unacceptable behavior, report it to the maintainer
+through the contact listed on the maintainer's GitHub profile
+(https://github.com/zachshallbetter). All complaints will be reviewed and investigated promptly
 and fairly. The maintainer is obligated to respect the privacy and security of the
 reporter of any incident.
 
