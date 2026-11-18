@@ -3,14 +3,15 @@
 ## Reporting a vulnerability
 
 If you find a security issue in Fundamental, please report it privately rather than
-opening a public issue. Email **hi@zachshallbetter.com** with:
+opening a public issue. Use GitHub private vulnerability reporting:
+<https://github.com/zachshallbetter/fundamental-engine/security/advisories/new>. Include:
 
 - a description of the issue and its impact,
 - steps to reproduce (a minimal example is ideal),
 - the affected package and version.
 
-You can expect an acknowledgement within a few days. Please give a reasonable window to
-ship a fix before any public disclosure.
+This is a solo-maintained project: responses are best-effort with no SLA. Please give a
+reasonable window to ship a fix before any public disclosure.
 
 ## Scope
 
