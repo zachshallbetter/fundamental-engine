@@ -90,18 +90,32 @@
   font-weight: 500;
 }
 .manual-hero .meta {
-  margin-top: 2.4rem;
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
+  margin-top: 2.2rem;
+  display: grid;
+  gap: 0;
+  max-width: 54rem;
   font-family: var(--mono);
   font-size: 0.66rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-3);
+  line-height: 1.45;
+}
+/* an aligned label / value spec block instead of four loose wrapping lines: the labels sit in a
+   fixed column, the values in the next, divided by hairline rules — a tidy footer to the hero. */
+.manual-hero .meta span {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.62rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--line) 50%, transparent);
+}
+.manual-hero .meta span:first-child {
+  border-top: 0;
 }
 .manual-hero .meta b {
-  color: var(--text-2);
+  color: var(--state-attention);
   font-weight: 400;
 }
 
