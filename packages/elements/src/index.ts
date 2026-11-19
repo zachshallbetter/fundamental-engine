@@ -51,6 +51,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {number} grid-intensity - Stroke opacity ∈ [0,1] for the `grid` overlay lines (default `0.16`, the faint diagnostic). Raise it (≈`0.5`) to make the warped lattice a visual centerpiece. Only affects the `grid` overlay mode.
  * @attr {string} overlay-blend - CSS `mix-blend-mode` of the overlay surface (default `screen`) — host placement of the front canvas, not an engine option (#721). Applied live to the existing surface (no rebuild) or on its first creation. Must be a single CSS keyword (`multiply`, `plus-lighter`, …); anything else falls back to `screen`.
  * @attr {number} overlay-z - CSS `z-index` of the overlay surface (default `5`) — host placement of the front canvas, not an engine option (#721). Applied live (no rebuild). Must be an integer; a non-integer or non-numeric value falls back to `5`.
+ * @attr {boolean} reduced-motion - Force `prefers-reduced-motion` on the live field: the integrator freezes (dt=0) so matter stops moving, while the `--field-*` feedback signals keep their last measured value. A host-capability override (not an engine option), OR-composed with the OS setting — either forces it on — and read every frame, so toggling it freezes or thaws the field in place and never rebuilds, preserving captured matter. Absent = follow the OS setting only.
  */
 
 /** A no-op scalar grid returned by `grid()` before the element's field has started. */
@@ -148,6 +149,7 @@ export class FieldField extends HTMLElementBase {
     'formation',
     'overlay-blend',
     'overlay-z',
+    'reduced-motion',
   ];
 
   private readonly canvas: HTMLCanvasElement;
@@ -723,6 +725,10 @@ export class FieldField extends HTMLElementBase {
       case 'overlay-z':
         if (this.overlayCanvas) this.overlayCanvas.style.zIndex = String(this.overlayZ);
         break;
+      // reduced-motion is read live by the host every frame (see start()): toggling it freezes or thaws
+      // the integrator in place — never a rebuild, so the field keeps the matter it had captured.
+      case 'reduced-motion':
+        break;
       default: // density / waves / mass are construction-time → rebuild
         this.field.destroy();
         this.start();
@@ -779,7 +785,12 @@ export class FieldField extends HTMLElementBase {
     // the rest of the engine options come from the one declarative table (above), so a new
     // FieldOption can never be silently dropped here the way `depth` once was.
     for (const o of FieldField.OPTIONS) (opts as Record<string, unknown>)[o.key] = o.read(this);
-    this.field = createBrowserField(this.canvas, opts);
+    // reduced-motion is a host-capability override, read live every frame (not a FieldOptions key): the
+    // closure reports the current attribute state, so toggling `reduced-motion` freezes/thaws the
+    // integrator in place — no rebuild, captured matter preserved. OR-composed with the OS setting.
+    this.field = createBrowserField(this.canvas, opts, {
+      reducedMotion: () => this.hasAttribute('reduced-motion'),
+    });
     // formation is post-construction (not a FieldOption), so apply the initial attribute here so
     // `<field-root formation="wells">` works at mount, not only via setFormation (#541).
     if (this.formation) this.field.setFormation(this.formation);

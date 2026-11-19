@@ -282,6 +282,7 @@ export const FIELD_ROOT_ATTRS: { name: string; option: string; desc: string }[] 
   { name: 'formation', option: 'formation', desc: 'Global formation preset name. Mirrors the formation createField option (setFormation).' },
   { name: 'overlay-blend', option: 'overlayCanvas', desc: "CSS mix-blend-mode of the front overlay canvas (default 'screen'). Host placement, not a createField option — the element passes it to createOverlaySurface from @fundamental-engine/dom; applied live to the existing surface, never a rebuild. Must be a single CSS keyword; anything else falls back to 'screen' (#721)." },
   { name: 'overlay-z', option: 'overlayCanvas', desc: 'CSS z-index of the front overlay canvas (default 5). Host placement, not a createField option; applied live, never a rebuild. Must be an integer; a non-integer or non-numeric value falls back to 5 (#721).' },
+  { name: 'reduced-motion', option: 'reducedMotion', desc: "Force prefers-reduced-motion on the live field: the integrator freezes (dt=0) so matter stops moving, while the --field-* feedback signals keep their last measured value. A host-capability override (createBrowserField's reducedMotion seam), not a createField option — OR-composed with the OS setting (either forces it on) and read every frame, so toggling it freezes or thaws the field in place, never a rebuild. Absent = follow the OS setting only." },
 ];
 
 /** Observed HTML attributes on `<field-cell>` — the standalone one-force demo/poster surface

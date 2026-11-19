@@ -1815,6 +1815,9 @@
             },
             {
               "name": "overlay-z"
+            },
+            {
+              "name": "reduced-motion"
             }
           ],
           "superclass": {
@@ -2040,6 +2043,13 @@
             },
             {
               "name": "overlay-z",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "reduced-motion",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
