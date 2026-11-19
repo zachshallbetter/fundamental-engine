@@ -14,6 +14,7 @@ import { getCollection } from 'astro:content';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import { STATIC_OG_CARDS, type OgCardProps } from '../../lib/og-cards';
+import { renderOgHeroField, OG_HERO_LAYOUT, OG_W, OG_H } from '../../lib/og-hero-field';
 
 export const prerender = true;
 
@@ -26,7 +27,7 @@ const fontData = readFileSync(
 export const getStaticPaths: GetStaticPaths = async () => {
   const staticCards = STATIC_OG_CARDS.map((c) => ({
     params: { route: c.route },
-    props: { eyebrow: c.eyebrow, title: c.title } satisfies OgCardProps,
+    props: { eyebrow: c.eyebrow, title: c.title, layout: c.layout, line: c.line } satisfies OgCardProps,
   }));
   const writings = await getCollection('writings', (e) => !e.data.draft);
   const writingCards = writings.map((e) => ({
@@ -87,8 +88,80 @@ function card({ eyebrow, title }: OgCardProps) {
   };
 }
 
+/** The homepage hero as a card: the kicker label, the headline and the thesis line over a frame of
+ *  the live field (og-hero-field.ts runs the hero's own bodies headlessly). No nav, standfirst or
+ *  buttons; 60px safe margins; the text positions come from OG_HERO_LAYOUT, the same numbers the
+ *  field's bodies are placed at. */
+function heroCard({ eyebrow, title, line }: OgCardProps) {
+  const L = OG_HERO_LAYOUT;
+  const fieldSvg = renderOgHeroField().svg;
+  const abs = (style: Record<string, unknown>, children: unknown) => ({
+    type: 'div',
+    props: { style: { display: 'flex', position: 'absolute', ...style }, children },
+  });
+  // split the headline so its last word takes the accent, as the hero's "mass" does
+  const words = title.split(' ');
+  const last = words.pop() ?? '';
+  const head = words.join(' ');
+  const dot = last.endsWith('.') ? '.' : '';
+  const word = dot ? last.slice(0, -1) : last;
+  return {
+    type: 'div',
+    props: {
+      style: {
+        width: `${OG_W}px`,
+        height: `${OG_H}px`,
+        display: 'flex',
+        position: 'relative',
+        backgroundColor: '#04050a',
+        color: '#f3f6fc',
+        fontFamily: 'Bricolage Grotesque',
+      },
+      children: [
+        {
+          type: 'img',
+          props: {
+            src: `data:image/svg+xml;base64,${Buffer.from(fieldSvg).toString('base64')}`,
+            width: OG_W,
+            height: OG_H,
+            style: { position: 'absolute', left: 0, top: 0 },
+          },
+        },
+        // a soft scrim under the thesis so the small line stays legible over the matter
+        abs({ left: 0, top: 420, width: `${OG_W}px`, height: `${OG_H - 420}px`, backgroundImage: 'linear-gradient(180deg, rgba(4,5,10,0), rgba(4,5,10,0.72) 45%)' }, []),
+        abs(
+          { left: L.margin, top: L.labelTop, fontSize: 26, fontWeight: 700, letterSpacing: 6, color: '#9fb0d0' },
+          eyebrow.toUpperCase(),
+        ),
+        abs(
+          { left: L.margin, top: L.titleTop, flexDirection: 'column', fontSize: L.titleSize, fontWeight: 700, lineHeight: L.titleLine, letterSpacing: -5 },
+          [
+            { type: 'div', props: { style: { display: 'flex' }, children: head } },
+            {
+              type: 'div',
+              props: {
+                style: { display: 'flex' },
+                children: [
+                  { type: 'span', props: { style: { color: '#4da3ff' }, children: word } },
+                  { type: 'span', props: { style: { color: '#ff9d5c' }, children: dot } },
+                ],
+              },
+            },
+          ],
+        ),
+        abs(
+          { left: L.margin, top: L.thesisTop, flexDirection: 'column', fontSize: L.thesisSize, fontWeight: 400, lineHeight: 1.3, color: '#f3f6fc', borderLeft: '4px solid #4da3ff', paddingLeft: 24 },
+          // one sentence per line: a deliberate break, and both lines stay inside the 60px margin
+          (line ?? '').split(/(?<=\.)\s+/).map((s) => ({ type: 'div', props: { style: { display: 'flex' }, children: s } })),
+        ),
+      ],
+    },
+  };
+}
+
 export const GET: APIRoute = async ({ props }) => {
-  const svg = await satori(card(props as OgCardProps), {
+  const p = props as OgCardProps;
+  const svg = await satori((p.layout === 'hero' ? heroCard(p) : card(p)) as Parameters<typeof satori>[0], {
     width: 1200,
     height: 630,
     fonts: [

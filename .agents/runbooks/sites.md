@@ -20,6 +20,14 @@ reintroduce a second source.
 generated …`). The sitemap carries `lastmod`. Counts on the homepage are derived from the catalog
 (`MANUAL_FORCES`, `FIELD_PATTERNS`, `MANUAL_PRESETS`) — never type a count.
 
+**Social cards** (2026-11-19). `src/pages/og/[...route].png.ts` renders every `/og/*.png` at build
+(satori → resvg); `src/lib/og-cards.ts` is the list both it and `Base.astro` read. The homepage card
+(`layout: 'hero'`) is the hero text over a frame of the real engine: `src/lib/og-hero-field.ts` runs a
+seeded headless field with the hero's own `data-body` params, placed at the card's text positions
+(`OG_HERO_LAYOUT`). Change the hero's bodies or copy and update both. Habitat is served from
+`habitat.fundamental-engine.com` (its own repo and Vercel project); the 2026-11 domain rename does not
+apply to it, and `habitat.fundamentalengine.com` has no deployment.
+
 **Claims.** The site is held to the same no-inflation rule as the README. Before editing a claim, read
 [`knowledge/engine-facts.md`](../knowledge/engine-facts.md). `apps/site/src/pages/use-cases.astro` and
 `docs/canonical/use-cases.md` carry the same cases and must be edited together; the canonical doc's

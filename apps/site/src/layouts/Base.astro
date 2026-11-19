@@ -4,7 +4,7 @@ import { ClientRouter } from 'astro:transitions';
 // on every page (the homepage and Lab included), not just the docs surfaces.
 import '../styles/ds-tokens.css';
 import DataConsole from '../components/DataConsole.astro';
-import { ogImageForPath } from '../lib/og-cards';
+import { ogImageForPath, ogImageAltForPath } from '../lib/og-cards';
 interface Props {
   title?: string;
   description?: string;
@@ -21,7 +21,7 @@ interface Props {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 const {
-  title = 'Fundamental — a relational field runtime for interfaces',
+  title = 'Fundamental: a relational field runtime for interfaces',
   description = "Fundamental is a relational field runtime: UI and data become bodies in an inspectable field — importance pulls, relations bind, state decays.",
   ogImage,
   ogImageAlt,
@@ -38,6 +38,9 @@ const canonical =
 // OG card (src/pages/og/[...route].png, keyed by the shared og-cards list); else
 // the static fallback. Keeps every page's social card specific without per-page wiring.
 const resolvedOgImage = ogImage ?? ogImageForPath(Astro.url.pathname) ?? '/og.jpg';
+// alt: an explicit prop wins; a generated card may declare its own (it says more than the title);
+// else the page title.
+const resolvedOgImageAlt = ogImageAlt ?? (ogImage ? null : ogImageAltForPath(Astro.url.pathname)) ?? title;
 const ogImageUrl = new URL(resolvedOgImage, Astro.site ?? 'https://fundamentalengine.com').href;
 const pageJsonLd = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || Astro.url.pathname.endsWith('/eli5/');
@@ -91,14 +94,14 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
     <meta property="og:site_name" content="Fundamental" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:image" content={ogImageUrl} />
-    <meta property="og:image:alt" content={ogImageAlt ?? title} />
+    <meta property="og:image:alt" content={resolvedOgImageAlt} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
-    <meta name="twitter:image:alt" content={ogImageAlt ?? title} />
+    <meta name="twitter:image:alt" content={resolvedOgImageAlt} />
     <meta name="twitter:site" content="@usefundamental" />
     <meta name="twitter:creator" content="@zachshallbetter" />
     <!-- self-hosted fonts (perf: no third-party request; prerequisite for glyph-outline
