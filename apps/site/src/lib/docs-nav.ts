@@ -140,6 +140,7 @@ export const DOCS_NAV: DocGroup[] = [
       { href: '/docs/cookbook/performance-tuning', label: 'Performance tuning', ready: true },
       { href: '/docs/cookbook/interface-chrome', label: 'Chrome & accessibility', ready: true },
       { href: '/docs/cookbook/framework-interop', label: 'Framework interop', ready: true },
+      { href: '/docs/demonstrations', label: 'The 50 demonstrations, triaged', ready: true },
       { href: '/docs/authoring', label: 'Authoring across surfaces', ready: true },
       { href: '/docs/field-channels', label: 'Data binding & channels', ready: true },
       { href: '/docs/contour-typography', label: 'Contour typography', ready: true },

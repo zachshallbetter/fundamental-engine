@@ -1,0 +1,213 @@
+---
+// REFERENCE — the 50 demonstrations, triaged (code-verified).
+//
+// An older long-form post proposed "50 API demonstrations" and asked, in its own words, to separate
+// real API demonstrations from ideas that depend on host code or experimental behavior. This page is
+// that separation done against the engine: every item is bucketed by tier (stable / shipped-but-unfrozen
+// / experimental), flagged where it needs host code, and two items the post got wrong are corrected in
+// place (#8 has no public drag control; #43 replay() narrates causes, it does not restore state).
+//
+// The data + the build-time execution receipt live in src/lib/demonstrations.ts, which constructs a
+// real headless field and invokes the stable/shipped/headless-experimental methods — so this page
+// cannot claim a method runs that does not. The DOM stays the source of meaning; the particles are one
+// rendering of field activity. Each item links to where it is worked or documented.
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusChip from '../../components/StatusChip.astro';
+import SeeAlso from '../../components/SeeAlso.astro';
+import { SECTIONS, DEMOS, TIER_COUNTS, HOST_COUNT, runDemonstrations } from '../../lib/demonstrations.ts';
+import type { Tier } from '../../lib/demonstrations.ts';
+
+const receipt = runDemonstrations();
+
+const TIER_META: Record<Tier, { label: string; cls: string; blurb: string }> = {
+  stable: { label: 'Stable', cls: 'stable', blurb: 'frozen-tier public surface — build on it today' },
+  shipped: { label: 'Shipped · unfrozen', cls: 'shipped', blurb: 'shipped but the signature may still move before 1.0' },
+  experimental: { label: 'Experimental', cls: 'experimental', blurb: 'marked EXPERIMENTAL in the engine' },
+  'not-in-api': { label: 'Not in API', cls: 'notinapi', blurb: 'the post asked for something the engine does not expose' },
+  reference: { label: 'Reference', cls: 'reference', blurb: 'a cross-plane doc, not a single call' },
+};
+const tierOrder: Tier[] = ['stable', 'shipped', 'experimental', 'reference', 'not-in-api'];
+---
+
+<DocsLayout
+  title="Fundamental — The 50 demonstrations, triaged"
+  description="A code-verified reference for an older list of 50 API demonstrations: every item bucketed by tier (stable, shipped-but-unfrozen, experimental), flagged where it needs host code, and two drifted items corrected against the engine. Built from verified items only, with a build-time execution receipt."
+>
+  <header class="docs-hero">
+    <p class="kicker">Reference</p>
+    <h1>The 50 <span class="accent">demonstrations</span>, triaged</h1>
+    <p class="lede">
+      An older write-up proposed fifty ways to show the API, and asked — in its own words — to
+      <em>separate real API demonstrations from ideas that depend on host code or experimental
+      behavior</em>. This page is that separation, done against the engine rather than from memory. The
+      finding is that the list holds up: almost every call is real. What varies is the <strong>tier</strong>,
+      and whether the demonstration needs <strong>host code</strong> to mean anything.
+    </p>
+    <StatusChip label="Verified against the engine · every item bucketed" tone="stable" />
+  </header>
+
+  <div class="callout">
+    <b>How to read a demonstration.</b> Each is a short lesson in the post's own flow: <em>change an
+    input, watch the field respond, read the resulting state, then inspect how the DOM presents it</em>.
+    The DOM stays the source of meaning; the particles are one rendering of field activity, not the
+    meaning itself.
+  </div>
+
+  <section class="docs-sec">
+    <h2 id="legend">The tiers</h2>
+    <ul class="legend">
+      {tierOrder.map((t) => (
+        <li>
+          <span class={`tier tier-${TIER_META[t].cls}`}>{TIER_META[t].label}</span>
+          <span class="legend-blurb">{TIER_META[t].blurb}</span>
+          <span class="legend-count">{TIER_COUNTS[t] ?? 0}</span>
+        </li>
+      ))}
+      <li>
+        <span class="tier tier-host">Needs host code</span>
+        <span class="legend-blurb">the API is real, but the demo is a pattern over a renderer, handler or channel</span>
+        <span class="legend-count">{HOST_COUNT}</span>
+      </li>
+    </ul>
+    <p class="muted">
+      {DEMOS.length} items in all. "Shipped · unfrozen" is the engine's own phrase for a surface that
+      ships and works but is not yet frozen; the <a href="/docs/api/stability">API stability</a> page is
+      the contract. Every symbol's signature and per-plane support is in the
+      <a href="/docs/api/imperative">imperative</a> and <a href="/docs/api/declarative">declarative</a>
+      references — this page does not repeat them, it triages the list and points at them.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2 id="receipt">The read methods ran at build time</h2>
+    <p>
+      The same anti-drift rule the cookbook uses for examples: this page cannot claim a method exists
+      that does not. <code>src/lib/demonstrations.ts</code> builds a real headless field during
+      <code>astro build</code> and invokes the stable, shipped, and headless-experimental methods the
+      catalogue references. A call to a method that was removed or renamed would throw and fail the
+      build. This is what it returned:
+    </p>
+    <div class="receipt">
+      <div class="receipt-head">
+        <span class="receipt-n">{receipt.invokedCount}</span>
+        <span class="receipt-label">handle methods invoked on one live headless field</span>
+      </div>
+      <ul class="receipt-grid">
+        <li><code>sample()</code> beside a well → <b>{JSON.stringify(receipt.forceBesideWell)}</b> <span class="muted">(a force vector, pointing back at the well)</span></li>
+        <li><code>query()</code> bodies → <b>{receipt.queryBodies}</b></li>
+        <li><code>diff()</code> over 60 frames → <b>{receipt.bodyChanges}</b> body changes</li>
+        <li><code>energy()</code> total → <b>{receipt.energyTotal}</b></li>
+        <li><code>focusState()</code> entries after an operator deposit → <b>{receipt.focusEntries}</b></li>
+        <li><code>forAgent(read:metrics)</code> saw ≤ the full query → <b>{String(receipt.agentScoped)}</b></li>
+        <li><code>readEdges()</code> after one <code>addEdge()</code> → <b>{receipt.edges}</b></li>
+      </ul>
+      <p class="receipt-methods"><b>Invoked:</b> {receipt.invoked.join(' · ')}</p>
+    </div>
+  </section>
+
+  {SECTIONS.map((s) => (
+    <section class="docs-sec">
+      <h2 id={s.key}>{s.title}</h2>
+      <p>{s.lede}</p>
+      <ol class="demos">
+        {s.demos.map((d) => (
+          <li class="demo" id={`demo-${d.n}`}>
+            <div class="demo-top">
+              <span class="demo-n">{d.n}</span>
+              <a class="demo-title" href={d.href}>{d.title}</a>
+              <span class={`tier tier-${TIER_META[d.tier].cls}`}>{TIER_META[d.tier].label}</span>
+              {d.host && <span class="tier tier-host">host</span>}
+            </div>
+            <code class="demo-api">{d.api}</code>
+            <p class="demo-lesson"><span class="lbl">Change</span> {d.change}</p>
+            <p class="demo-lesson"><span class="lbl">Watch</span> {d.watch}</p>
+            <p class="demo-ev">{d.evidence}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+  ))}
+
+  <section class="docs-sec">
+    <h2 id="corrections">Where the post drifted</h2>
+    <p>Two items did not survive the check against the engine, and are kept visible rather than quietly dropped:</p>
+    <div class="callout warn">
+      <p>
+        <b>#8 — Damped response / "drag settings".</b> There is no public drag, friction or damping
+        setter; internal <code>FRICTION</code> is a constant, not a knob. The real, authorable motion
+        dials are <code>restingMotion</code>, <code>ambientWander</code>, <code>separation</code> and the
+        <code>integrator</code> choice. Bucketed <span class="tier tier-notinapi">Not in API</span>.
+      </p>
+      <p>
+        <b>#43 — Replay.</b> <code>replay()</code> does <em>not</em> restore state. It returns a
+        narrated, ordered sequence of the <em>causes</em> of change between two snapshots (a
+        <code>CausalReplay</code>). The engine has no state-restore call. The demonstration is real, but
+        its framing is corrected: replay <em>explains</em>, it does not rewind.
+      </p>
+    </div>
+    <p class="muted">
+      Three smaller clarifications ride along in the items above: #1/#9 use the stable <code>flowTo()</code>
+      (the purpose-built <code>pointer()</code> is experimental); #38's "sample operation" for a record is
+      <code>atomAt()</code>, not <code>sample()</code>; and #29's "focus" is DOM focus (<code>data-active</code>),
+      not the experimental <code>focus()</code> attention substrate used by #40.
+    </p>
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/api/imperative', label: 'Imperative API reference' },
+      { href: '/docs/api/declarative', label: 'Declarative (data-*) reference' },
+      { href: '/docs/api/stability', label: 'API stability & tiers' },
+      { href: '/docs/cookbook/reading-the-field', label: 'Cookbook — reading & instrumenting' },
+      { href: '/docs/cookbook/conditions-and-formations', label: 'Cookbook — conditions & formations' },
+      { href: '/docs/snapshots', label: 'Snapshot / diff / replay' },
+      { href: '/docs/api/parity', label: 'Platform parity matrix' },
+    ]}
+  />
+</DocsLayout>
+
+<style>
+  .legend { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.4rem; }
+  .legend li { display: flex; align-items: center; gap: 0.75rem; }
+  .legend-blurb { color: var(--muted, #9aa7b4); font-size: 0.9rem; flex: 1; }
+  .legend-count { font-variant-numeric: tabular-nums; font-weight: 600; opacity: 0.9; }
+  .muted { color: var(--muted, #9aa7b4); }
+
+  .tier {
+    display: inline-block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.02em;
+    padding: 0.08rem 0.5rem; border-radius: 999px; border: 1px solid; white-space: nowrap;
+    line-height: 1.5;
+  }
+  .tier-stable { color: #2dd4bf; border-color: color-mix(in srgb, #2dd4bf 45%, transparent); }
+  .tier-shipped { color: #f5b554; border-color: color-mix(in srgb, #f5b554 45%, transparent); }
+  .tier-experimental { color: #a78bfa; border-color: color-mix(in srgb, #a78bfa 45%, transparent); }
+  .tier-notinapi { color: #f87171; border-color: color-mix(in srgb, #f87171 45%, transparent); }
+  .tier-reference { color: #7dd3fc; border-color: color-mix(in srgb, #7dd3fc 45%, transparent); }
+  .tier-host { color: #9aa7b4; border-color: color-mix(in srgb, #9aa7b4 45%, transparent); }
+
+  .receipt { border: 1px solid color-mix(in srgb, #2dd4bf 30%, transparent); border-radius: 10px; padding: 1rem 1.1rem; background: color-mix(in srgb, #2dd4bf 6%, transparent); }
+  .receipt-head { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.6rem; }
+  .receipt-n { font-size: 1.8rem; font-weight: 700; color: #2dd4bf; font-variant-numeric: tabular-nums; }
+  .receipt-label { color: var(--muted, #9aa7b4); }
+  .receipt-grid { list-style: none; padding: 0; margin: 0 0 0.5rem; display: grid; gap: 0.3rem; font-size: 0.92rem; }
+  .receipt-methods { font-size: 0.82rem; color: var(--muted, #9aa7b4); margin: 0.4rem 0 0; }
+
+  .demos { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.9rem; }
+  .demo { border: 1px solid color-mix(in srgb, currentColor 12%, transparent); border-radius: 9px; padding: 0.75rem 0.9rem; }
+  .demo-top { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+  .demo-n { font-variant-numeric: tabular-nums; font-weight: 700; opacity: 0.55; min-width: 1.6ch; }
+  .demo-title { font-weight: 600; text-decoration: none; }
+  .demo-title:hover { text-decoration: underline; }
+  .demo-api { display: inline-block; margin: 0.45rem 0 0.35rem; font-size: 0.86rem; opacity: 0.95; }
+  .demo-lesson { margin: 0.15rem 0; font-size: 0.92rem; }
+  .demo-lesson .lbl { display: inline-block; min-width: 4.2rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted, #9aa7b4); }
+  .demo-ev { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--muted, #9aa7b4); }
+
+  .callout.warn { border-color: color-mix(in srgb, #f5b554 40%, transparent); }
+  .callout.warn p { margin: 0.35rem 0; }
+
+  @media (max-width: 640px) {
+    .legend li { flex-wrap: wrap; }
+    .demo-lesson .lbl { min-width: auto; margin-right: 0.4rem; }
+  }
+</style>
