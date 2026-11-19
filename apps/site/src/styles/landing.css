@@ -527,7 +527,13 @@ html[data-field='on'] .hero-antimass:hover {
 .lp-ask .lp-bar {
   height: 0.5rem;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent), transparent);
+  /* urgency reads as heat: the bar warms from the cool accent toward the orange attention
+     accent as --u rises, so the most urgent ask glows orange and calmer ones stay blue. */
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--state-attention) calc(var(--u, 0.4) * 100%), var(--accent)),
+    transparent
+  );
   /* floored so an honest zero reading still leaves a legible trace of the bar */
   opacity: calc(0.12 + var(--u, 0.4) * 0.88);
 }
