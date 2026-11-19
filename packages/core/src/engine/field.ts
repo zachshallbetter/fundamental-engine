@@ -2376,7 +2376,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // draws smaller and fainter — the flat field's factor is exactly 1.
       const zk = cfg.depth > 0 ? 1 - Math.min(Math.abs(p.z ?? 0) / cfg.depth, 1) * 0.55 : 1;
       const size = (p.size * (1 - 0.4 * rs) + h * 2) * zk;
-      const alpha = clamp((0.5 - 0.3 * rs + h * 0.5) * boot * zk, 0, 1);
+      const alpha = clamp((0.82 - 0.22 * rs + h * 0.45) * boot * zk, 0, 1);
       const cr = r | 0;
       const cg = g | 0;
       const cb = b | 0;
