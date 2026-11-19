@@ -525,17 +525,18 @@ html[data-field='on'] .hero-antimass:hover {
   border-bottom: 0;
 }
 .lp-ask .lp-bar {
-  height: 0.5rem;
-  border-radius: 999px;
-  /* urgency reads as heat: the bar warms from the cool accent toward the orange attention
-     accent as --u rises, so the most urgent ask glows orange and calmer ones stay blue. */
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--state-attention) calc(var(--u, 0.4) * 100%), var(--accent)),
-    transparent
-  );
-  /* floored so an honest zero reading still leaves a legible trace of the bar */
-  opacity: calc(0.12 + var(--u, 0.4) * 0.88);
+  /* a glowing urgency orb: it warms from the cool accent toward the orange attention accent and
+     grows a larger halo as --u rises, so the most urgent ask glows hot orange and calmer ones sit
+     cool and dim — the field at work, read as light. */
+  --ubar: color-mix(in srgb, var(--state-attention) calc(var(--u, 0.4) * 100%), var(--accent));
+  justify-self: center;
+  width: calc(0.5rem + var(--u, 0.4) * 0.45rem);
+  height: calc(0.5rem + var(--u, 0.4) * 0.45rem);
+  border-radius: 50%;
+  background: var(--ubar);
+  box-shadow: 0 0 calc(5px + var(--u, 0.4) * 20px) color-mix(in srgb, var(--ubar) 75%, transparent);
+  /* floored so an honest zero reading still leaves a legible trace */
+  opacity: calc(0.35 + var(--u, 0.4) * 0.65);
 }
 .lp-ask .lp-title {
   font-size: calc(0.86rem + var(--u, 0.4) * 0.22rem);
