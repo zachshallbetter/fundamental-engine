@@ -806,17 +806,17 @@ a.btn {
 }
 a.btn:hover {
   color: var(--text);
-  border-color: var(--accent);
+  border-color: var(--state-attention);
 }
 a.btn.primary {
-  background: var(--text);
-  color: #06080d;
-  border-color: var(--text);
+  background: var(--state-attention);
+  color: #160a03;
+  border-color: var(--state-attention);
 }
 a.btn.primary:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #06080d;
+  background: color-mix(in srgb, var(--state-attention) 82%, #fff);
+  border-color: color-mix(in srgb, var(--state-attention) 82%, #fff);
+  color: #160a03;
 }
 
 /* The button is a sink vessel (Button.astro: `sink attract` shaped): it charges as the field's
@@ -831,9 +831,9 @@ a.btn.primary:hover {
      holds radiating out) and an INNER fill (the vessel lighting up from within as it charges). A
      hair of scale at full load. The values track --load live each frame — no transition. */
   box-shadow:
-    0 0 calc(4px + var(--load) * 52px) color-mix(in srgb, var(--accent) calc(var(--load) * 85%), transparent),
-    inset 0 0 calc(var(--load) * 28px) color-mix(in srgb, var(--accent) calc(var(--load) * 52%), transparent),
-    inset 0 0 calc(var(--d) * 14px) color-mix(in srgb, var(--accent) calc(var(--d) * 20%), transparent);
+    0 0 calc(4px + var(--load) * 52px) color-mix(in srgb, var(--state-attention) calc(var(--load) * 85%), transparent),
+    inset 0 0 calc(var(--load) * 28px) color-mix(in srgb, var(--state-attention) calc(var(--load) * 52%), transparent),
+    inset 0 0 calc(var(--d) * 14px) color-mix(in srgb, var(--state-attention) calc(var(--d) * 20%), transparent);
   transform: scale(calc(1 + var(--load) * 0.025));
 }
 /* The secondary control is FROSTED GLASS over the live field: it blurs the particles + warped grid
@@ -841,14 +841,14 @@ a.btn.primary:hover {
    control reads as a pane held in the field, lit from within as matter gathers — not a flat outline. */
 a.btn:not(.primary),
 button.btn:not(.primary) {
-  background: color-mix(in srgb, var(--accent) calc(6% + var(--load) * 20%), rgba(255, 255, 255, 0.028));
+  background: color-mix(in srgb, var(--state-attention) calc(6% + var(--load) * 20%), rgba(255, 255, 255, 0.028));
   backdrop-filter: blur(13px) saturate(1.5);
   -webkit-backdrop-filter: blur(13px) saturate(1.5);
-  border-color: color-mix(in srgb, var(--accent) calc(22% + var(--load) * 70%), var(--line-2));
+  border-color: color-mix(in srgb, var(--state-attention) calc(22% + var(--load) * 70%), var(--line-2));
 }
 a.btn:not(.primary):hover,
 button.btn:not(.primary):hover {
-  background: color-mix(in srgb, var(--accent) calc(14% + var(--load) * 22%), rgba(255, 255, 255, 0.04));
+  background: color-mix(in srgb, var(--state-attention) calc(14% + var(--load) * 22%), rgba(255, 255, 255, 0.04));
 }
 @media (prefers-reduced-motion: reduce) {
   /* the glow still reflects the resting charge, it just doesn't pulse with capture/release churn */
