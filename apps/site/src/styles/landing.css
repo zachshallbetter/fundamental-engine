@@ -513,12 +513,20 @@ html[data-field='on'] .hero-antimass:hover {
      dims as attention drains to a neighbour; before the engine's reading arrives — or with the
      field off, when --d never registers — the fallback holds the pure authored look. */
   --u: calc(var(--u0, 0.4) * 0.55 + var(--d, var(--u0, 0.4)) * 0.45);
+  /* the urgency hue: hot orange at the top of the field, cooling to the signal blue as attention drains */
+  --ubar: color-mix(in srgb, var(--state-attention) calc(var(--u, 0.4) * 100%), var(--accent));
   display: grid;
   grid-template-columns: 2.2rem 1fr auto;
   align-items: center;
   gap: 0.8rem;
-  padding: 0.7rem 0.9rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+  padding: 0.85rem 1rem;
+  margin: 0.45rem 0.25rem;
+  border-radius: 12px;
+  /* a glowing card whose border, tint and halo rise with urgency: the outage glows hot orange, calmer
+     asks sit as dim, cool cards — the field's attention, read as a lit panel. */
+  border: 1px solid color-mix(in srgb, var(--ubar) calc(22% + var(--u, 0.4) * 55%), transparent);
+  background: color-mix(in srgb, var(--ubar) calc(3% + var(--u, 0.4) * 8%), rgba(255, 255, 255, 0.012));
+  box-shadow: 0 0 calc(var(--u, 0.4) * 26px) color-mix(in srgb, var(--ubar) calc(var(--u, 0.4) * 32%), transparent);
 }
 .lp-ask:focus-visible { outline: 2px solid var(--state-signal); outline-offset: 3px; }
 .lp-ask:last-child {
@@ -527,8 +535,7 @@ html[data-field='on'] .hero-antimass:hover {
 .lp-ask .lp-bar {
   /* a glowing urgency orb: it warms from the cool accent toward the orange attention accent and
      grows a larger halo as --u rises, so the most urgent ask glows hot orange and calmer ones sit
-     cool and dim — the field at work, read as light. */
-  --ubar: color-mix(in srgb, var(--state-attention) calc(var(--u, 0.4) * 100%), var(--accent));
+     cool and dim — the field at work, read as light. (--ubar is inherited from .lp-ask.) */
   justify-self: center;
   width: calc(0.5rem + var(--u, 0.4) * 0.45rem);
   height: calc(0.5rem + var(--u, 0.4) * 0.45rem);
