@@ -1,5 +1,6 @@
 /**
- * The homepage social card's field (/og/home.png) is a real, reproducible engine frame.
+ * The homepage social card's field (/og/home.png) is a real, reproducible engine frame: the engine's
+ * own dots renderer and grid overlay, recorded as SVG.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,10 +8,11 @@ import assert from 'node:assert/strict';
 import { renderOgHeroField, OG_W, OG_H } from './og-hero-field.ts';
 
 test('og hero field: a seeded run draws a populated frame at the card size', () => {
-  const { svg, particles } = renderOgHeroField();
-  assert.ok(particles > 100, `the field has matter to draw (got ${particles})`);
+  const { svg, particles, gridLines } = renderOgHeroField();
   assert.ok(svg.startsWith(`<svg xmlns="http://www.w3.org/2000/svg" width="${OG_W}" height="${OG_H}"`));
-  assert.ok((svg.match(/<circle /g) ?? []).length > 100, 'particles are drawn');
+  assert.ok(particles > 100, `the engine's dots renderer drew the matter (got ${particles} dots)`);
+  assert.ok(gridLines > 20, `the engine's grid overlay drew the lattice (got ${gridLines} lines)`);
+  assert.ok(!svg.includes('<line '), 'round dots only, no velocity streaks');
 });
 
 test('og hero field: the same seed draws the same frame (every build ships the same card)', () => {

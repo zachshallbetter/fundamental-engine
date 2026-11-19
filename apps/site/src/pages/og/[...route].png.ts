@@ -94,7 +94,12 @@ function card({ eyebrow, title }: OgCardProps) {
  *  field's bodies are placed at. */
 function heroCard({ eyebrow, title, line }: OgCardProps) {
   const L = OG_HERO_LAYOUT;
-  const fieldSvg = renderOgHeroField().svg;
+  const frame = renderOgHeroField();
+  const fieldSvg = frame.svg;
+  // the word's glow is the site's .hero-mass text-shadow (landing.css), driven by the same --d
+  // reading: blur 6px + d·40px, the accent at 20% + d·70%.
+  const d = frame.massDensity;
+  const massGlow = `0 0 ${Math.round(6 + d * 40)}px rgba(77,163,255,${(0.2 + d * 0.7).toFixed(2)})`;
   const abs = (style: Record<string, unknown>, children: unknown) => ({
     type: 'div',
     props: { style: { display: 'flex', position: 'absolute', ...style }, children },
@@ -127,8 +132,8 @@ function heroCard({ eyebrow, title, line }: OgCardProps) {
             style: { position: 'absolute', left: 0, top: 0 },
           },
         },
-        // a soft scrim under the thesis so the small line stays legible over the matter
-        abs({ left: 0, top: 420, width: `${OG_W}px`, height: `${OG_H - 420}px`, backgroundImage: 'linear-gradient(180deg, rgba(4,5,10,0), rgba(4,5,10,0.72) 45%)' }, []),
+        // a soft scrim under the thesis so the small line stays legible over the lattice
+        abs({ left: 0, top: 420, width: `${OG_W}px`, height: `${OG_H - 420}px`, backgroundImage: 'linear-gradient(180deg, rgba(4,5,10,0), rgba(4,5,10,0.6) 45%)' }, []),
         abs(
           { left: L.margin, top: L.labelTop, fontSize: 26, fontWeight: 700, letterSpacing: 6, color: '#9fb0d0' },
           eyebrow.toUpperCase(),
@@ -142,7 +147,7 @@ function heroCard({ eyebrow, title, line }: OgCardProps) {
               props: {
                 style: { display: 'flex' },
                 children: [
-                  { type: 'span', props: { style: { color: '#4da3ff' }, children: word } },
+                  { type: 'span', props: { style: { color: '#4da3ff', textShadow: massGlow }, children: word } },
                   { type: 'span', props: { style: { color: '#ff9d5c' }, children: dot } },
                 ],
               },
