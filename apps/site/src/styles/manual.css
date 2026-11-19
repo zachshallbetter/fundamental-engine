@@ -844,9 +844,11 @@ a.btn.primary:hover {
   /* two charge cues so the gain reads even at a modest fill: an OUTER accretion glow (the mass it
      holds radiating out) and an INNER fill (the vessel lighting up from within as it charges). A
      hair of scale at full load. The values track --load live each frame — no transition. */
+  /* a resting warm glow — outer halo + inner rim — that the charge (--load) then drives up, so the
+     control reads as a lit panel at rest and flares as the field gathers into it. */
   box-shadow:
-    0 0 calc(4px + var(--load) * 52px) color-mix(in srgb, var(--glow-warm) calc(var(--load) * 85%), transparent),
-    inset 0 0 calc(var(--load) * 28px) color-mix(in srgb, var(--glow-warm) calc(var(--load) * 52%), transparent),
+    0 0 calc(10px + var(--load) * 46px) color-mix(in srgb, var(--glow-warm) calc(18% + var(--load) * 68%), transparent),
+    inset 0 0 calc(8px + var(--load) * 24px) color-mix(in srgb, var(--glow-warm) calc(13% + var(--load) * 42%), transparent),
     inset 0 0 calc(var(--d) * 14px) color-mix(in srgb, var(--glow-warm) calc(var(--d) * 20%), transparent);
   transform: scale(calc(1 + var(--load) * 0.025));
 }
