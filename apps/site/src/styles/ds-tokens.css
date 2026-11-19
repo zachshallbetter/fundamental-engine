@@ -59,6 +59,12 @@
   --state-signal: #7cc7de;
   --state-attention: #ff9a4d;
 
+  /* Vivid glow accents — the design's exact orange/blue, for LIGHT effects only (borders, halos,
+     orbs, particles), never type. Kept separate from --state-attention/--state-signal, which stay
+     contrast-safe for text; these are free to be fully saturated because a glow isn't read as a word. */
+  --glow-warm: #ff8200;
+  --glow-cool: #005aff;
+
   /* status */
   --ok: #5fd0a8;
   --warn: #ffce6b;

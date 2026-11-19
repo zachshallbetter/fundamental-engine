@@ -513,20 +513,24 @@ html[data-field='on'] .hero-antimass:hover {
      dims as attention drains to a neighbour; before the engine's reading arrives — or with the
      field off, when --d never registers — the fallback holds the pure authored look. */
   --u: calc(var(--u0, 0.4) * 0.55 + var(--d, var(--u0, 0.4)) * 0.45);
-  /* the urgency hue: hot orange at the top of the field, cooling to the signal blue as attention drains */
-  --ubar: color-mix(in srgb, var(--state-attention) calc(var(--u, 0.4) * 100%), var(--accent));
+  /* the urgency hue: hot #ff8200 at the top of the field, cooling to #005aff as attention drains */
+  --ubar: color-mix(in srgb, var(--glow-warm) calc(var(--u, 0.4) * 100%), var(--glow-cool));
   display: grid;
   grid-template-columns: 2.2rem 1fr auto;
   align-items: center;
   gap: 0.8rem;
-  padding: 0.85rem 1rem;
-  margin: 0.45rem 0.25rem;
-  border-radius: 12px;
-  /* a glowing card whose border, tint and halo rise with urgency: the outage glows hot orange, calmer
-     asks sit as dim, cool cards — the field's attention, read as a lit panel. */
-  border: 1px solid color-mix(in srgb, var(--ubar) calc(22% + var(--u, 0.4) * 55%), transparent);
-  background: color-mix(in srgb, var(--ubar) calc(3% + var(--u, 0.4) * 8%), rgba(255, 255, 255, 0.012));
-  box-shadow: 0 0 calc(var(--u, 0.4) * 26px) color-mix(in srgb, var(--ubar) calc(var(--u, 0.4) * 32%), transparent);
+  padding: 0.95rem 1.1rem;
+  margin: 0.55rem 0.2rem;
+  border-radius: 13px;
+  /* a glowing card like the reference: a bright rim with BOTH an outer halo and an inner glow, rising
+     with urgency, so the outage burns #ff8200 and calmer asks cool toward #005aff. */
+  border: 1.5px solid color-mix(in srgb, var(--ubar) calc(40% + var(--u, 0.4) * 55%), transparent);
+  background:
+    radial-gradient(135% 170% at 1% 50%, color-mix(in srgb, var(--ubar) calc(7% + var(--u, 0.4) * 13%), transparent), transparent 62%),
+    rgba(255, 255, 255, 0.01);
+  box-shadow:
+    0 0 calc(10px + var(--u, 0.4) * 40px) color-mix(in srgb, var(--ubar) calc(26% + var(--u, 0.4) * 48%), transparent),
+    inset 0 0 calc(8px + var(--u, 0.4) * 30px) color-mix(in srgb, var(--ubar) calc(13% + var(--u, 0.4) * 35%), transparent);
 }
 .lp-ask:focus-visible { outline: 2px solid var(--state-signal); outline-offset: 3px; }
 .lp-ask:last-child {
@@ -537,13 +541,16 @@ html[data-field='on'] .hero-antimass:hover {
      grows a larger halo as --u rises, so the most urgent ask glows hot orange and calmer ones sit
      cool and dim — the field at work, read as light. (--ubar is inherited from .lp-ask.) */
   justify-self: center;
-  width: calc(0.5rem + var(--u, 0.4) * 0.45rem);
-  height: calc(0.5rem + var(--u, 0.4) * 0.45rem);
+  width: calc(0.62rem + var(--u, 0.4) * 0.36rem);
+  height: calc(0.62rem + var(--u, 0.4) * 0.36rem);
   border-radius: 50%;
-  background: var(--ubar);
-  box-shadow: 0 0 calc(5px + var(--u, 0.4) * 20px) color-mix(in srgb, var(--ubar) 75%, transparent);
+  /* a bright core bleeding into a coloured halo — the glowing dot from the reference */
+  background: radial-gradient(circle, color-mix(in srgb, #fff calc(28% + var(--u, 0.4) * 42%), var(--ubar)), var(--ubar) 66%);
+  box-shadow:
+    0 0 calc(7px + var(--u, 0.4) * 28px) var(--ubar),
+    0 0 calc(3px + var(--u, 0.4) * 7px) color-mix(in srgb, #fff 40%, var(--ubar));
   /* floored so an honest zero reading still leaves a legible trace */
-  opacity: calc(0.35 + var(--u, 0.4) * 0.65);
+  opacity: calc(0.62 + var(--u, 0.4) * 0.38);
 }
 .lp-ask .lp-title {
   font-size: calc(0.86rem + var(--u, 0.4) * 0.22rem);
