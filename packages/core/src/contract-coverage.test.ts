@@ -104,6 +104,30 @@ function documentedBodyAttrs(): string[] {
   return [...suffixes];
 }
 
+/** The `name:` string values of a `export const <decl>` table in `apps/site/src/lib/docs-api.ts`,
+ *  parsed the same brittle-TS-safe way as `documentedBodyAttrs` (read the quote after each `name:` and
+ *  slice to its match). Used by the RC-6 extension legs below over the OPTIONS / ELEMENT_ATTRS /
+ *  SNAPSHOT_PROFILES tables — the SAME source `check:docs` treats as authoritative, so the guard and the
+ *  docs gate can never disagree about what is documented. */
+function docsApiTableNames(decl: string): string[] {
+  const docsApi = readFileSync(join(packagesDir, '..', 'apps', 'site', 'src', 'lib', 'docs-api.ts'), 'utf8');
+  const start = docsApi.indexOf(decl);
+  assert.notEqual(start, -1, `${decl} not found in apps/site/src/lib/docs-api.ts`);
+  const block = docsApi.slice(start, docsApi.indexOf('\n];', start));
+  const names: string[] = [];
+  const marker = 'name:';
+  for (let i = block.indexOf(marker); i !== -1; i = block.indexOf(marker, i + 1)) {
+    let j = i + marker.length;
+    while (j < block.length && (block[j] === ' ' || block[j] === '\t')) j++;
+    const quote = block[j];
+    if (quote !== "'" && quote !== '"') continue;
+    const end = block.indexOf(quote, j + 1);
+    if (end === -1) continue;
+    names.push(block.slice(j + 1, end));
+  }
+  return names;
+}
+
 /** the keys declared inside an `export interface <name> { … }` block in core/types.ts. */
 function interfaceKeys(name: string): string[] {
   const src = readFileSync(join(here, 'engine', 'types.ts'), 'utf8');
@@ -177,5 +201,52 @@ test('every documented body attribute is referenced by a test (RC-6 contract cov
     `these documented body attributes have no test referencing them as data-<attr>: ${missing.join(', ')}\n` +
       `Add a test that references each (e.g. parseBodyParams(attrs({ '<attr>': … })) with a data-<attr> ` +
       `mention), or add it to EXEMPT_ATTRS (with a reason) if it is genuinely untestable at the unit level.`,
+  );
+});
+
+// ── RC-6 extension (#323): three more documented tables carry public surface the three legs above never
+// saw. The option leg parses the CORE `FieldOptions` type, so it misses a documented VANILLA option
+// (`runOffscreen`); the attribute leg parses the body `data-*` ATTRS[], so it misses the element-consumer
+// attrs ELEMENT_ATTRS[] (`data-formation`); and nothing covered the snapshot SNAPSHOT_PROFILES[]
+// (`bug-report`). These three legs close that gap from the SAME docs-api.ts tables `check:docs` enforces,
+// using the RECURSIVE corpus (like the attribute leg) so coverage can live in natural cross-package tests.
+
+test('every documented createField option is referenced by a test (RC-6 contract coverage — OPTIONS[])', () => {
+  const corpus = testCorpusRecursive();
+  // reuse the option-leg injection-seam exemptions; `runOffscreen` is NOT here — it is tested.
+  const missing = docsApiTableNames('export const OPTIONS')
+    .filter((n) => !EXEMPT.has(n))
+    .filter((n) => !corpus.includes(n))
+    .sort();
+  assert.deepEqual(
+    missing,
+    [],
+    `these documented createField options have no test referencing them: ${missing.join(', ')}\n` +
+      `Add a test that names each, or EXEMPT it (with a reason) if it is a pure internal seam.`,
+  );
+});
+
+test('every documented element-consumer attribute is referenced by a test (RC-6 contract coverage — ELEMENT_ATTRS[])', () => {
+  const corpus = testCorpusRecursive();
+  // ELEMENT_ATTRS names are already in `data-<x>` form (data-move, data-on, …), so match them as-is.
+  const missing = docsApiTableNames('export const ELEMENT_ATTRS')
+    .filter((n) => !corpus.includes(n))
+    .sort();
+  assert.deepEqual(
+    missing,
+    [],
+    `these documented element-consumer attributes have no test referencing them: ${missing.join(', ')}`,
+  );
+});
+
+test('every documented snapshot profile is referenced by a test (RC-6 contract coverage — SNAPSHOT_PROFILES[])', () => {
+  const corpus = testCorpusRecursive();
+  const missing = docsApiTableNames('export const SNAPSHOT_PROFILES')
+    .filter((n) => !corpus.includes(n))
+    .sort();
+  assert.deepEqual(
+    missing,
+    [],
+    `these documented snapshot profiles have no test referencing them: ${missing.join(', ')}`,
   );
 });
