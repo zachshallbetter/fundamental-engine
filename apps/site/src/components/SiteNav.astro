@@ -32,17 +32,7 @@ const dest = [
       aria-label="Fundamental — home"
       aria-current={current === 'home' ? 'page' : undefined}
     >
-      <svg viewBox="0 0 441 421" aria-hidden="true">
-        <g fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round">
-          <circle cx="230" cy="211" r="89"></circle>
-          <path d="M393 327c30-50 36-130-20-180-44-40-110-40-160-10"></path>
-          <circle cx="370" cy="355" r="34"></circle>
-          <circle cx="45" cy="286" r="34"></circle>
-          <path d="M62 318c44 70 128 105 209 88"></path>
-        </g>
-        <circle cx="139" cy="315" r="16" fill="currentColor"></circle>
-        <circle cx="92" cy="66" r="22" fill="currentColor"></circle>
-      </svg>
+      <img src="/logo.svg" alt="" width="20" height="20" />
       <span class="sn-name">Fundamental</span>
     </a>
     <a class="sn-version" href="/changelog" title={`What's new — v${version}`}>v{version}</a>
@@ -323,10 +313,9 @@ const dest = [
     text-decoration: none;
     color: var(--text, #f3f6fc);
   }
-  .sn-mark svg {
+  .sn-mark img {
     width: 20px;
     height: 20px;
-    color: var(--accent, #4da3ff);
     flex: none;
   }
   .sn-name {
