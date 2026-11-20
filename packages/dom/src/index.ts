@@ -42,7 +42,21 @@ export { attachOffthreadRender, type OffthreadBridgeResult } from './worker/offt
 export * from './x-ray.ts';
 export * from './overlay-surface.ts';
 
-/** Start the core engine on a canvas with the default browser host — `createField` + `browserHost()`. */
-export function createBrowserField(canvas: HTMLCanvasElement, opts: Omit<FieldOptions, 'host'> = {}): FieldHandle {
-  return createField(canvas, { ...opts, host: browserHost() });
+/** Start the core engine on a canvas with the default browser host — `createField` + `browserHost()`.
+ *  `overrides.reducedMotion`, when given, is OR-composed with the host's own `prefers-reduced-motion`
+ *  read: either source returning true freezes the integrator (dt=0) while the feedback channels keep
+ *  writing their last measured value. The override is read every frame, so a host can toggle reduced
+ *  motion live without rebuilding the field. */
+export function createBrowserField(
+  canvas: HTMLCanvasElement,
+  opts: Omit<FieldOptions, 'host'> = {},
+  overrides: { reducedMotion?: () => boolean } = {},
+): FieldHandle {
+  const host = browserHost();
+  if (overrides.reducedMotion) {
+    const base = host.reducedMotion;
+    const force = overrides.reducedMotion;
+    host.reducedMotion = () => force() || (base?.() ?? false);
+  }
+  return createField(canvas, { ...opts, host });
 }

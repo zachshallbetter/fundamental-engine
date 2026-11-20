@@ -37,8 +37,9 @@ test('option-attrs-observed: every forwarded option attr is in observedAttribute
 // in start() / setAccent; formation is a post-boot command, not a construction option). accent / overlayCanvas /
 // feedbackSink live outside OPTIONS by design. overlay-blend / overlay-z (#721) are host CSS placement of
 // the front overlay canvas (passed to createOverlaySurface from @fundamental-engine/dom), not FieldOptions —
-// core is DOM-free — so they are wired outside the table by design.
-const SPECIAL_ATTRS = new Set(['accent', 'formation', 'overlay-blend', 'overlay-z']);
+// core is DOM-free — so they are wired outside the table by design. reduced-motion is a host-capability
+// override (createBrowserField's reducedMotion seam), read live each frame, not a FieldOptions key either.
+const SPECIAL_ATTRS = new Set(['accent', 'formation', 'overlay-blend', 'overlay-z', 'reduced-motion']);
 
 test('every observed (non-special) attribute has an OPTIONS row (reverse drift guard)', () => {
   const optionAttrs = new Set(OPTIONS.map((o) => o.attr));

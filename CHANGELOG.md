@@ -7,6 +7,10 @@ a git tag (see [RELEASING.md](docs/meta/releasing.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`<field-root reduced-motion>` — drive the reduced-motion freeze on a live field, and thaw it, with no rebuild.** The engine already freezes under the host's `prefers-reduced-motion` read (`effectiveMotion → 0`, so the integrator runs at `dt = 0` while the feedback channels keep writing their last measured value). The new boolean attribute OR-composes a host-level override into that read, so a page can force the freeze itself instead of waiting on the OS setting — either source turns it on. It is read every frame, not a construction option, so toggling it never rebuilds the field and the captured matter survives the toggle. `createBrowserField(canvas, opts, { reducedMotion })` gains the optional, backward-compatible override seam the attribute rides on. The homepage **Try it** panel gets a *Freeze the field* control that exercises it: the particles stop, the field keeps measuring, and nothing resets.
+
 ## [0.12.0] — 2026-11-03
 
 A navigation milestone: agents get a real wayfinding subsystem, the cursor

@@ -43,6 +43,10 @@ const FORCES = [
           <span>range <i data-try-out="range">180</i></span>
           <input type="range" min="80" max="320" step="10" value="180" data-try-range />
         </label>
+        <label class="tryit-ctl">
+          <span>motion</span>
+          <button type="button" class="tryit-freeze" data-try-freeze aria-pressed="false">Freeze the field</button>
+        </label>
       </div>
       <pre class="tryit-code" data-try-code aria-live="polite">data-body="attract"</pre>
       <ol class="tryit-loop" aria-label="How this interaction works">
@@ -50,6 +54,7 @@ const FORCES = [
         <li><b>Measured</b><code>local field density <output data-try-measured>0.00</output></code></li>
         <li><b>Projected</b><span>The same DOM body changes emphasis through its <code>--d</code> feedback signal.</span></li>
       </ol>
+      <p class="tryit-freeze-note" data-try-freeze-note hidden>Motion off: the integrator froze at <code>dt = 0</code>, so the field stops — the particles behind the page hold still. It stays live, though: the field keeps measuring, and every <code>--field-*</code> signal keeps its last value instead of resetting. Thaw it and motion resumes from exactly here. This is what <code>prefers-reduced-motion</code> does too.</p>
     </div>
     <div class="tryit-stage" aria-hidden="true">
       <span
@@ -145,6 +150,18 @@ const FORCES = [
       observer.observe(body, { attributes: true, attributeFilter: ['style'] });
       document.addEventListener('astro:before-swap', () => observer.disconnect(), { once: true });
     }
+
+    // Freeze the field: toggle the <field-root reduced-motion> attribute. The engine's integrator
+    // early-returns at dt=0 so the particles stop, but the feedback channels keep writing — so --d
+    // (and the Measured readout + glow it drives) hold their last value. Live, no rebuild.
+    const freezeBtn = root.querySelector<HTMLButtonElement>('[data-try-freeze]');
+    const freezeNote = root.querySelector<HTMLElement>('[data-try-freeze-note]');
+    freezeBtn?.addEventListener('click', () => {
+      const on = field.toggleAttribute('reduced-motion');
+      freezeBtn.setAttribute('aria-pressed', String(on));
+      freezeBtn.textContent = on ? 'Motion frozen — thaw' : 'Freeze the field';
+      if (freezeNote) freezeNote.hidden = !on;
+    });
   }
 
   document.addEventListener('astro:page-load', initTryIt);
@@ -204,6 +221,31 @@ const FORCES = [
     text-transform: none;
     letter-spacing: 0;
   }
+  .tryit-freeze {
+    justify-self: start;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.14));
+    background: rgba(6, 9, 16, 0.6);
+    color: var(--text-2, #b0b0bd);
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .tryit-freeze[aria-pressed='true'] {
+    border-color: var(--accent, #4da3ff);
+    color: var(--accent, #4da3ff);
+  }
+  .tryit-freeze-note {
+    margin: 0.9rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--text-3, #8a8a99);
+  }
+  .tryit-freeze-note code { color: var(--state-signal, #4da3ff); }
   .tryit-code {
     margin: 0;
     background: rgba(6, 9, 16, 0.66);
