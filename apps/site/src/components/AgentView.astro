@@ -1,0 +1,239 @@
+---
+// AgentView — a HUMAN / AGENT toggle (prototype).
+//
+// The field thesis says a page carries meaning and the runtime returns OTHER READINGS — CSS,
+// JSON, queries. This surfaces that literally: a persistent floating toggle flips the page, in
+// place (same URL, no navigation), to its machine-readable representation —
+//   1. the page's Schema.org JSON-LD (every `application/ld+json` block it already emits), and
+//   2. the live field reading from this page's `<field-root>` (`query()` — serializable state).
+// It is both an AEO surface (the structured data a crawler/LLM eats, made first-class) and a
+// transparency gesture (inspect the machine view of any page). Progressive enhancement: the
+// control and panel are inert until the inline script wires them, and reduced motion drops the fade.
+---
+
+<div class="av-toggle" role="group" aria-label="Page view mode">
+  <button type="button" class="av-btn" data-av="human" aria-pressed="true">Human</button>
+  <button type="button" class="av-btn" data-av="agent" aria-pressed="false">Agent</button>
+</div>
+
+<section class="av-panel" data-av-panel hidden aria-label="Agent view — machine-readable page data">
+  <div class="av-inner">
+    <header class="av-head">
+      <span class="av-mime">Agent view · <code>application/ld+json</code></span>
+      <div class="av-head-links">
+        <a href="/llms.txt">/llms.txt →</a>
+        <button type="button" class="av-close" data-av="human" aria-label="Back to the human view">Close</button>
+      </div>
+    </header>
+
+    <h2 class="av-section">Structured data <span>schema.org</span></h2>
+    <pre class="av-json" data-av-jsonld tabindex="0">…</pre>
+
+    <h2 class="av-section">Live field reading <span>field.query()</span></h2>
+    <pre class="av-json" data-av-field tabindex="0">…</pre>
+  </div>
+</section>
+
+<script>
+  // Prototype: wire the HUMAN/AGENT toggle once per page.
+  function initAgentView() {
+    const panel = document.querySelector<HTMLElement>('[data-av-panel]');
+    const toggle = document.querySelector<HTMLElement>('.av-toggle');
+    if (!panel || !toggle || panel.dataset.bound) return;
+    panel.dataset.bound = '1';
+
+    const jsonldEl = panel.querySelector<HTMLElement>('[data-av-jsonld]');
+    const fieldEl = panel.querySelector<HTMLElement>('[data-av-field]');
+    const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-av]')];
+
+    // Gather every Schema.org block the page emits and pretty-print them as one array (or the
+    // single object when there's just one). These are the exact bytes a crawler/LLM would parse.
+    const readJsonLd = (): string => {
+      const blocks: unknown[] = [];
+      for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
+        try {
+          blocks.push(JSON.parse(s.textContent ?? ''));
+        } catch {
+          /* skip a malformed block rather than break the view */
+        }
+      }
+      if (!blocks.length) return '// no Schema.org JSON-LD on this page';
+      return JSON.stringify(blocks.length === 1 ? blocks[0] : blocks, null, 2);
+    };
+
+    // The live field reading — the serializable state the runtime returns. `<field-root>` is the
+    // FieldHandle; fall back to the internal handle if the element doesn't expose query() directly.
+    const readField = (): string => {
+      const fr = document.querySelector('field-root') as
+        | (Element & { query?: () => unknown; field?: { query?: () => unknown } })
+        | null;
+      if (!fr) return '// no field on this page';
+      const q = fr.query?.() ?? fr.field?.query?.();
+      if (q === undefined) return '// field present, not booted yet — query() returns on the first frame';
+      try {
+        return JSON.stringify(q, null, 2);
+      } catch {
+        return '// field reading is not serializable';
+      }
+    };
+
+    const setMode = (mode: 'human' | 'agent') => {
+      const agent = mode === 'agent';
+      if (agent) {
+        if (jsonldEl) jsonldEl.textContent = readJsonLd();
+        if (fieldEl) fieldEl.textContent = readField();
+      }
+      panel.hidden = !agent;
+      document.documentElement.classList.toggle('av-open', agent);
+      for (const b of buttons) b.setAttribute('aria-pressed', String(agent === (b.dataset.av === 'agent')));
+    };
+
+    for (const b of buttons) b.addEventListener('click', () => setMode(b.dataset.av as 'human' | 'agent'));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) setMode('human');
+    });
+  }
+
+  document.addEventListener('astro:page-load', initAgentView);
+  document.addEventListener('DOMContentLoaded', initAgentView);
+</script>
+
+<style>
+  /* floating HUMAN / AGENT control — bottom-right, clear of the data console (bottom-left). */
+  .av-toggle {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1000;
+    display: inline-flex;
+    padding: 0.2rem;
+    gap: 0.15rem;
+    border: 1px solid var(--line-2, rgba(255, 255, 255, 0.14));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg-page, #05060b) 72%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .av-btn {
+    font-family: var(--mono, monospace);
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.4rem 0.8rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-3, #8a8a99);
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+  }
+  .av-btn[aria-pressed='true'] {
+    background: var(--accent, #4da3ff);
+    color: #06080d;
+  }
+  .av-btn:focus-visible {
+    outline: 2px solid var(--state-signal, #7cc7de);
+    outline-offset: 2px;
+  }
+
+  /* the agent panel — a scrollable overlay over the page, same URL */
+  .av-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    overflow-y: auto;
+    background: color-mix(in srgb, var(--bg-page, #05060b) 94%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: av-in 0.18s ease;
+  }
+  :global(html.av-open) {
+    overflow: hidden;
+  }
+  .av-inner {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 4.5rem 1.25rem 6rem;
+  }
+  .av-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+    font-family: var(--mono, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3, #8a8a99);
+  }
+  .av-mime code {
+    color: var(--accent, #4da3ff);
+  }
+  .av-head-links {
+    display: inline-flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  .av-head-links a {
+    color: var(--state-signal, #7cc7de);
+    text-decoration: none;
+  }
+  .av-close {
+    font-family: inherit;
+    font-size: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: var(--text-2, #b0b0bd);
+    background: transparent;
+    border: 1px solid var(--line-2, rgba(255, 255, 255, 0.14));
+    border-radius: 999px;
+    padding: 0.3rem 0.8rem;
+    cursor: pointer;
+  }
+  .av-section {
+    margin: 2rem 0 0.7rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text, #e8e8ef);
+  }
+  .av-section span {
+    font-family: var(--mono, monospace);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-4, #6a6a78);
+    margin-left: 0.5rem;
+  }
+  .av-json {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    background: color-mix(in srgb, #000 40%, var(--bg-page, #05060b));
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.09));
+    border-radius: 12px;
+    font-family: var(--mono, monospace);
+    font-size: 0.74rem;
+    line-height: 1.6;
+    color: var(--text-2, #b0b0bd);
+    white-space: pre;
+    overflow-x: auto;
+  }
+  @keyframes av-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .av-panel {
+      animation: none;
+    }
+    .av-btn {
+      transition: none;
+    }
+  }
+</style>
